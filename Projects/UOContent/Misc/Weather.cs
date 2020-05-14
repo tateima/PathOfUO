@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Server.Items;
 using Server.Network;
 
@@ -44,10 +45,10 @@ namespace Server.Misc
       if (facet == null)
         return null;
 
-      if (!m_WeatherByFacet.TryGetValue(facet, out List<Weather> list))
-        m_WeatherByFacet[facet] = list = new List<Weather>();
+      if (m_WeatherByFacet.TryGetValue(facet, out List<Weather> list))
+        return list;
 
-      return list;
+      return m_WeatherByFacet[facet] = new List<Weather>();
     }
 
     public static void AddDynamicWeather(int temperature, int chanceOfPercipitation, int chanceOfExtremeTemperature, int moveSpeed, int width, int height, Rectangle2D bounds)
@@ -83,23 +84,8 @@ namespace Server.Misc
         new Weather(m_Facets[i], area, temperature, chanceOfPercipitation, chanceOfExtremeTemperature, TimeSpan.FromSeconds(30.0));
     }
 
-    public static bool CheckWeatherConflict(Map facet, Weather exclude, Rectangle2D area)
-    {
-      List<Weather> list = GetWeatherList(facet);
-
-      if (list == null)
-        return false;
-
-      for (int i = 0; i < list.Count; ++i)
-      {
-        Weather w = list[i];
-
-        if (w != exclude && w.IntersectsWith(area))
-          return true;
-      }
-
-      return false;
-    }
+    public static bool CheckWeatherConflict(Map facet, Weather exclude, Rectangle2D area) =>
+      GetWeatherList(facet)?.Any(w => w != exclude && w.IntersectsWith(area)) == true;
 
     public Map Facet { get; }
 
@@ -127,14 +113,7 @@ namespace Server.Misc
       small.X >= big.X && small.Y >= big.Y && small.X + small.Width <= big.X + big.Width
       && small.Y + small.Height <= big.Y + big.Height;
 
-    public virtual bool IntersectsWith(Rectangle2D area)
-    {
-      for (int i = 0; i < Area.Length; ++i)
-        if (CheckIntersection(area, Area[i]))
-          return true;
-
-      return false;
-    }
+    public virtual bool IntersectsWith(Rectangle2D area) => Area.Any(t => CheckIntersection(area, t));
 
     public Weather(Map facet, Rectangle2D[] area, int temperature, int chanceOfPercipitation, int chanceOfExtremeTemperature, TimeSpan interval)
     {
@@ -283,8 +262,7 @@ namespace Server.Misc
           if (!contains)
             continue;
 
-          if (weatherPacket == null)
-            weatherPacket = Packet.Acquire(new Server.Network.Weather(type, density, temperature));
+          weatherPacket ??= Packet.Acquire(new Server.Network.Weather(type, density, temperature));
 
           ns.Send(weatherPacket);
         }

@@ -3826,8 +3826,7 @@ namespace Server
         DisruptiveAction();
       }
 
-      m_NetState?.Send(MovementAck.Instantiate(m_NetState.Sequence,
-        this)); // new MovementAck( m_NetState.Sequence, this ) );
+      m_NetState?.Send(MovementAck.Instantiate(m_NetState.Sequence, this));
 
       SetLocation(newLocation, false);
       SetDirection(d);
@@ -6000,10 +5999,40 @@ namespace Server
 
       if (map == null)
         return;
+
       ProcessDelta();
 
+      if (Body.IsGargoyle)
+      {
+        frameCount = 10;
+
+        if (Flying)
+        {
+          if (action >= 9 && action <= 11)
+            action = 71;
+          else if (action >= 12 && action <= 14)
+            action = 72;
+          else if (action == 20)
+            action = 77;
+          else if (action == 31)
+            action = 71;
+          else if (action == 34)
+            action = 78;
+          else if (action >= 200 && action <= 259)
+            action = 75;
+          else if (action >= 260 && action <= 270) action = 75;
+        }
+        else
+        {
+          if (action >= 200 && action <= 259)
+            action = 17;
+          else if (action >= 260 && action <= 270) action = 16;
+        }
+      }
+
       Packet p = null;
-      // Packet pNew = null;
+      Packet pNew = null;
+      bool canUseNewAnim = forward && !repeat;
 
       var eable = map.GetClientsInRange(m_Location);
 
@@ -6012,52 +6041,15 @@ namespace Server
         {
           state.Mobile.ProcessDelta();
 
-          // if (state.StygianAbyss ) {
-          // if (pNew == null)
-          // pNew = Packet.Acquire( new NewMobileAnimation( this, action, frameCount, delay ) );
-
-          // state.Send( pNew );
-          // } else {
-          if (p == null)
-          {
-            if (Body.IsGargoyle)
-            {
-              frameCount = 10;
-
-              if (Flying)
-              {
-                if (action >= 9 && action <= 11)
-                  action = 71;
-                else if (action >= 12 && action <= 14)
-                  action = 72;
-                else if (action == 20)
-                  action = 77;
-                else if (action == 31)
-                  action = 71;
-                else if (action == 34)
-                  action = 78;
-                else if (action >= 200 && action <= 259)
-                  action = 75;
-                else if (action >= 260 && action <= 270) action = 75;
-              }
-              else
-              {
-                if (action >= 200 && action <= 259)
-                  action = 17;
-                else if (action >= 260 && action <= 270) action = 16;
-              }
-            }
-
-            p = Packet.Acquire(new MobileAnimation(this, action, frameCount, repeatCount, forward, repeat,
-              delay));
-          }
-
-          state.Send(p);
-          // }
+          if (canUseNewAnim && state.StygianAbyss)
+            state.Send(pNew ??= Packet.Acquire(new NewMobileAnimation(this, action, frameCount, delay)));
+          else
+            state.Send(p ??=
+              Packet.Acquire(new MobileAnimation(this, action, frameCount, repeatCount, forward, repeat, delay)));
         }
 
       Packet.Release(p);
-      // Packet.Release( pNew );
+      Packet.Release(pNew);
 
       eable.Free();
     }

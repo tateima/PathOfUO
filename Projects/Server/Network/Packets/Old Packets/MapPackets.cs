@@ -51,4 +51,29 @@ namespace Server.Network
     {
     }
   }
+
+  public sealed class Weather : Packet
+  {
+    public Weather(int type, int density, int temp) : base(0x65, 4)
+    {
+      Stream.Write((byte)type);
+      Stream.Write((byte)density);
+      Stream.Write((byte)temp);
+    }
+  }
+
+  public sealed class ServerChange : Packet
+  {
+    public ServerChange(Mobile m, Map map) : base(0x76, 16)
+    {
+      Stream.Write((short)m.X);
+      Stream.Write((short)m.Y);
+      Stream.Write((short)m.Z);
+      Stream.Write((byte)0);
+      Stream.Write((short)0);
+      Stream.Write((short)0);
+      Stream.Write((short)map.Width);
+      Stream.Write((short)map.Height);
+    }
+  }
 }
