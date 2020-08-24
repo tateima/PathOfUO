@@ -2,7 +2,9 @@ ModernUO [![Discord](https://img.shields.io/discord/458277173208547350?logo=disc
 =====
 
 ##### Ultima Online Server Emulator for the modern era!
-[![.NET Core](https://img.shields.io/badge/.NET-Core%203.1-5C2D91)](https://dotnet.microsoft.com/download/dotnet-core/3.1)
+[![.NET](https://img.shields.io/badge/.NET-%205.0-5C2D91)](https://dotnet.microsoft.com/download/dotnet/5.0)
+[![.NET Core](https://img.shields.io/badge/.NET-Core%203.1.7-5C2D91)](https://dotnet.microsoft.com/download/dotnet-core/3.1)
+<br />
 ![Windows](https://img.shields.io/badge/-server%202019-0078D6?logo=windows)
 ![OSX](https://img.shields.io/badge/-catalina-222222?logo=apple&logoColor=white)
 ![Debian](https://img.shields.io/badge/-buster-A81D33?logo=debian)
@@ -12,37 +14,45 @@ ModernUO [![Discord](https://img.shields.io/discord/458277173208547350?logo=disc
 [![GitHub license](https://img.shields.io/github/license/modernuo/ModernUO?color=blue)](https://github.com/modernuo/ModernUO/blob/master/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/modernuo/ModernUO?logo=github)](https://github.com/modernuo/ModernUO/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/modernuo/ModernUO?logo=github)](https://github.com/modernuo/ModernUO/issues)
-[![Build status](https://img.shields.io/circleci/build/gh/modernuo/ModernUO/master?logo=circleci)](https://circleci.com/gh/modernuo/ModernUO)
+<br />
+[![GitHub build](https://img.shields.io/github/workflow/status/modernuo/ModernUO/Build?logo=github)](https://github.com/modernuo/ModernUO/actions)
+[![AzurePipelines build](https://dev.azure.com/modernuo/modernuo/_apis/build/status/Build?branchName=master)](https://dev.azure.com/modernuo/modernuo/_build/latest?definitionId=1&branchName=master)
 
 ## Goals
 - See [Goals](./GOALS.md)
 
 ## Publishing a build
 #### Requirements
-- [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core/3.1)
+- [.NET Core 3.1.7 SDK](https://dotnet.microsoft.com/download/dotnet-core/3.1)
+<br />or
+- [.NET 5.0 (Preview) SDK](https://dotnet.microsoft.com/download/dotnet/5.0)
 
-#### Publishing
-OSX/Linux
-- `./Tools/publish.sh [linux|osx|win] [Release|Debug (default: Release)]`
-
-Windows
-- `Tools\publish.cmd [linux|osx|win] [Release|Debug (default: Release)]`
+#### Building
+- Using terminal or powershell: `./publish.cmd [os] [framework] [release|debug (default: release)]`
+  - Supported `os`:
+    - `win` for Windows 8/10/2019
+    - `osx` for MacOS
+    - `ubuntu.16.04`, `ubuntu.18.04` `ubuntu.20.04` for Ubuntu LTS
+    - `debian.9`, `debian.10` for Debian
+    - `centos.7`, `centos.8` for CentOS
+    - If blank, will use host operating system
+  - Supported `framework`:
+    - `core` for .NET Core 3.1.7
+    - `net` for .NET 5.0
 
 ## Deploying / Running Server
 - Follow the [publish](https://github.com/modernuo/ModernUO#publishing-a-build) instructions
-- Copy `Distribution` directory to production server
+- Copy `Distribution` directory to the production server
 
 #### Requirements
-- [.NET Core 3.1 Runtime](https://dotnet.microsoft.com/download/dotnet-core/3.1)
-- Optional: compile and install [Intel DRNG](https://github.com/modernuo/libdrng)
+- [.NET Core 3.1.7 Runtime](https://dotnet.microsoft.com/download/dotnet-core/3.1)
+<br />or
+- [.NET 5.0 (Preview) Runtime](https://dotnet.microsoft.com/download/dotnet/5.0)
 
-#### Windows
-- Run `ModernUO.exe` or `dotnet ModernUO.dll`
+#### Running
+- `dotnet ModernUO.dll`
 
-#### OSX and Linux
-- Run `./ModernUO` or `dotnet ./ModernUO.dll`
-
-#### Cleaning Distribution
+#### Cleaning
 - `dotnet clean`
 
 ## Thanks
@@ -52,3 +62,6 @@ Windows
 
 ## Troubleshooting / FAQ
 - See [FAQ](./FAQ.md)
+
+</br></br>
+<p align=center>Development Tools provided with &hearts; by <br><a href="https://www.jetbrains.com/?from=ModernUO"><img src="https://user-images.githubusercontent.com/3953314/86882249-cfb2ea00-c0a4-11ea-9cec-bf3f3bcc6f28.png" width="100px" /></a></p>

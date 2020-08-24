@@ -22,7 +22,8 @@ namespace Server.Misc
        */
 
       // ice island
-      AddWeather(-15, 100, 5, new Rectangle2D(3850, 160, 390, 320), new Rectangle2D(3900, 480, 380, 180), new Rectangle2D(4160, 660, 150, 110));
+            AddWeather(-15, 100, 5, new Rectangle2D(3850, 160, 390, 320), new Rectangle2D(3900, 480, 380, 180),
+                new Rectangle2D(4160, 660, 150, 110));
 
       // covetous entrance, around vesper and minoc
       AddWeather(+15, 50, 5, new Rectangle2D(2425, 725, 250, 250));
@@ -51,7 +52,8 @@ namespace Server.Misc
       return m_WeatherByFacet[facet] = new List<Weather>();
     }
 
-    public static void AddDynamicWeather(int temperature, int chanceOfPercipitation, int chanceOfExtremeTemperature, int moveSpeed, int width, int height, Rectangle2D bounds)
+        public static void AddDynamicWeather(int temperature, int chanceOfPercipitation, int chanceOfExtremeTemperature,
+            int moveSpeed, int width, int height, Rectangle2D bounds)
     {
       for (int i = 0; i < m_Facets.Length; ++i)
       {
@@ -60,7 +62,8 @@ namespace Server.Misc
 
         for (int j = 0; j < 10; ++j)
         {
-          area = new Rectangle2D(bounds.X + Utility.Random(bounds.Width - width), bounds.Y + Utility.Random(bounds.Height - height), width, height);
+                    area = new Rectangle2D(bounds.X + Utility.Random(bounds.Width - width),
+                        bounds.Y + Utility.Random(bounds.Height - height), width, height);
 
           if (!CheckWeatherConflict(m_Facets[i], null, area))
             isValid = true;
@@ -78,10 +81,27 @@ namespace Server.Misc
       }
     }
 
-    public static void AddWeather(int temperature, int chanceOfPercipitation, int chanceOfExtremeTemperature, params Rectangle2D[] area)
+        public static void AddWeather(int temperature, int chanceOfPercipitation, int chanceOfExtremeTemperature,
+            params Rectangle2D[] area)
     {
       for (int i = 0; i < m_Facets.Length; ++i)
-        new Weather(m_Facets[i], area, temperature, chanceOfPercipitation, chanceOfExtremeTemperature, TimeSpan.FromSeconds(30.0));
+                new Weather(m_Facets[i], area, temperature, chanceOfPercipitation, chanceOfExtremeTemperature,
+                    TimeSpan.FromSeconds(30.0));
+        }
+
+        public static bool CheckWeatherConflict(Map facet, Weather exclude, Rectangle2D area)
+        {
+            List<Weather> list = GetWeatherList(facet);
+
+            if (list == null)
+                return false;
+
+            for (int i = 0; i < list.Count; ++i)
+            {
+                Weather w = list[i];
+
+                if (w != exclude && w.IntersectsWith(area))
+                    return true;
     }
 
     public static bool CheckWeatherConflict(Map facet, Weather exclude, Rectangle2D area) =>
@@ -107,7 +127,10 @@ namespace Server.Misc
 
     public int MoveAngleY { get; set; }
 
-    public static bool CheckIntersection(Rectangle2D r1, Rectangle2D r2) => r1.X < r2.X + r2.Width && r2.X < r1.X + r1.Width && r1.Y < r2.Y + r2.Height && r2.Y < r1.Y + r1.Height;
+        public static bool CheckIntersection(Rectangle2D r1, Rectangle2D r2) => r1.X < r2.X + r2.Width &&
+                                                                                r2.X < r1.X + r1.Width &&
+                                                                                r1.Y < r2.Y + r2.Height &&
+                                                                                r2.Y < r1.Y + r1.Height;
 
     public static bool CheckContains(Rectangle2D big, Rectangle2D small) =>
       small.X >= big.X && small.Y >= big.Y && small.X + small.Width <= big.X + big.Width
@@ -115,7 +138,8 @@ namespace Server.Misc
 
     public virtual bool IntersectsWith(Rectangle2D area) => Area.Any(t => CheckIntersection(area, t));
 
-    public Weather(Map facet, Rectangle2D[] area, int temperature, int chanceOfPercipitation, int chanceOfExtremeTemperature, TimeSpan interval)
+        public Weather(Map facet, Rectangle2D[] area, int temperature, int chanceOfPercipitation,
+            int chanceOfExtremeTemperature, TimeSpan interval)
     {
       Facet = facet;
       Area = area;
@@ -127,7 +151,8 @@ namespace Server.Misc
 
       list?.Add(this);
 
-      Timer.DelayCall(TimeSpan.FromSeconds((0.2 + Utility.RandomDouble() * 0.8) * interval.TotalSeconds), interval, OnTick);
+            Timer.DelayCall(TimeSpan.FromSeconds((0.2 + Utility.RandomDouble() * 0.8) * interval.TotalSeconds), interval,
+                OnTick);
     }
 
     public virtual void Reposition()
@@ -143,7 +168,8 @@ namespace Server.Misc
 
       for (int j = 0; j < 10; ++j)
       {
-        area = new Rectangle2D(Bounds.X + Utility.Random(Bounds.Width - width), Bounds.Y + Utility.Random(Bounds.Height - height), width, height);
+                area = new Rectangle2D(Bounds.X + Utility.Random(Bounds.Width - width),
+                    Bounds.Y + Utility.Random(Bounds.Height - height), width, height);
 
         if (!CheckWeatherConflict(Facet, this, area))
           isValid = true;
@@ -180,7 +206,8 @@ namespace Server.Misc
         int yOffset = MoveSpeed * MoveAngleY / 100;
 
         Rectangle2D oldArea = Area[0];
-        Rectangle2D newArea = new Rectangle2D(oldArea.X + xOffset, oldArea.Y + yOffset, oldArea.Width, oldArea.Height);
+                Rectangle2D newArea =
+                    new Rectangle2D(oldArea.X + xOffset, oldArea.Y + yOffset, oldArea.Width, oldArea.Height);
 
         if (!CheckWeatherConflict(Facet, this, newArea) && CheckContains(Bounds, newArea))
         {

@@ -5,609 +5,559 @@ using Server.Mobiles;
 
 namespace Server.Movement
 {
-  public class MovementImpl : IMovementImpl
-  {
-    private const int PersonHeight = 16;
-    private const int StepHeight = 2;
-
-    private const TileFlag ImpassableSurface = TileFlag.Impassable | TileFlag.Surface;
-
-    private readonly List<Mobile>[] m_MobPools = {
-      new List<Mobile>(), new List<Mobile>(),
-      new List<Mobile>()
-    };
-
-    private readonly List<Item>[] m_Pools = {
-      new List<Item>(), new List<Item>(),
-      new List<Item>(), new List<Item>()
-    };
-
-    private readonly List<Sector> m_Sectors = new List<Sector>();
-
-    private MovementImpl()
+    public class MovementImpl : IMovementImpl
     {
-    }
+        private const int PersonHeight = 16;
+        private const int StepHeight = 2;
 
-    public static bool AlwaysIgnoreDoors { get; set; }
+        private const TileFlag ImpassableSurface = TileFlag.Impassable | TileFlag.Surface;
 
-    public static bool IgnoreMovableImpassables { get; set; }
+        private static Point3D m_Goal;
 
-    public static bool IgnoreSpellFields { get; set; }
+        public static bool AlwaysIgnoreDoors { get; set; }
+        public static bool IgnoreMovableImpassables { get; set; }
+        public static bool IgnoreSpellFields { get; set; }
 
-    public static Point3D Goal { get; set; }
-
-    public bool CheckMovement(Mobile m, Map map, Point3D loc, Direction d, out int newZ)
-    {
-      if (map == null || map == Map.Internal)
-      {
-        newZ = 0;
-        return false;
-      }
-
-      int xStart = loc.X;
-      int yStart = loc.Y;
-      int xForward = xStart, yForward = yStart;
-      int xRight = xStart, yRight = yStart;
-      int xLeft = xStart, yLeft = yStart;
-
-      bool checkDiagonals = ((int)d & 0x1) == 0x1;
-
-      Offset(d, ref xForward, ref yForward);
-      Offset((Direction)((int)d - 1 & 0x7), ref xLeft, ref yLeft);
-      Offset((Direction)((int)d + 1 & 0x7), ref xRight, ref yRight);
-
-      if (xForward < 0 || yForward < 0 || xForward >= map.Width || yForward >= map.Height)
-      {
-        newZ = 0;
-        return false;
-      }
-
-      List<Item> itemsStart = m_Pools[0];
-      List<Item> itemsForward = m_Pools[1];
-      List<Item> itemsLeft = m_Pools[2];
-      List<Item> itemsRight = m_Pools[3];
-
-      bool ignoreMovableImpassables = IgnoreMovableImpassables;
-      TileFlag reqFlags = ImpassableSurface;
-
-      if (m.CanSwim)
-        reqFlags |= TileFlag.Wet;
-
-      List<Mobile> mobsForward = m_MobPools[0];
-      List<Mobile> mobsLeft = m_MobPools[1];
-      List<Mobile> mobsRight = m_MobPools[2];
-
-      BaseCreature bc = m as BaseCreature;
-
-      bool checkMobs = bc?.Controlled == false &&
-                       (xForward != Goal.X || yForward != Goal.Y);
-
-      if (checkDiagonals)
-      {
-        Sector sectorStart = map.GetSector(xStart, yStart);
-        Sector sectorForward = map.GetSector(xForward, yForward);
-        Sector sectorLeft = map.GetSector(xLeft, yLeft);
-        Sector sectorRight = map.GetSector(xRight, yRight);
-
-        List<Sector> sectors = m_Sectors;
-
-        sectors.Add(sectorStart);
-
-        if (!sectors.Contains(sectorForward))
-          sectors.Add(sectorForward);
-
-        if (!sectors.Contains(sectorLeft))
-          sectors.Add(sectorLeft);
-
-        if (!sectors.Contains(sectorRight))
-          sectors.Add(sectorRight);
-
-        for (int i = 0; i < sectors.Count; ++i)
+        public static Point3D Goal
         {
-          Sector sector = sectors[i];
+            get => m_Goal;
+            set => m_Goal = value;
+        }
 
-          for (int j = 0; j < sector.Items.Count; ++j)
-          {
-            Item item = sector.Items[j];
+        public static void Configure()
+        {
+            Movement.Impl = new MovementImpl();
+        }
 
-            if (ignoreMovableImpassables && item.Movable && (item.ItemData.Flags & ImpassableSurface) != 0)
-              continue;
+        private MovementImpl()
+        {
+        }
 
-            if ((item.ItemData.Flags & reqFlags) == 0)
-              continue;
-
-            if (!(item is BaseMulti))
+        private bool IsOk(bool ignoreDoors, bool ignoreSpellFields, int ourZ, int ourTop, StaticTile[] tiles,
+            List<Item> items)
+        {
+            for (var i = 0; i < tiles.Length; ++i)
             {
-              if (sector == sectorStart && item.AtWorldPoint(xStart, yStart) &&
-                  item.ItemID <= TileData.MaxItemValue)
-                itemsStart.Add(item);
-              else if (sector == sectorForward && item.AtWorldPoint(xForward, yForward) &&
-                       item.ItemID <= TileData.MaxItemValue)
-                itemsForward.Add(item);
-              else if (sector == sectorLeft && item.AtWorldPoint(xLeft, yLeft) &&
-                       item.ItemID <= TileData.MaxItemValue)
-                itemsLeft.Add(item);
-              else if (sector == sectorRight && item.AtWorldPoint(xRight, yRight) &&
-                       item.ItemID <= TileData.MaxItemValue)
-                itemsRight.Add(item);
-            }
-          }
+                var check = tiles[i];
+                var itemData = TileData.ItemTable[check.ID & TileData.MaxItemValue];
 
-          if (checkMobs)
-            for (int j = 0; j < sector.Mobiles.Count; ++j)
+                if ((itemData.Flags & ImpassableSurface) != 0) // Impassable || Surface
+                {
+                    var checkZ = check.Z;
+                    var checkTop = checkZ + itemData.CalcHeight;
+
+                    if (checkTop > ourZ && ourTop > checkZ) return false;
+                }
+            }
+
+            for (var i = 0; i < items.Count; ++i)
             {
-              Mobile mob = sector.Mobiles[j];
+                var item = items[i];
+                var itemID = item.ItemID & TileData.MaxItemValue;
+                var itemData = TileData.ItemTable[itemID];
+                var flags = itemData.Flags;
 
-              if (sector == sectorForward && mob.X == xForward && mob.Y == yForward)
-                mobsForward.Add(mob);
-              else if (sector == sectorLeft && mob.X == xLeft && mob.Y == yLeft)
-                mobsLeft.Add(mob);
-              else if (sector == sectorRight && mob.X == xRight && mob.Y == yRight)
-                mobsRight.Add(mob);
+                if ((flags & ImpassableSurface) != 0) // Impassable || Surface
+                {
+                    if (ignoreDoors && ((flags & TileFlag.Door) != 0 || itemID == 0x692 || itemID == 0x846 ||
+                                        itemID == 0x873 ||
+                                        itemID >= 0x6F5 && itemID <= 0x6F6))
+                        continue;
+
+                    if (ignoreSpellFields && (itemID == 0x82 || itemID == 0x3946 || itemID == 0x3956)) continue;
+
+                    var checkZ = item.Z;
+                    var checkTop = checkZ + itemData.CalcHeight;
+
+                    if (checkTop > ourZ && ourTop > checkZ) return false;
+                }
             }
+
+            return true;
         }
 
-        if (m_Sectors.Count > 0)
-          m_Sectors.Clear();
-      }
-      else
-      {
-        Sector sectorStart = map.GetSector(xStart, yStart);
-        Sector sectorForward = map.GetSector(xForward, yForward);
+        private List<Item>[] m_Pools = { new List<Item>(), new List<Item>(), new List<Item>(), new List<Item>() };
 
-        if (sectorStart == sectorForward)
+        private List<Mobile>[] m_MobPools = { new List<Mobile>(), new List<Mobile>(), new List<Mobile>() };
+
+        private List<Sector> m_Sectors = new List<Sector>();
+
+        private bool Check(Map map, Mobile m, List<Item> items, List<Mobile> mobiles, int x, int y, int startTop, int startZ,
+            bool canSwim, bool cantWalk, out int newZ)
         {
-          for (int i = 0; i < sectorStart.Items.Count; ++i)
-          {
-            Item item = sectorStart.Items[i];
+            newZ = 0;
 
-            if (ignoreMovableImpassables && item.Movable && (item.ItemData.Flags & ImpassableSurface) != 0)
-              continue;
+            var tiles = map.Tiles.GetStaticTiles(x, y, true);
+            var landTile = map.Tiles.GetLandTile(x, y);
+            var flags = TileData.LandTable[landTile.ID & TileData.MaxLandValue].Flags;
+            var impassable = (flags & TileFlag.Impassable) != 0;
 
-            if ((item.ItemData.Flags & reqFlags) == 0)
-              continue;
+            // Impassable + swim on water is ok, otherwise block if cannot walk or impassable
+            var landBlocks = (cantWalk || impassable) && !(impassable && canSwim && (flags & TileFlag.Wet) != 0);
 
-            if (!(item is BaseMulti))
+            var considerLand = !landTile.Ignored;
+
+            int landZ = 0, landCenter = 0, landTop = 0;
+
+            map.GetAverageZ(x, y, ref landZ, ref landCenter, ref landTop);
+
+            var moveIsOk = false;
+
+            var stepTop = startTop + StepHeight;
+            var checkTop = startZ + PersonHeight;
+
+            var ignoreDoors = AlwaysIgnoreDoors || !m.Alive || m.Body.BodyID == 0x3DB || m.IsDeadBondedPet;
+            var ignoreSpellFields = m is PlayerMobile && map != Map.Felucca;
+
+            for (var i = 0; i < tiles.Length; ++i)
             {
-              if (item.AtWorldPoint(xStart, yStart) &&
-                  item.ItemID <= TileData.MaxItemValue)
-                itemsStart.Add(item);
-              else if (item.AtWorldPoint(xForward, yForward) &&
-                       item.ItemID <= TileData.MaxItemValue)
-                itemsForward.Add(item);
+                var tile = tiles[i];
+                var itemData = TileData.ItemTable[tile.ID & TileData.MaxItemValue];
+                flags = itemData.Flags;
+
+                var notWater = (flags & TileFlag.Wet) == 0;
+
+                // Surface && !Impassable
+                if ((flags & ImpassableSurface) != TileFlag.Surface && (!canSwim || notWater) ||
+                    cantWalk && notWater) continue;
+
+                var itemZ = tile.Z;
+                var itemTop = itemZ;
+                var ourZ = itemZ + itemData.CalcHeight;
+                // int ourTop = ourZ + PersonHeight;
+                var testTop = checkTop;
+
+                if (moveIsOk)
+                {
+                    var cmp = Math.Abs(ourZ - m.Z) - Math.Abs(newZ - m.Z);
+
+                    if (cmp > 0 || cmp == 0 && ourZ > newZ) continue;
+                }
+
+                if (ourZ + PersonHeight > testTop) testTop = ourZ + PersonHeight;
+
+                if (!itemData.Bridge) itemTop += itemData.Height;
+
+                if (stepTop >= itemTop)
+                {
+                    var landCheck = itemZ;
+
+                    if (itemData.Height >= StepHeight)
+                        landCheck += StepHeight;
+                    else
+                        landCheck += itemData.Height;
+
+                    if (considerLand && landCheck < landCenter && landCenter > ourZ && testTop > landZ) continue;
+
+                    if (IsOk(ignoreDoors, ignoreSpellFields, ourZ, testTop, tiles, items))
+                    {
+                        newZ = ourZ;
+                        moveIsOk = true;
+                    }
+                }
             }
-          }
-        }
-        else
-        {
-          for (int i = 0; i < sectorForward.Items.Count; ++i)
-          {
-            Item item = sectorForward.Items[i];
 
-            if (ignoreMovableImpassables && item.Movable && (item.ItemData.Flags & ImpassableSurface) != 0)
-              continue;
+            for (var i = 0; i < items.Count; ++i)
+            {
+                var item = items[i];
+                var itemData = item.ItemData;
+                flags = itemData.Flags;
 
-            if ((item.ItemData.Flags & reqFlags) == 0)
-              continue;
+                var notWater = (flags & TileFlag.Wet) == 0;
 
-            if (item.AtWorldPoint(xForward, yForward) && !(item is BaseMulti) &&
-                item.ItemID <= TileData.MaxItemValue)
-              itemsForward.Add(item);
-          }
+                // Surface && !Impassable && !Movable
+                if (item.Movable ||
+                    (flags & ImpassableSurface) != TileFlag.Surface && (!m.CanSwim || notWater) ||
+                    cantWalk && notWater) continue;
 
-          for (int i = 0; i < sectorStart.Items.Count; ++i)
-          {
-            Item item = sectorStart.Items[i];
+                var itemZ = item.Z;
+                var itemTop = itemZ;
+                var ourZ = itemZ + itemData.CalcHeight;
+                // int ourTop = ourZ + PersonHeight;
+                var testTop = checkTop;
 
-            if (ignoreMovableImpassables && item.Movable && (item.ItemData.Flags & ImpassableSurface) != 0)
-              continue;
+                if (moveIsOk)
+                {
+                    var cmp = Math.Abs(ourZ - m.Z) - Math.Abs(newZ - m.Z);
 
-            if ((item.ItemData.Flags & reqFlags) == 0)
-              continue;
+                    if (cmp > 0 || cmp == 0 && ourZ > newZ) continue;
+                }
 
-            if (item.AtWorldPoint(xStart, yStart) && !(item is BaseMulti) &&
-                item.ItemID <= TileData.MaxItemValue)
-              itemsStart.Add(item);
-          }
-        }
+                if (ourZ + PersonHeight > testTop) testTop = ourZ + PersonHeight;
 
-        if (checkMobs)
-          for (int i = 0; i < sectorForward.Mobiles.Count; ++i)
-          {
-            Mobile mob = sectorForward.Mobiles[i];
+                if (!itemData.Bridge) itemTop += itemData.Height;
 
-            if (mob.X == xForward && mob.Y == yForward)
-              mobsForward.Add(mob);
-          }
-      }
+                if (stepTop >= itemTop)
+                {
+                    var landCheck = itemZ;
 
-      GetStartZ(m, map, loc, itemsStart, out int startZ, out int startTop);
+                    if (itemData.Height >= StepHeight)
+                        landCheck += StepHeight;
+                    else
+                        landCheck += itemData.Height;
 
-      bc?.DebugSay("My Z/Top is {0} {1}", startZ, startTop);
+                    if (considerLand && landCheck < landCenter && landCenter > ourZ && testTop > landZ) continue;
 
-      bool moveIsOk = Check(map, m, itemsForward, mobsForward, xForward, yForward, startTop, startZ, m.CanSwim,
-        m.CantWalk, out newZ);
+                    if (IsOk(ignoreDoors, ignoreSpellFields, ourZ, testTop, tiles, items))
+                    {
+                        newZ = ourZ;
+                        moveIsOk = true;
+                    }
+                }
+            }
 
-      bc?.DebugSay("Can I move? {0} {1}", moveIsOk, newZ);
+            if (considerLand && !landBlocks && stepTop >= landZ)
+            {
+                var ourZ = landCenter;
+                // int ourTop = ourZ + PersonHeight;
+                var testTop = checkTop;
 
-      if (moveIsOk && checkDiagonals)
-      {
-        if (m.Player && m.AccessLevel < AccessLevel.GameMaster)
-        {
-          if (!(Check(map, m, itemsLeft, mobsLeft, xLeft, yLeft, startTop, startZ, m.CanSwim, m.CantWalk,
-                  out _) && Check(map, m, itemsRight, mobsRight, xRight, yRight, startTop, startZ, m.CanSwim,
-                  m.CantWalk, out _)))
-            moveIsOk = false;
-        }
-        else
-        {
-          if (!(Check(map, m, itemsLeft, mobsLeft, xLeft, yLeft, startTop, startZ, m.CanSwim, m.CantWalk,
-                  out _) || Check(map, m, itemsRight, mobsRight, xRight, yRight, startTop, startZ, m.CanSwim,
-                  m.CantWalk, out _)))
-            moveIsOk = false;
-        }
+                if (ourZ + PersonHeight > testTop) testTop = ourZ + PersonHeight;
 
-        bc?.DebugSay("Can I still move? {0} {1}", moveIsOk, newZ);
-      }
+                var shouldCheck = true;
 
-      for (int i = 0; i < (checkDiagonals ? 4 : 2); ++i)
-        if (m_Pools[i].Count != 0)
-          m_Pools[i].Clear();
+                if (moveIsOk)
+                {
+                    var cmp = Math.Abs(ourZ - m.Z) - Math.Abs(newZ - m.Z);
 
-      for (int i = 0; i < (checkDiagonals ? 3 : 1); ++i)
-        if (m_MobPools[i].Count != 0)
-          m_MobPools[i].Clear();
+                    if (cmp > 0 || cmp == 0 && ourZ > newZ) shouldCheck = false;
+                }
 
-      if (!moveIsOk)
-        newZ = startZ;
+                if (shouldCheck && IsOk(ignoreDoors, ignoreSpellFields, ourZ, testTop, tiles, items))
+                {
+                    newZ = ourZ;
+                    moveIsOk = true;
+                }
+            }
 
-      return moveIsOk;
-    }
+            if (moveIsOk)
+                for (var i = 0; moveIsOk && i < mobiles.Count; ++i)
+                {
+                    var mob = mobiles[i];
 
-    public bool CheckMovement(Mobile m, Direction d, out int newZ) => CheckMovement(m, m.Map, m.Location, d, out newZ);
+                    if (mob != m && mob.Z + 15 > newZ && newZ + 15 > mob.Z && !CanMoveOver(m, mob)) moveIsOk = false;
+                }
 
-    public static void Configure()
-    {
-      Movement.Impl = new MovementImpl();
-    }
-
-    private bool IsOk(bool ignoreDoors, bool ignoreSpellFields, int ourZ, int ourTop, StaticTile[] tiles,
-      List<Item> items)
-    {
-      for (int i = 0; i < tiles.Length; ++i)
-      {
-        StaticTile check = tiles[i];
-        ItemData itemData = TileData.ItemTable[check.ID & TileData.MaxItemValue];
-
-        if ((itemData.Flags & ImpassableSurface) != 0) // Impassable || Surface
-        {
-          int checkZ = check.Z;
-          int checkTop = checkZ + itemData.CalcHeight;
-
-          if (checkTop > ourZ && ourTop > checkZ)
-            return false;
-        }
-      }
-
-      for (int i = 0; i < items.Count; ++i)
-      {
-        Item item = items[i];
-        int itemID = item.ItemID & TileData.MaxItemValue;
-        ItemData itemData = TileData.ItemTable[itemID];
-        TileFlag flags = itemData.Flags;
-
-        if ((flags & ImpassableSurface) != 0) // Impassable || Surface
-        {
-          if (ignoreDoors && ((flags & TileFlag.Door) != 0 || itemID == 0x692 || itemID == 0x846 ||
-                              itemID == 0x873 || (itemID >= 0x6F5 && itemID <= 0x6F6)))
-            continue;
-
-          if (ignoreSpellFields && (itemID == 0x82 || itemID == 0x3946 || itemID == 0x3956))
-            continue;
-
-          int checkZ = item.Z;
-          int checkTop = checkZ + itemData.CalcHeight;
-
-          if (checkTop > ourZ && ourTop > checkZ)
-            return false;
-        }
-      }
-
-      return true;
-    }
-
-    private bool Check(Map map, Mobile m, List<Item> items, List<Mobile> mobiles, int x, int y, int startTop, int startZ,
-      bool canSwim, bool cantWalk, out int newZ)
-    {
-      newZ = 0;
-
-      StaticTile[] tiles = map.Tiles.GetStaticTiles(x, y, true);
-      LandTile landTile = map.Tiles.GetLandTile(x, y);
-
-      bool landBlocks = (TileData.LandTable[landTile.ID & TileData.MaxLandValue].Flags & TileFlag.Impassable) != 0;
-      bool considerLand = !landTile.Ignored;
-
-      if (landBlocks && canSwim && (TileData.LandTable[landTile.ID & TileData.MaxLandValue].Flags & TileFlag.Wet) != 0) // Impassable, Can Swim, and Is water.  Don't block it.
-        landBlocks = false;
-      else if (cantWalk && (TileData.LandTable[landTile.ID & TileData.MaxLandValue].Flags & TileFlag.Wet) == 0) // Can't walk and it's not water
-        landBlocks = true;
-
-      int landZ = 0, landCenter = 0, landTop = 0;
-
-      map.GetAverageZ(x, y, ref landZ, ref landCenter, ref landTop);
-
-      bool moveIsOk = false;
-
-      int stepTop = startTop + StepHeight;
-      int checkTop = startZ + PersonHeight;
-
-      bool ignoreDoors = AlwaysIgnoreDoors || !m.Alive || m.Body.BodyID == 0x3DB || m.IsDeadBondedPet;
-      bool ignoreSpellFields = m is PlayerMobile && map != Map.Felucca;
-
-      for (int i = 0; i < tiles.Length; ++i)
-      {
-        StaticTile tile = tiles[i];
-        ItemData itemData = TileData.ItemTable[tile.ID & TileData.MaxItemValue];
-        TileFlag flags = itemData.Flags;
-
-        // Surface && !Impassable
-        if ((flags & ImpassableSurface) != TileFlag.Surface && (!canSwim || (flags & TileFlag.Wet) == 0))
-          continue;
-
-        if (cantWalk && (flags & TileFlag.Wet) == 0)
-          continue;
-
-        int itemZ = tile.Z;
-        int itemTop = itemZ;
-        int ourZ = itemZ + itemData.CalcHeight;
-        int testTop = checkTop;
-
-        if (moveIsOk)
-        {
-          int cmp = Math.Abs(ourZ - m.Z) - Math.Abs(newZ - m.Z);
-
-          if (cmp > 0 || (cmp == 0 && ourZ > newZ))
-            continue;
+            return moveIsOk;
         }
 
-        if (ourZ + PersonHeight > testTop)
-          testTop = ourZ + PersonHeight;
+        private bool CanMoveOver(Mobile m, Mobile t) =>
+            !t.Alive || !m.Alive || t.IsDeadBondedPet || m.IsDeadBondedPet || t.Hidden && t.AccessLevel > AccessLevel.Player;
 
-        if (!itemData.Bridge)
-          itemTop += itemData.Height;
-
-        if (stepTop < itemTop)
-          continue;
-
-        int landCheck = itemZ;
-
-        if (itemData.Height >= StepHeight)
-          landCheck += StepHeight;
-        else
-          landCheck += itemData.Height;
-
-        if (considerLand && landCheck < landCenter && landCenter > ourZ && testTop > landZ)
-          continue;
-
-        if (IsOk(ignoreDoors, ignoreSpellFields, ourZ, testTop, tiles, items))
+        public bool CheckMovement(Mobile m, Map map, Point3D loc, Direction d, out int newZ)
         {
-          newZ = ourZ;
-          moveIsOk = true;
-        }
-      }
+            if (map == null || map == Map.Internal)
+            {
+                newZ = 0;
+                return false;
+            }
 
-      for (int i = 0; i < items.Count; ++i)
-      {
-        Item item = items[i];
-        ItemData itemData = item.ItemData;
-        TileFlag flags = itemData.Flags;
+            var xStart = loc.X;
+            var yStart = loc.Y;
+            int xForward = xStart, yForward = yStart;
+            int xRight = xStart, yRight = yStart;
+            int xLeft = xStart, yLeft = yStart;
 
-        if (!item.Movable && ((flags & ImpassableSurface) == TileFlag.Surface ||
-                              (m.CanSwim && (flags & TileFlag.Wet) != 0))) // Surface && !Impassable && !Movable
-        {
-          if (cantWalk && (flags & TileFlag.Wet) == 0)
-            continue;
+            var checkDiagonals = ((int)d & 0x1) == 0x1;
 
-          int itemZ = item.Z;
-          int itemTop = itemZ;
-          int ourZ = itemZ + itemData.CalcHeight;
-          int testTop = checkTop;
+            Offset(d, ref xForward, ref yForward);
+            Offset((Direction)(((int)d - 1) & 0x7), ref xLeft, ref yLeft);
+            Offset((Direction)(((int)d + 1) & 0x7), ref xRight, ref yRight);
 
-          if (moveIsOk)
-          {
-            int cmp = Math.Abs(ourZ - m.Z) - Math.Abs(newZ - m.Z);
+            if (xForward < 0 || yForward < 0 || xForward >= map.Width || yForward >= map.Height)
+            {
+                newZ = 0;
+                return false;
+            }
 
-            if (cmp > 0 || (cmp == 0 && ourZ > newZ))
-              continue;
-          }
+            var itemsStart = m_Pools[0];
+            var itemsForward = m_Pools[1];
+            var itemsLeft = m_Pools[2];
+            var itemsRight = m_Pools[3];
 
-          if (ourZ + PersonHeight > testTop)
-            testTop = ourZ + PersonHeight;
+            var ignoreMovableImpassables = IgnoreMovableImpassables;
+            var reqFlags = ImpassableSurface;
 
-          if (!itemData.Bridge)
-            itemTop += itemData.Height;
+            if (m.CanSwim) reqFlags |= TileFlag.Wet;
 
-          if (stepTop >= itemTop)
-          {
-            int landCheck = itemZ;
+            var mobsForward = m_MobPools[0];
+            var mobsLeft = m_MobPools[1];
+            var mobsRight = m_MobPools[2];
 
-            if (itemData.Height >= StepHeight)
-              landCheck += StepHeight;
+            var checkMobs = (m as BaseCreature)?.Controlled == false && (xForward != m_Goal.X || yForward != m_Goal.Y);
+
+            if (checkDiagonals)
+            {
+                var sectorStart = map.GetSector(xStart, yStart);
+                var sectorForward = map.GetSector(xForward, yForward);
+                var sectorLeft = map.GetSector(xLeft, yLeft);
+                var sectorRight = map.GetSector(xRight, yRight);
+
+                var sectors = m_Sectors;
+
+                sectors.Add(sectorStart);
+
+                if (!sectors.Contains(sectorForward)) sectors.Add(sectorForward);
+                if (!sectors.Contains(sectorLeft)) sectors.Add(sectorLeft);
+                if (!sectors.Contains(sectorRight)) sectors.Add(sectorRight);
+
+                for (var i = 0; i < sectors.Count; ++i)
+                {
+                    var sector = sectors[i];
+
+                    for (var j = 0; j < sector.Items.Count; ++j)
+                    {
+                        var item = sector.Items[j];
+
+                        if (ignoreMovableImpassables && item.Movable &&
+                            (item.ItemData.Flags & ImpassableSurface) != 0) continue;
+
+                        if ((item.ItemData.Flags & reqFlags) == 0) continue;
+
+                        if (item is BaseMulti || item.ItemID > TileData.MaxItemValue) continue;
+
+                        if (sector == sectorStart && item.AtWorldPoint(xStart, yStart))
+                            itemsStart.Add(item);
+                        else if (sector == sectorForward && item.AtWorldPoint(xForward, yForward))
+                            itemsForward.Add(item);
+                        else if (sector == sectorLeft && item.AtWorldPoint(xLeft, yLeft))
+                            itemsLeft.Add(item);
+                        else if (sector == sectorRight && item.AtWorldPoint(xRight, yRight))
+                            itemsRight.Add(item);
+                    }
+
+                    if (checkMobs)
+                        for (var j = 0; j < sector.Mobiles.Count; ++j)
+                        {
+                            var mob = sector.Mobiles[j];
+
+                            if (sector == sectorForward && mob.X == xForward && mob.Y == yForward)
+                                mobsForward.Add(mob);
+                            else if (sector == sectorLeft && mob.X == xLeft && mob.Y == yLeft)
+                                mobsLeft.Add(mob);
+                            else if (sector == sectorRight && mob.X == xRight && mob.Y == yRight) mobsRight.Add(mob);
+                        }
+                }
+
+                if (m_Sectors.Count > 0) m_Sectors.Clear();
+            }
             else
-              landCheck += itemData.Height;
-
-            if (considerLand && landCheck < landCenter && landCenter > ourZ && testTop > landZ)
-              continue;
-
-            if (IsOk(ignoreDoors, ignoreSpellFields, ourZ, testTop, tiles, items))
             {
-              newZ = ourZ;
-              moveIsOk = true;
+                var sectorStart = map.GetSector(xStart, yStart);
+                var sectorForward = map.GetSector(xForward, yForward);
+
+                if (sectorStart == sectorForward)
+                {
+                    for (var i = 0; i < sectorStart.Items.Count; ++i)
+                    {
+                        var item = sectorStart.Items[i];
+
+                        if (ignoreMovableImpassables && item.Movable &&
+                            (item.ItemData.Flags & ImpassableSurface) != 0) continue;
+
+                        if ((item.ItemData.Flags & reqFlags) == 0) continue;
+
+                        if (item is BaseMulti || item.ItemID > TileData.MaxItemValue) continue;
+
+                        if (item.AtWorldPoint(xStart, yStart))
+                            itemsStart.Add(item);
+                        else if (item.AtWorldPoint(xForward, yForward))
+                            itemsForward.Add(item);
+                    }
+                }
+                else
+                {
+                    for (var i = 0; i < sectorForward.Items.Count; ++i)
+                    {
+                        var item = sectorForward.Items[i];
+
+                        if (ignoreMovableImpassables && item.Movable &&
+                            (item.ItemData.Flags & ImpassableSurface) != 0) continue;
+
+                        if ((item.ItemData.Flags & reqFlags) == 0) continue;
+
+                        if (item.AtWorldPoint(xForward, yForward) && !(item is BaseMulti) &&
+                            item.ItemID <= TileData.MaxItemValue)
+                            itemsForward.Add(item);
+                    }
+
+                    for (var i = 0; i < sectorStart.Items.Count; ++i)
+                    {
+                        var item = sectorStart.Items[i];
+
+                        if (ignoreMovableImpassables && item.Movable &&
+                            (item.ItemData.Flags & ImpassableSurface) != 0) continue;
+
+                        if ((item.ItemData.Flags & reqFlags) == 0) continue;
+
+                        if (item.AtWorldPoint(xStart, yStart) && !(item is BaseMulti) &&
+                            item.ItemID <= TileData.MaxItemValue)
+                            itemsStart.Add(item);
+                    }
+                }
+
+                if (checkMobs)
+                    for (var i = 0; i < sectorForward.Mobiles.Count; ++i)
+                    {
+                        var mob = sectorForward.Mobiles[i];
+
+                        if (mob.X == xForward && mob.Y == yForward) mobsForward.Add(mob);
+                    }
             }
-          }
+
+            GetStartZ(m, map, loc, itemsStart, out var startZ, out var startTop);
+
+            var moveIsOk = Check(map, m, itemsForward, mobsForward, xForward, yForward, startTop, startZ, m.CanSwim,
+                m.CantWalk,
+                out newZ);
+
+            if (moveIsOk && checkDiagonals)
+            {
+                if (m.Player && m.AccessLevel < AccessLevel.GameMaster)
+                {
+                    if (!Check(map, m, itemsLeft, mobsLeft, xLeft, yLeft, startTop, startZ, m.CanSwim, m.CantWalk, out _) ||
+                        !Check(map, m, itemsRight, mobsRight, xRight, yRight, startTop, startZ, m.CanSwim, m.CantWalk,
+                            out _))
+                        moveIsOk = false;
+                }
+                else
+                {
+                    if (!Check(map, m, itemsLeft, mobsLeft, xLeft, yLeft, startTop, startZ, m.CanSwim, m.CantWalk, out _) &&
+                        !Check(map, m, itemsRight, mobsRight, xRight, yRight, startTop, startZ, m.CanSwim, m.CantWalk,
+                            out _))
+                        moveIsOk = false;
+                }
+            }
+
+            for (int i = 0, c = checkDiagonals ? 4 : 2; i < c; ++i)
+                m_Pools[i].Clear();
+
+            for (int i = 0, c = checkDiagonals ? 3 : 1; i < c; ++i)
+                m_MobPools[i].Clear();
+
+            if (!moveIsOk) newZ = startZ;
+
+            return moveIsOk;
         }
-      }
 
-      if (considerLand && !landBlocks && stepTop >= landZ)
-      {
-        int ourZ = landCenter;
-        int testTop = checkTop;
+        public bool CheckMovement(Mobile m, Direction d, out int newZ) => CheckMovement(m, m.Map, m.Location, d, out newZ);
 
-        if (ourZ + PersonHeight > testTop)
-          testTop = ourZ + PersonHeight;
-
-        bool shouldCheck = true;
-
-        if (moveIsOk)
+        private void GetStartZ(Mobile m, Map map, Point3D loc, List<Item> itemList, out int zLow, out int zTop)
         {
-          int cmp = Math.Abs(ourZ - m.Z) - Math.Abs(newZ - m.Z);
+            int xCheck = loc.X, yCheck = loc.Y;
 
-          if (cmp > 0 || (cmp == 0 && ourZ > newZ))
-            shouldCheck = false;
+            var landTile = map.Tiles.GetLandTile(xCheck, yCheck);
+            int landZ = 0, landCenter = 0, landTop = 0;
+            var flags = TileData.LandTable[landTile.ID & TileData.MaxLandValue].Flags;
+            var impassable = (flags & TileFlag.Impassable) != 0;
+
+            // Impassable + swim on water is ok, otherwise block if cannot walk or impassable
+            var landBlocks = (m.CantWalk || impassable) && !(impassable && m.CanSwim && (flags & TileFlag.Wet) != 0);
+
+            map.GetAverageZ(xCheck, yCheck, ref landZ, ref landCenter, ref landTop);
+
+            var considerLand = !landTile.Ignored;
+
+            var zCenter = zLow = zTop = 0;
+            var isSet = false;
+
+            if (considerLand && !landBlocks && loc.Z >= landCenter)
+            {
+                zLow = landZ;
+                zCenter = landCenter;
+
+                zTop = landTop;
+
+                isSet = true;
+            }
+
+            var staticTiles = map.Tiles.GetStaticTiles(xCheck, yCheck, true);
+
+            for (var i = 0; i < staticTiles.Length; ++i)
+            {
+                var tile = staticTiles[i];
+                var id = TileData.ItemTable[tile.ID & TileData.MaxItemValue];
+
+                var calcTop = tile.Z + id.CalcHeight;
+
+                if ((!isSet || calcTop >= zCenter) &&
+                    ((id.Flags & TileFlag.Surface) != 0 || m.CanSwim && (id.Flags & TileFlag.Wet) != 0) && loc.Z >= calcTop)
+                {
+                    if (m.CantWalk && (id.Flags & TileFlag.Wet) == 0) continue;
+
+                    zLow = tile.Z;
+                    zCenter = calcTop;
+
+                    var top = tile.Z + id.Height;
+
+                    if (!isSet || top > zTop) zTop = top;
+
+                    isSet = true;
+                }
+            }
+
+            for (var i = 0; i < itemList.Count; ++i)
+            {
+                var item = itemList[i];
+
+                var id = item.ItemData;
+
+                var calcTop = item.Z + id.CalcHeight;
+
+                if ((!isSet || calcTop >= zCenter) &&
+                    ((id.Flags & TileFlag.Surface) != 0 || m.CanSwim && (id.Flags & TileFlag.Wet) != 0) && loc.Z >= calcTop)
+                {
+                    if (m.CantWalk && (id.Flags & TileFlag.Wet) == 0) continue;
+
+                    zLow = item.Z;
+                    zCenter = calcTop;
+
+                    var top = item.Z + id.Height;
+
+                    if (!isSet || top > zTop) zTop = top;
+
+                    isSet = true;
+                }
+            }
+
+            if (!isSet)
+                zLow = zTop = loc.Z;
+            else if (loc.Z > zTop) zTop = loc.Z;
         }
 
-        if (shouldCheck && IsOk(ignoreDoors, ignoreSpellFields, ourZ, testTop, tiles, items))
+        public void Offset(Direction d, ref int x, ref int y)
         {
-          newZ = ourZ;
-          moveIsOk = true;
+            switch (d & Direction.Mask)
+            {
+                case Direction.North:
+                    --y;
+                    break;
+                case Direction.South:
+                    ++y;
+                    break;
+                case Direction.West:
+                    --x;
+                    break;
+                case Direction.East:
+                    ++x;
+                    break;
+                case Direction.Right:
+                    ++x;
+                    --y;
+                    break;
+                case Direction.Left:
+                    --x;
+                    ++y;
+                    break;
+                case Direction.Down:
+                    ++x;
+                    ++y;
+                    break;
+                case Direction.Up:
+                    --x;
+                    --y;
+                    break;
+            }
         }
-      }
-
-      for (int i = 0; moveIsOk && i < mobiles.Count; ++i)
-      {
-        Mobile mob = mobiles[i];
-
-        if (mob != m && mob.Z + 15 > newZ && newZ + 15 > mob.Z && !CanMoveOver(m, mob))
-          moveIsOk = false;
-      }
-
-      return moveIsOk;
     }
-
-    private bool CanMoveOver(Mobile m, Mobile t) =>
-      !t.Alive || !m.Alive || t.IsDeadBondedPet || m.IsDeadBondedPet ||
-      (t.Hidden && t.AccessLevel > AccessLevel.Player);
-
-    private void GetStartZ(Mobile m, Map map, Point3D loc, List<Item> itemList, out int zLow, out int zTop)
-    {
-      int xCheck = loc.X, yCheck = loc.Y;
-
-      LandTile landTile = map.Tiles.GetLandTile(xCheck, yCheck);
-      int landZ = 0, landCenter = 0, landTop = 0;
-      bool landBlocks = (TileData.LandTable[landTile.ID & TileData.MaxLandValue].Flags & TileFlag.Impassable) != 0;
-
-      if (landBlocks && m.CanSwim &&
-          (TileData.LandTable[landTile.ID & TileData.MaxLandValue].Flags & TileFlag.Wet) != 0)
-        landBlocks = false;
-      else if (m.CantWalk && (TileData.LandTable[landTile.ID & TileData.MaxLandValue].Flags & TileFlag.Wet) == 0)
-        landBlocks = true;
-
-      map.GetAverageZ(xCheck, yCheck, ref landZ, ref landCenter, ref landTop);
-
-      bool considerLand = !landTile.Ignored;
-
-      int zCenter = zLow = zTop = 0;
-      bool isSet = false;
-
-      if (considerLand && !landBlocks && loc.Z >= landCenter)
-      {
-        zLow = landZ;
-        zCenter = landCenter;
-
-        if (landTop > zTop)
-          zTop = landTop;
-
-        isSet = true;
-      }
-
-      StaticTile[] staticTiles = map.Tiles.GetStaticTiles(xCheck, yCheck, true);
-
-      for (int i = 0; i < staticTiles.Length; ++i)
-      {
-        StaticTile tile = staticTiles[i];
-        ItemData id = TileData.ItemTable[tile.ID & TileData.MaxItemValue];
-
-        int calcTop = tile.Z + id.CalcHeight;
-
-        if ((!isSet || calcTop >= zCenter) &&
-            ((id.Flags & TileFlag.Surface) != 0 || (m.CanSwim && (id.Flags & TileFlag.Wet) != 0)) && loc.Z >= calcTop)
-        {
-          if (m.CantWalk && (id.Flags & TileFlag.Wet) == 0)
-            continue;
-
-          zLow = tile.Z;
-          zCenter = calcTop;
-          zTop = tile.Z + id.Height;
-
-          isSet = true;
-        }
-      }
-
-      for (int i = 0; i < itemList.Count; ++i)
-      {
-        Item item = itemList[i];
-
-        ItemData id = item.ItemData;
-
-        int calcTop = item.Z + id.CalcHeight;
-
-        if ((!isSet || calcTop >= zCenter) &&
-            ((id.Flags & TileFlag.Surface) != 0 || (m.CanSwim && (id.Flags & TileFlag.Wet) != 0)) && loc.Z >= calcTop)
-        {
-          if (m.CantWalk && (id.Flags & TileFlag.Wet) == 0)
-            continue;
-
-          zLow = item.Z;
-          zCenter = calcTop;
-
-          int top = item.Z + id.Height;
-
-          if (!isSet || top > zTop)
-            zTop = top;
-
-          isSet = true;
-        }
-      }
-
-      if (!isSet)
-        zLow = zTop = loc.Z;
-      else if (loc.Z > zTop)
-        zTop = loc.Z;
-    }
-
-    public void Offset(Direction d, ref int x, ref int y)
-    {
-      switch (d & Direction.Mask)
-      {
-        case Direction.North:
-          --y;
-          break;
-        case Direction.South:
-          ++y;
-          break;
-        case Direction.West:
-          --x;
-          break;
-        case Direction.East:
-          ++x;
-          break;
-        case Direction.Right:
-          ++x;
-          --y;
-          break;
-        case Direction.Left:
-          --x;
-          ++y;
-          break;
-        case Direction.Down:
-          ++x;
-          ++y;
-          break;
-        case Direction.Up:
-          --x;
-          --y;
-          break;
-      }
-    }
-  }
 }
