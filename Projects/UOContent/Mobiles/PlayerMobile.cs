@@ -40,6 +40,69 @@ using RankDefinition = Server.Guilds.RankDefinition;
 
 namespace Server.Mobiles
 {
+    public enum Level
+    {
+        One = 0,
+        Two = 1000,
+        Three = 3000,
+        Four = 6000,
+        Five = 10000,
+        Six = 15000,
+        Seven = 21000,
+        Eight = 28000,
+        Nine = 36000,
+        Ten = 45000,
+        Eleven = 55000,
+        Twelve = 66000,
+        Thirteen = 78000,
+        Fourteen = 91000,
+        Fifteen = 105000,
+        Sixteen = 120000,
+        Seventeen = 136000,
+        Eighteen = 153000,
+        Nineteen = 171000,
+        Twenty = 190000,
+        TwentyOne = 210000,
+        TwentyTwo = 231000,
+        TwentyThree = 253000,
+        TwentyFour = 276000,
+        TwentyFive = 300000,
+        TwentySix = 325000,
+        TwentySeven = 351000,
+        TwentyEight = 378000,
+        TwentyNine = 406000,
+        Thirty = 435000,
+        ThirtyOne = 465000,
+        ThirtyTwo = 496000,
+        ThirtyThree = 528000,
+        ThirtyFour = 561000,
+        ThirtyFive = 595000,
+        ThirtySix = 630000,
+        ThirtySeven = 666000,
+        ThirtyEight = 703000,
+        ThirtyNine = 741000,
+        Fourty = 780000,
+        FourtyOne = 820000,
+        FourtyTwo = 861000,
+        FourtyThree = 903000,
+        FourtyFour = 946000,
+        FourtyFive = 990000,
+        FourtySix = 1035000,
+        FourtySeven = 1081000,
+        FourtyEight = 1128000,
+        FourtyNine = 1176000,
+        Fifty = 1225000,
+        FiftyOne = 1275000,
+        FiftyTwo = 1326000,
+        FiftyThree = 1378000,
+        FiftyFour = 1431000,
+        FiftyFive = 1485000,
+        FiftySix = 1540000,
+        FiftySeven = 1596000,
+        FiftyEight = 1653000,
+        FiftyNine = 1711000,
+        Sixty = 1770000
+    }
     [Flags]
     public enum PlayerFlag // First 16 bits are reserved for default-distro use, start custom flags at 0x00010000
     {
@@ -175,6 +238,12 @@ namespace Server.Mobiles
 
         private bool m_LastProtectedMessage;
 
+        private int m_Experience;
+        private int m_SkillPoints;
+        private int m_StatPoints;
+        private string m_Level;
+        private bool m_HardCore;
+
         private DateTime m_LastYoungHeal = DateTime.MinValue;
 
         private DateTime m_LastYoungMessage = DateTime.MinValue;
@@ -203,6 +272,11 @@ namespace Server.Mobiles
 
         public PlayerMobile()
         {
+            m_Experience = 0;
+            m_SkillPoints = 0;
+            m_StatPoints = 0;
+            m_HardCore = false;
+            m_Level = "One";
             AutoStabled = new List<Mobile>();
 
             VisibilityList = new List<Mobile>();
@@ -226,6 +300,93 @@ namespace Server.Mobiles
         {
             VisibilityList = new List<Mobile>();
             m_AntiMacroTable = new Dictionary<Skill, Dictionary<object, CountAndTimeStamp>>();
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int StatPoints
+        {
+            get
+            {
+                return m_StatPoints;
+            }
+            set
+            {
+                m_StatPoints = value;
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int SkillPoints
+        {
+            get
+            {
+                return m_SkillPoints;
+            }
+            set
+            {
+                m_SkillPoints = value;
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int Experience
+        {
+            get
+            {
+                return m_Experience;
+            }
+            set
+            {
+                m_Experience = value;
+                InvalidateProperties();
+            }
+        }
+
+        private Level EntitledLevel()
+        {
+            return Enum.GetValues(typeof(Level)).Cast<Level>().Where(level => Experience >= (int)level).Max();
+        }
+        public void CheckExperience()
+        {
+            Level entitledLevel = EntitledLevel();
+            string newLevel = Enum.GetName(typeof(Level), entitledLevel);
+            if (newLevel != m_Level)
+            {
+                m_Level = newLevel;
+                m_SkillPoints += 15;
+                m_StatPoints += 5;
+                this.SendMessage("You have gained a level!");
+                this.FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
+                this.PlaySound(0x202);
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool HardCore
+        {
+            get
+            {
+                return m_HardCore;
+            }
+            set
+            {
+                m_HardCore = value;
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public string Level
+        {
+            get
+            {
+                return m_Level;
+            }
+            set
+            {
+                m_Level = value;
+                InvalidateProperties();
+            }
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
@@ -1899,7 +2060,7 @@ namespace Server.Mobiles
             if (from == this)
             {
                 Quest?.GetContextMenuEntries(list);
-
+                list.Add(new CharacterSheetMenuEntry(this));
                 if (Alive)
                 {
                     if (InsuranceEnabled)
@@ -2008,7 +2169,6 @@ namespace Server.Mobiles
                         }
                     }
                 }
-
                 var curhouse = BaseHouse.FindHouseAt(this);
 
                 if (curhouse != null && Alive && Core.Expansion >= Expansion.AOS && curhouse.IsAosRules &&
@@ -2970,6 +3130,13 @@ namespace Server.Mobiles
 
             switch (version)
             {
+                case 30:
+                    m_StatPoints = reader.ReadInt();
+                    m_SkillPoints = reader.ReadInt();
+                    m_Experience = reader.ReadInt();
+                    m_HardCore = reader.ReadBool();
+                    m_Level = reader.ReadString();
+                    goto case 29;
                 case 29:
                     {
                         if (reader.ReadBool())
@@ -3295,7 +3462,12 @@ namespace Server.Mobiles
 
             base.Serialize(writer);
 
-            writer.Write(29); // version
+            writer.Write(30); // version
+            writer.Write((int)m_StatPoints);
+            writer.Write((int)m_SkillPoints);
+            writer.Write((int)m_Experience);
+            writer.Write((bool)m_HardCore);
+            writer.Write(m_Level);
 
             if (m_StuckMenuUses != null)
             {

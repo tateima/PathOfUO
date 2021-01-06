@@ -237,17 +237,18 @@ namespace Server.Misc
 
         private static bool AllowGain(Mobile from, Skill skill, object obj)
         {
-            if (Core.AOS && Faction.InSkillLoss(from)) // Changed some time between the introduction of AoS and SE.
-            {
-                return false;
-            }
+            return false; // level based
+          //  if (Core.AOS && Faction.InSkillLoss(from)) // Changed some time between the introduction of AoS and SE.
+           // {
+          //      return false;
+          //  }
 
-            if (AntiMacroCode && from is PlayerMobile mobile && UseAntiMacro[skill.Info.SkillID])
-            {
-                return mobile.AntiMacroCheck(skill, obj);
-            }
+           // if (AntiMacroCode && from is PlayerMobile mobile && UseAntiMacro[skill.Info.SkillID])
+          //  {
+           //     return mobile.AntiMacroCheck(skill, obj);
+           // }
 
-            return true;
+           // return true;
         }
 
         public static void Gain(Mobile from, Skill skill)
@@ -427,7 +428,8 @@ namespace Server.Misc
 
         public static void GainStat(Mobile from, Stat stat)
         {
-            switch (stat)
+            return; // do not trigger stat gain, level based
+           /* switch (stat)
             {
                 case Stat.Str:
                     {
@@ -484,7 +486,7 @@ namespace Server.Misc
 
             var atrophy = from.RawStatTotal / (double)from.StatCap >= Utility.RandomDouble();
 
-            IncreaseStat(from, stat, atrophy);
+            IncreaseStat(from, stat, atrophy);*/
         }
     }
 }

@@ -253,7 +253,7 @@ namespace Server.Items
 
         public static int GetPoisonLevel(BaseCreature bc) => (bc?.HitPoison?.Level ?? -1) + 1;
 
-        public static double GetBaseDifficulty(Mobile targ)
+        public static double GetBaseDifficulty(Mobile targ, bool cap)
         {
             /* Difficulty TODO: Add another 100 points for each of the following abilities:
               - Radiation or Aura Damage (Heat, Cold etc.)
@@ -300,7 +300,7 @@ namespace Server.Items
                 val += 40.0;
             }
 
-            if (Core.SE && val > 160.0)
+            if (Core.SE && val > 160.0 && cap)
             {
                 val = 160.0;
             }
@@ -310,7 +310,7 @@ namespace Server.Items
 
         public double GetDifficultyFor(Mobile targ)
         {
-            var val = GetBaseDifficulty(targ);
+            var val = GetBaseDifficulty(targ, true);
 
             if (m_Quality == InstrumentQuality.Exceptional)
             {

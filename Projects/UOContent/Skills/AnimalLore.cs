@@ -133,7 +133,7 @@ namespace Server.SkillHandlers
 
                 if (Core.SE)
                 {
-                    var bd = BaseInstrument.GetBaseDifficulty(c);
+                    var bd = BaseInstrument.GetBaseDifficulty(c, true);
                     if (c.Uncalmable)
                     {
                         bd = 0;

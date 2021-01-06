@@ -271,6 +271,9 @@ namespace Server.Mobiles
         private Mobile m_ControlMaster;   // My master
         private OrderType m_ControlOrder; // My order
 
+        private int m_ExperienceValue; // how much a creature is worth
+        private int m_MaxLevel; // the maximum level a player can be to get experience from creature
+
         private AIType m_CurrentAI; // The current AI
 
         private double m_CurrentSpeed; // The current speed, lets say it could be changed by something;
@@ -454,6 +457,20 @@ namespace Server.Mobiles
         public virtual int FactionSilverWorth => 30;
 
         public virtual double WeaponAbilityChance => 0.4;
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int ExperienceValue
+        {
+            get { return m_ExperienceValue; }
+            set { m_ExperienceValue = value; }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int MaxLevel
+        {
+            get { return m_MaxLevel; }
+            set { m_MaxLevel = value; }
+        }
 
         [CommandProperty(AccessLevel.GameMaster)]
         public bool IsParagon
@@ -1690,8 +1707,10 @@ namespace Server.Mobiles
         {
             base.Serialize(writer);
 
-            writer.Write(19); // version
+            writer.Write(20); // version
 
+            writer.Write((int)m_ExperienceValue);
+            writer.Write((int)m_MaxLevel);
             writer.Write((int)m_CurrentAI);
             writer.Write((int)m_DefaultAI);
 
@@ -1829,6 +1848,11 @@ namespace Server.Mobiles
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+
+            if (version >= 20) {
+                m_ExperienceValue = reader.ReadInt();
+                m_MaxLevel = reader.ReadInt();
+            }
 
             m_CurrentAI = (AIType)reader.ReadInt();
             m_DefaultAI = (AIType)reader.ReadInt();
@@ -3388,11 +3412,26 @@ namespace Server.Mobiles
                             }
                         }
                     }
-
+                    m_ExperienceValue = (int)BaseInstrument.GetBaseDifficulty(this, false);
+                    m_MaxLevel = (int)Fame / 500;
+                    if (m_MaxLevel < 1)
+                    {
+                        m_MaxLevel = 1;
+                    }
                     for (var i = 0; i < titles.Count; ++i)
                     {
                         Titles.AwardFame(titles[i], fame[i], true);
                         Titles.AwardKarma(titles[i], karma[i], true);
+                        if (titles[i] is PlayerMobile)
+                        {
+                            PlayerMobile player = (PlayerMobile)titles[i];
+                            int levelIndex = Array.IndexOf(Enum.GetNames(typeof(Level)), player.Level) + 1;
+                            if (levelIndex <= m_MaxLevel)
+                            {
+                                player.Experience += m_ExperienceValue;
+                                player.CheckExperience();
+                            }
+                        }
                     }
                 }
 
@@ -3734,7 +3773,7 @@ namespace Server.Mobiles
 
                 if (target is BaseCreature t)
                 {
-                    if (t.Unprovokable || t.IsParagon && BaseInstrument.GetBaseDifficulty(t) >= 160.0)
+                    if (t.Unprovokable || t.IsParagon && BaseInstrument.GetBaseDifficulty(t, true) >= 160.0)
                     {
                         return;
                     }

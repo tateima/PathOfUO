@@ -228,7 +228,7 @@ namespace Server.SkillHandlers
                                     effect = (int)(discord / -5.0);
                                 }
 
-                                if (Core.SE && BaseInstrument.GetBaseDifficulty(targ) >= 160.0)
+                                if (Core.SE && BaseInstrument.GetBaseDifficulty(targ, true) >= 160.0)
                                 {
                                     effect /= 2;
                                 }
