@@ -4746,7 +4746,7 @@ namespace Server.Mobiles
             {
                 foreach (var info in m_BuffTable.Values)
                 {
-                    NetState.Send(new AddBuffPacket(this, info));
+                    info.SendAddBuffPacket(NetState, Serial);
                 }
             }
         }
@@ -4766,7 +4766,7 @@ namespace Server.Mobiles
 
             if (NetState?.BuffIcon == true)
             {
-                NetState.Send(new AddBuffPacket(this, b));
+                b.SendAddBuffPacket(NetState, Serial);
             }
         }
 
@@ -4794,7 +4794,7 @@ namespace Server.Mobiles
 
             if (NetState?.BuffIcon == true)
             {
-                NetState.Send(new RemoveBuffPacket(this, b));
+                BuffInfo.SendRemoveBuffPacket(NetState, Serial, b);
             }
 
             if (m_BuffTable.Count <= 0)
