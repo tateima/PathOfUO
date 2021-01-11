@@ -21,7 +21,7 @@ namespace Server.Spells.Fourth
         public ArchCureSpell(Mobile caster, Item scroll = null) : base(caster, scroll, m_Info)
         {
         }
-
+        public override bool RequiresReagents => true;
         public override SpellCircle Circle => SpellCircle.Fourth;
 
         // Arch cure is now 1/4th of a second faster

@@ -19,6 +19,7 @@ namespace Server.Spells.Second
         }
 
         public override SpellCircle Circle => SpellCircle.Second;
+        public override bool RequiresReagents => true;
 
         public void Target(Mobile m)
         {

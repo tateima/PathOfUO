@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Server.Factions;
 using Server.Spells.Fifth;
@@ -103,6 +103,11 @@ namespace Server.Spells.Mysticism
                     Caster.HueMod = 0;
 
                     var offset = (int)((GetBaseSkill(Caster) + GetBoostSkill(Caster)) / 24.0);
+
+                    if (!HasReagents())
+                    {
+                        offset *= 0.5;
+                    }
 
                     ResistanceMod[] mods =
                     {

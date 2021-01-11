@@ -31,6 +31,7 @@ using Server.Spells.Ninjitsu;
 using Server.Spells.Seventh;
 using Server.Spells.Sixth;
 using Server.Spells.Spellweaving;
+using Server.Talent;
 using Server.Targeting;
 using Server.Utilities;
 using BaseQuestGump = Server.Engines.MLQuests.Gumps.BaseQuestGump;
@@ -241,6 +242,7 @@ namespace Server.Mobiles
         private int m_Experience;
         private int m_SkillPoints;
         private int m_StatPoints;
+        private int m_TalentPoints;
         private string m_Level;
         private bool m_HardCore;
 
@@ -301,7 +303,19 @@ namespace Server.Mobiles
             VisibilityList = new List<Mobile>();
             m_AntiMacroTable = new Dictionary<Skill, Dictionary<object, CountAndTimeStamp>>();
         }
-
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int TalentPoints
+        {
+            get
+            {
+                return m_TalentPoints;
+            }
+            set
+            {
+                m_TalentPoints = value;
+                InvalidateProperties();
+            }
+        }
         [CommandProperty(AccessLevel.GameMaster)]
         public int StatPoints
         {
@@ -339,6 +353,7 @@ namespace Server.Mobiles
             {
                 m_Experience = value;
                 InvalidateProperties();
+                CheckExperience();
             }
         }
 
@@ -353,8 +368,12 @@ namespace Server.Mobiles
             if (newLevel != m_Level)
             {
                 m_Level = newLevel;
-                m_SkillPoints += 15;
+                m_SkillPoints += 14;
                 m_StatPoints += 5;
+                if (m_Experience >= 45000)
+                {
+                    m_TalentPoints += 1;
+                }
                 this.SendMessage("You have gained a level!");
                 this.FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
                 this.PlaySound(0x202);
@@ -444,6 +463,7 @@ namespace Server.Mobiles
             }
         }
 
+        public HashSet<BaseTalent> Talents { get; set; }
         public List<Item> EquipSnapshot { get; private set; }
 
         public SkillName Learning { get; set; } = (SkillName)(-1);
@@ -3130,6 +3150,21 @@ namespace Server.Mobiles
             switch (version)
             {
                 case 30:
+                    var talentCount = reader.ReadEncodedInt();
+                    if (talentCount > 0)
+                    {
+                        Talents = new HashSet<BaseTalent>();
+
+                        for (var i = 0; i < talentCount; ++i)
+                        {
+                            var type = TalentSerializer.ReadType(BaseTalent.TalentTypes, reader);
+                            var bt = TalentSerializer.Construct(type) as BaseTalent;
+                            bt.Level = reader.ReadEncodedInt();
+                            Talents.Add(bt);
+                            bt.UpdateMobile(this);
+                        }
+                    }
+                    m_TalentPoints = reader.ReadInt();
                     m_StatPoints = reader.ReadInt();
                     m_SkillPoints = reader.ReadInt();
                     m_Experience = reader.ReadInt();
@@ -3462,6 +3497,8 @@ namespace Server.Mobiles
             base.Serialize(writer);
 
             writer.Write(30); // version
+            TalentSerializer.Serialize(Talents, writer);
+            writer.Write((int)m_TalentPoints);
             writer.Write((int)m_StatPoints);
             writer.Write((int)m_SkillPoints);
             writer.Write((int)m_Experience);

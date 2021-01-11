@@ -58,6 +58,11 @@ namespace Server.Spells.Necromancy
                     );
                 m.CheckSkill(SkillName.MagicResist, 0.0, 120.0); // Skill check for gain
 
+                if (!HasReagents())
+                {
+                    duration *= 0.5;
+                }
+
                 SetMindRotScalar(Caster, m, m.Player ? 1.25 : 2.00, duration);
 
                 HarmfulSpell(m);

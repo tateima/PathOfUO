@@ -78,6 +78,12 @@ namespace Server.Spells.Necromancy
 
             var d_MinDamage = 4;
             var d_MaxDamage = ((int)spiritlevel + 1) * 3;
+            if (!HasReagents())
+            {
+                d_MinDamage = 2;
+                d_MaxDamage = (int)(((int)spiritlevel + 1) * 1.5);
+            }
+
             var args = $"{d_MinDamage}\t{d_MaxDamage}";
 
             var i_Count = (int)spiritlevel;
@@ -106,6 +112,10 @@ namespace Server.Spells.Necromancy
             }
 
             var t_Duration = TimeSpan.FromSeconds(i_Length);
+            if (!HasReagents())
+            {
+                t_Duration *= 0.5;
+            }
             BuffInfo.AddBuff(m, new BuffInfo(BuffIcon.Strangle, 1075794, 1075795, t_Duration, m, args));
 
             FinishSequence();

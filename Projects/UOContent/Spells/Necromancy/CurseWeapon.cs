@@ -50,6 +50,11 @@ namespace Server.Spells.Necromancy
 
                 var duration = TimeSpan.FromSeconds(Caster.Skills.SpiritSpeak.Value / 3.4 + 1.0);
 
+                if (!HasReagents())
+                {
+                    duration *= 0.5;
+                }
+
                 m_Table.TryGetValue(weapon, out var timer);
                 timer?.Stop();
 

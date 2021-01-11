@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Server.Mobiles;
 
 namespace Server.Spells.Mysticism
@@ -47,6 +47,11 @@ namespace Server.Spells.Mysticism
                 var level = (int)((GetBaseSkill(Caster) + GetBoostSkill(Caster)) / 2.0);
 
                 var duration = TimeSpan.FromSeconds(10 + level);
+
+                if (!HasReagents())
+                {
+                    duration *= 0.5;
+                }
 
                 var summon = new AnimatedWeapon(Caster, level);
                 BaseCreature.Summon(summon, false, Caster, new Point3D(p), 0x212, duration);

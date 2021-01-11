@@ -20,7 +20,7 @@ namespace Server.Spells.Eighth
         public EnergyVortexSpell(Mobile caster, Item scroll = null) : base(caster, scroll, m_Info)
         {
         }
-
+        public override bool RequiresReagents => true;
         public override SpellCircle Circle => SpellCircle.Eighth;
 
         public void Target(IPoint3D p)

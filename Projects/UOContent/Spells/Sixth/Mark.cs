@@ -21,6 +21,7 @@ namespace Server.Spells.Sixth
         }
 
         public override SpellCircle Circle => SpellCircle.Sixth;
+        public override bool RequiresReagents => true;
 
         public void Target(Item item)
         {

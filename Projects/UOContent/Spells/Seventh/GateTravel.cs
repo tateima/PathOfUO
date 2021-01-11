@@ -25,6 +25,7 @@ namespace Server.Spells.Seventh
             base(caster, scroll, m_Info) => m_Entry = entry;
 
         public override SpellCircle Circle => SpellCircle.Seventh;
+        public override bool RequiresReagents => true;
 
         public void Effect(Point3D loc, Map map, bool checkMulti)
         {

@@ -6,9 +6,12 @@ using Server.Misc;
 using Server.Mobiles;
 using Server.Network;
 using Server.Spells.Bushido;
+using Server.Spells.Fourth;
 using Server.Spells.Necromancy;
 using Server.Spells.Ninjitsu;
 using Server.Spells.Second;
+using Server.Spells.Seventh;
+using Server.Spells.Sixth;
 using Server.Spells.Spellweaving;
 using Server.Targeting;
 
@@ -80,6 +83,7 @@ namespace Server.Spells
         public virtual TimeSpan CastDelayMinimum => TimeSpan.FromSeconds(0.25);
 
         public virtual bool IsCasting => State == SpellState.Casting;
+        public virtual bool RequiresReagents => false;
 
         public virtual void OnCasterHurt()
         {
@@ -193,8 +197,13 @@ namespace Server.Spells
 
         public virtual int GetNewAosDamage(int bonus, uint dice, uint sides, bool playerVsPlayer, double scalar)
         {
-            var damage = Utility.Dice(dice, sides, bonus) * 100;
-
+            var damage = Utility.Dice(dice, sides, bonus);
+            var multiplier = 100;
+            if (!ConsumeReagents())
+            {
+                multiplier = 50; // no reagents means 50% less damage
+            }
+            damage *= multiplier;
             var inscribeSkill = GetInscribeFixed(Caster);
             var inscribeBonus = (inscribeSkill + 1000 * (inscribeSkill / 1000)) / 200;
             var damageBonus = inscribeBonus;
@@ -235,6 +244,23 @@ namespace Server.Spells
             AosAttributes.GetValue(Caster, AosAttribute.LowerRegCost) > Utility.Random(100) ||
             DuelContext.IsFreeConsume(Caster) || Caster.Backpack?.ConsumeTotal(Info.Reagents, Info.Amounts) == -1;
 
+        public virtual bool HasReagents()
+        {
+            bool hasReagents = true;
+            if (Caster is PlayerMobile)
+            {
+                foreach (Type type in Info.Reagents)
+                {
+                    hasReagents = (Caster.Backpack.FindItemsByType(type, true) != null);
+                    if (!hasReagents)
+                    {
+                        break;
+                    }
+                }
+            }
+            return hasReagents;
+        }
+
         public virtual double GetInscribeSkill(Mobile m) => m.Skills.Inscribe.Value;
 
         public virtual int GetInscribeFixed(Mobile m) => m.Skills.Inscribe.Fixed;
@@ -251,6 +277,10 @@ namespace Server.Spells
 
             if (!Core.AOS) // EvalInt stuff for AoS is handled elsewhere
             {
+                if (!ConsumeReagents())
+                {
+                    scalar -= 0.5; // 50% less damage if it didnt use reagents
+                }
                 var casterEI = Caster.Skills[DamageSkill].Value;
                 var targetRS = target.Skills.MagicResist.Value;
 
@@ -263,11 +293,11 @@ namespace Server.Spells
 
                 if (casterEI > targetRS)
                 {
-                    scalar = 1.0 + (casterEI - targetRS) / 500.0;
+                    scalar += (casterEI - targetRS) / 500.0;
                 }
                 else
                 {
-                    scalar = 1.0 + (casterEI - targetRS) / 200.0;
+                    scalar += (casterEI - targetRS) / 200.0;
                 }
 
                 // magery damage bonus, -25% at 0 skill, +0% at 100 skill, +5% at 120 skill
@@ -699,7 +729,6 @@ namespace Server.Spells
         public virtual bool CheckSequence()
         {
             var mana = ScaleMana(GetMana());
-
             if (Caster.Deleted || !Caster.Alive || Caster.Spell != this || State != SpellState.Sequencing)
             {
                 DoFizzle();
@@ -709,10 +738,13 @@ namespace Server.Spells
                          (baseWand.Charges <= 0 || baseWand.Parent != Caster)))
             {
                 DoFizzle();
-            }
-            else if (!ConsumeReagents())
+            } else if (RequiresReagents)
             {
-                Caster.LocalOverheadMessage(MessageType.Regular, 0x22, 502630); // More reagents are needed for this spell.
+                if (!ConsumeReagents())
+                {
+                    Caster.LocalOverheadMessage(MessageType.Regular, 0x22, 502630); // More reagents are needed for this spell.
+                    return false;
+                }
             }
             else if (Caster.Mana < mana)
             {

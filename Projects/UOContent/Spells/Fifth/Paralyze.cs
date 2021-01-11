@@ -22,7 +22,7 @@ namespace Server.Spells.Fifth
         }
 
         public override SpellCircle Circle => SpellCircle.Fifth;
-
+        public override bool RequiresReagents => true;
         public void Target(Mobile m)
         {
             if (m == null)

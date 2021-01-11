@@ -83,7 +83,10 @@ namespace Server.Spells.Necromancy
 
                 var duration = TimeSpan.FromSeconds((GetDamageSkill(Caster) - GetResistSkill(m)) / 8 + 8);
                 m.CheckSkill(SkillName.MagicResist, 0.0, 120.0); // Skill check for gain
-
+                if (!HasReagents())
+                {
+                    duration *= 0.5;
+                }
                 timer = new ExpireTimer(Caster, m, duration);
                 timer.Start();
 

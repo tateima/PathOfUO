@@ -3429,7 +3429,6 @@ namespace Server.Mobiles
                             if (levelIndex <= m_MaxLevel)
                             {
                                 player.Experience += m_ExperienceValue;
-                                player.CheckExperience();
                             }
                         }
                     }

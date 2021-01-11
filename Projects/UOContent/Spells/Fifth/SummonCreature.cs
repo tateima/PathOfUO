@@ -16,6 +16,7 @@ namespace Server.Spells.Fifth
             Reagent.SpidersSilk
         );
 
+        public override bool RequiresReagents => true;
         // NOTE: Creature list based on 1hr of summon/release on OSI.
 
         private static readonly Type[] m_Types =

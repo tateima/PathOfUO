@@ -33,6 +33,7 @@ namespace Server.Spells.Fourth
         }
 
         public override SpellCircle Circle => SpellCircle.Fourth;
+        public override bool RequiresReagents => true;
 
         public void Effect(Point3D loc, Map map, bool checkMulti)
         {

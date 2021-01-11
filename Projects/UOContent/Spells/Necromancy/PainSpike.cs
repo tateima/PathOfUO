@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Server.Items;
 using Server.Misc;
+using Server.Mobiles;
 using Server.Targeting;
 
 namespace Server.Spells.Necromancy
@@ -66,6 +68,11 @@ namespace Server.Spells.Necromancy
                     damage = Utility.RandomMinMax(3, 7);
                     timer.Delay += TimeSpan.FromSeconds(2.0);
                     buffTime = timer.Next - DateTime.UtcNow;
+                }
+
+                if (!HasReagents())
+                {
+                    damage *= 0.5;
                 }
 
                 BuffInfo.AddBuff(m, new BuffInfo(BuffIcon.PainSpike, 1075667, buffTime, m, Convert.ToString((int)damage)));

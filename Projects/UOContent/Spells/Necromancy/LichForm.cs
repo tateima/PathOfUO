@@ -17,7 +17,7 @@ namespace Server.Spells.Necromancy
         public LichFormSpell(Mobile caster, Item scroll = null) : base(caster, scroll, m_Info)
         {
         }
-
+        public override bool RequiresReagents => true;
         public override TimeSpan CastDelayBase => TimeSpan.FromSeconds(2.0);
 
         public override double RequiredSkill => 70.0;

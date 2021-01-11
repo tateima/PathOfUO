@@ -111,6 +111,11 @@ namespace Server.Spells.Necromancy
                         // if (damage > 40)
                         // damage = 40;
 
+                        if (!HasReagents())
+                        {
+                            damage *= 0.5;
+                        }
+
                         SpellHelper.Damage(this, m, damage, 0, 0, 100, 0, 0);
                     }
                 }

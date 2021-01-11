@@ -14,6 +14,7 @@ using Server.Spells.Necromancy;
 using Server.Spells.Ninjitsu;
 using Server.Spells.Sixth;
 using Server.Spells.Spellweaving;
+using Server.Talent;
 
 namespace Server.Items
 {
@@ -2196,6 +2197,14 @@ namespace Server.Items
                 if (AnimalForm.UnderTransformation(defender, typeof(BullFrog)))
                 {
                     attacker.ApplyPoison(defender, Poison.Regular);
+                }
+            }
+
+            if (attacker is PlayerMobile)
+            {
+                foreach(BaseTalent talent in ((PlayerMobile)attacker).Talents)
+                {
+                    talent.CheckEffect(attacker, defender);
                 }
             }
         }

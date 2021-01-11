@@ -18,7 +18,7 @@ namespace Server.Spells.Necromancy
             Reagent.GraveDust,
             Reagent.DaemonBlood
         );
-
+        public override bool RequiresReagents => true;
         public SummonFamiliarSpell(Mobile caster, Item scroll = null) : base(caster, scroll, m_Info)
         {
         }

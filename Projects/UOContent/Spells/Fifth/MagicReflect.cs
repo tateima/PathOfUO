@@ -21,7 +21,7 @@ namespace Server.Spells.Fifth
         }
 
         public override SpellCircle Circle => SpellCircle.Fifth;
-
+        public override bool RequiresReagents => true;
         public override bool CheckCast()
         {
             if (Core.AOS)

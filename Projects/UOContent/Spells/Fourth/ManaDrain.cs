@@ -21,7 +21,7 @@ namespace Server.Spells.Fourth
         public ManaDrainSpell(Mobile caster, Item scroll = null) : base(caster, scroll, m_Info)
         {
         }
-
+        public override bool RequiresReagents => true;
         public override SpellCircle Circle => SpellCircle.Fourth;
 
         public void Target(Mobile m)

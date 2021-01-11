@@ -76,7 +76,14 @@ namespace Server.Spells.Necromancy
                     new(ResistanceType.Cold, +10),
                     new(ResistanceType.Physical, +10)
                 };
-
+                if (!HasReagents())
+                {
+                    duration *= 0.5;
+                    foreach(ResistanceMod mod in mods)
+                    {
+                        mod.Offset = (int)(mod.Offset * 0.5);
+                    }
+                }
                 timer = new ExpireTimer(m, mods, duration);
                 timer.Start();
 

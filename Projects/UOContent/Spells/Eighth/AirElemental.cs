@@ -19,7 +19,7 @@ namespace Server.Spells.Eighth
         public AirElementalSpell(Mobile caster, Item scroll = null) : base(caster, scroll, m_Info)
         {
         }
-
+        public override bool RequiresReagents => true;
         public override SpellCircle Circle => SpellCircle.Eighth;
 
         public override bool CheckCast()

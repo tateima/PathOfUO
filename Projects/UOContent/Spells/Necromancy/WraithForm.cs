@@ -17,7 +17,7 @@ namespace Server.Spells.Necromancy
         public WraithFormSpell(Mobile caster, Item scroll = null) : base(caster, scroll, m_Info)
         {
         }
-
+        public override bool RequiresReagents => true;
         public override TimeSpan CastDelayBase => TimeSpan.FromSeconds(2.0);
 
         public override double RequiredSkill => 20.0;

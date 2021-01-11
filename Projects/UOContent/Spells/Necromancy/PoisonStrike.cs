@@ -63,6 +63,11 @@ namespace Server.Spells.Necromancy
 
                 var damage = Utility.RandomMinMax(Core.ML ? 32 : 36, 40) * ((300 + GetDamageSkill(Caster) * 9) / 1000);
 
+                if (!HasReagents())
+                {
+                    damage *= 0.5;
+                }
+
                 var sdiBonus = (double)AosAttributes.GetValue(Caster, AosAttribute.SpellDamage) / 100;
                 var pvmDamage = damage * (1 + sdiBonus);
 
