@@ -106,7 +106,7 @@ namespace Server.Spells.Mysticism
 
                     if (!HasReagents())
                     {
-                        offset *= 0.5;
+                        offset = (int) (offset * 0.5);
                     }
 
                     ResistanceMod[] mods =

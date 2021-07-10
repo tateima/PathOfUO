@@ -2204,7 +2204,7 @@ namespace Server.Items
             {
                 foreach(BaseTalent talent in ((PlayerMobile)attacker).Talents)
                 {
-                    talent.CheckEffect(attacker, defender);
+                    talent.CheckHitEffect(attacker, defender);
                 }
             }
         }

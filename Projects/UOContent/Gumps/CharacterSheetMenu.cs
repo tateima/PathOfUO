@@ -34,7 +34,7 @@ namespace Server.Gumps
         public CharacterSheetGump(Mobile from, int page, SkillsGumpGroup skillGroup = null) : base(0, 0)
         {
             m_Groups = SkillsGumpGroup.Groups;
-            if (from != null)
+            if (from == null)
             {
                 from.CloseGump<CharacterSheetGump>();
             }
@@ -57,41 +57,14 @@ namespace Server.Gumps
             }
 
             int x = 90;
-            int buttonX = 220;
-            if (page == 3)
-            {
-                AddLabel(110, 60, 0,"Talents");
-                AddLabel(90, 80, 0, "Talent Points: " + ((PlayerMobile)from).TalentPoints.ToString());
-                y = 100;
-                Type[] talentTypes = BaseTalent.TalentTypes;
-                HashSet<BaseTalent> playerTalents = ((PlayerMobile)from).Talents;
-                for (int i = 0; i < talentTypes.Length; i++ )
-                {
-                    var talent = TalentSerializer.Construct(talentTypes[i]) as BaseTalent;
-                    var description = talentTypes[i].GetMethod("ToString").GetCustomAttribute<DescriptionAttribute>().Description;
-                    int talentLevel = 0;
-                    BaseTalent used;
-                    if (playerTalents.TryGetValue(talent, out used))
-                    {
-                        talentLevel = used.Level;
-                    };
-                    AddLabel(x, y, 0, talent.ToString() + ": " + talentLevel.ToString());
-                    if (talentLevel < talent.MaxLevel)
-                    {
-                        AddButton(buttonX, y + 2, 2223, 2223, 300 + i, GumpButtonType.Reply, 0);
-                    }
-
-                    y += 20;
-                    AddHtml(x, y, 300, 300, description);
-                }
-            } else if (page == 2 && m_SkillGroup != null)
+            if (page == 2 && m_SkillGroup != null)
             {
                 AddLabel(110, 60, 0, m_SkillGroup.Name);
                 AddLabel(90, 80, 0, "Skill Points: " + ((PlayerMobile)from).SkillPoints.ToString());
                 y = 100;
                 for (int i = 0; i < m_SkillGroup.Skills.Length; ++i)
                 {
-                    buttonX = 220;
+                    int buttonX = 220;
                     if (i > 6)
                     {
                         // go to next page
@@ -126,15 +99,17 @@ namespace Server.Gumps
             {
                 if (((PlayerMobile)from).HardCore)
                 {
-                    AddLabel(90, 60, 0, "Character Sheet - (Hardcore)");
+                    AddLabel(90, 20, 0, "Character Sheet - (Hardcore)");
                 }
                 else
                 {
-                    AddLabel(90, 60, 0, "Character Sheet");
+                    AddLabel(90, 20, 0, "Character Sheet");
                 }
-                AddLabel(90, 80, 0, "Level: " + (Array.IndexOf(Enum.GetNames(typeof(Level)), ((PlayerMobile)from).Level) + 1).ToString());
-                AddLabel(90, 100, 0, "Experience Points:");
-                AddLabel(90, 120, 0, ((PlayerMobile)from).Experience.ToString());
+                AddLabel(90, 60, 0, "Level: " + (Array.IndexOf(Enum.GetNames(typeof(Level)), ((PlayerMobile)from).Level) + 1).ToString());
+                AddLabel(90, 80, 0, "Experience Points:");
+                AddLabel(90, 100, 0, ((PlayerMobile)from).Experience.ToString());
+                AddLabel(90, 120, 0, "Talents");
+                AddButton(190, 122, 2223, 2223, 300, GumpButtonType.Reply, 0);
                 AddLabel(90, 140, 0, "Stat Points: " + ((PlayerMobile)from).StatPoints.ToString());
                 AddLabel(90, 160, 0, "Strength: " + from.RawStr.ToString());
                 if (((PlayerMobile)from).StatPoints > 0)
@@ -159,9 +134,6 @@ namespace Server.Gumps
                     AddButton(390, y + 2, 2223, 2223, 100 + i, GumpButtonType.Reply, 0);
                     y += 20;
                 }
-                AddLabel(270, y, 0, "Talents");
-                AddButton(390, y + 2, 2223, 2223, 300, GumpButtonType.Reply, 0);
-
             }
         }
 
@@ -177,9 +149,11 @@ namespace Server.Gumps
                     if (info.ButtonID >= 100 && info.ButtonID < 300)
                     {
                         page = 2;    
-                    } else if (info.ButtonID >= 300 && info.ButtonID < 1000)
+                    } else if (info.ButtonID == 300)
                     {
-                        page = 3;
+                        player.CloseGump<CharacterSheetGump>();
+                        player.SendGump(new TalentGump(player, 1));
+                       return;
                     }
 
                     if (info.ButtonID == 1000)
@@ -221,18 +195,6 @@ namespace Server.Gumps
                         {
                             m_SkillGroup = null;
                         }
-                    } else if (page == 3) // Talents
-                    {
-                        var talent = TalentSerializer.Construct(BaseTalent.TalentTypes[info.ButtonID - 300]) as BaseTalent;
-                        BaseTalent used;
-                        if (player.Talents.TryGetValue(talent, out used))
-                        {
-                            talent.Level = used.Level;
-                            talent.Level++;
-                            player.Talents.Remove(used);
-                            player.Talents.Add(talent);
-                            player.TalentPoints--;
-                        };
                     }
 
                     player.SendGump(new CharacterSheetGump(player, page, m_SkillGroup));

@@ -277,6 +277,8 @@ namespace Server.Mobiles
             m_Experience = 0;
             m_SkillPoints = 0;
             m_StatPoints = 0;
+            m_TalentPoints = 0;
+            Talents = new HashSet<BaseTalent>();
             m_HardCore = false;
             m_Level = "One";
             AutoStabled = new List<Mobile>();
@@ -3149,7 +3151,7 @@ namespace Server.Mobiles
 
             switch (version)
             {
-                case 30:
+                case 31:
                     var talentCount = reader.ReadEncodedInt();
                     if (talentCount > 0)
                     {
@@ -3165,6 +3167,8 @@ namespace Server.Mobiles
                         }
                     }
                     m_TalentPoints = reader.ReadInt();
+                    goto case 30;
+                case 30:
                     m_StatPoints = reader.ReadInt();
                     m_SkillPoints = reader.ReadInt();
                     m_Experience = reader.ReadInt();
@@ -3496,7 +3500,7 @@ namespace Server.Mobiles
 
             base.Serialize(writer);
 
-            writer.Write(30); // version
+            writer.Write(31); // version
             TalentSerializer.Serialize(Talents, writer);
             writer.Write((int)m_TalentPoints);
             writer.Write((int)m_StatPoints);

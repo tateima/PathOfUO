@@ -1,4 +1,5 @@
 using Server.Mobiles;
+using Server.Spells;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +10,6 @@ namespace Server.Talent
 {
     public class ViperAspect : BaseTalent, ITalent
     {
-        [Description("Increases your poison resistance if appropriate and adds a chance to poison your target on hit.")]
-        public static string ToString()
-        {
-            return "Viper aspect";
-        }
         public void UpdateMobile(Mobile m)
         {
             if (Core.AOS)
@@ -27,7 +23,7 @@ namespace Server.Talent
             }
         }
 
-        public void CheckEffect(Mobile attacker, Mobile target)
+        public void CheckHitEffect(Mobile attacker, Mobile target)
         {
             if (Utility.Random(100) < 2)
             {
@@ -37,6 +33,10 @@ namespace Server.Talent
 
         public ViperAspect() : base()
         {
+            BlockedBy = new Type[] { typeof(DragonAspect) };
+            DisplayName = "Viper aspect";
+            Description = "Increased poison resistance and adds a small chance to poison your target on hit.";
+            ImageID = 30149;
         }
 
     }
