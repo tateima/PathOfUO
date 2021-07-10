@@ -192,16 +192,16 @@ namespace Server.Items
         {
             World.Broadcast(0x35, true, "Solen hives teleporters are being generated, please wait.");
 
-            var startTime = DateTime.UtcNow;
+            var startTime = Core.Now;
 
             var count = new SHTeleporterCreator().CreateSHTeleporters();
 
-            var endTime = DateTime.UtcNow;
+            var endTime = Core.Now;
 
             World.Broadcast(
                 0x35,
                 true,
-                "{0} solen hives teleporters have been created. The entire process took {1:F1} seconds.",
+                "{0} solen hives teleporters have been created. The entire process took {1:0.#} seconds.",
                 count,
                 (endTime - startTime).TotalSeconds
             );

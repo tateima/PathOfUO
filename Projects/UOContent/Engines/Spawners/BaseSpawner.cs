@@ -10,6 +10,8 @@ using Server.Mobiles;
 using Server.Utilities;
 using CPA = Server.CommandPropertyAttribute;
 
+using static Server.Attributes;
+
 namespace Server.Engines.Spawners
 {
     public abstract class BaseSpawner : Item, ISpawner
@@ -186,7 +188,7 @@ namespace Server.Engines.Spawners
         [CommandProperty(AccessLevel.Developer)]
         public TimeSpan NextSpawn
         {
-            get => m_Running && m_Timer?.Running == true ? End - DateTime.UtcNow : TimeSpan.FromSeconds(0);
+            get => m_Running && m_Timer?.Running == true ? End - Core.Now : TimeSpan.FromSeconds(0);
             set
             {
                 Start();
@@ -529,7 +531,7 @@ namespace Server.Engines.Spawners
                         return null;
                     }
 
-                    var attr = Properties.GetCPA(thisProp);
+                    var attr = GetCPA(thisProp);
 
                     if (attr == null || attr.WriteLevel > AccessLevel.Developer || !thisProp.CanWrite || attr.ReadOnly)
                     {
@@ -567,7 +569,7 @@ namespace Server.Engines.Spawners
             // Defrag taken care of in Spawn(), beforehand
             // Count check taken care of in Spawn(), beforehand
 
-            var type = AssemblyHandler.FindFirstTypeForName(entry.SpawnedName);
+            var type = AssemblyHandler.FindTypeByName(entry.SpawnedName);
 
             if (type == null)
             {
@@ -600,7 +602,7 @@ namespace Server.Engines.Spawners
                 if (paramargs.Length == 0)
                 {
                     entity = type.CreateInstance<IEntity>(
-                        ci => Add.IsConstructible(ci, AccessLevel.Developer)
+                        ci => IsConstructible(ci, AccessLevel.Developer)
                     );
                 }
                 else
@@ -611,7 +613,7 @@ namespace Server.Engines.Spawners
                     {
                         var ctor = ctors[i];
 
-                        if (Add.IsConstructible(ctor, AccessLevel.Developer))
+                        if (IsConstructible(ctor, AccessLevel.Developer))
                         {
                             var paramList = ctor.GetParameters();
 
@@ -748,7 +750,7 @@ namespace Server.Engines.Spawners
                 return;
             }
 
-            End = DateTime.UtcNow + delay;
+            End = Core.Now + delay;
 
             if (m_Timer == null)
             {
@@ -1005,7 +1007,7 @@ namespace Server.Engines.Spawners
 
                         if (m_Running)
                         {
-                            ts = reader.ReadDeltaTime() - DateTime.UtcNow;
+                            ts = reader.ReadDeltaTime() - Core.Now;
                         }
 
                         if (version < 7)
@@ -1027,7 +1029,7 @@ namespace Server.Engines.Spawners
                                     Entries[i].SpawnedName = typeName;
                                 }
 
-                                if (AssemblyHandler.FindFirstTypeForName(typeName) == null)
+                                if (AssemblyHandler.FindTypeByName(typeName) == null)
                                 {
                                     m_WarnTimer ??= new WarnTimer();
 
@@ -1055,7 +1057,7 @@ namespace Server.Engines.Spawners
 
                                 for (var j = 0; j < Entries.Count; j++)
                                 {
-                                    if (AssemblyHandler.FindFirstTypeForName(Entries[j].SpawnedName) == e.GetType())
+                                    if (AssemblyHandler.FindTypeByName(Entries[j].SpawnedName) == e.GetType())
                                     {
                                         Entries[j].Spawned.Add(e);
                                         Spawned.Add(e, Entries[j]);

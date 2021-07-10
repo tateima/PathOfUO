@@ -13,8 +13,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-using Microsoft.Toolkit.HighPerformance.Extensions;
+using System.Diagnostics;
+using Microsoft.Toolkit.HighPerformance;
 using Server.Diagnostics;
+using Server.Exceptions;
 using Server.Gumps;
 
 namespace Server.Network
@@ -51,18 +53,18 @@ namespace Server.Network
             IncomingPackets.RegisterEncoded(0x32, true, QuestGumpRequest);
         }
 
-        public static void DeathStatusResponse(NetState state, CircularBufferReader reader)
+        public static void DeathStatusResponse(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             // Ignored
         }
 
-        public static void RequestScrollWindow(NetState state, CircularBufferReader reader)
+        public static void RequestScrollWindow(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             int lastTip = reader.ReadInt16();
             int type = reader.ReadByte();
         }
 
-        public static void AttackReq(NetState state, CircularBufferReader reader)
+        public static void AttackReq(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             var from = state.Mobile;
 
@@ -79,7 +81,7 @@ namespace Server.Network
             }
         }
 
-        public static void HuePickerResponse(NetState state, CircularBufferReader reader)
+        public static void HuePickerResponse(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             var serial = reader.ReadUInt32();
             _ = reader.ReadInt16(); // Item ID
@@ -96,7 +98,7 @@ namespace Server.Network
             }
         }
 
-        public static void SystemInfo(NetState state, CircularBufferReader reader)
+        public static void SystemInfo(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             int v1 = reader.ReadByte();
             int v2 = reader.ReadUInt16();
@@ -112,7 +114,7 @@ namespace Server.Network
             var v8 = reader.ReadInt32();
         }
 
-        public static void TextCommand(NetState state, CircularBufferReader reader)
+        public static void TextCommand(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             var from = state.Mobile;
 
@@ -201,13 +203,13 @@ namespace Server.Network
                     }
                 default:
                     {
-                        state.WriteConsole("Unknown text-command type 0x{0:X2}: {1}", state, type, command);
+                        state.LogInfo("Unknown text-command type 0x{0:X2}: {1}", state, type, command);
                         break;
                     }
             }
         }
 
-        public static void AsciiPromptResponse(NetState state, CircularBufferReader reader)
+        public static void AsciiPromptResponse(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             var from = state.Mobile;
 
@@ -243,7 +245,7 @@ namespace Server.Network
             }
         }
 
-        public static void UnicodePromptResponse(NetState state, CircularBufferReader reader)
+        public static void UnicodePromptResponse(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             var from = state.Mobile;
 
@@ -280,7 +282,7 @@ namespace Server.Network
             }
         }
 
-        public static void MenuResponse(NetState state, CircularBufferReader reader)
+        public static void MenuResponse(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             var serial = reader.ReadUInt32();
             int menuID = reader.ReadInt16(); // unused in our implementation
@@ -310,33 +312,33 @@ namespace Server.Network
             }
         }
 
-        public static void Disconnect(NetState state, CircularBufferReader reader)
+        public static void Disconnect(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             var minusOne = reader.ReadInt32();
         }
 
-        public static void ConfigurationFile(NetState state, CircularBufferReader reader)
+        public static void ConfigurationFile(NetState state, CircularBufferReader reader, ref int packetLength)
         {
         }
 
-        public static void LogoutReq(NetState state, CircularBufferReader reader)
+        public static void LogoutReq(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             state.SendLogoutAck();
         }
 
-        public static void ChangeSkillLock(NetState state, CircularBufferReader reader)
+        public static void ChangeSkillLock(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             var s = state.Mobile.Skills[reader.ReadInt16()];
 
             s?.SetLockNoRelay((SkillLock)reader.ReadByte());
         }
 
-        public static void HelpRequest(NetState state, CircularBufferReader reader)
+        public static void HelpRequest(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             EventSink.InvokeHelpRequest(state.Mobile);
         }
 
-        public static void DisplayGumpResponse(NetState state, CircularBufferReader reader)
+        public static void DisplayGumpResponse(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             var serial = reader.ReadUInt32();
             var typeID = reader.ReadInt32();
@@ -371,8 +373,13 @@ namespace Server.Network
 
                 if (!buttonExists)
                 {
-                    state.WriteConsole("Invalid gump response, disconnecting...");
-                    state.Dispose();
+                    state.LogInfo("Invalid gump response, disconnecting...");
+                    var exception = new InvalidGumpResponseException($"Button {buttonID} doesn't exist");
+                    exception.SetStackTrace(new StackTrace());
+                    NetState.TraceException(exception);
+                    state.Mobile?.SendMessage("Invalid gump response.");
+
+                    // state.Disconnect("Invalid gump response.");
                     return;
                 }
 
@@ -380,43 +387,58 @@ namespace Server.Network
 
                 if (switchCount < 0 || switchCount > gump.m_Switches)
                 {
-                    state.WriteConsole("Invalid gump response, disconnecting...");
-                    state.Dispose();
+                    state.LogInfo("Invalid gump response, disconnecting...");
+                    var exception = new InvalidGumpResponseException($"Bad switch count {switchCount}");
+                    exception.SetStackTrace(new StackTrace());
+                    NetState.TraceException(exception);
+                    state.Mobile?.SendMessage("Invalid gump response.");
+
+                    // state.Disconnect("Invalid gump response.");
                     return;
                 }
 
                 var switches = new int[switchCount];
 
-                for (var j = 0; j < switches.Length; ++j)
+                for (var i = 0; i < switches.Length; ++i)
                 {
-                    switches[j] = reader.ReadInt32();
+                    switches[i] = reader.ReadInt32();
                 }
 
                 var textCount = reader.ReadInt32();
 
                 if (textCount < 0 || textCount > gump.m_TextEntries)
                 {
-                    state.WriteConsole("Invalid gump response, disconnecting...");
-                    state.Dispose();
+                    state.LogInfo("Invalid gump response, disconnecting...");
+                    var exception = new InvalidGumpResponseException($"Bad text entry count {textCount}");
+                    exception.SetStackTrace(new StackTrace());
+                    NetState.TraceException(exception);
+                    state.Mobile?.SendMessage("Invalid gump response.");
+
+                    // state.Disconnect("Invalid gump response.");
                     return;
                 }
 
                 var textEntries = new TextRelay[textCount];
 
-                for (var j = 0; j < textEntries.Length; ++j)
+                for (var i = 0; i < textEntries.Length; ++i)
                 {
                     int entryID = reader.ReadUInt16();
                     int textLength = reader.ReadUInt16();
 
                     if (textLength > 239)
                     {
-                        state.WriteConsole("Invalid gump response, disconnecting...");
-                        state.Dispose();
+                        state.LogInfo("Invalid gump response, disconnecting...");
+                        var exception = new InvalidGumpResponseException($"Text entry {i} is too long ({textLength})");
+                        exception.SetStackTrace(new StackTrace());
+                        NetState.TraceException(exception);
+                        state.Mobile?.SendMessage("Invalid gump response.");
+
+                        // state.Disconnect("Invalid gump response.");
                         return;
                     }
 
                     var text = reader.ReadBigUniSafe(textLength);
-                    textEntries[j] = new TextRelay(entryID, text);
+                    textEntries[i] = new TextRelay(entryID, text);
                 }
 
                 state.RemoveGump(gump);
@@ -435,7 +457,7 @@ namespace Server.Network
             if (typeID == 461)
             {
                 // Virtue gump
-                var switchCount = reader.ReadInt32();
+                var switchCount = reader.Remaining >= 4 ? reader.ReadInt32() : 0;
 
                 if (buttonID == 1 && switchCount > 0)
                 {
@@ -458,13 +480,13 @@ namespace Server.Network
             }
         }
 
-        public static void SetWarMode(NetState state, CircularBufferReader reader)
+        public static void SetWarMode(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             state.Mobile?.DelayChangeWarmode(reader.ReadBoolean());
         }
 
         // TODO: Throttle/make this more safe
-        public static void Resynchronize(NetState state, CircularBufferReader reader)
+        public static void Resynchronize(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             var from = state.Mobile;
 
@@ -481,17 +503,17 @@ namespace Server.Network
             state.Sequence = 0;
         }
 
-        public static void PingReq(NetState state, CircularBufferReader reader)
+        public static void PingReq(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             state.SendPingAck(reader.ReadByte());
         }
 
-        public static void SetUpdateRange(NetState state, CircularBufferReader reader)
+        public static void SetUpdateRange(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             state.SendChangeUpdateRange(18);
         }
 
-        public static void MobileQuery(NetState state, CircularBufferReader reader)
+        public static void MobileQuery(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             var from = state.Mobile;
             if (from == null)
@@ -528,7 +550,7 @@ namespace Server.Network
             }
         }
 
-        public static void CrashReport(NetState state, CircularBufferReader reader)
+        public static void CrashReport(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             var clientMaj = reader.ReadByte();
             var clientMin = reader.ReadByte();
@@ -577,7 +599,7 @@ namespace Server.Network
             EventSink.InvokeQuestGumpRequest(state.Mobile);
         }
 
-        public static void EncodedCommand(NetState state, CircularBufferReader reader)
+        public static void EncodedCommand(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             var e = World.FindEntity(reader.ReadUInt32());
             int packetId = reader.ReadUInt16();
@@ -592,15 +614,15 @@ namespace Server.Network
 
             if (ph.Ingame && state.Mobile == null)
             {
-                state.WriteConsole(
-                    "Sent ingame packet (0xD7x{0:X2}) before having been attached to a mobile",
+                state.LogInfo(
+                    "Sent in-game packet (0xD7x{0:X2}) before being attached to a mobile",
                     packetId
                 );
-                state.Dispose();
+                state.Disconnect($"Sent in-game packet (0xD7x{packetId:X2}) before being attached to a mobile.");
             }
             else if (ph.Ingame && state.Mobile.Deleted)
             {
-                state.Dispose();
+                state.Disconnect($"Sent in-game packet(0xD7x{packetId:X2}) but mobile is deleted.");
             }
             else
             {

@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -10,27 +11,47 @@ namespace Server.Buffers
 {
     public ref struct ValueStringBuilder
     {
-        private char[]? _arrayToReturnToPool;
+        private char[] _arrayToReturnToPool;
         private Span<char> _chars;
+        private int _length;
+
+        // If this ctor is used, you cannot pass in stackalloc ROS for append/replace.
+        public ValueStringBuilder(ReadOnlySpan<char> initialString) : this(initialString.Length)
+        {
+            Append(initialString);
+        }
+
+        public ValueStringBuilder(ReadOnlySpan<char> initialString, Span<char> initialBuffer) : this(initialBuffer)
+        {
+            Append(initialString);
+        }
 
         public ValueStringBuilder(Span<char> initialBuffer)
         {
             _arrayToReturnToPool = null;
             _chars = initialBuffer;
-            Length = 0;
+            _length = 0;
         }
 
+        // If this ctor is used, you cannot pass in stackalloc ROS for append/replace.
         public ValueStringBuilder(int initialCapacity)
         {
             _arrayToReturnToPool = ArrayPool<char>.Shared.Rent(initialCapacity);
             _chars = _arrayToReturnToPool;
-            Length = 0;
+            _length = 0;
         }
 
-        public int Length { get; set; }
+        public int Length => _length;
 
         public int Capacity => _chars.Length;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset()
+        {
+            _length = 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EnsureCapacity(int capacity)
         {
             if (capacity > _chars.Length)
@@ -55,15 +76,16 @@ namespace Server.Buffers
         {
             if (terminate)
             {
-                EnsureCapacity(Length + 1);
-                _chars[Length] = '\0';
+                EnsureCapacity(_length + 1);
+                _chars[_length] = '\0';
             }
             return ref MemoryMarshal.GetReference(_chars);
         }
 
         public ref char this[int index] => ref _chars[index];
 
-        public override string ToString() => _chars.Slice(0, Length).ToString();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override string ToString() => _chars[.._length].ToString();
 
         /// <summary>Returns the underlying storage of the builder.</summary>
         public Span<char> RawChars => _chars;
@@ -76,21 +98,27 @@ namespace Server.Buffers
         {
             if (terminate)
             {
-                EnsureCapacity(Length + 1);
-                _chars[Length] = '\0';
+                EnsureCapacity(_length + 1);
+                _chars[_length] = '\0';
             }
-            return _chars.Slice(0, Length);
+            return _chars[.._length];
         }
 
-        public ReadOnlySpan<char> AsSpan() => _chars.Slice(0, Length);
-        public ReadOnlySpan<char> AsSpan(int start) => _chars.Slice(start, Length - start);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlySpan<char> AsSpan() => _chars[.._length];
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlySpan<char> AsSpan(int start) => _chars[start..];
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ReadOnlySpan<char> AsSpan(int start, int length) => _chars.Slice(start, length);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryCopyTo(Span<char> destination, out int charsWritten)
         {
-            if (_chars.Slice(0, Length).TryCopyTo(destination))
+            if (_chars[.._length].TryCopyTo(destination))
             {
-                charsWritten = Length;
+                charsWritten = _length;
                 return true;
             }
 
@@ -98,20 +126,22 @@ namespace Server.Buffers
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Insert(int index, char value, int count)
         {
-            if (Length > _chars.Length - count)
+            if (_length > _chars.Length - count)
             {
                 Grow(count);
             }
 
-            int remaining = Length - index;
-            _chars.Slice(index, remaining).CopyTo(_chars.Slice(index + count));
+            int remaining = _length - index;
+            _chars.Slice(index, remaining).CopyTo(_chars[(index + count)..]);
             _chars.Slice(index, count).Fill(value);
-            Length += count;
+            _length += count;
         }
 
-        public void Insert(int index, string? s)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Insert(int index, string s)
         {
             if (s == null)
             {
@@ -120,25 +150,25 @@ namespace Server.Buffers
 
             int count = s.Length;
 
-            if (Length > _chars.Length - count)
+            if (_length > _chars.Length - count)
             {
                 Grow(count);
             }
 
-            int remaining = Length - index;
-            _chars.Slice(index, remaining).CopyTo(_chars.Slice(index + count));
-            s.AsSpan().CopyTo(_chars.Slice(index));
-            Length += count;
+            int remaining = _length - index;
+            _chars.Slice(index, remaining).CopyTo(_chars[(index + count)..]);
+            s.AsSpan().CopyTo(_chars[index..]);
+            _length += count;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Append(char c)
         {
-            int pos = Length;
+            int pos = _length;
             if ((uint)pos < (uint)_chars.Length)
             {
                 _chars[pos] = c;
-                Length = pos + 1;
+                _length = pos + 1;
             }
             else
             {
@@ -147,18 +177,62 @@ namespace Server.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Append(string? s)
+        public void Append(int value, NumberFormatInfo info = null)
+        {
+            if (value >= 0)
+            {
+                Append((uint)value);
+                return;
+            }
+
+            Append((info ?? NumberFormatInfo.CurrentInfo).NegativeSign);
+            Append((uint)-value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void Append(uint value)
+        {
+            int bufferLength = value.CountDigits();
+
+            int pos = _length;
+            if ((uint)pos + (uint)bufferLength >= _chars.Length)
+            {
+                Grow(bufferLength);
+            }
+
+            if (bufferLength == 1)
+            {
+                _chars[pos] = (char)(value + '0');
+                _length = pos + 1;
+                return;
+            }
+
+            fixed (char* buffer = _chars[pos..])
+            {
+                char* p = buffer + bufferLength;
+                do
+                {
+                    value = Utility.DivRem(value, 10, out uint remainder);
+                    *--p = (char)(remainder + '0');
+                } while (value != 0);
+            }
+
+            _length = pos + bufferLength;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Append(string s)
         {
             if (s == null)
             {
                 return;
             }
 
-            int pos = Length;
+            int pos = _length;
             if (s.Length == 1 && (uint)pos < (uint)_chars.Length) // very common case, e.g. appending strings from NumberFormatInfo like separators, percent symbols, etc.
             {
                 _chars[pos] = s[0];
-                Length = pos + 1;
+                _length = pos + 1;
             }
             else
             {
@@ -167,7 +241,7 @@ namespace Server.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendLine(string? s)
+        public void AppendLine(string s)
         {
             if (s == null)
             {
@@ -187,71 +261,75 @@ namespace Server.Buffers
             Append(Environment.NewLine);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AppendSlow(string s)
         {
-            int pos = Length;
+            int pos = _length;
             if (pos > _chars.Length - s.Length)
             {
                 Grow(s.Length);
             }
 
-            s.AsSpan().CopyTo(_chars.Slice(pos));
-            Length += s.Length;
+            s.AsSpan().CopyTo(_chars[pos..]);
+            _length += s.Length;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Append(char c, int count)
         {
-            if (Length > _chars.Length - count)
+            if (_length > _chars.Length - count)
             {
                 Grow(count);
             }
 
-            Span<char> dst = _chars.Slice(Length, count);
+            Span<char> dst = _chars.Slice(_length, count);
             for (int i = 0; i < dst.Length; i++)
             {
                 dst[i] = c;
             }
-            Length += count;
+            _length += count;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe void Append(char* value, int length)
         {
-            int pos = Length;
+            int pos = _length;
             if (pos > _chars.Length - length)
             {
                 Grow(length);
             }
 
-            Span<char> dst = _chars.Slice(Length, length);
+            Span<char> dst = _chars.Slice(_length, length);
             for (int i = 0; i < dst.Length; i++)
             {
                 dst[i] = *value++;
             }
-            Length += length;
+            _length += length;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Append(ReadOnlySpan<char> value)
         {
-            int pos = Length;
+            int pos = _length;
             if (pos > _chars.Length - value.Length)
             {
                 Grow(value.Length);
             }
 
-            value.CopyTo(_chars.Slice(Length));
-            Length += value.Length;
+            value.CopyTo(_chars[_length..]);
+            _length += value.Length;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Span<char> AppendSpan(int length)
         {
-            int origPos = Length;
+            int origPos = _length;
             if (origPos > _chars.Length - length)
             {
                 Grow(length);
             }
 
-            Length = origPos + length;
+            _length = origPos + length;
             return _chars.Slice(origPos, length);
         }
 
@@ -262,6 +340,7 @@ namespace Server.Buffers
             Append(c);
         }
 
+#nullable enable
         /// <summary>
         /// Resize the internal buffer either by doubling current buffer size or
         /// by adding <paramref name="additionalCapacityBeyondPos"/> to
@@ -273,11 +352,11 @@ namespace Server.Buffers
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void Grow(int additionalCapacityBeyondPos)
         {
-            char[] poolArray = ArrayPool<char>.Shared.Rent(Math.Max(Length + additionalCapacityBeyondPos, _chars.Length * 2));
+            char[] poolArray = ArrayPool<char>.Shared.Rent(Math.Max(_length + additionalCapacityBeyondPos, _chars.Length * 2));
 
-            _chars.Slice(0, Length).CopyTo(poolArray);
+            _chars[.._length].CopyTo(poolArray);
 
-            char[]? toReturn = _arrayToReturnToPool;
+            char[] toReturn = _arrayToReturnToPool;
             _chars = _arrayToReturnToPool = poolArray;
             if (toReturn != null)
             {
@@ -288,18 +367,50 @@ namespace Server.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
-            char[]? toReturn = _arrayToReturnToPool;
+            char[] toReturn = _arrayToReturnToPool;
             this = default; // for safety, to avoid using pooled array if this instance is erroneously appended to again
             if (toReturn != null)
             {
                 ArrayPool<char>.Shared.Return(toReturn);
             }
         }
+#nullable restore
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void ReplaceAny(ReadOnlySpan<char> oldChars, ReadOnlySpan<char> newChars, int startIndex, int count)
+        {
+            int currentLength = _length;
+            if ((uint)startIndex > (uint)currentLength)
+            {
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            }
+
+            if (count < 0 || startIndex > currentLength - count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
+
+            var slice = _chars;
+
+            while (true)
+            {
+                var indexOf = slice.IndexOfAny(oldChars);
+                if (indexOf == -1)
+                {
+                    break;
+                }
+
+                var chr = slice[indexOf];
+
+                slice[indexOf] = newChars[oldChars.IndexOf(chr)];
+                slice = slice[(indexOf + 1)..];
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Replace(char oldChar, char newChar, int startIndex, int count)
         {
-            int currentLength = Length;
+            int currentLength = _length;
             if ((uint)startIndex > (uint)currentLength)
             {
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -321,7 +432,7 @@ namespace Server.Buffers
                 }
 
                 slice[indexOf] = newChar;
-                slice = slice.Slice(indexOf + 1);
+                slice = slice[(indexOf + 1)..];
             }
         }
 
@@ -338,26 +449,26 @@ namespace Server.Buffers
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             }
 
-            if (length > Length - startIndex)
+            if (length > _length - startIndex)
             {
                 throw new ArgumentOutOfRangeException(nameof(length));
             }
 
             if (startIndex == 0)
             {
-                _chars = _chars.Slice(length);
+                _chars = _chars[length..];
             }
-            else if (startIndex + length == Length)
+            else if (startIndex + length == _length)
             {
-                _chars = _chars.Slice(0, startIndex);
+                _chars = _chars[..startIndex];
             }
             else
             {
                 // Somewhere in the middle, this will be slow
-                _chars.Slice(startIndex + length).CopyTo(_chars.Slice(startIndex));
+                _chars[(startIndex + length)..].CopyTo(_chars[startIndex..]);
             }
 
-            Length -= length;
+            _length -= length;
         }
     }
 }

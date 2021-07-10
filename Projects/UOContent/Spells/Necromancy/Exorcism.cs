@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Server.Engines.CannedEvil;
 using Server.Engines.PartySystem;
 using Server.Factions;
@@ -85,7 +84,7 @@ namespace Server.Spells.Necromancy
         public override void OnCast()
         {
             var r = Caster.Region.GetRegion<ChampionSpawnRegion>();
-            if (r == null || !Caster.InRange(r.ChampionSpawn, Range))
+            if (r == null || !Caster.InRange(r.Spawn, Range))
             {
                 Caster.SendLocalizedMessage(1072111); // You are not in a valid exorcism region.
             }
@@ -95,12 +94,13 @@ namespace Server.Spells.Necromancy
 
                 if (map != null)
                 {
-                    var targets = r.ChampionSpawn.GetMobilesInRange(Range).Where(IsValidTarget);
-
-                    foreach (var m in targets)
-                        // Surprisingly, no sparkle type effects
+                    // Surprisingly, no sparkle type effects
+                    foreach (var m in r.Spawn.GetMobilesInRange(Range))
                     {
-                        m.Location = GetNearestShrine(m);
+                        if (IsValidTarget(m))
+                        {
+                            m.Location = GetNearestShrine(m);
+                        }
                     }
                 }
             }

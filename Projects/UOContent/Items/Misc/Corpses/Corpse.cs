@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Server.ContextMenus;
 using Server.Engines.PartySystem;
 using Server.Engines.Quests.Doom;
@@ -114,7 +113,7 @@ namespace Server.Items
 
             m_CorpseName = GetCorpseName(owner);
 
-            TimeOfDeath = DateTime.UtcNow;
+            TimeOfDeath = Core.Now;
 
             AccessLevel = owner.AccessLevel;
             Guild = owner.Guild as Guild;
@@ -141,10 +140,10 @@ namespace Server.Items
             {
                 var info = owner.Aggressors[i];
 
-                if (DateTime.UtcNow - info.LastCombatTime < lastTime)
+                if (Core.Now - info.LastCombatTime < lastTime)
                 {
                     Killer = info.Attacker;
-                    lastTime = DateTime.UtcNow - info.LastCombatTime;
+                    lastTime = Core.Now - info.LastCombatTime;
                 }
 
                 if (!isBaseCreature && !info.CriminalAggression)
@@ -157,10 +156,10 @@ namespace Server.Items
             {
                 var info = owner.Aggressed[i];
 
-                if (DateTime.UtcNow - info.LastCombatTime < lastTime)
+                if (Core.Now - info.LastCombatTime < lastTime)
                 {
                     Killer = info.Defender;
-                    lastTime = DateTime.UtcNow - info.LastCombatTime;
+                    lastTime = Core.Now - info.LastCombatTime;
                 }
 
                 if (!isBaseCreature)
@@ -201,7 +200,7 @@ namespace Server.Items
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
-        public virtual bool InstancedCorpse => Core.SE && DateTime.UtcNow < TimeOfDeath + InstancedCorpseTime;
+        public virtual bool InstancedCorpse => Core.SE && Core.Now < TimeOfDeath + InstancedCorpseTime;
 
         public override bool IsDecoContainer => false;
 
@@ -472,7 +471,7 @@ namespace Server.Items
         {
             m_DecayTimer?.Stop();
 
-            m_DecayTime = DateTime.UtcNow + delay;
+            m_DecayTime = Core.Now + delay;
 
             m_DecayTimer = new InternalTimer(this, delay);
             m_DecayTimer.Start();
@@ -658,7 +657,7 @@ namespace Server.Items
 
                         if (reader.ReadBool())
                         {
-                            BeginDecay(reader.ReadDeltaTime() - DateTime.UtcNow);
+                            BeginDecay(reader.ReadDeltaTime() - Core.Now);
                         }
 
                         Looters = reader.ReadEntityList<Mobile>();
@@ -712,7 +711,7 @@ namespace Server.Items
                     {
                         if (reader.ReadBool())
                         {
-                            BeginDecay(reader.ReadDeltaTime() - DateTime.UtcNow);
+                            BeginDecay(reader.ReadDeltaTime() - Core.Now);
                         }
 
                         goto case 6;
@@ -758,7 +757,7 @@ namespace Server.Items
                     {
                         if (version < 10)
                         {
-                            TimeOfDeath = DateTime.UtcNow;
+                            TimeOfDeath = Core.Now;
                         }
 
                         if (version < 7)

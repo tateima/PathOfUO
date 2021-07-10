@@ -10,41 +10,42 @@ namespace Server.Tests.Network
     {
         [Theory]
         [InlineData("Test String", "us-ascii", false, -1, 1024, 1024, 0)]
-        [InlineData("Test String", "utf-u", false, -1, 1024, 1024, 0)]
+        [InlineData("Test String", "utf-8", false, -1, 1024, 1024, 0)]
         [InlineData("Test String", "utf-16BE", false, -1, 1024, 1024, 0)]
         [InlineData("Test String", "utf-16", false, -1, 1024, 1024, 0)]
         [InlineData("Test String", "us-ascii", false, -1, 1024, 1024, 1030)]
-        [InlineData("Test String", "utf-u", false, -1, 1024, 1024, 1030)]
+        [InlineData("Test String", "utf-8", false, -1, 1024, 1024, 1030)]
         [InlineData("Test String", "utf-16BE", false, -1, 1024, 1024, 1030)]
         [InlineData("Test String", "utf-16", false, -1, 1024, 1024, 1030)]
         [InlineData("Test String", "us-ascii", false, -1, 1024, 1024, 1020)]
-        [InlineData("Test String", "utf-u", false, -1, 1024, 1024, 1020)]
+        [InlineData("Test String", "utf-8", false, -1, 1024, 1024, 1020)]
         [InlineData("Test String", "utf-16BE", false, -1, 1024, 1024, 1020)]
         [InlineData("Test String", "utf-16", false, -1, 1024, 1024, 1020)]
         [InlineData("Test String", "us-ascii", false, 8, 1024, 1024, 0)]
-        [InlineData("Test String", "utf-u", false, 8, 1024, 1024, 0)]
+        [InlineData("Test String", "utf-8", false, 8, 1024, 1024, 0)]
         [InlineData("Test String", "utf-16BE", false, 8, 1024, 1024, 0)]
         [InlineData("Test String", "utf-16", false, 8, 1024, 1024, 0)]
         [InlineData("Test String", "us-ascii", false, 8, 1024, 1024, 1030)]
-        [InlineData("Test String", "utf-u", false, 8, 1024, 1024, 1030)]
+        [InlineData("Test String", "utf-8", false, 8, 1024, 1024, 1030)]
         [InlineData("Test String", "utf-16BE", false, 8, 1024, 1024, 1030)]
         [InlineData("Test String", "utf-16", false, 8, 1024, 1024, 1030)]
         [InlineData("Test String", "us-ascii", false, 8, 1024, 1024, 1020)]
-        [InlineData("Test String", "utf-u", false, 8, 1024, 1024, 1020)]
+        [InlineData("Test String", "utf-8", false, 8, 1024, 1024, 1020)]
         [InlineData("Test String", "utf-16BE", false, 8, 1024, 1024, 1020)]
         [InlineData("Test String", "utf-16", false, 8, 1024, 1024, 1020)]
         [InlineData("Test String", "us-ascii", false, 20, 1024, 1024, 0)]
-        [InlineData("Test String", "utf-u", false, 20, 1024, 1024, 0)]
+        [InlineData("Test String", "utf-8", false, 20, 1024, 1024, 0)]
         [InlineData("Test String", "utf-16BE", false, 20, 1024, 1024, 0)]
         [InlineData("Test String", "utf-16", false, 20, 1024, 1024, 0)]
         [InlineData("Test String", "us-ascii", false, 20, 1024, 1024, 1030)]
-        [InlineData("Test String", "utf-u", false, 20, 1024, 1024, 1030)]
+        [InlineData("Test String", "utf-8", false, 20, 1024, 1024, 1030)]
         [InlineData("Test String", "utf-16BE", false, 20, 1024, 1024, 1030)]
         [InlineData("Test String", "utf-16", false, 20, 1024, 1024, 1030)]
         [InlineData("Test String", "us-ascii", false, 20, 1024, 1024, 1020)]
-        [InlineData("Test String", "utf-u", false, 20, 1024, 1024, 1020)]
+        [InlineData("Test String", "utf-8", false, 20, 1024, 1024, 1020)]
         [InlineData("Test String", "utf-16BE", false, 20, 1024, 1024, 1020)]
         [InlineData("Test String", "utf-16", false, 20, 1024, 1024, 1020)]
+        [InlineData("测试", "utf-8", true, -1, 1024, 1024, 0)]
         public void TestReadString(
             string value,
             string encodingStr,
@@ -62,15 +63,15 @@ namespace Server.Tests.Network
 
             var strLength = fixedLength > -1 ? Math.Min(value.Length, fixedLength) : value.Length;
             var chars = value.AsSpan(0, strLength);
-;
-            encoding.GetBytes(chars, buffer.Slice(offset));
 
-            var reader = new CircularBufferReader(buffer.Slice(0, firstSize), buffer.Slice(firstSize));
+            encoding.GetBytes(chars, buffer[offset..]);
+
+            var reader = new CircularBufferReader(buffer[..firstSize], buffer[firstSize..]);
             reader.Seek(offset, SeekOrigin.Begin);
 
             var actual = reader.ReadString(encoding, isSafe, fixedLength);
 
-            Assert.Equal(value.Substring(0, strLength), actual);
+            Assert.Equal(value[..strLength], actual);
         }
 
         [Fact]
@@ -81,7 +82,7 @@ namespace Server.Tests.Network
             expected[1] = 0x1;
             expected[2] = 0x1;
             expected[3] = 0x1;
-            Encoding.ASCII.GetBytes("TestString", expected.Slice(4, 10));
+            Encoding.ASCII.GetBytes("TestString", expected[4..14]);
             expected[14] = 0x0; // Null
             expected[15] = 0x2;
             expected[16] = 0x2;

@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.IO;
+using Server.Network;
 using Xunit;
 
 namespace Server.Tests.Buffers
@@ -54,7 +55,7 @@ namespace Server.Tests.Buffers
             var strLength = fixedLength > -1 ? Math.Min(value.Length, fixedLength) : value.Length;
             var chars = value.AsSpan(0, strLength);
 
-            var writer = new CircularBufferWriter(buffer.Slice(0, firstSize), buffer.Slice(firstSize));
+            var writer = new CircularBufferWriter(buffer[..firstSize], buffer[firstSize..]);
             writer.Seek(offset, SeekOrigin.Begin);
             writer.WriteString(chars, encoding);
 
@@ -62,11 +63,11 @@ namespace Server.Tests.Buffers
             {
                 Span<byte> testEmpty = stackalloc byte[offset];
                 testEmpty.Clear();
-                AssertThat.Equal(buffer.Slice(0, offset), testEmpty);
+                AssertThat.Equal(buffer[..offset], testEmpty);
             }
 
             Span<byte> expectedStr = stackalloc byte[encoding.GetByteCount(chars)];
-            encoding.GetBytes(chars, expectedStr.Slice(0));
+            encoding.GetBytes(chars, expectedStr[..]);
 
             AssertThat.Equal(buffer.Slice(offset, expectedStr.Length), expectedStr);
             offset += expectedStr.Length;
@@ -75,7 +76,7 @@ namespace Server.Tests.Buffers
             {
                 Span<byte> testEmpty = stackalloc byte[buffer.Length - offset];
                 testEmpty.Clear();
-                AssertThat.Equal(buffer.Slice(offset), testEmpty);
+                AssertThat.Equal(buffer[offset..], testEmpty);
             }
         }
     }

@@ -67,7 +67,7 @@ namespace Server.Factions
             set
             {
                 CurrentState = value;
-                LastStateTime = DateTime.UtcNow;
+                LastStateTime = Core.Now;
             }
         }
 
@@ -89,12 +89,7 @@ namespace Server.Factions
                     _                      => PendingPeriod
                 };
 
-                var until = LastStateTime + period - DateTime.UtcNow;
-
-                if (until < TimeSpan.Zero)
-                {
-                    until = TimeSpan.Zero;
-                }
+                var until = Utility.Max(LastStateTime + period - Core.Now, TimeSpan.Zero);
 
                 return until;
             }
@@ -108,7 +103,7 @@ namespace Server.Factions
                     _                      => PendingPeriod
                 };
 
-                LastStateTime = DateTime.UtcNow - period + value;
+                LastStateTime = Core.Now - period + value;
             }
         }
 
@@ -280,7 +275,6 @@ namespace Server.Factions
             if (Faction.Election != this)
             {
                 m_Timer?.Stop();
-
                 m_Timer = null;
 
                 return;
@@ -290,7 +284,7 @@ namespace Server.Factions
             {
                 case ElectionState.Pending:
                     {
-                        if (LastStateTime + PendingPeriod > DateTime.UtcNow)
+                        if (LastStateTime + PendingPeriod > Core.Now)
                         {
                             break;
                         }
@@ -304,7 +298,7 @@ namespace Server.Factions
                     }
                 case ElectionState.Campaign:
                     {
-                        if (LastStateTime + CampaignPeriod > DateTime.UtcNow)
+                        if (LastStateTime + CampaignPeriod > Core.Now)
                         {
                             break;
                         }
@@ -346,7 +340,7 @@ namespace Server.Factions
                     }
                 case ElectionState.Election:
                     {
-                        if (LastStateTime + VotingPeriod > DateTime.UtcNow)
+                        if (LastStateTime + VotingPeriod > Core.Now)
                         {
                             break;
                         }
@@ -413,7 +407,7 @@ namespace Server.Factions
                 Address = IPAddress.None;
             }
 
-            Time = DateTime.UtcNow;
+            Time = Core.Now;
         }
 
         public Voter(IGenericReader reader, Mobile candidate)
@@ -452,14 +446,7 @@ namespace Server.Factions
                 gameTime = mobile.GameTime;
             }
 
-            var kp = 0;
-
-            var pl = PlayerState.Find(From);
-
-            if (pl != null)
-            {
-                kp = pl.KillPoints;
-            }
+            var kp = PlayerState.Find(From)?.KillPoints ?? 0;
 
             var sk = From.Skills.Total;
 

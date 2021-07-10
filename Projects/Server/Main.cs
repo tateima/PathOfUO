@@ -17,38 +17,40 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Server.Buffers;
 using Server.Json;
+using Server.Logging;
 using Server.Network;
 
 namespace Server
 {
     public static class Core
     {
-        private static bool m_Crashed;
-        private static Thread timerThread;
-        private static string m_BaseDirectory;
+        private static readonly ILogger logger = LogFactory.GetLogger(typeof(Core));
 
-        private static bool m_Profiling;
-        private static DateTime m_ProfileStart;
-        private static TimeSpan m_ProfileTime;
-        private static bool? m_IsRunningFromXUnit;
+        private static bool _crashed;
+        private static Thread _timerThread;
+        private static string _baseDirectory;
 
-        private static long m_CycleIndex;
-        private static readonly float[] m_CyclesPerSecond = new float[127]; // Divisible by long.MaxValue
+        private static bool _profiling;
+        private static long _profileStart;
+        private static long _profileTime;
+#nullable enable
+        private static bool? _isRunningFromXUnit;
+#nullable restore
 
-        // private static readonly AutoResetEvent m_Signal = new AutoResetEvent(true);
+        private static int _itemCount;
+        private static int _mobileCount;
+        private static EventLoopContext _eventLoopContext;
 
-        private static int m_ItemCount;
-        private static int m_MobileCount;
-
-        private static readonly Type[] m_SerialTypeArray = { typeof(Serial) };
+        private static readonly Type[] _serialTypeArray = { typeof(Serial) };
 
         public static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         public static readonly bool IsDarwin = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
@@ -56,39 +58,57 @@ namespace Server
         public static readonly bool IsLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || IsFreeBSD;
         public static readonly bool Unix = IsDarwin || IsFreeBSD || IsLinux;
 
-        private const string assembliesConfiguration = "Data/assemblies.json";
+        private const string AssembliesConfiguration = "Data/assemblies.json";
 
-        public static bool IsRunningFromXUnit =>
-            m_IsRunningFromXUnit ??= AppDomain.CurrentDomain.GetAssemblies()
-                .Any(
-                    a => a.FullName.InsensitiveStartsWith("XUNIT")
-                );
+#nullable enable
+        // TODO: Find a way to get rid of this
+        public static bool IsRunningFromXUnit
+        {
+            get
+            {
+                if (_isRunningFromXUnit != null)
+                {
+                    return _isRunningFromXUnit.Value;
+                }
+
+                foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    if (a.FullName.InsensitiveStartsWith("xunit"))
+                    {
+                        _isRunningFromXUnit = true;
+                        return true;
+                    }
+                }
+
+                _isRunningFromXUnit = false;
+                return false;
+            }
+        }
+#nullable restore
 
         public static bool Profiling
         {
-            get => m_Profiling;
+            get => _profiling;
             set
             {
-                if (m_Profiling == value)
+                if (_profiling == value)
                 {
                     return;
                 }
 
-                m_Profiling = value;
+                _profiling = value;
 
-                if (m_ProfileStart > DateTime.MinValue)
+                if (_profileStart > 0)
                 {
-                    m_ProfileTime += DateTime.UtcNow - m_ProfileStart;
+                    _profileTime += Stopwatch.GetTimestamp() - _profileStart;
                 }
 
-                m_ProfileStart = m_Profiling ? DateTime.UtcNow : DateTime.MinValue;
+                _profileStart = _profiling ? Stopwatch.GetTimestamp() : 0;
             }
         }
 
         public static TimeSpan ProfileTime =>
-            m_ProfileStart > DateTime.MinValue
-                ? m_ProfileTime + (DateTime.UtcNow - m_ProfileStart)
-                : m_ProfileTime;
+            TimeSpan.FromTicks(_profileStart > 0 ? _profileTime + (Stopwatch.GetTimestamp() - _profileStart) : _profileTime);
 
         public static Assembly Assembly { get; set; }
 
@@ -99,8 +119,40 @@ namespace Server
 
         public static Thread Thread { get; private set; }
 
-        // Milliseconds
-        public static long TickCount => Stopwatch.GetTimestamp() * 1000L / Stopwatch.Frequency;
+        [ThreadStatic]
+        private static long _tickCount;
+
+        [ThreadStatic]
+        private static DateTime _now;
+
+        // For Unix Stopwatch.Frequency is normalized to 1ns
+        // We don't anticipate needing this for Windows/OSX
+        private static long _maxTickCountBeforePrecisionLoss = long.MaxValue / 1000L;
+        private static long _ticksPerMillisecond = Stopwatch.Frequency / 1000L;
+
+        public static long TickCount
+        {
+            get
+            {
+                if (_tickCount != 0)
+                {
+                    return _tickCount;
+                }
+
+                var timestamp = Stopwatch.GetTimestamp();
+                return timestamp > _maxTickCountBeforePrecisionLoss
+                    ? timestamp / _ticksPerMillisecond
+                    // No precision loss
+                    : 1000L * timestamp / Stopwatch.Frequency;
+            }
+            set => _tickCount = value;
+        }
+
+        public static DateTime Now
+        {
+            get => _now == DateTime.MinValue ? DateTime.UtcNow : _now;
+            set => _now = value;
+        }
 
         public static bool MultiProcessor { get; private set; }
 
@@ -110,24 +162,24 @@ namespace Server
         {
             get
             {
-                if (m_BaseDirectory == null)
+                if (_baseDirectory == null)
                 {
                     try
                     {
-                        m_BaseDirectory = Assembly.Location;
+                        _baseDirectory = Assembly.Location;
 
-                        if (m_BaseDirectory.Length > 0)
+                        if (_baseDirectory.Length > 0)
                         {
-                            m_BaseDirectory = Path.GetDirectoryName(m_BaseDirectory);
+                            _baseDirectory = Path.GetDirectoryName(_baseDirectory);
                         }
                     }
                     catch
                     {
-                        m_BaseDirectory = "";
+                        _baseDirectory = "";
                     }
                 }
 
-                return m_BaseDirectory;
+                return _baseDirectory;
             }
         }
 
@@ -135,33 +187,13 @@ namespace Server
 
         public static bool Closing => ClosingTokenSource.IsCancellationRequested;
 
-        public static float CyclesPerSecond => m_CyclesPerSecond[m_CycleIndex % m_CyclesPerSecond.Length];
-
-        public static float AverageCPS
-        {
-            get
-            {
-                var total = 0.0f;
-                var count = Math.Min(m_CycleIndex + 1, m_CyclesPerSecond.Length);
-
-                for (int i = 0; i < count; i++)
-                {
-                    total += m_CyclesPerSecond[i];
-                }
-
-                return total / count;
-            }
-        }
-
-        public static bool ConserveCPU { get; private set; }
-
         public static string Arguments
         {
             get
             {
                 var sb = new StringBuilder();
 
-                if (m_Profiling)
+                if (_profiling)
                 {
                     Utility.Separate(sb, "-profile", " ");
                 }
@@ -174,8 +206,8 @@ namespace Server
 
         public static int GlobalMaxUpdateRange { get; set; } = 24;
 
-        public static int ScriptItems => m_ItemCount;
-        public static int ScriptMobiles => m_MobileCount;
+        public static int ScriptItems => _itemCount;
+        public static int ScriptMobiles => _mobileCount;
 
         public static Expansion Expansion { get; set; }
 
@@ -201,12 +233,7 @@ namespace Server
 
         public static bool EJ => Expansion >= Expansion.EJ;
 
-        public static void Configure()
-        {
-            ConserveCPU = ServerConfiguration.GetOrUpdateSetting("core.conserveCpu", true);
-        }
-
-        public static string FindDataFile(string path, bool throwNotFound = true, bool warnNotFound = false)
+        public static string FindDataFile(string path, bool throwNotFound = true)
         {
             string fullPath = null;
 
@@ -222,16 +249,9 @@ namespace Server
                 fullPath = null;
             }
 
-            if (fullPath == null && (throwNotFound || warnNotFound))
+            if (fullPath == null && throwNotFound)
             {
-                Utility.PushColor(ConsoleColor.Red);
-                Console.WriteLine($"Data: {path} was not found");
-                Console.WriteLine("Make sure modernuo.json is properly configured");
-                Utility.PopColor();
-                if (throwNotFound)
-                {
-                    throw new FileNotFoundException($"Data: {path} was not found");
-                }
+                throw new FileNotFoundException($"Data: {path} was not found");
             }
 
             return fullPath;
@@ -244,7 +264,7 @@ namespace Server
 
             if (e.IsTerminating)
             {
-                m_Crashed = true;
+                _crashed = true;
 
                 var close = false;
 
@@ -287,7 +307,7 @@ namespace Server
                 _ => "CTRL+C"
             };
 
-            Console.WriteLine("Core: Detected {0} pressed.", keypress);
+            logger.Information($"Detected {keypress} pressed.");
             e.Cancel = true;
             Kill();
         }
@@ -330,24 +350,26 @@ namespace Server
         {
             ClosingTokenSource.Cancel();
 
-            Console.Write("Core: Shutting down...");
+            logger.Information("Shutting down");
 
             World.WaitForWriteCompletion();
 
-            if (!m_Crashed)
+            if (!_crashed)
             {
                 EventSink.InvokeShutdown();
             }
 
             Timer.TimerThread.Set();
-
-            Console.WriteLine("done");
         }
 
         public static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+
+            _eventLoopContext = new EventLoopContext();
+
+            SynchronizationContext.SetSynchronizationContext(_eventLoopContext);
 
             foreach (var a in args)
             {
@@ -396,10 +418,10 @@ namespace Server
             ".TrimMultiline());
             Utility.PopColor();
 
-            Console.WriteLine("Core: Running on {0}", RuntimeInformation.FrameworkDescription);
+            logger.Information($"Running on {RuntimeInformation.FrameworkDescription}");
 
             var ttObj = new Timer.TimerThread();
-            timerThread = new Thread(ttObj.TimerMain)
+            _timerThread = new Thread(ttObj.TimerMain)
             {
                 Name = "Timer Thread"
             };
@@ -408,7 +430,7 @@ namespace Server
 
             if (s.Length > 0)
             {
-                Console.WriteLine("Core: Running with arguments: {0}", s);
+                logger.Information($"Running with arguments: {s}");
             }
 
             ProcessorCount = Environment.ProcessorCount;
@@ -420,29 +442,33 @@ namespace Server
 
             if (MultiProcessor)
             {
-                Console.WriteLine("Core: Optimizing for {0} processor{1}", ProcessorCount, ProcessorCount == 1 ? "" : "s");
+                logger.Information($"Optimizing for {ProcessorCount} processor{(ProcessorCount == 1 ? "" : "s")}");
             }
 
             Console.CancelKeyPress += Console_CancelKeyPressed;
 
             if (GCSettings.IsServerGC)
             {
-                Console.WriteLine("Core: Server garbage collection mode enabled");
+                logger.Information("Server garbage collection mode enabled");
             }
 
-            Console.WriteLine(
-                "Core: High resolution timing ({0})",
-                Stopwatch.IsHighResolution ? "Supported" : "Unsupported"
-            );
+            logger.Information($"High resolution timing ({(Stopwatch.IsHighResolution ? "Supported" : "Unsupported")})");
 
             ServerConfiguration.Load();
 
-            var assemblyPath = Path.Join(BaseDirectory, assembliesConfiguration);
+            var assemblyPath = Path.Join(BaseDirectory, AssembliesConfiguration);
 
             // Load UOContent.dll
-            var assemblyFiles = JsonConfig.Deserialize<List<string>>(assemblyPath)
-                .Select(t => Path.Join(BaseDirectory, "Assemblies", t))
-                .ToArray();
+            var assemblyFiles = JsonConfig.Deserialize<List<string>>(assemblyPath)?.ToArray();
+            if (assemblyFiles == null)
+            {
+                throw new JsonException($"Failed to deserialize {assemblyPath}.");
+            }
+
+            for (var i = 0; i < assemblyFiles.Length; i++)
+            {
+                assemblyFiles[i] = Path.Join(BaseDirectory, "Assemblies", assemblyFiles[i]);
+            }
 
             AssemblyHandler.LoadScripts(assemblyFiles);
 
@@ -450,17 +476,14 @@ namespace Server
 
             AssemblyHandler.Invoke("Configure");
 
+            TileMatrixLoader.LoadTileMatrix();
+
             RegionLoader.LoadRegions();
             World.Load();
 
             AssemblyHandler.Invoke("Initialize");
 
-            timerThread.Start();
-
-            foreach (var m in Map.AllMaps)
-            {
-                m.Tiles.Force();
-            }
+            _timerThread.Start();
 
             TcpServer.Start();
             EventSink.InvokeServerStarted();
@@ -471,39 +494,36 @@ namespace Server
         {
             try
             {
-                long last = TickCount;
-
-                const int sampleInterval = 100;
-                const float ticksPerSecond = 1000.0f * sampleInterval;
-
-                long sample = 0;
+                const int interval = 100;
+                int idleCount = 0;
 
                 while (!Closing)
                 {
-                    Mobile.ProcessDeltaQueue();
-                    Item.ProcessDeltaQueue();
+                    _tickCount = TickCount;
+                    _now = DateTime.UtcNow;
 
-                    Timer.Slice();
+                    var events = Mobile.ProcessDeltaQueue();
+                    events += Item.ProcessDeltaQueue();
+                    events += Timer.Slice();
 
                     // Handle networking
-                    TcpServer.Slice();
-                    NetState.HandleAllReceives();
-                    NetState.FlushAll();
-                    NetState.ProcessDisposedQueue();
+                    events += TcpServer.Slice();
+                    events += NetState.HandleAllReceives();
+                    events += NetState.Slice();
 
-                    // Execute other stuff
-                    if (sample++ % sampleInterval != 0)
+                    // Execute captured post-await methods (like Timer.Pause)
+                    events += _eventLoopContext.ExecuteTasks();
+
+                    _tickCount = 0;
+                    _now = DateTime.MinValue;
+
+                    if (events > 0)
                     {
+                        idleCount = 0;
                         continue;
                     }
 
-                    var now = TickCount;
-                    var cyclesPerSecond = ticksPerSecond / (now - last);
-                    m_CyclesPerSecond[m_CycleIndex % m_CyclesPerSecond.Length] = cyclesPerSecond;
-                    m_CycleIndex = Math.Max(unchecked(m_CycleIndex + 1), 0);
-                    last = now;
-
-                    if (ConserveCPU && cyclesPerSecond >= 100)
+                    if (++idleCount > interval)
                     {
                         Thread.Sleep(1);
                     }
@@ -517,8 +537,8 @@ namespace Server
 
         public static void VerifySerialization()
         {
-            m_ItemCount = 0;
-            m_MobileCount = 0;
+            _itemCount = 0;
+            _mobileCount = 0;
 
             var callingAssembly = Assembly.GetCallingAssembly();
 
@@ -535,50 +555,83 @@ namespace Server
 
         private static void VerifyType(Type type)
         {
-            var isItem = type.IsSubclassOf(typeof(Item));
-
-            if (!isItem && !type.IsSubclassOf(typeof(Mobile)))
+            if (!type.IsAssignableTo(typeof(ISerializable)) || type.IsInterface || type.IsAbstract)
             {
                 return;
             }
 
-            if (isItem)
+            if (type.IsSubclassOf(typeof(Item)))
             {
-                Interlocked.Increment(ref m_ItemCount);
+                Interlocked.Increment(ref _itemCount);
             }
-            else
+            else if (!type.IsSubclassOf(typeof(Mobile)))
             {
-                Interlocked.Increment(ref m_MobileCount);
+                Interlocked.Increment(ref _mobileCount);
             }
 
-            StringBuilder warningSb = null;
+            ValueStringBuilder errors = new ValueStringBuilder();
 
             try
             {
-                if (type.GetConstructor(m_SerialTypeArray) == null)
+                if (World.DirtyTrackingEnabled)
                 {
-                    warningSb = new StringBuilder();
-                    warningSb.AppendLine("       - No serialization constructor");
+                    var manualDirtyCheckingAttribute = type.GetCustomAttribute<ManualDirtyCheckingAttribute>(false);
+                    var codeGennedAttribute = type.GetCustomAttribute<SerializableAttribute>(false);
+
+                    if (manualDirtyCheckingAttribute == null && codeGennedAttribute == null)
+                    {
+                        errors.AppendLine("       - No property tracking (dirty checking)");
+                    }
+                }
+
+                if (type.GetConstructor(_serialTypeArray) == null)
+                {
+                    errors.AppendLine("       - No serialization constructor");
                 }
 
                 const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic |
                                                   BindingFlags.Instance | BindingFlags.DeclaredOnly;
-                if (type.GetMethod("Serialize", bindingFlags) == null)
+
+                var hasSerializeMethod = false;
+                var hasDeserializeMethod = false;
+
+                foreach (var method in type.GetMethods(bindingFlags))
                 {
-                    warningSb ??= new StringBuilder();
-                    warningSb.AppendLine("       - No Serialize() method");
+                    if (method.Name == "Serialize")
+                    {
+                        hasSerializeMethod = true;
+                    }
+
+                    if (method.Name == "Deserialize")
+                    {
+                        var parameters = method.GetParameters();
+                        if (parameters.Length == 1 && parameters[0].ParameterType == typeof(IGenericReader))
+                        {
+                            hasDeserializeMethod = true;
+                        }
+                    }
                 }
 
-                if (type.GetMethod("Deserialize", bindingFlags) == null)
+                if (!hasSerializeMethod)
                 {
-                    warningSb ??= new StringBuilder();
-                    warningSb.AppendLine("       - No Deserialize() method");
+                    errors.AppendLine("       - No Serialize() method");
                 }
 
-                if (warningSb?.Length > 0)
+                if (!hasDeserializeMethod)
                 {
-                    Console.WriteLine("Warning: {0}\n{1}", type, warningSb);
+                    errors.AppendLine("       - No Deserialize() method");
                 }
+
+                if (errors.Length > 0)
+                {
+                    Utility.PushColor(ConsoleColor.Red);
+                    Console.WriteLine($"{type}\n{errors.ToString()}");
+                    Utility.PopColor();
+                }
+            }
+            catch (AmbiguousMatchException e)
+            {
+                // ignored
             }
             catch
             {

@@ -20,15 +20,18 @@ namespace Server.Items
 {
     public sealed class VirtualCheck : Item
     {
-        // TODO: Move to configuration
-        public static bool UseEditGump = false;
+        public static bool UseEditGump { get; private set; }
+
+        public static void Configure()
+        {
+            UseEditGump = ServerConfiguration.GetSetting("virtualChecks.useEditGump", Core.TOL);
+        }
 
         private int m_Gold;
 
         private int m_Plat;
 
-        public VirtualCheck(int plat = 0, int gold = 0)
-            : base(0x14F0)
+        public VirtualCheck(int plat = 0, int gold = 0) : base(0x14F0)
         {
             Plat = plat;
             Gold = gold;
@@ -178,8 +181,7 @@ namespace Server.Items
 
             private int m_Plat, m_Gold;
 
-            public EditGump(Mobile user, VirtualCheck check)
-                : base(50, 50)
+            public EditGump(Mobile user, VirtualCheck check) : base(50, 50)
             {
                 User = user;
                 Check = check;

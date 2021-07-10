@@ -1,47 +1,14 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using Server.Commands;
 using Server.Network;
+
+using static Server.Gumps.PropsConfig;
 
 namespace Server.Gumps
 {
     public class SetTimeSpanGump : Gump
     {
-        public static readonly bool OldStyle = PropsConfig.OldStyle;
-
-        public static readonly int GumpOffsetX = PropsConfig.GumpOffsetX;
-        public static readonly int GumpOffsetY = PropsConfig.GumpOffsetY;
-
-        public static readonly int TextHue = PropsConfig.TextHue;
-        public static readonly int TextOffsetX = PropsConfig.TextOffsetX;
-
-        public static readonly int OffsetGumpID = PropsConfig.OffsetGumpID;
-        public static readonly int HeaderGumpID = PropsConfig.HeaderGumpID;
-        public static readonly int EntryGumpID = PropsConfig.EntryGumpID;
-        public static readonly int BackGumpID = PropsConfig.BackGumpID;
-        public static readonly int SetGumpID = PropsConfig.SetGumpID;
-
-        public static readonly int SetWidth = PropsConfig.SetWidth;
-        public static readonly int SetOffsetX = PropsConfig.SetOffsetX, SetOffsetY = PropsConfig.SetOffsetY;
-        public static readonly int SetButtonID1 = PropsConfig.SetButtonID1;
-        public static readonly int SetButtonID2 = PropsConfig.SetButtonID2;
-
-        public static readonly int PrevWidth = PropsConfig.PrevWidth;
-        public static readonly int PrevOffsetX = PropsConfig.PrevOffsetX, PrevOffsetY = PropsConfig.PrevOffsetY;
-        public static readonly int PrevButtonID1 = PropsConfig.PrevButtonID1;
-        public static readonly int PrevButtonID2 = PropsConfig.PrevButtonID2;
-
-        public static readonly int NextWidth = PropsConfig.NextWidth;
-        public static readonly int NextOffsetX = PropsConfig.NextOffsetX, NextOffsetY = PropsConfig.NextOffsetY;
-        public static readonly int NextButtonID1 = PropsConfig.NextButtonID1;
-        public static readonly int NextButtonID2 = PropsConfig.NextButtonID2;
-
-        public static readonly int OffsetSize = PropsConfig.OffsetSize;
-
-        public static readonly int EntryHeight = PropsConfig.EntryHeight;
-        public static readonly int BorderSize = PropsConfig.BorderSize;
-
         private static readonly int EntryWidth = 212;
 
         private static readonly int TotalWidth = OffsetSize + EntryWidth + OffsetSize + SetWidth + OffsetSize;
@@ -49,24 +16,20 @@ namespace Server.Gumps
 
         private static readonly int BackWidth = BorderSize + TotalWidth + BorderSize;
         private static readonly int BackHeight = BorderSize + TotalHeight + BorderSize;
-        private readonly List<object> m_List;
         private readonly Mobile m_Mobile;
         private readonly object m_Object;
-        private readonly int m_Page;
         private readonly PropertyInfo m_Property;
-        private readonly Stack<StackEntry> m_Stack;
+        private readonly PropertiesGump m_PropertiesGump;
 
         public SetTimeSpanGump(
-            PropertyInfo prop, Mobile mobile, object o, Stack<StackEntry> stack, int page, List<object> list
+            PropertyInfo prop, Mobile mobile, object o, PropertiesGump propertiesGump
         )
             : base(GumpOffsetX, GumpOffsetY)
         {
+            m_PropertiesGump = propertiesGump;
             m_Property = prop;
             m_Mobile = mobile;
             m_Object = o;
-            m_Stack = stack;
-            m_Page = page;
-            m_List = list;
 
             var ts = (TimeSpan)(prop?.GetValue(o, null) ?? new TimeSpan());
 
@@ -239,7 +202,7 @@ namespace Server.Gumps
                 {
                     CommandLogging.LogChangeProperty(m_Mobile, m_Object, m_Property.Name, toSet.ToString());
                     m_Property.SetValue(m_Object, toSet, null);
-                    PropertiesGump.OnValueChanged(m_Object, m_Property, m_Stack);
+                    m_PropertiesGump.OnValueChanged(m_Object, m_Property);
                 }
                 catch
                 {
@@ -249,7 +212,7 @@ namespace Server.Gumps
 
             if (shouldSend)
             {
-                m_Mobile.SendGump(new PropertiesGump(m_Mobile, m_Object, m_Stack, m_List, m_Page));
+                m_PropertiesGump.SendPropertiesGump();
             }
         }
     }

@@ -38,22 +38,22 @@ namespace Server.Items
         private void SendGMItem(NetState ns)
         {
             // GM Packet
-            Span<byte> buffer = stackalloc byte[OutgoingItemPackets.MaxWorldItemPacketLength];
+            Span<byte> buffer = stackalloc byte[OutgoingEntityPackets.MaxWorldEntityPacketLength].InitializePacket();
 
             int length;
 
             if (ns.StygianAbyss)
             {
-                length = OutgoingItemPackets.CreateWorldItemNew(buffer, this, ns.HighSeas);
-                BinaryPrimitives.WriteUInt16BigEndian(buffer.Slice(8, 2), GMItemId);
+                length = OutgoingEntityPackets.CreateWorldEntity(buffer, this, ns.HighSeas);
+                BinaryPrimitives.WriteUInt16BigEndian(buffer[8..10], GMItemId);
             }
             else
             {
                 length = OutgoingItemPackets.CreateWorldItem(buffer, this);
-                BinaryPrimitives.WriteUInt16BigEndian(buffer.Slice(7, 2), GMItemId);
+                BinaryPrimitives.WriteUInt16BigEndian(buffer[7..2], GMItemId);
             }
 
-            ns.Send(buffer.Slice(0, length));
+            ns.Send(buffer[..length]);
         }
 
         public override void Serialize(IGenericWriter writer)

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using Server.Random;
 
 namespace Server.Engines.Harvest
@@ -66,7 +66,13 @@ namespace Server.Engines.Harvest
             set
             {
                 m_Veins = value;
-                VeinWeights = m_Veins.Aggregate<HarvestVein, uint>(0, (current, t) => current + t.VeinChance);
+                var totalWeight = 0u;
+                for (var i = 0; i < m_Veins.Length; i++)
+                {
+                    totalWeight += m_Veins[i].VeinChance;
+                }
+
+                VeinWeights = totalWeight;
             }
         }
 
@@ -78,16 +84,16 @@ namespace Server.Engines.Harvest
 
         public uint VeinWeights { get; private set; }
 
-        public Dictionary<Map, Dictionary<Point2D, HarvestBank>> Banks { get; }
-            = new();
+        public Dictionary<Map, Dictionary<Point2D, HarvestBank>> Banks { get; } = new();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SendMessageTo(Mobile from, TextDefinition message)
         {
-            if (message.Number > 0)
+            if (message?.Number > 0)
             {
                 from.SendLocalizedMessage(message.Number);
             }
-            else
+            else if (!string.IsNullOrWhiteSpace(message))
             {
                 from.SendMessage(message);
             }

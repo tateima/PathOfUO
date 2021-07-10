@@ -33,7 +33,7 @@ namespace Server.Network
 
             public AuthIDPersistence(ClientVersion v)
             {
-                Age = DateTime.UtcNow;
+                Age = Core.Now;
                 Version = v;
             }
         }
@@ -55,11 +55,14 @@ namespace Server.Network
             IncomingPackets.Register(0xF8, 106, false, CreateCharacter);
         }
 
-        public static void CreateCharacter(NetState state, CircularBufferReader reader)
+        public static void CreateCharacter(NetState state, CircularBufferReader reader, ref int packetLength)
         {
+            reader.Seek(9, SeekOrigin.Current);
+            /*
             var unk1 = reader.ReadInt32();
             var unk2 = reader.ReadInt32();
             int unk3 = reader.ReadByte();
+            */
             var name = reader.ReadAscii(30);
 
             reader.Seek(2, SeekOrigin.Current);
@@ -113,8 +116,11 @@ namespace Server.Network
             int hairHuef = reader.ReadInt16();
             reader.ReadByte();
             int cityIndex = reader.ReadByte();
+            reader.Seek(8, SeekOrigin.Current);
+            /*
             var charSlot = reader.ReadInt32();
             var clientIP = reader.ReadInt32();
+            */
             int shirtHue = reader.ReadInt16();
             int pantsHue = reader.ReadInt16();
 
@@ -140,69 +146,68 @@ namespace Server.Network
 
             if (info == null || a == null || cityIndex < 0 || cityIndex >= info.Length)
             {
-                state.Dispose();
+                state.Disconnect("Invalid city selected during character creation.");
+                return;
+            }
+
+            // Check if anyone is using this account
+            for (var i = 0; i < a.Length; ++i)
+            {
+                var check = a[i];
+
+                if (check != null && check.Map != Map.Internal)
+                {
+                    state.LogInfo("Account in use");
+                    state.SendPopupMessage(PMMessage.CharInWorld);
+                    return;
+                }
+            }
+
+            state.Flags = (ClientFlags)flags;
+
+            var args = new CharacterCreatedEventArgs(
+                state,
+                a,
+                name,
+                female,
+                hue,
+                str,
+                dex,
+                intl,
+                info[cityIndex],
+                skills,
+                shirtHue,
+                pantsHue,
+                hairVal,
+                hairHue,
+                hairValf,
+                hairHuef,
+                prof,
+                race
+            );
+
+            state.SendClientVersionRequest();
+
+            state.BlockAllPackets = true;
+
+            EventSink.InvokeCharacterCreated(args);
+
+            var m = args.Mobile;
+
+            if (m != null)
+            {
+                state.Mobile = m;
+                m.NetState = state;
+                new LoginTimer(state, m).Start();
             }
             else
             {
-                // Check if anyone is using this account
-                for (var i = 0; i < a.Length; ++i)
-                {
-                    var check = a[i];
-
-                    if (check != null && check.Map != Map.Internal)
-                    {
-                        state.WriteConsole("Account in use");
-                        state.SendPopupMessage(PMMessage.CharInWorld);
-                        return;
-                    }
-                }
-
-                state.Flags = (ClientFlags)flags;
-
-                var args = new CharacterCreatedEventArgs(
-                    state,
-                    a,
-                    name,
-                    female,
-                    hue,
-                    str,
-                    dex,
-                    intl,
-                    info[cityIndex],
-                    skills,
-                    shirtHue,
-                    pantsHue,
-                    hairVal,
-                    hairHue,
-                    hairValf,
-                    hairHuef,
-                    prof,
-                    race
-                );
-
-                state.SendClientVersionRequest();
-
-                state.BlockAllPackets = true;
-
-                EventSink.InvokeCharacterCreated(args);
-
-                var m = args.Mobile;
-
-                if (m != null)
-                {
-                    state.Mobile = m;
-                    m.NetState = state;
-                    new LoginTimer(state, m).Start();
-                }
-                else
-                {
-                    state.BlockAllPackets = false;
-                    state.Dispose();
-                }
+                state.BlockAllPackets = false;
+                state.Disconnect("Character creation blocked.");
             }
         }
 
-        public static void DeleteCharacter(NetState state, CircularBufferReader reader)
+        public static void DeleteCharacter(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             reader.Seek(30, SeekOrigin.Current);
             var index = reader.ReadInt32();
@@ -210,24 +215,24 @@ namespace Server.Network
             EventSink.InvokeDeleteRequest(state, index);
         }
 
-        public static void AccountID(NetState state, CircularBufferReader reader)
+        public static void AccountID(NetState state, CircularBufferReader reader, ref int packetLength)
         {
         }
 
-        public static void AssistVersion(NetState state, CircularBufferReader reader)
+        public static void AssistVersion(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             var unk = reader.ReadInt32();
             var av = reader.ReadAscii();
         }
 
-        public static void ClientVersion(NetState state, CircularBufferReader reader)
+        public static void ClientVersion(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             var version = state.Version = new CV(reader.ReadAscii());
 
             EventSink.InvokeClientVersionReceived(state, version);
         }
 
-        public static void ClientType(NetState state, CircularBufferReader reader)
+        public static void ClientType(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             reader.ReadUInt16();
 
@@ -237,11 +242,11 @@ namespace Server.Network
             EventSink.InvokeClientVersionReceived(state, version);
         }
 
-        public static void PlayCharacter(NetState state, CircularBufferReader reader)
+        public static void PlayCharacter(NetState state, CircularBufferReader reader, ref int packetLength)
         {
-            reader.ReadInt32(); // 0xEDEDEDED
+            reader.Seek(4, SeekOrigin.Current); // 0xEDEDEDED
 
-            var name = reader.ReadAscii(30);
+            reader.Seek(30, SeekOrigin.Current); //  var name = reader.ReadAscii(30);
 
             reader.Seek(2, SeekOrigin.Current);
 
@@ -250,53 +255,49 @@ namespace Server.Network
             reader.Seek(24, SeekOrigin.Current);
 
             var charSlot = reader.ReadInt32();
-            var clientIP = reader.ReadInt32();
+            reader.Seek(4, SeekOrigin.Current); // var clientIP = reader.ReadInt32();
 
             var a = state.Account;
 
             if (a == null || charSlot < 0 || charSlot >= a.Length)
             {
-                state.Dispose();
+                state.Disconnect("Invalid character slot selected.");
+                return;
             }
-            else
+
+            var m = a[charSlot];
+
+            // Check if anyone is using this account
+            for (var i = 0; i < a.Length; ++i)
             {
-                var m = a[charSlot];
+                var check = a[i];
 
-                // Check if anyone is using this account
-                for (var i = 0; i < a.Length; ++i)
+                if (check != null && check.Map != Map.Internal && check != m)
                 {
-                    var check = a[i];
-
-                    if (check != null && check.Map != Map.Internal && check != m)
-                    {
-                        state.WriteConsole("Account in use");
-                        state.SendPopupMessage(PMMessage.CharInWorld);
-                        return;
-                    }
-                }
-
-                if (m == null)
-                {
-                    state.Dispose();
+                    state.LogInfo("Account in use");
+                    state.SendPopupMessage(PMMessage.CharInWorld);
                     return;
                 }
-
-                m.NetState?.Dispose();
-
-                // TODO: Make this wait one tick so we don't have to call it unnecessarily
-                NetState.ProcessDisposedQueue();
-
-                state.SendClientVersionRequest();
-
-                state.BlockAllPackets = true;
-
-                state.Flags = (ClientFlags)flags;
-
-                state.Mobile = m;
-                m.NetState = state;
-
-                new LoginTimer(state, m).Start();
             }
+
+            if (m == null)
+            {
+                state.Disconnect("Empty character slot selected.");
+                return;
+            }
+
+            m.NetState?.Disconnect("Character selected for a player already logged in.");
+
+            state.SendClientVersionRequest();
+
+            state.BlockAllPackets = true;
+
+            state.Flags = (ClientFlags)flags;
+
+            state.Mobile = m;
+            m.NetState = state;
+
+            new LoginTimer(state, m).Start();
         }
 
         public static void DoLogin(this NetState state, Mobile m)
@@ -305,10 +306,7 @@ namespace Server.Network
 
             state.SendMapChange(m.Map);
 
-            if (!Core.SE && state.ProtocolChanges < ProtocolChanges.Version6000)
-            {
-                state.SendMapPatches();
-            }
+            state.SendMapPatches();
 
             state.SendSeasonChange((byte)m.GetSeason(), true);
 
@@ -381,11 +379,13 @@ namespace Server.Network
             return authID;
         }
 
-        public static void GameLogin(NetState state, CircularBufferReader reader)
+        public static void GameLogin(NetState state, CircularBufferReader reader, ref int packetLength)
         {
+            // TODO: Connection throttling
+
             if (state.SentFirstPacket)
             {
-                state.Dispose();
+                state.Disconnect("Duplicate game login packet received.");
                 return;
             }
 
@@ -393,14 +393,16 @@ namespace Server.Network
 
             var authID = reader.ReadInt32();
 
-            if (
-                !m_AuthIDWindow.TryGetValue(authID, out var ap) ||
-                state.m_AuthID != 0 && authID != state.m_AuthID ||
-                state.m_AuthID == 0 && authID != state.m_Seed
-            )
+            if (!m_AuthIDWindow.TryGetValue(authID, out var ap))
             {
-                state.WriteConsole("Invalid client detected, disconnecting");
-                state.Dispose();
+                state.LogInfo("Invalid client detected, disconnecting...");
+                state.Disconnect("Unable to find auth id.");
+            }
+
+            if (state._authId != 0 && authID != state._authId || state._authId == 0 && authID != state._seed)
+            {
+                state.LogInfo("Invalid client detected, disconnecting...");
+                state.Disconnect("Invalid auth id in game login packet.");
                 return;
             }
 
@@ -420,18 +422,18 @@ namespace Server.Network
 
                 // Comment out these lines to turn off huffman compression
                 state.CompressionEnabled = true;
-                state.PacketEncoder = NetworkCompression.Compress;
+                state.PacketEncoder ??= NetworkCompression.Compress;
 
                 state.SendSupportedFeature();
                 state.SendCharacterList();
             }
             else
             {
-                state.Dispose();
+                state.Disconnect("Login rejected by GameLogin packet handler.");
             }
         }
 
-        public static void PlayServer(NetState state, CircularBufferReader reader)
+        public static void PlayServer(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             int index = reader.ReadInt16();
             var info = state.ServerInfo;
@@ -439,28 +441,28 @@ namespace Server.Network
 
             if (info == null || a == null || index < 0 || index >= info.Length)
             {
-                state.Dispose();
+                state.Disconnect("Invalid server selected.");
             }
             else
             {
                 var si = info[index];
 
-                state.m_AuthID = GenerateAuthID(state);
+                state._authId = GenerateAuthID(state);
 
                 state.SentFirstPacket = false;
-                state.SendPlayServerAck(si, state.m_AuthID);
+                state.SendPlayServerAck(si, state._authId);
             }
         }
 
-        public static void LoginServerSeed(NetState state, CircularBufferReader reader)
+        public static void LoginServerSeed(NetState state, CircularBufferReader reader, ref int packetLength)
         {
-            state.m_Seed = reader.ReadInt32();
+            state._seed = reader.ReadInt32();
             state.Seeded = true;
 
-            if (state.m_Seed == 0)
+            if (state._seed == 0)
             {
-                state.WriteConsole("Invalid client detected, disconnecting");
-                state.Dispose();
+                state.LogInfo("Invalid client detected, disconnecting");
+                state.Disconnect("Duplicate seed sent.");
                 return;
             }
 
@@ -472,11 +474,13 @@ namespace Server.Network
             state.Version = new ClientVersion(clientMaj, clientMin, clientRev, clientPat);
         }
 
-        public static void AccountLogin(NetState state, CircularBufferReader reader)
+        public static void AccountLogin(NetState state, CircularBufferReader reader, ref int packetLength)
         {
+            // TODO: Throttle Connection
+
             if (state.SentFirstPacket)
             {
-                state.Dispose();
+                state.Disconnect("Duplicate account login packet sent.");
                 return;
             }
 
@@ -515,34 +519,44 @@ namespace Server.Network
         private static void AccountLogin_ReplyRej(this NetState state, ALRReason reason)
         {
             state.SendAccountLoginRejected(reason);
-            state.Dispose();
+            state.Disconnect($"Account login rejected due to {reason}");
         }
 
         private class LoginTimer : Timer
         {
-            private readonly Mobile m_Mobile;
-            private readonly NetState m_State;
+            private readonly Mobile _mobile;
+            private readonly NetState _state;
 
             public LoginTimer(NetState state, Mobile m) : base(TimeSpan.FromSeconds(1.0), TimeSpan.FromSeconds(1.0))
             {
-                m_State = state;
-                m_Mobile = m;
+                _state = state;
+                _mobile = m;
             }
 
             protected override void OnTick()
             {
-                if (m_State == null)
+                if (_state != null)
                 {
-                    Stop();
-                    return;
+                    if (_state.Account == null)
+                    {
+                        _state.Disconnect("Account was deleted during the login process.");
+                    }
+                    else if (_mobile == null)
+                    {
+                        _state.Disconnect("Player was deleted during the login process.");
+                    }
+                    else if (_state.Version != null)
+                    {
+                        _state.BlockAllPackets = false;
+                        DoLogin(_state, _mobile);
+                    }
+                    else // Waiting to receive the client version before we continue the login process
+                    {
+                        return;
+                    }
                 }
 
-                if (m_State.Version != null)
-                {
-                    m_State.BlockAllPackets = false;
-                    DoLogin(m_State, m_Mobile);
-                    Stop();
-                }
+                Stop();
             }
         }
     }

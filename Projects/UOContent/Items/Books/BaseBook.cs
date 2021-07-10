@@ -1,45 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using Server.Buffers;
 using Server.ContextMenus;
 using Server.Gumps;
 using Server.Multis;
-using Server.Network;
 
 namespace Server.Items
 {
-    public class BookPageInfo
-    {
-        public BookPageInfo() => Lines = Array.Empty<string>();
-
-        public BookPageInfo(params string[] lines) => Lines = lines;
-
-        public BookPageInfo(IGenericReader reader)
-        {
-            var length = reader.ReadInt();
-
-            Lines = new string[length];
-
-            for (var i = 0; i < Lines.Length; ++i)
-            {
-                Lines[i] = Utility.Intern(reader.ReadString());
-            }
-        }
-
-        public string[] Lines { get; set; }
-
-        public void Serialize(IGenericWriter writer)
-        {
-            writer.Write(Lines.Length);
-
-            for (var i = 0; i < Lines.Length; ++i)
-            {
-                writer.Write(Lines[i]);
-            }
-        }
-    }
-
     public class BaseBook : Item, ISecurable
     {
         private string m_Author;
@@ -111,7 +78,7 @@ namespace Server.Items
         [CommandProperty(AccessLevel.GameMaster)]
         public int PagesCount => Pages.Length;
 
-        public BookPageInfo[] Pages { get; private set; }
+        public BookPageInfo[] Pages { get; protected set; }
 
         public virtual BookContent DefaultContent => null;
 
@@ -263,14 +230,7 @@ namespace Server.Items
                         }
                         else
                         {
-                            if (content != null)
-                            {
-                                Pages = content.Copy();
-                            }
-                            else
-                            {
-                                Pages = Array.Empty<BookPageInfo>();
-                            }
+                            Pages = content?.Copy() ?? Array.Empty<BookPageInfo>();
                         }
 
                         break;
@@ -295,14 +255,7 @@ namespace Server.Items
                         {
                             var content = DefaultContent;
 
-                            if (content != null)
-                            {
-                                Pages = content.Copy();
-                            }
-                            else
-                            {
-                                Pages = Array.Empty<BookPageInfo>();
-                            }
+                            Pages = content?.Copy() ?? Array.Empty<BookPageInfo>();
                         }
 
                         break;
@@ -355,121 +308,8 @@ namespace Server.Items
                 Author = from.Name;
             }
 
-            from.Send(new BookHeader(from, this));
-            from.Send(new BookPageDetails(this));
-        }
-
-        public static void Initialize()
-        {
-            IncomingPackets.Register(0xD4, 0, true, HeaderChange);
-            IncomingPackets.Register(0x66, 0, true, ContentChange);
-            IncomingPackets.Register(0x93, 99, true, OldHeaderChange);
-        }
-
-        public static void OldHeaderChange(NetState state, CircularBufferReader reader)
-        {
-            var from = state.Mobile;
-
-            if (!(World.FindItem(reader.ReadUInt32()) is BaseBook book) || !book.Writable ||
-                !from.InRange(book.GetWorldLocation(), 1) || !book.IsAccessibleTo(from))
-            {
-                return;
-            }
-
-            reader.Seek(4, SeekOrigin.Current); // Skip flags and page count
-
-            var title = reader.ReadAsciiSafe(60);
-            var author = reader.ReadAsciiSafe(30);
-
-            book.Title = Utility.FixHtml(title);
-            book.Author = Utility.FixHtml(author);
-        }
-
-        public static void HeaderChange(NetState state, CircularBufferReader reader)
-        {
-            var from = state.Mobile;
-
-            if (!(World.FindItem(reader.ReadUInt32()) is BaseBook book) || !book.Writable ||
-                !from.InRange(book.GetWorldLocation(), 1) || !book.IsAccessibleTo(from))
-            {
-                return;
-            }
-
-            reader.Seek(4, SeekOrigin.Current); // Skip flags and page count
-
-            int titleLength = reader.ReadUInt16();
-
-            if (titleLength > 60)
-            {
-                return;
-            }
-
-            var title = reader.ReadUTF8Safe(titleLength);
-
-            int authorLength = reader.ReadUInt16();
-
-            if (authorLength > 30)
-            {
-                return;
-            }
-
-            var author = reader.ReadUTF8Safe(authorLength);
-
-            book.Title = Utility.FixHtml(title);
-            book.Author = Utility.FixHtml(author);
-        }
-
-        public static void ContentChange(NetState state, CircularBufferReader reader)
-        {
-            var from = state.Mobile;
-
-            if (!(World.FindItem(reader.ReadUInt32()) is BaseBook book) || !book.Writable ||
-                !from.InRange(book.GetWorldLocation(), 1) || !book.IsAccessibleTo(from))
-            {
-                return;
-            }
-
-            int pageCount = reader.ReadUInt16();
-
-            if (pageCount > book.PagesCount)
-            {
-                return;
-            }
-
-            for (var i = 0; i < pageCount; ++i)
-            {
-                int index = reader.ReadUInt16();
-
-                if (index >= 1 && index <= book.PagesCount)
-                {
-                    --index;
-
-                    int lineCount = reader.ReadUInt16();
-
-                    if (lineCount <= 8)
-                    {
-                        var lines = new string[lineCount];
-
-                        for (var j = 0; j < lineCount; ++j)
-                        {
-                            if ((lines[j] = reader.ReadUTF8Safe()).Length >= 80)
-                            {
-                                return;
-                            }
-                        }
-
-                        book.Pages[index].Lines = lines;
-                    }
-                    else
-                    {
-                        return;
-                    }
-                }
-                else
-                {
-                    return;
-                }
-            }
+            from.NetState.SendBookCover(from, this);
+            from.NetState.SendBookContent(this);
         }
 
         [Flags]
@@ -480,60 +320,6 @@ namespace Server.Items
             Author = 0x02,
             Writable = 0x04,
             Content = 0x08
-        }
-    }
-
-    public sealed class BookPageDetails : Packet
-    {
-        public BookPageDetails(BaseBook book) : base(0x66)
-        {
-            EnsureCapacity(256);
-
-            Stream.Write(book.Serial);
-            Stream.Write((ushort)book.PagesCount);
-
-            for (var i = 0; i < book.PagesCount; ++i)
-            {
-                var page = book.Pages[i];
-
-                Stream.Write((ushort)(i + 1));
-                Stream.Write((ushort)page.Lines.Length);
-
-                for (var j = 0; j < page.Lines.Length; ++j)
-                {
-                    var buffer = Utility.UTF8.GetBytes(page.Lines[j]);
-
-                    Stream.Write(buffer, 0, buffer.Length);
-                    Stream.Write((byte)0);
-                }
-            }
-        }
-    }
-
-    public sealed class BookHeader : Packet
-    {
-        public BookHeader(Mobile from, BaseBook book) : base(0xD4)
-        {
-            var title = book.Title ?? "";
-            var author = book.Author ?? "";
-
-            var titleBuffer = Utility.UTF8.GetBytes(title);
-            var authorBuffer = Utility.UTF8.GetBytes(author);
-
-            EnsureCapacity(15 + titleBuffer.Length + authorBuffer.Length);
-
-            Stream.Write(book.Serial);
-            Stream.Write(true);
-            Stream.Write(book.Writable && from.InRange(book.GetWorldLocation(), 1));
-            Stream.Write((ushort)book.PagesCount);
-
-            Stream.Write((ushort)(titleBuffer.Length + 1));
-            Stream.Write(titleBuffer, 0, titleBuffer.Length);
-            Stream.Write((byte)0); // terminate
-
-            Stream.Write((ushort)(authorBuffer.Length + 1));
-            Stream.Write(authorBuffer, 0, authorBuffer.Length);
-            Stream.Write((byte)0); // terminate
         }
     }
 }

@@ -2,12 +2,15 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using Server.Accounting;
+using Server.Logging;
 using Server.Network;
 
 namespace Server.Misc
 {
     public static class CrashGuard
     {
+        private static readonly ILogger logger = LogFactory.GetLogger(typeof(CrashGuard));
+
         private static bool Enabled;
         private static bool SaveBackup;
         private static bool RestartServer; // Disable this if using a daemon/service
@@ -51,25 +54,25 @@ namespace Server.Misc
 
         private static void SendEmail(string filePath)
         {
-            Console.Write("Crash: Sending email...");
+            logger.Information("Sending crash email");
 
             Email.SendCrashEmail(filePath);
         }
 
         private static void Restart(ServerCrashedEventArgs e)
         {
-            Console.Write("Crash: Restarting...");
+            logger.Information("Restarting");
 
             try
             {
                 Process.Start(Core.Assembly.Location, Core.Arguments);
-                Console.WriteLine("done");
+                logger.Information("Restart done");
 
                 e.Close = true;
             }
             catch
             {
-                Console.WriteLine("failed");
+                logger.Error("Restart failed");
             }
         }
 
@@ -96,11 +99,11 @@ namespace Server.Misc
 
         private static void Backup()
         {
-            Console.Write("Crash: Backing up...");
+            logger.Information("Backing up");
 
             try
             {
-                var timeStamp = GetTimeStamp();
+                var timeStamp = Utility.GetTimeStamp();
 
                 var root = Core.BaseDirectory;
                 var rootBackup = Path.Combine(root, $"Backups/Crashed/{timeStamp}/");
@@ -123,21 +126,21 @@ namespace Server.Misc
                 CopyFile(rootOrigin, rootBackup, "Regions/Regions.bin");
                 CopyFile(rootOrigin, rootBackup, "Regions/Regions.idx");
 
-                Console.WriteLine("done");
+                logger.Information("Backup done");
             }
             catch
             {
-                Console.WriteLine("failed");
+                logger.Error("Backup failed");
             }
         }
 
         private static void GenerateCrashReport(ServerCrashedEventArgs e)
         {
-            Console.Write("Crash: Generating report...");
+            logger.Information("Generating crash report");
 
             try
             {
-                var timeStamp = GetTimeStamp();
+                var timeStamp = Utility.GetTimeStamp();
                 var fileName = $"Crash {timeStamp}.log";
 
                 var root = Core.BaseDirectory;
@@ -210,21 +213,14 @@ namespace Server.Misc
                     }
                 }
 
-                Console.WriteLine("done");
+                logger.Information("Crash report generated");
 
                 SendEmail(filePath);
             }
             catch
             {
-                Console.WriteLine("failed");
+                logger.Error("Crash report generation failed");
             }
-        }
-
-        private static string GetTimeStamp()
-        {
-            var now = DateTime.UtcNow;
-
-            return $"{now.Day}-{now.Month}-{now.Year}-{now.Hour}-{now.Minute}-{now.Second}";
         }
     }
 }

@@ -19,6 +19,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Server;
+using Server.Text;
 
 namespace System.Buffers
 {
@@ -57,7 +58,7 @@ namespace System.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public short ReadInt16()
         {
-            if (!BinaryPrimitives.TryReadInt16BigEndian(_buffer.Slice(Position), out var value))
+            if (!BinaryPrimitives.TryReadInt16BigEndian(_buffer[Position..], out var value))
             {
                 throw new OutOfMemoryException();
             }
@@ -69,7 +70,7 @@ namespace System.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public short ReadInt16LE()
         {
-            if (!BinaryPrimitives.TryReadInt16LittleEndian(_buffer.Slice(Position), out var value))
+            if (!BinaryPrimitives.TryReadInt16LittleEndian(_buffer[Position..], out var value))
             {
                 throw new OutOfMemoryException();
             }
@@ -81,7 +82,7 @@ namespace System.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ushort ReadUInt16()
         {
-            if (!BinaryPrimitives.TryReadUInt16BigEndian(_buffer.Slice(Position), out var value))
+            if (!BinaryPrimitives.TryReadUInt16BigEndian(_buffer[Position..], out var value))
             {
                 throw new OutOfMemoryException();
             }
@@ -93,7 +94,7 @@ namespace System.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ushort ReadUInt16LE()
         {
-            if (!BinaryPrimitives.TryReadUInt16LittleEndian(_buffer.Slice(Position), out var value))
+            if (!BinaryPrimitives.TryReadUInt16LittleEndian(_buffer[Position..], out var value))
             {
                 throw new OutOfMemoryException();
             }
@@ -105,7 +106,7 @@ namespace System.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int ReadInt32()
         {
-            if (!BinaryPrimitives.TryReadInt32BigEndian(_buffer.Slice(Position), out var value))
+            if (!BinaryPrimitives.TryReadInt32BigEndian(_buffer[Position..], out var value))
             {
                 throw new OutOfMemoryException();
             }
@@ -117,7 +118,7 @@ namespace System.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint ReadUInt32()
         {
-            if (!BinaryPrimitives.TryReadUInt32BigEndian(_buffer.Slice(Position), out var value))
+            if (!BinaryPrimitives.TryReadUInt32BigEndian(_buffer[Position..], out var value))
             {
                 throw new OutOfMemoryException();
             }
@@ -129,7 +130,7 @@ namespace System.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public uint ReadUInt32LE()
         {
-            if (!BinaryPrimitives.TryReadUInt32LittleEndian(_buffer.Slice(Position), out var value))
+            if (!BinaryPrimitives.TryReadUInt32LittleEndian(_buffer[Position..], out var value))
             {
                 throw new OutOfMemoryException();
             }
@@ -139,15 +140,38 @@ namespace System.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public long ReadInt64()
+        {
+            if (!BinaryPrimitives.TryReadInt64BigEndian(_buffer[Position..], out var value))
+            {
+                throw new OutOfMemoryException();
+            }
+
+            Position += 8;
+            return value;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ulong ReadUInt64()
+        {
+            if (!BinaryPrimitives.TryReadUInt64BigEndian(_buffer[Position..], out var value))
+            {
+                throw new OutOfMemoryException();
+            }
+
+            Position += 8;
+            return value;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string ReadString(Encoding encoding, bool safeString = false, int fixedLength = -1)
         {
-            int sizeT = Utility.GetByteLengthForEncoding(encoding);
+            int sizeT = TextEncoding.GetByteLengthForEncoding(encoding);
 
             bool isFixedLength = fixedLength > -1;
 
             var remaining = Remaining;
             int size;
-
             if (isFixedLength)
             {
                 size = fixedLength * sizeT;
@@ -158,47 +182,49 @@ namespace System.Buffers
             }
             else
             {
+                // In case the remaining is not evenly divisible
                 size = remaining - (remaining & (sizeT - 1));
+                int index = _buffer.Slice(Position, size).IndexOfTerminator(sizeT);
+                size = index < 0 ? size : index;
             }
 
-            int index = Utility.IndexOfTerminator(_buffer.Slice(Position, size), sizeT);
-
-            Position += isFixedLength || index < 0 ? size : index + sizeT;
-            return Utility.GetString(_buffer.Slice(Position, index < 0 ? size : index), encoding, safeString);
+            var span = _buffer.Slice(Position, size);
+            Position += size;
+            return TextEncoding.GetString(span, encoding, safeString);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadLittleUniSafe(int fixedLength) => ReadString(Utility.UnicodeLE, true, fixedLength);
+        public string ReadLittleUniSafe(int fixedLength) => ReadString(TextEncoding.UnicodeLE, true, fixedLength);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadLittleUniSafe() => ReadString(Utility.UnicodeLE, true);
+        public string ReadLittleUniSafe() => ReadString(TextEncoding.UnicodeLE, true);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadLittleUni(int fixedLength) => ReadString(Utility.UnicodeLE, false, fixedLength);
+        public string ReadLittleUni(int fixedLength) => ReadString(TextEncoding.UnicodeLE, false, fixedLength);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadLittleUni() => ReadString(Utility.UnicodeLE);
+        public string ReadLittleUni() => ReadString(TextEncoding.UnicodeLE);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadBigUniSafe(int fixedLength) => ReadString(Utility.Unicode, true, fixedLength);
+        public string ReadBigUniSafe(int fixedLength) => ReadString(TextEncoding.Unicode, true, fixedLength);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadBigUniSafe() => ReadString(Utility.Unicode, true);
+        public string ReadBigUniSafe() => ReadString(TextEncoding.Unicode, true);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadBigUni(int fixedLength) => ReadString(Utility.Unicode, false, fixedLength);
+        public string ReadBigUni(int fixedLength) => ReadString(TextEncoding.Unicode, false, fixedLength);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadBigUni() => ReadString(Utility.Unicode);
+        public string ReadBigUni() => ReadString(TextEncoding.Unicode);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadUTF8Safe(int fixedLength) => ReadString(Utility.UTF8, true, fixedLength);
+        public string ReadUTF8Safe(int fixedLength) => ReadString(TextEncoding.UTF8, true, fixedLength);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadUTF8Safe() => ReadString(Utility.UTF8, true);
+        public string ReadUTF8Safe() => ReadString(TextEncoding.UTF8, true);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadUTF8() => ReadString(Utility.UTF8);
+        public string ReadUTF8() => ReadString(TextEncoding.UTF8);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string ReadAsciiSafe(int fixedLength) => ReadString(Encoding.ASCII, true, fixedLength);
@@ -251,6 +277,17 @@ namespace System.Buffers
                 SeekOrigin.End     => _buffer.Length + offset,
                 _                  => offset // Begin
             });
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Read(Span<byte> bytes)
+        {
+            if (bytes.Length < Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bytes));
+            }
+
+            return _buffer.TryCopyTo(bytes);
         }
     }
 }

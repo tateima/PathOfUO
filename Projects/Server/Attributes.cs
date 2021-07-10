@@ -73,12 +73,12 @@ namespace Server
 
             if (objs.Length == 0)
             {
-                return 0;
+                return 50;
             }
 
             if (!(objs[0] is CallPriorityAttribute attr))
             {
-                return 0;
+                return 50;
             }
 
             return attr.Priority;
@@ -122,14 +122,14 @@ namespace Server
     [AttributeUsage(AttributeTargets.Property)]
     public class CommandPropertyAttribute : Attribute
     {
-        public CommandPropertyAttribute(AccessLevel level, bool readOnly)
+        public CommandPropertyAttribute(
+            AccessLevel level,
+            bool readOnly = false,
+            bool canModify = false
+        ) : this(level, level)
         {
-            ReadLevel = level;
             ReadOnly = readOnly;
-        }
-
-        public CommandPropertyAttribute(AccessLevel level) : this(level, level)
-        {
+            CanModify = canModify;
         }
 
         public CommandPropertyAttribute(AccessLevel readLevel, AccessLevel writeLevel)
@@ -139,9 +139,8 @@ namespace Server
         }
 
         public AccessLevel ReadLevel { get; }
-
         public AccessLevel WriteLevel { get; }
-
         public bool ReadOnly { get; }
+        public bool CanModify { get; }
     }
 }

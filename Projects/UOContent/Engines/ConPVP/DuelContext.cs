@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Server.Engines.PartySystem;
 using Server.Factions;
 using Server.Gumps;
@@ -1295,9 +1294,26 @@ namespace Server.Engines.ConPVP
             }
         }
 
-        public static bool CheckCombat(Mobile m) =>
-            m.Aggressed.Any(info => info.Defender.Player && DateTime.UtcNow - info.LastCombatTime < CombatDelay) ||
-            m.Aggressors.Any(info => info.Attacker.Player && DateTime.UtcNow - info.LastCombatTime < CombatDelay);
+        public static bool CheckCombat(Mobile m)
+        {
+            foreach (var info in m.Aggressed)
+            {
+                if (info.Defender.Player && Core.Now - info.LastCombatTime < CombatDelay)
+                {
+                    return true;
+                }
+            }
+
+            foreach (var info in m.Aggressors)
+            {
+                if (info.Attacker.Player && Core.Now - info.LastCombatTime < CombatDelay)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         private static void EventSink_Login(Mobile m)
         {
@@ -2585,7 +2601,7 @@ namespace Server.Engines.ConPVP
                 Mobile = mob;
                 Location = loc;
                 Facet = facet;
-                m_Expire = DateTime.UtcNow + TimeSpan.FromMinutes(30.0);
+                m_Expire = Core.Now + TimeSpan.FromMinutes(30.0);
             }
 
             public Mobile Mobile { get; }
@@ -2594,7 +2610,7 @@ namespace Server.Engines.ConPVP
 
             public Map Facet { get; private set; }
 
-            public bool Expired => DateTime.UtcNow >= m_Expire;
+            public bool Expired => Core.Now >= m_Expire;
 
             public void Return()
             {
@@ -2617,7 +2633,7 @@ namespace Server.Engines.ConPVP
 
             public void Update()
             {
-                m_Expire = DateTime.UtcNow + TimeSpan.FromMinutes(30.0);
+                m_Expire = Core.Now + TimeSpan.FromMinutes(30.0);
 
                 if (Mobile.Map == Map.Internal)
                 {

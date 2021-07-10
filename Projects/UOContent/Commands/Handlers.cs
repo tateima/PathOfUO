@@ -21,7 +21,7 @@ namespace Server.Commands
     {
         public static void Initialize()
         {
-            CommandSystem.Prefix = "[";
+            CommandSystem.Prefix = ServerConfiguration.GetOrUpdateSetting("commandsystem.prefix", "[");
 
             Register("Go", AccessLevel.Counselor, Go_OnCommand);
 
@@ -201,14 +201,12 @@ namespace Server.Commands
                     list.Count == 1 ? "" : "s"
                 );
 
-                NetState.Pause();
+                NetState.FlushAll();
 
                 for (var i = 0; i < list.Count; ++i)
                 {
                     list[i].Delete();
                 }
-
-                NetState.Resume();
 
                 from.SendMessage("You have deleted {0} object{1}.", list.Count, list.Count == 1 ? "" : "s");
             }

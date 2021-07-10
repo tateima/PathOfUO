@@ -15,14 +15,18 @@
 
 using System;
 using System.IO;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using MimeKit;
 using Server.Json;
+using Server.Logging;
 
 namespace Server.Configurations
 {
     public static class EmailConfiguration
     {
+        private static readonly ILogger logger = LogFactory.GetLogger(typeof(EmailConfiguration));
+
         private const string m_RelPath = "Configuration/email-settings.json";
 
         public static MailboxAddress CrashAddress { get; private set; }
@@ -44,26 +48,21 @@ namespace Server.Configurations
 
             if (File.Exists(path))
             {
-                Console.Write($"Core: Reading email configuration from {m_RelPath}...");
                 settings = JsonConfig.Deserialize<Settings>(path);
 
                 if (settings == null)
                 {
-                    Utility.PushColor(ConsoleColor.Red);
-                    Console.WriteLine("failed");
-                    Utility.PopColor();
-                    throw new Exception("Core: Email configuration failed to deserialize.");
+                    logger.Error($"Failed reading email configuration from {m_RelPath}");
+                    throw new JsonException($"Failed to deserialize {path}.");
                 }
 
-                Console.WriteLine("done");
+                logger.Information($"Email configuration read from {m_RelPath}");
             }
             else
             {
                 settings = new Settings();
                 JsonConfig.Serialize(path, settings);
-                Utility.PushColor(ConsoleColor.Green);
-                Console.WriteLine($"Core: Email Configuration saved to {m_RelPath}.");
-                Utility.PopColor();
+                logger.Information($"Email configuration saved to {m_RelPath}.");
             }
 
             EmailEnabled = settings.enabled;

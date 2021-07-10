@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Server.Items;
+using Server.Multis.Boats;
 using Server.Network;
 
 namespace Server.Multis
@@ -74,7 +75,7 @@ namespace Server.Multis
 
         public BaseBoat() : base(0x0)
         {
-            m_DecayTime = DateTime.UtcNow + BoatDecayDelay;
+            m_DecayTime = Core.Now + BoatDecayDelay;
 
             TillerMan = new TillerMan(this);
             Hold = new Hold(this);
@@ -167,29 +168,29 @@ namespace Server.Multis
         {
             get
             {
-                var start = TimeOfDecay - BoatDecayDelay;
+                var start = Core.Now - TimeOfDecay - BoatDecayDelay;
 
-                if (DateTime.UtcNow - start < TimeSpan.FromHours(1.0))
+                if (start < TimeSpan.FromHours(1.0))
                 {
                     return 1043010; // This structure is like new.
                 }
 
-                if (DateTime.UtcNow - start < TimeSpan.FromDays(2.0))
+                if (start < TimeSpan.FromDays(2.0))
                 {
                     return 1043011; // This structure is slightly worn.
                 }
 
-                if (DateTime.UtcNow - start < TimeSpan.FromDays(3.0))
+                if (start < TimeSpan.FromDays(3.0))
                 {
                     return 1043012; // This structure is somewhat worn.
                 }
 
-                if (DateTime.UtcNow - start < TimeSpan.FromDays(4.0))
+                if (start < TimeSpan.FromDays(4.0))
                 {
                     return 1043013; // This structure is fairly worn.
                 }
 
-                if (DateTime.UtcNow - start < TimeSpan.FromDays(5.0))
+                if (start < TimeSpan.FromDays(5.0))
                 {
                     return 1043014; // This structure is greatly worn.
                 }
@@ -449,16 +450,13 @@ namespace Server.Multis
         public override void OnAfterDelete()
         {
             TillerMan?.Delete();
-
             Hold?.Delete();
-
             PPlank?.Delete();
-
             SPlank?.Delete();
-
             m_TurnTimer?.Stop();
-
+            m_TurnTimer = null;
             m_MoveTimer?.Stop();
+            m_MoveTimer = null;
 
             Boats.Remove(this);
         }
@@ -526,7 +524,7 @@ namespace Server.Multis
 
         public void Refresh()
         {
-            m_DecayTime = DateTime.UtcNow + BoatDecayDelay;
+            m_DecayTime = Core.Now + BoatDecayDelay;
 
             TillerMan?.InvalidateProperties();
         }
@@ -538,7 +536,7 @@ namespace Server.Multis
                 return true;
             }
 
-            if (!IsMoving && DateTime.UtcNow >= m_DecayTime)
+            if (!IsMoving && Core.Now >= m_DecayTime)
             {
                 new DecayTimer(this).Start();
 
@@ -735,11 +733,12 @@ namespace Server.Multis
                 return DryDockResult.Items;
             }
 
-            var ents = GetMovingEntities();
+            using var ents = GetMovingEntities();
+            var enumerator = ents.GetEnumerator();
 
-            if (ents.Count >= 1)
+            if (enumerator.MoveNext())
             {
-                return ents[0] is Mobile ? DryDockResult.Mobiles : DryDockResult.Items;
+                return enumerator.Current is Mobile ? DryDockResult.Mobiles : DryDockResult.Items;
             }
 
             return DryDockResult.Valid;
@@ -859,7 +858,7 @@ namespace Server.Multis
 
             if (e.Speech.Length > 8)
             {
-                Rename(e.Speech.Substring(8).Trim().DefaultIfNullOrEmpty(null));
+                Rename(e.Speech[8..].Trim().DefaultIfNullOrEmpty(null));
             }
         }
 
@@ -872,7 +871,7 @@ namespace Server.Multis
 
             if (newName?.Length > 40)
             {
-                newName = newName.Substring(0, 40);
+                newName = newName[..40];
             }
 
             if (m_ShipName == newName)
@@ -1006,7 +1005,7 @@ namespace Server.Multis
 
             if (start != -1)
             {
-                var sNumber = navPoint.Substring(start);
+                var sNumber = navPoint[start..];
 
                 if (!int.TryParse(sNumber, out number))
                 {
@@ -1276,7 +1275,7 @@ namespace Server.Multis
 
             m_TurnTimer?.Stop();
 
-            m_TurnTimer = new TurnTimer(this, offset);
+            m_TurnTimer = Timer.DelayCall(TimeSpan.FromMilliseconds(500), Turn, offset);
             m_TurnTimer.Start();
 
             if (message)
@@ -1286,6 +1285,8 @@ namespace Server.Multis
 
             return true;
         }
+
+        public void Turn(int offset) => Turn(offset, true);
 
         public bool Turn(int offset, bool message)
         {
@@ -1476,7 +1477,7 @@ namespace Server.Multis
             var rx = p.X - Location.X;
             var ry = p.Y - Location.Y;
 
-            for (var i = 0; i < count; ++i)
+            for (var i = 0; i < count; i++)
             {
                 var temp = rx;
                 rx = -ry;
@@ -1516,8 +1517,8 @@ namespace Server.Multis
             var dx = x - X;
             var dy = y - Y;
 
-            var adx = Math.Abs(dx);
-            var ady = Math.Abs(dy);
+            var adx = dx.Abs();
+            var ady = dy.Abs();
 
             var dir = Utility.GetDirection(this, new Point2D(x, y));
             var iDir = (int)dir;
@@ -1525,7 +1526,7 @@ namespace Server.Multis
             // Compute the maximum distance we can travel without going too far away
             if (iDir % 2 == 0) // North, East, South and West
             {
-                maxSpeed = Math.Abs(adx - ady);
+                maxSpeed = (adx - ady).Abs();
             }
             else // Right, Down, Left and Up
             {
@@ -1730,18 +1731,13 @@ namespace Server.Multis
                 }
             }
 
-            if (!NewBoatMovement || Math.Abs(xOffset) > 1 || Math.Abs(yOffset) > 1)
+            if (!NewBoatMovement || xOffset.Abs() > 1 || yOffset.Abs() > 1)
             {
                 Teleport(xOffset, yOffset, 0);
             }
             else
             {
-                var toMove = GetMovingEntities();
-
-                SafeAdd(TillerMan, toMove);
-                SafeAdd(Hold, toMove);
-                SafeAdd(PPlank, toMove);
-                SafeAdd(SPlank, toMove);
+                using var eable = GetMovingEntities(true);
 
                 // Packet must be sent before actual locations are changed
                 foreach (var ns in Map.GetClientsInRange(Location, GetMaxUpdateRange()))
@@ -1750,11 +1746,12 @@ namespace Server.Multis
 
                     if (ns.HighSeas && m.CanSee(this) && m.InRange(Location, GetUpdateRange(m)))
                     {
-                        ns.Send(new MoveBoatHS(m, this, d, clientSpeed, toMove, xOffset, yOffset));
+                        ns.SendMoveBoatHS(m, this, d, clientSpeed, eable, xOffset, yOffset);
+                        eable.Reset();
                     }
                 }
 
-                foreach (var e in toMove)
+                foreach (var e in eable)
                 {
                     if (e is Item item)
                     {
@@ -1775,7 +1772,9 @@ namespace Server.Multis
                 NoMoveHS = true;
                 Location = new Point3D(X + xOffset, Y + yOffset, Z);
 
-                foreach (var e in toMove)
+                eable.Reset();
+
+                foreach (var e in eable)
                 {
                     if (e is Item item)
                     {
@@ -1793,22 +1792,10 @@ namespace Server.Multis
             return true;
         }
 
-        private static void SafeAdd(Item item, List<IEntity> toMove)
-        {
-            if (item != null)
-            {
-                toMove.Add(item);
-            }
-        }
-
         public void Teleport(int xOffset, int yOffset, int zOffset)
         {
-            var toMove = GetMovingEntities();
-
-            for (var i = 0; i < toMove.Count; ++i)
+            foreach (var e in GetMovingEntities())
             {
-                var e = toMove[i];
-
                 if (e is Item item)
                 {
                     item.Location = new Point3D(item.X + xOffset, item.Y + yOffset, item.Z + zOffset);
@@ -1822,43 +1809,115 @@ namespace Server.Multis
             Location = new Point3D(X + xOffset, Y + yOffset, Z + zOffset);
         }
 
-        public List<IEntity> GetMovingEntities()
+        public virtual MovingEntitiesEnumerable GetMovingEntities(bool includeBoat = false)
         {
-            var list = new List<IEntity>();
-
             var map = Map;
 
             if (map == null || map == Map.Internal)
             {
-                return list;
+                return new MovingEntitiesEnumerable(this, includeBoat, null);
             }
 
             var mcl = Components;
 
-            foreach (var o in map.GetObjectsInBounds(new Rectangle2D(X + mcl.Min.X, Y + mcl.Min.Y, mcl.Width, mcl.Height)))
-            {
-                if (o == this || o is TillerMan || o is Hold || o is Plank)
-                {
-                    continue;
-                }
+            var eable = map.GetObjectsInBounds(new Rectangle2D(X + mcl.Min.X, Y + mcl.Min.Y, mcl.Width, mcl.Height));
+            return new MovingEntitiesEnumerable(this, includeBoat, eable);
+        }
 
-                if (o is Item item)
-                {
-                    if (Contains(item) && item.Visible && item.Z >= Z)
-                    {
-                        list.Add(item);
-                    }
-                }
-                else if (o is Mobile m)
-                {
-                    if (Contains(m))
-                    {
-                        list.Add(m);
-                    }
-                }
+        public ref struct MovingEntitiesEnumerable
+        {
+            private readonly IPooledEnumerable<IEntity> _entities;
+            private readonly IEnumerator<IEntity> _enumerator;
+            private readonly bool _includeBoat;
+            private BaseBoat _boat;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public MovingEntitiesEnumerable(BaseBoat boat, bool includeBoat, IPooledEnumerable<IEntity> entities)
+            {
+                _entities = entities;
+                _enumerator = entities?.GetEnumerator();
+                _boat = boat;
+                _includeBoat = includeBoat;
             }
 
-            return list;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public MovingEntitiesEnumerator GetEnumerator() => new(_boat, _includeBoat, _enumerator);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Dispose()
+            {
+                _entities?.Free();
+                _enumerator?.Dispose();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Reset()
+            {
+                _enumerator?.Reset();
+            }
+        }
+
+        public ref struct MovingEntitiesEnumerator
+        {
+            private readonly IEnumerator<IEntity> _enumerator;
+            private IEntity? _current;
+            private readonly bool _includeBoat;
+            private readonly BaseBoat _boat;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public MovingEntitiesEnumerator(BaseBoat boat, bool includeBoat, IEnumerator<IEntity> enumerator = null)
+            {
+                _enumerator = enumerator;
+                _current = default;
+                _includeBoat = includeBoat;
+                _boat = boat;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool MoveNext()
+            {
+                IEntity current;
+                while (_enumerator?.MoveNext() == true)
+                {
+                    current = _enumerator.Current;
+
+                    if (!_includeBoat && current is Server.Items.TillerMan or Server.Items.Hold or Plank)
+                    {
+                        continue;
+                    }
+
+                    if (current is Item item)
+                    {
+                        if (item == _boat)
+                        {
+                            continue;
+                        }
+
+                         // TODO: Remove visible check and use something better, like check for spawners, or other things in the ocean we shouldn't pick up on accident
+                        if (_boat.Contains(item) && item.Visible && item.Z >= _boat.Z)
+                        {
+                            _current = current;
+                            return true;
+                        }
+                    }
+                    else if (current is Mobile m)
+                    {
+                        if (_boat.Contains(m))
+                        {
+                            _current = current;
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            public IEntity Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => _current;
+            }
         }
 
         public bool SetFacing(Direction facing)
@@ -1913,20 +1972,32 @@ namespace Server.Multis
             m_Facing = facing;
 
             TillerMan?.SetFacing(facing);
-
             Hold?.SetFacing(facing);
-
             PPlank?.SetFacing(facing);
-
             SPlank?.SetFacing(facing);
-
-            var toMove = GetMovingEntities();
-
-            toMove.Add(PPlank);
-            toMove.Add(SPlank);
 
             int xOffset = 0, yOffset = 0;
             Movement.Movement.Offset(facing, ref xOffset, ref yOffset);
+
+            var count = ((m_Facing - old) & 0x7) / 2;
+
+            foreach (var e in GetMovingEntities())
+            {
+                if (e == this)
+                {
+                    continue;
+                }
+
+                if (e is Item item)
+                {
+                    item.Location = Rotate(item.Location, count);
+                }
+                else if (e is Mobile m)
+                {
+                    m.Direction = (m.Direction - old + facing) & Direction.Mask;
+                    m.Location = Rotate(m.Location, count);
+                }
+            }
 
             if (TillerMan != null)
             {
@@ -1942,22 +2013,14 @@ namespace Server.Multis
                 Hold.Location = new Point3D(X + xOffset * HoldDistance, Y + yOffset * HoldDistance, Hold.Z);
             }
 
-            var count = (m_Facing - old) & 0x7;
-            count /= 2;
-
-            for (var i = 0; i < toMove.Count; ++i)
+            if (PPlank != null)
             {
-                var e = toMove[i];
+                PPlank.Location = Rotate(PPlank.Location, count);
+            }
 
-                if (e is Item item)
-                {
-                    item.Location = Rotate(item.Location, count);
-                }
-                else if (e is Mobile m)
-                {
-                    m.Direction = (m.Direction - old + facing) & Direction.Mask;
-                    m.Location = Rotate(m.Location, count);
-                }
+            if (SPlank != null)
+            {
+                SPlank.Location = Rotate(SPlank.Location, count);
             }
 
             ItemID = facing switch
@@ -1982,13 +2045,8 @@ namespace Server.Multis
 
         public static void Initialize()
         {
-            new UpdateAllTimer().Start();
-            EventSink.WorldSave += EventSink_WorldSave;
-        }
-
-        private static void EventSink_WorldSave()
-        {
-            new UpdateAllTimer().Start();
+            EventSink.WorldLoad += UpdateAllComponents;
+            EventSink.WorldSave += UpdateAllComponents;
         }
 
         private class DecayTimer : Timer
@@ -2021,28 +2079,6 @@ namespace Server.Multis
             }
         }
 
-        private class TurnTimer : Timer
-        {
-            private readonly BaseBoat m_Boat;
-            private readonly int m_Offset;
-
-            public TurnTimer(BaseBoat boat, int offset) : base(TimeSpan.FromSeconds(0.5))
-            {
-                m_Boat = boat;
-                m_Offset = offset;
-
-                Priority = TimerPriority.TenMS;
-            }
-
-            protected override void OnTick()
-            {
-                if (!m_Boat.Deleted)
-                {
-                    m_Boat.Turn(m_Offset, true);
-                }
-            }
-        }
-
         private class MoveTimer : Timer
         {
             private readonly BaseBoat m_Boat;
@@ -2062,18 +2098,6 @@ namespace Server.Multis
             }
         }
 
-        public class UpdateAllTimer : Timer
-        {
-            public UpdateAllTimer() : base(TimeSpan.FromSeconds(1.0))
-            {
-            }
-
-            protected override void OnTick()
-            {
-                UpdateAllComponents();
-            }
-        }
-
         /*
          * OSI sends the 0xF7 packet instead, holding 0xF3 packets
          * for every entity on the boat. Though, the regular 0xF3
@@ -2089,141 +2113,5 @@ namespace Server.Multis
             return base.GetWorldPacketFor( state );
         }
         */
-
-        public sealed class MoveBoatHS : Packet
-        {
-            public MoveBoatHS(
-                Mobile beholder, BaseBoat boat, Direction d, int speed, List<IEntity> ents, int xOffset,
-                int yOffset
-            )
-                : base(0xF6)
-            {
-                EnsureCapacity(3 + 15 + ents.Count * 10);
-
-                Stream.Write(boat.Serial);
-                Stream.Write((byte)speed);
-                Stream.Write((byte)d);
-                Stream.Write((byte)boat.Facing);
-                Stream.Write((short)(boat.X + xOffset));
-                Stream.Write((short)(boat.Y + yOffset));
-                Stream.Write((short)boat.Z);
-                Stream.Write((short)0); // count placeholder
-
-                var count = 0;
-
-                foreach (var ent in ents)
-                {
-                    if (!beholder.CanSee(ent))
-                    {
-                        continue;
-                    }
-
-                    Stream.Write(ent.Serial);
-                    Stream.Write((short)(ent.X + xOffset));
-                    Stream.Write((short)(ent.Y + yOffset));
-                    Stream.Write((short)ent.Z);
-                    ++count;
-                }
-
-                Stream.Seek(16, SeekOrigin.Begin);
-                Stream.Write((short)count);
-            }
-        }
-
-        public sealed class DisplayBoatHS : Packet
-        {
-            public DisplayBoatHS(Mobile beholder, BaseBoat boat)
-                : base(0xF7)
-            {
-                var ents = boat.GetMovingEntities();
-
-                SafeAdd(boat.TillerMan, ents);
-                SafeAdd(boat.Hold, ents);
-                SafeAdd(boat.PPlank, ents);
-                SafeAdd(boat.SPlank, ents);
-
-                ents.Add(boat);
-
-                EnsureCapacity(3 + 2 + ents.Count * 26);
-
-                Stream.Write((short)0); // count placeholder
-
-                var count = 0;
-
-                foreach (var ent in ents)
-                {
-                    if (!beholder.CanSee(ent))
-                    {
-                        continue;
-                    }
-
-                    // Embedded WorldItemHS packets
-                    Stream.Write((byte)0xF3);
-                    Stream.Write((short)0x1);
-
-                    if (ent is BaseMulti bm)
-                    {
-                        Stream.Write((byte)0x02);
-                        Stream.Write(bm.Serial);
-                        // TODO: Mask no longer needed, merge with Item case?
-                        Stream.Write((ushort)(bm.ItemID & 0x3FFF));
-                        Stream.Write((byte)0);
-
-                        Stream.Write((short)bm.Amount);
-                        Stream.Write((short)bm.Amount);
-
-                        Stream.Write((short)(bm.X & 0x7FFF));
-                        Stream.Write((short)(bm.Y & 0x3FFF));
-                        Stream.Write((sbyte)bm.Z);
-
-                        Stream.Write((byte)bm.Light);
-                        Stream.Write((short)bm.Hue);
-                        Stream.Write((byte)bm.GetPacketFlags());
-                    }
-                    else if (ent is Mobile m)
-                    {
-                        Stream.Write((byte)0x01);
-                        Stream.Write(m.Serial);
-                        Stream.Write((short)m.Body);
-                        Stream.Write((byte)0);
-
-                        Stream.Write((short)1);
-                        Stream.Write((short)1);
-
-                        Stream.Write((short)(m.X & 0x7FFF));
-                        Stream.Write((short)(m.Y & 0x3FFF));
-                        Stream.Write((sbyte)m.Z);
-
-                        Stream.Write((byte)m.Direction);
-                        Stream.Write((short)m.Hue);
-                        Stream.Write((byte)m.GetPacketFlags(true));
-                    }
-                    else if (ent is Item item)
-                    {
-                        Stream.Write((byte)0x00);
-                        Stream.Write(item.Serial);
-                        Stream.Write((ushort)(item.ItemID & 0xFFFF));
-                        Stream.Write((byte)0);
-
-                        Stream.Write((short)item.Amount);
-                        Stream.Write((short)item.Amount);
-
-                        Stream.Write((short)(item.X & 0x7FFF));
-                        Stream.Write((short)(item.Y & 0x3FFF));
-                        Stream.Write((sbyte)item.Z);
-
-                        Stream.Write((byte)item.Light);
-                        Stream.Write((short)item.Hue);
-                        Stream.Write((byte)item.GetPacketFlags());
-                    }
-
-                    Stream.Write((short)0x00);
-                    ++count;
-                }
-
-                Stream.Seek(3, SeekOrigin.Begin);
-                Stream.Write((short)count);
-            }
-        }
     }
 }

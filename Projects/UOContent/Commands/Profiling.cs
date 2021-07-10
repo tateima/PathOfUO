@@ -25,7 +25,7 @@ namespace Server.Commands
             try
             {
                 using var sw = new StreamWriter("profiles.log", true);
-                sw.WriteLine("# Dump on {0:f}", DateTime.UtcNow);
+                sw.WriteLine("# Dump on {0:f}", Core.Now);
                 sw.WriteLine($"# Core profiling for {Core.ProfileTime}");
 
                 sw.WriteLine("# Packet send");
@@ -114,7 +114,7 @@ namespace Server.Commands
                 items.Sort(new CountSorter());
                 mobiles.Sort(new CountSorter());
 
-                op.WriteLine("# Object count table generated on {0}", DateTime.UtcNow);
+                op.WriteLine("# Object count table generated on {0}", Core.Now);
                 op.WriteLine();
                 op.WriteLine();
 
@@ -320,7 +320,7 @@ namespace Server.Commands
 
                     for (var i = 0; i < count; ++i)
                     {
-                        types.Add(AssemblyHandler.FindFirstTypeForName(bin.ReadString()));
+                        types.Add(AssemblyHandler.FindTypeByFullName(bin.ReadString()));
                     }
                 }
 
@@ -362,7 +362,7 @@ namespace Server.Commands
 
                 using var op = new StreamWriter(opFile);
                 op.WriteLine("# Profile of world {0}", type);
-                op.WriteLine("# Generated on {0}", DateTime.UtcNow);
+                op.WriteLine("# Generated on {0}", Core.Now);
                 op.WriteLine();
                 op.WriteLine();
 
@@ -394,8 +394,17 @@ namespace Server.Commands
         {
             public int Compare(KeyValuePair<Type, int[]> x, KeyValuePair<Type, int[]> y)
             {
-                var aCount = x.Value.Aggregate(0, (t, val) => t + val);
-                var bCount = y.Value.Aggregate(0, (t, val) => t + val);
+                var aCount = 0;
+                foreach (var val in x.Value)
+                {
+                    aCount += val;
+                }
+
+                var bCount = 0;
+                foreach (var val in y.Value)
+                {
+                    bCount += val;
+                }
 
                 var v = -aCount.CompareTo(bCount);
 

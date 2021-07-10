@@ -36,15 +36,7 @@ namespace Server.Items
         public override void GetProperties(ObjectPropertyList list)
         {
             base.GetProperties(list);
-
-            if (Value == 1)
-            {
-                list.Add(1076759, "{0}\t{1}.0 Skill Points", GetName(), Value);
-            }
-            else
-            {
-                list.Add(1076759, "{0}\t{1} Skill Points", GetName(), Value);
-            }
+            list.Add(1076759, $"{GetName()}\t{Value:0.#} Skill Points");
         }
 
         public override bool CanUse(Mobile from)
@@ -72,7 +64,7 @@ namespace Server.Items
                 }
             }
 
-            if (pm.AcceleratedStart > DateTime.UtcNow)
+            if (pm.AcceleratedStart > Core.Now)
             {
                 from.SendLocalizedMessage(1077951); // You are already under the effect of an accelerated skillgain scroll.
                 return false;

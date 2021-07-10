@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Server.Engines.ConPVP;
 using Server.Factions;
 using Server.Gumps;
@@ -294,9 +293,12 @@ namespace Server.Engines.Help
 
         private static void EventSink_HelpRequest(Mobile m)
         {
-            if (m.NetState.Gumps.OfType<HelpGump>().Any())
+            foreach (var gump in m.NetState.Gumps)
             {
-                return;
+                if (gump is HelpGump)
+                {
+                    return;
+                }
             }
 
             if (!PageQueue.CheckAllowedToPage(m))
@@ -322,7 +324,7 @@ namespace Server.Engines.Help
             {
                 var info = m.Aggressed[i];
 
-                if (DateTime.UtcNow - info.LastCombatTime < TimeSpan.FromSeconds(30.0))
+                if (Core.Now - info.LastCombatTime < TimeSpan.FromSeconds(30.0))
                 {
                     return true;
                 }

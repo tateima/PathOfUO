@@ -178,8 +178,7 @@ namespace Server
     {
         public static string Prefix { get; set; } = "[";
 
-        public static Dictionary<string, CommandEntry> Entries { get; } =
-            new(StringComparer.OrdinalIgnoreCase);
+        public static Dictionary<string, CommandEntry> Entries { get; } = new(StringComparer.OrdinalIgnoreCase);
 
         public static AccessLevel BadCommandIgnoreLevel { get; set; } = AccessLevel.Player;
 
@@ -258,7 +257,7 @@ namespace Server
 
             if (type != MessageType.Command)
             {
-                text = text.Substring(Prefix.Length);
+                text = text[Prefix.Length..];
             }
 
             var indexOf = text.IndexOfOrdinal(' ');
@@ -269,9 +268,9 @@ namespace Server
 
             if (indexOf >= 0)
             {
-                argString = text.Substring(indexOf + 1);
+                argString = text[(indexOf + 1)..];
 
-                command = text.Substring(0, indexOf);
+                command = text[..indexOf];
                 args = Split(argString);
             }
             else

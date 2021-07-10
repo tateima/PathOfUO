@@ -13,35 +13,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using Server.Exceptions;
+using Server.Logging;
 
 namespace Server.Network
 {
     public static class TcpServer
     {
-        private static NetworkState m_NetworkState = NetworkState.ResumeState;
+        private static readonly ILogger logger = LogFactory.GetLogger(typeof(TcpServer));
 
-        // Sanity. 256 * 1024 * 5000 = ~1.3GB of ram
-        public static int MaxConnections { get; set; } = 5000;
+        private const int MaxConnectionsPerLoop = 250;
+
+        // Sanity. 256 * 1024 * 4096 = ~1.3GB of ram
+        public static int MaxConnections { get; set; } = 4096;
 
         private const long _listenerErrorMessageDelay = 10000; // 10 seconds
         private static long _nextMaximumSocketsReachedMessage;
 
         // AccountLoginReject BadComm
-        private static readonly byte[] socketRejected = { 0x82, 0xFF };
+        private static readonly byte[] _socketRejected = { 0x82, 0xFF };
 
         public static IPEndPoint[] ListeningAddresses { get; private set; }
         public static TcpListener[] Listeners { get; private set; }
-        public static HashSet<NetState> Instances { get; } = new(128);
+        public static HashSet<NetState> Instances { get; } = new(2048);
 
-        public static ConcurrentQueue<NetState> m_ConnectedQueue = new();
+        private static readonly ConcurrentQueue<NetState> _connectedQueue = new();
 
         public static void Configure()
         {
@@ -76,7 +77,7 @@ namespace Server.Network
 
             foreach (var ipep in listeningAddresses)
             {
-                Console.WriteLine("Listening: {0}:{1}", ipep.Address, ipep.Port);
+                logger.Information("Listening: {0}:{1}", ipep.Address, ipep.Port);
             }
 
             ListeningAddresses = listeningAddresses.ToArray();
@@ -105,88 +106,61 @@ namespace Server.Network
                 // WSAEADDRINUSE
                 if (se.ErrorCode == 10048)
                 {
-                    Console.WriteLine("Listener: {0}:{1}: Failed (In Use)", ipep.Address, ipep.Port);
+                    logger.Warning("Listener: {0}:{1}: Failed (In Use)", ipep.Address, ipep.Port);
                 }
                 // WSAEADDRNOTAVAIL
                 else if (se.ErrorCode == 10049)
                 {
-                    Console.WriteLine("Listener {0}:{1}: Failed (Unavailable)", ipep.Address, ipep.Port);
+                    logger.Warning("Listener {0}:{1}: Failed (Unavailable)", ipep.Address, ipep.Port);
                 }
                 else
                 {
-                    Console.WriteLine("Listener Exception:");
-                    Console.WriteLine(se);
+                    logger.Warning(se, "Listener Exception:");
                 }
             }
 
             return null;
         }
 
-        /**
-         * Pauses the TcpServer and stops accepting new sockets.
-         * This is thread-safe without using locks.
-         */
-        public static void Pause()
-        {
-            NetworkState.Pause(ref m_NetworkState);
-        }
-
-        /**
-         * Resumes accepting sockets on the TcpServer.
-         * This is thread-safe using a lock on the listeners
-         */
-        public static void Resume()
-        {
-            if (!NetworkState.Resume(ref m_NetworkState))
-            {
-                return;
-            }
-
-            lock (Listeners)
-            {
-                foreach (var listener in Listeners)
-                {
-                    listener.BeginAcceptingSockets();
-                }
-            }
-        }
-
-        public static void Slice()
+        public static int Slice()
         {
             int count = 0;
 
-            while (count++ < 250)
+            while (++count <= MaxConnectionsPerLoop && _connectedQueue.TryDequeue(out var ns))
             {
-                if (!m_ConnectedQueue.TryDequeue(out var ns))
-                {
-                    break;
-                }
-
                 Instances.Add(ns);
-                ns.WriteConsole("Connected. [{0} Online]", Instances.Count);
+                ns.LogInfo("Connected. [{0} Online]", Instances.Count);
+                ns.Start();
             }
+
+            return count;
         }
 
         private static async void BeginAcceptingSockets(this TcpListener listener)
         {
             while (true)
             {
-                if (m_NetworkState.Paused)
-                {
-                    return;
-                }
-
-                Socket socket = null;
-
                 try
                 {
-                    socket = await listener.AcceptSocketAsync().ConfigureAwait(false);
+                    var socket = await listener.AcceptSocketAsync();
+                    var rejected = false;
                     if (Instances.Count >= MaxConnections)
                     {
-                        socket.Send(socketRejected, SocketFlags.None);
-                        socket.Shutdown(SocketShutdown.Both);
-                        socket.Close();
-                        throw new MaxConnectionsException();
+                        rejected = true;
+
+                        var ticks = Core.TickCount;
+
+                        if (_nextMaximumSocketsReachedMessage <= ticks)
+                        {
+                            if (socket.RemoteEndPoint is IPEndPoint ipep)
+                            {
+                                var ip = ipep.Address.ToString();
+                                logger.Warning("Listener {0}: Failed (Maximum connections reached)", ip);
+                                NetState.TraceDisconnect("Maximum connections reached.", ip);
+                            }
+
+                            _nextMaximumSocketsReachedMessage = ticks + _listenerErrorMessageDelay;
+                        }
                     }
 
                     var args = new SocketConnectEventArgs(socket);
@@ -194,32 +168,30 @@ namespace Server.Network
 
                     if (!args.AllowConnection)
                     {
-                        socket.Send(socketRejected, SocketFlags.None);
+                        rejected = true;
+                        if (socket.RemoteEndPoint is IPEndPoint ipep)
+                        {
+                            var ip = ipep.Address.ToString();
+                            NetState.TraceDisconnect("Rejected by socket event handler", ip);
+                        }
+                    }
+
+                    if (rejected)
+                    {
+                        socket.Send(_socketRejected, SocketFlags.None);
                         socket.Shutdown(SocketShutdown.Both);
                         socket.Close();
                     }
-                }
-                catch (MaxConnectionsException)
-                {
-                    var ticks = Core.TickCount;
-
-                    if (_nextMaximumSocketsReachedMessage <= ticks)
+                    else
                     {
-                        if (socket?.RemoteEndPoint is IPEndPoint ipep)
-                        {
-                            Console.WriteLine("Listener {0}:{1}: Failed (Maximum connections reached)", ipep.Address, ipep.Port);
-                        }
-                        _nextMaximumSocketsReachedMessage = ticks + _listenerErrorMessageDelay;
+                        var ns = new NetState(new NetworkSocket(socket));
+                        _connectedQueue.Enqueue(ns);
                     }
                 }
                 catch
                 {
                     // ignored
                 }
-
-                var ns = new NetState(new NetworkSocket(socket));
-                m_ConnectedQueue.Enqueue(ns);
-                ns.Start();
             }
         }
     }

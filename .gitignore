@@ -4,21 +4,21 @@
 /Distribution/Assemblies
 /Distribution/Configuration/modernuo.json
 /Distribution/Configuration/email-settings.json
+/Distribution/Configuration/throttles.json
 /Distribution/Logs
 /Distribution/Backups
 /Distribution/Saves
 /Distribution/docs
-/Distribution/zlib.dll
-/Distribution/libz.dylib
-/Distribution/libz.so
-/Distribution/ZLib.Bindings.dll
-/Distribution/Microsoft.Toolkit.HighPerformance.dll
+/Distribution/*.dylib
+/Distribution/*.so
+/Distribution/*.dll
 /Distribution/runtimes
 /Distribution/nohup.out
 /Distribution/ref
 
 /Projects/*/obj
 /Projects/*/bin
+/Projects/*/Generated
 
 *.log
 *.user

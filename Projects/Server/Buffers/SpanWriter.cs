@@ -20,14 +20,15 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using Server;
+using Microsoft.Toolkit.HighPerformance;
+using Server.Text;
 
 namespace System.Buffers
 {
     public ref struct SpanWriter
     {
         private readonly bool _resize;
-        private byte[]? _arrayToReturnToPool;
+        private byte[] _arrayToReturnToPool;
         private Span<byte> _buffer;
         private int _position;
 
@@ -49,10 +50,49 @@ namespace System.Buffers
 
         public int Capacity => _buffer.Length;
 
-        public ReadOnlySpan<byte> Span => _buffer.Slice(0, Position);
+        public ReadOnlySpan<byte> Span => _buffer[..Position];
 
         public Span<byte> RawBuffer => _buffer;
 
+        /**
+         * Converts the writer to a Span<byte> using a SpanOwner.
+         * If the buffer was stackalloc, it will be copied to a rented buffer.
+         * Otherwise the existing rented buffer is used.
+         *
+         * Note:
+         * Do not use the SpanWriter after calling this method.
+         * This method will effectively dispose of the SpanWriter and is therefore considered terminal.
+         */
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SpanOwner ToSpan()
+        {
+            var toReturn = _arrayToReturnToPool;
+
+            SpanOwner apo;
+            if (_position == 0)
+            {
+                apo = new SpanOwner(_position, Array.Empty<byte>());
+                if (toReturn != null)
+                {
+                    ArrayPool<byte>.Shared.Return(toReturn);
+                }
+            }
+            else if (toReturn != null)
+            {
+                apo = new SpanOwner(_position, toReturn);
+            }
+            else
+            {
+                var buffer = ArrayPool<byte>.Shared.Rent(_position);
+                _buffer.CopyTo(buffer);
+                apo = new SpanOwner(_position, buffer);
+            }
+
+            this = default; // Don't allow two references to the same buffer
+            return apo;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SpanWriter(Span<byte> initialBuffer, bool resize = false)
         {
             _resize = resize;
@@ -62,6 +102,7 @@ namespace System.Buffers
             _arrayToReturnToPool = null;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SpanWriter(int initialCapacity, bool resize = false)
         {
             _resize = resize;
@@ -77,9 +118,9 @@ namespace System.Buffers
             var newSize = Math.Max(BytesWritten + additionalCapacity, _buffer.Length * 2);
             byte[] poolArray = ArrayPool<byte>.Shared.Rent(newSize);
 
-            _buffer.Slice(0, BytesWritten).CopyTo(poolArray);
+            _buffer[..BytesWritten].CopyTo(poolArray);
 
-            byte[]? toReturn = _arrayToReturnToPool;
+            byte[] toReturn = _arrayToReturnToPool;
             _buffer = _arrayToReturnToPool = poolArray;
             if (toReturn != null)
             {
@@ -141,7 +182,7 @@ namespace System.Buffers
         public void Write(short value)
         {
             GrowIfNeeded(2);
-            BinaryPrimitives.WriteInt16BigEndian(_buffer.Slice(_position), value);
+            BinaryPrimitives.WriteInt16BigEndian(_buffer[_position..], value);
             Position += 2;
         }
 
@@ -149,7 +190,7 @@ namespace System.Buffers
         public void WriteLE(short value)
         {
             GrowIfNeeded(2);
-            BinaryPrimitives.WriteInt16LittleEndian(_buffer.Slice(_position), value);
+            BinaryPrimitives.WriteInt16LittleEndian(_buffer[_position..], value);
             Position += 2;
         }
 
@@ -157,7 +198,7 @@ namespace System.Buffers
         public void Write(ushort value)
         {
             GrowIfNeeded(2);
-            BinaryPrimitives.WriteUInt16BigEndian(_buffer.Slice(_position), value);
+            BinaryPrimitives.WriteUInt16BigEndian(_buffer[_position..], value);
             Position += 2;
         }
 
@@ -165,7 +206,7 @@ namespace System.Buffers
         public void WriteLE(ushort value)
         {
             GrowIfNeeded(2);
-            BinaryPrimitives.WriteUInt16LittleEndian(_buffer.Slice(_position), value);
+            BinaryPrimitives.WriteUInt16LittleEndian(_buffer[_position..], value);
             Position += 2;
         }
 
@@ -173,7 +214,7 @@ namespace System.Buffers
         public void Write(int value)
         {
             GrowIfNeeded(4);
-            BinaryPrimitives.WriteInt32BigEndian(_buffer.Slice(_position), value);
+            BinaryPrimitives.WriteInt32BigEndian(_buffer[_position..], value);
             Position += 4;
         }
 
@@ -181,7 +222,7 @@ namespace System.Buffers
         public void WriteLE(int value)
         {
             GrowIfNeeded(4);
-            BinaryPrimitives.WriteInt32LittleEndian(_buffer.Slice(_position), value);
+            BinaryPrimitives.WriteInt32LittleEndian(_buffer[_position..], value);
             Position += 4;
         }
 
@@ -189,7 +230,7 @@ namespace System.Buffers
         public void Write(uint value)
         {
             GrowIfNeeded(4);
-            BinaryPrimitives.WriteUInt32BigEndian(_buffer.Slice(_position), value);
+            BinaryPrimitives.WriteUInt32BigEndian(_buffer[_position..], value);
             Position += 4;
         }
 
@@ -197,7 +238,7 @@ namespace System.Buffers
         public void WriteLE(uint value)
         {
             GrowIfNeeded(4);
-            BinaryPrimitives.WriteUInt32LittleEndian(_buffer.Slice(_position), value);
+            BinaryPrimitives.WriteUInt32LittleEndian(_buffer[_position..], value);
             Position += 4;
         }
 
@@ -205,7 +246,7 @@ namespace System.Buffers
         public void Write(long value)
         {
             GrowIfNeeded(8);
-            BinaryPrimitives.WriteInt64BigEndian(_buffer.Slice(_position), value);
+            BinaryPrimitives.WriteInt64BigEndian(_buffer[_position..], value);
             Position += 8;
         }
 
@@ -213,15 +254,16 @@ namespace System.Buffers
         public void Write(ulong value)
         {
             GrowIfNeeded(8);
-            BinaryPrimitives.WriteUInt64BigEndian(_buffer.Slice(_position), value);
+            BinaryPrimitives.WriteUInt64BigEndian(_buffer[_position..], value);
             Position += 8;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(ReadOnlySpan<byte> buffer)
         {
             var count = buffer.Length;
             GrowIfNeeded(count);
-            buffer.CopyTo(_buffer.Slice(_position));
+            buffer.CopyTo(_buffer[_position..]);
             Position += count;
         }
 
@@ -250,7 +292,7 @@ namespace System.Buffers
 
             GrowIfNeeded(byteCount);
 
-            var bytesWritten = encoding.GetBytes(src, _buffer.Slice(_position));
+            var bytesWritten = encoding.GetBytes(src, _buffer[_position..]);
             Position += bytesWritten;
 
             if (fixedLength > -1)
@@ -264,38 +306,38 @@ namespace System.Buffers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteLittleUni(string value) => WriteString<char>(value, Utility.UnicodeLE);
+        public void WriteLittleUni(string value) => WriteString<char>(value, TextEncoding.UnicodeLE);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteLittleUniNull(string value)
         {
-            WriteString<char>(value, Utility.UnicodeLE);
+            WriteString<char>(value, TextEncoding.UnicodeLE);
             Write((ushort)0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteLittleUni(string value, int fixedLength) => WriteString<char>(value, Utility.UnicodeLE, fixedLength);
+        public void WriteLittleUni(string value, int fixedLength) => WriteString<char>(value, TextEncoding.UnicodeLE, fixedLength);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteBigUni(string value) => WriteString<char>(value, Utility.Unicode);
+        public void WriteBigUni(string value) => WriteString<char>(value, TextEncoding.Unicode);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteBigUniNull(string value)
         {
-            WriteString<char>(value, Utility.Unicode);
+            WriteString<char>(value, TextEncoding.Unicode);
             Write((ushort)0); // '\0'
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteBigUni(string value, int fixedLength) => WriteString<char>(value, Utility.Unicode, fixedLength);
+        public void WriteBigUni(string value, int fixedLength) => WriteString<char>(value, TextEncoding.Unicode, fixedLength);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteUTF8(string value) => WriteString<byte>(value, Utility.UTF8);
+        public void WriteUTF8(string value) => WriteString<byte>(value, TextEncoding.UTF8);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteUTF8Null(string value)
         {
-            WriteString<byte>(value, Utility.UTF8);
+            WriteString<byte>(value, TextEncoding.UTF8);
             Write((byte)0); // '\0'
         }
 
@@ -330,6 +372,7 @@ namespace System.Buffers
 
             Debug.Assert(
                 origin != SeekOrigin.End || offset >= -_buffer.Length,
+
                 "Attempting to seek to a negative position using SeekOrigin.End"
             );
 
@@ -376,6 +419,36 @@ namespace System.Buffers
             if (toReturn != null)
             {
                 ArrayPool<byte>.Shared.Return(toReturn);
+            }
+        }
+
+        public struct SpanOwner : IDisposable
+        {
+            private readonly int _length;
+            private readonly byte[] _arrayToReturnToPool;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal SpanOwner(int length, byte[] buffer)
+            {
+                _length = length;
+                _arrayToReturnToPool = buffer;
+            }
+
+            public Span<byte> Span
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => MemoryMarshal.CreateSpan(ref _arrayToReturnToPool.DangerousGetReference(), _length);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Dispose()
+            {
+                byte[] toReturn = _arrayToReturnToPool;
+                this = default;
+                if (_length > 0)
+                {
+                    ArrayPool<byte>.Shared.Return(toReturn);
+                }
             }
         }
     }

@@ -29,8 +29,12 @@ namespace Server.Network
 
         public Task<int> SendAsync(IList<ArraySegment<byte>> buffer, SocketFlags flags);
 
+        public int Send(IList<ArraySegment<byte>> buffer, SocketFlags flags);
+
         public Task<int> ReceiveAsync(IList<ArraySegment<byte>> buffer, SocketFlags flags);
 
         public void Shutdown(SocketShutdown how);
+
+        public void Close();
     }
 }

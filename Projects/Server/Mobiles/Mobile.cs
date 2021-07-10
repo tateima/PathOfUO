@@ -1,11 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
-using Microsoft.Toolkit.HighPerformance.Extensions;
+using Microsoft.Toolkit.HighPerformance;
 using Server.Accounting;
 using Server.Buffers;
 using Server.ContextMenus;
@@ -36,7 +32,7 @@ namespace Server
         private readonly DateTime m_Expire;
 
         public TimedSkillMod(SkillName skill, bool relative, double value, TimeSpan delay)
-            : this(skill, relative, value, DateTime.UtcNow + delay)
+            : this(skill, relative, value, Core.Now + delay)
         {
         }
 
@@ -44,7 +40,7 @@ namespace Server
             : base(skill, relative, value) =>
             m_Expire = expire;
 
-        public override bool CheckCondition() => DateTime.UtcNow < m_Expire;
+        public override bool CheckCondition() => Core.Now < m_Expire;
     }
 
     public class EquippedSkillMod : SkillMod
@@ -242,7 +238,7 @@ namespace Server
             Name = name;
             Offset = offset;
             m_Duration = duration;
-            m_Added = DateTime.UtcNow;
+            m_Added = Core.Now;
         }
 
         public StatType Type { get; }
@@ -251,15 +247,7 @@ namespace Server
 
         public int Offset { get; }
 
-        public bool HasElapsed()
-        {
-            if (m_Duration == TimeSpan.Zero)
-            {
-                return false;
-            }
-
-            return DateTime.UtcNow - m_Added >= m_Duration;
-        }
+        public bool HasElapsed() => m_Duration != TimeSpan.Zero && Core.Now - m_Added >= m_Duration;
     }
 
     public class DamageEntry
@@ -272,7 +260,7 @@ namespace Server
 
         public DateTime LastDamage { get; set; }
 
-        public bool HasExpired => DateTime.UtcNow > LastDamage + ExpireDelay;
+        public bool HasExpired => Core.Now > LastDamage + ExpireDelay;
 
         public List<DamageEntry> Responsible { get; set; }
 
@@ -389,22 +377,6 @@ namespace Server
         Cured
     }
 
-    [Serializable]
-    public class MobileNotConnectedException : Exception
-    {
-        public MobileNotConnectedException(Mobile source, string message)
-            : base(message) =>
-            Source = source.ToString();
-
-        public MobileNotConnectedException(Mobile source, string message, Exception innerException)
-            : base(message, innerException) =>
-            Source = source.ToString();
-
-        protected MobileNotConnectedException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
-    }
-
     public delegate bool SkillCheckTargetHandler(
         Mobile from, SkillName skill, object target, double minSkill,
         double maxSkill
@@ -423,8 +395,7 @@ namespace Server
     public delegate bool AllowHarmfulHandler(Mobile from, Mobile target);
 
     public delegate Container CreateCorpseHandler(
-        Mobile from, HairInfo hair, FacialHairInfo facialhair,
-        List<Item> initialContent, List<Item> equippedItems
+        Mobile from, HairInfo hair, FacialHairInfo facialhair, List<Item> initialContent, List<Item> equippedItems
     );
 
     public delegate int AOSStatusHandler(Mobile from, int index);
@@ -472,9 +443,6 @@ namespace Server
         };
 
         private static readonly Queue<Mobile> m_DeltaQueue = new();
-        private static readonly Queue<Mobile> m_DeltaQueueR = new();
-
-        private static bool _processing;
 
         private static readonly string[] m_GuildTypes =
         {
@@ -507,7 +475,6 @@ namespace Server
 
         private Timer m_ExpireAggrTimer;
         private Timer m_ExpireCombatant;
-        private Timer m_ExpireCriminal;
         private FacialHairInfo m_FacialHair;
         private int m_Fame, m_Karma;
         private bool m_Female, m_Warmode, m_Hidden, m_Blessed, m_Flying;
@@ -584,8 +551,16 @@ namespace Server
 
         private bool m_YellowHealthbar;
 
-        // Position in the save buffer where serialization ends. -1 if dirty
-        private int _savePosition = -1;
+        public Mobile()
+        {
+            m_Region = Map.Internal.DefaultRegion;
+            Serial = World.NewMobile;
+
+            DefaultMobileInit();
+
+            World.AddEntity(this);
+            SetTypeRef(GetType());
+        }
 
         public Mobile(Serial serial)
         {
@@ -596,31 +571,16 @@ namespace Server
             NextSkillTime = Core.TickCount;
             DamageEntries = new List<DamageEntry>();
 
-            var ourType = GetType();
-            TypeRef = World.MobileTypes.IndexOf(ourType);
-
-            if (TypeRef == -1)
-            {
-                World.MobileTypes.Add(ourType);
-                TypeRef = World.MobileTypes.Count - 1;
-            }
+            SetTypeRef(GetType());
         }
 
-        public Mobile()
+        public void SetTypeRef(Type type)
         {
-            m_Region = Map.Internal.DefaultRegion;
-            Serial = World.NewMobile;
-
-            DefaultMobileInit();
-
-            World.AddEntity(this);
-
-            var ourType = GetType();
-            TypeRef = World.MobileTypes.IndexOf(ourType);
+            TypeRef = World.MobileTypes.IndexOf(type);
 
             if (TypeRef == -1)
             {
-                World.MobileTypes.Add(ourType);
+                World.MobileTypes.Add(type);
                 TypeRef = World.MobileTypes.Count - 1;
             }
         }
@@ -954,7 +914,7 @@ namespace Server
 
                     if (m_Combatant == null)
                     {
-                        m_NetState?.SendChangeCombatant(Serial.Zero);
+                        m_NetState.SendChangeCombatant(Serial.Zero);
                         m_ExpireCombatant?.Stop();
                         m_CombatTimer?.Stop();
 
@@ -963,7 +923,7 @@ namespace Server
                     }
                     else
                     {
-                        m_NetState?.SendChangeCombatant(m_Combatant.Serial);
+                        m_NetState.SendChangeCombatant(m_Combatant.Serial);
                         m_ExpireCombatant ??= Timer.DelayCall(ExpireCombatantDelay, ExpireCombatant);
                         m_ExpireCombatant.Start();
 
@@ -972,8 +932,8 @@ namespace Server
 
                         if (CanBeHarmful(m_Combatant, false))
                         {
-                            DoHarmful(m_Combatant);
-                            m_Combatant.PlaySound(m_Combatant.GetAngerSound());
+                            DoHarmful(m_Combatant); // due to reflection, might make m_Combatant null
+                            m_Combatant?.PlaySound(m_Combatant.GetAngerSound());
                         }
                     }
 
@@ -1449,96 +1409,107 @@ namespace Server
         [CommandProperty(AccessLevel.GameMaster, AccessLevel.Owner)]
         public NetState NetState
         {
-            get => m_NetState?.Connection != null && !m_NetState.IsDisposing ? m_NetState : null;
+            get
+            {
+                if (m_NetState?.Connection == null)
+                {
+                    m_NetState = null;
+                }
+
+                return m_NetState;
+            }
             set
             {
-                if (m_NetState != value)
+                if (m_NetState == value)
                 {
-                    m_Map?.OnClientChange(m_NetState, value, this);
+                    return;
+                }
 
-                    m_Target?.Cancel(this, TargetCancelType.Disconnected);
+#if THREADGUARD
+            if (Thread.CurrentThread != Core.Thread)
+            {
+                Utility.PushColor(ConsoleColor.Red);
+                Console.WriteLine("Attempting to set Mobile.NetState value from an invalid thread!");
+                Console.WriteLine(new StackTrace());
+                Utility.PopColor();
+                return;
+            }
+#endif
 
-                    m_Spell?.OnConnectionChanged();
+                m_Map?.OnClientChange(m_NetState, value, this);
+                m_Target?.Cancel(this, TargetCancelType.Disconnected);
+                m_Spell?.OnConnectionChanged();
+                m_NetState?.CancelAllTrades();
 
-                    // if (m_Spell != null)
-                    // m_Spell.FinishSequence();
+                var box = FindBankNoCreate();
 
-                    m_NetState?.CancelAllTrades();
+                if (box?.Opened == true)
+                {
+                    box.Close();
+                }
 
-                    var box = FindBankNoCreate();
+                m_NetState = value;
 
-                    if (box?.Opened == true)
+                if (m_NetState == null)
+                {
+                    OnDisconnected();
+                    EventSink.InvokeDisconnected(this);
+
+                    // Disconnected, start the logout timer
+                    if (m_LogoutTimer == null)
                     {
-                        box.Close();
-                    }
-
-                    // REMOVED:
-                    // m_Actions.Clear();
-
-                    m_NetState = value;
-
-                    if (m_NetState == null)
-                    {
-                        OnDisconnected();
-                        EventSink.InvokeDisconnected(this);
-
-                        // Disconnected, start the logout timer
-                        if (m_LogoutTimer == null)
-                        {
-                            m_LogoutTimer = Timer.DelayCall(GetLogoutDelay(), Logout);
-                        }
-                        else
-                        {
-                            m_LogoutTimer.Stop();
-                            m_LogoutTimer.Delay = GetLogoutDelay();
-                            m_LogoutTimer.Start();
-                        }
+                        m_LogoutTimer = Timer.DelayCall(GetLogoutDelay(), Logout);
                     }
                     else
                     {
-                        OnConnected();
-                        EventSink.InvokeConnected(this);
-
-                        // Connected, stop the logout timer and if needed, move to the world
-
-                        m_LogoutTimer?.Stop();
-
-                        m_LogoutTimer = null;
-
-                        if (m_Map == Map.Internal && LogoutMap != null)
-                        {
-                            Map = LogoutMap;
-                            Location = LogoutLocation;
-                        }
+                        m_LogoutTimer.Stop();
+                        m_LogoutTimer.Delay = GetLogoutDelay();
+                        m_LogoutTimer.Start();
                     }
-
-                    for (var i = Items.Count - 1; i >= 0; --i)
-                    {
-                        if (i >= Items.Count)
-                        {
-                            continue;
-                        }
-
-                        var item = Items[i];
-
-                        if (item is SecureTradeContainer)
-                        {
-                            for (var j = item.Items.Count - 1; j >= 0; --j)
-                            {
-                                if (j < item.Items.Count)
-                                {
-                                    item.Items[j].OnSecureTrade(this, this, this, false);
-                                    AddToBackpack(item.Items[j]);
-                                }
-                            }
-
-                            Timer.DelayCall(item.Delete);
-                        }
-                    }
-
-                    DropHolding();
-                    OnNetStateChanged();
                 }
+                else
+                {
+                    OnConnected();
+                    EventSink.InvokeConnected(this);
+
+                    // Connected, stop the logout timer and if needed, move to the world
+                    m_LogoutTimer?.Stop();
+
+                    m_LogoutTimer = null;
+
+                    if (m_Map == Map.Internal && LogoutMap != null)
+                    {
+                        Map = LogoutMap;
+                        Location = LogoutLocation;
+                    }
+                }
+
+                for (var i = Items.Count - 1; i >= 0; --i)
+                {
+                    if (i >= Items.Count)
+                    {
+                        continue;
+                    }
+
+                    var item = Items[i];
+
+                    if (item is SecureTradeContainer)
+                    {
+                        for (var j = item.Items.Count - 1; j >= 0; --j)
+                        {
+                            if (j < item.Items.Count)
+                            {
+                                item.Items[j].OnSecureTrade(this, this, this, false);
+                                AddToBackpack(item.Items[j]);
+                            }
+                        }
+
+                        Timer.DelayCall(item.Delete);
+                    }
+                }
+
+                DropHolding();
+                OnNetStateChanged();
             }
         }
 
@@ -1891,8 +1862,10 @@ namespace Server
             }
         }
 
+        public Timer ExpireCriminalTimer { get; set; }
+
         [CommandProperty(AccessLevel.Counselor, AccessLevel.GameMaster)]
-        public bool Criminal
+        public virtual bool Criminal
         {
             get => m_Criminal;
             set
@@ -1906,21 +1879,21 @@ namespace Server
 
                 if (m_Criminal)
                 {
-                    if (m_ExpireCriminal == null)
+                    if (ExpireCriminalTimer == null)
                     {
-                        m_ExpireCriminal = Timer.DelayCall(ExpireCriminalDelay, ExpireCriminal);
+                        ExpireCriminalTimer = Timer.DelayCall(ExpireCriminalDelay, ExpireCriminal);
                     }
                     else
                     {
-                        m_ExpireCriminal.Stop();
+                        ExpireCriminalTimer.Stop();
                     }
 
-                    m_ExpireCriminal.Start();
+                    ExpireCriminalTimer.Start();
                 }
-                else if (m_ExpireCriminal != null)
+                else if (ExpireCriminalTimer != null)
                 {
-                    m_ExpireCriminal.Stop();
-                    m_ExpireCriminal = null;
+                    ExpireCriminalTimer.Stop();
+                    ExpireCriminalTimer = null;
                 }
             }
         }
@@ -2548,22 +2521,17 @@ namespace Server
             AddNameProperties(list);
         }
 
+        long ISerializable.SavePosition { get; set; } = -1;
+
         BufferWriter ISerializable.SaveBuffer { get; set; }
 
         [CommandProperty(AccessLevel.Counselor)]
         public Serial Serial { get; }
 
-        public int TypeRef { get; }
+        public int TypeRef { get; private set; }
 
         public virtual void Serialize(IGenericWriter writer)
         {
-            // The item is clean, so let's skip
-            if (_savePosition > -1)
-            {
-                writer.Seek(_savePosition, SeekOrigin.Begin);
-                return;
-            }
-
             writer.Write(32); // version
 
             writer.WriteDeltaTime(LastStrGain);
@@ -2707,7 +2675,7 @@ namespace Server
             if (m_NetState != null)
             {
                 m_NetState.CancelAllTrades();
-                m_NetState.Dispose();
+                m_NetState.Disconnect($"Player {this} has been deleted.");
             }
 
             DropHolding();
@@ -2811,10 +2779,7 @@ namespace Server
                 {
                     ns.SendMapChange(Map);
 
-                    if (!Core.SE && ns.ProtocolChanges < ProtocolChanges.Version6000)
-                    {
-                        ns.SendMapPatches();
-                    }
+                    ns.SendMapPatches();
 
                     ns.SendSeasonChange((byte)GetSeason(), true);
 
@@ -3021,8 +2986,8 @@ namespace Server
             }
 
             const int cacheLength = OutgoingMobilePackets.MobileMovingPacketCacheByteLength;
-            var width = OutgoingMobilePackets.MobileMovingPacketLength;
-            var height = OutgoingMobilePackets.MobileMovingPacketCacheHeight;
+            const int width = OutgoingMobilePackets.MobileMovingPacketLength;
+            const int height = OutgoingMobilePackets.MobileMovingPacketCacheHeight;
 
             var mobileMovingCache = stackalloc byte[cacheLength].AsSpan2D(height, width).InitializePackets();
 
@@ -3498,7 +3463,7 @@ namespace Server
 
         public virtual void AddNameProperties(ObjectPropertyList list)
         {
-            var name = Name ?? string.Empty;
+            var name = Name ?? "";
 
             string prefix;
 
@@ -3747,7 +3712,7 @@ namespace Server
                 return;
             }
 
-            var now = DateTime.UtcNow;
+            var now = Core.Now;
             var next = m_NextWarmodeChange;
 
             if (now > next || m_WarmodeChanges == 0)
@@ -3827,7 +3792,7 @@ namespace Server
             Paralyzed = false;
         }
 
-        public void Paralyze(TimeSpan duration)
+        public virtual void Paralyze(TimeSpan duration)
         {
             if (!m_Paralyzed)
             {
@@ -3843,7 +3808,7 @@ namespace Server
             Frozen = false;
         }
 
-        public void Freeze(TimeSpan duration)
+        public virtual void Freeze(TimeSpan duration)
         {
             if (!m_Frozen)
             {
@@ -4814,7 +4779,7 @@ namespace Server
             m_CombatTimer?.Stop();
             m_ExpireCombatant?.Stop();
             m_LogoutTimer?.Stop();
-            m_ExpireCriminal?.Stop();
+            ExpireCriminalTimer?.Stop();
             m_WarmodeTimer?.Stop();
             m_ParaTimer?.Stop();
             m_FrozenTimer?.Stop();
@@ -5796,7 +5761,7 @@ namespace Server
 
                         if (length != regBuffer.Length)
                         {
-                            regBuffer = regBuffer.Slice(0, length); // Adjust to the actual size
+                            regBuffer = regBuffer[..length]; // Adjust to the actual size
                         }
 
                         heard.OnSpeech(regArgs);
@@ -5810,7 +5775,7 @@ namespace Server
 
                         if (length != mutBuffer.Length)
                         {
-                            mutBuffer = mutBuffer.Slice(0, length); // Adjust to the actual size
+                            mutBuffer = mutBuffer[..length]; // Adjust to the actual size
                         }
 
                         heard.OnSpeech(mutatedArgs);
@@ -5996,7 +5961,7 @@ namespace Server
             var de = FindDamageEntryFor(from) ?? new DamageEntry(from);
 
             de.DamageGiven += amount;
-            de.LastDamage = DateTime.UtcNow;
+            de.LastDamage = Core.Now;
 
             DamageEntries.Remove(de);
             DamageEntries.Add(de);
@@ -6012,7 +5977,15 @@ namespace Server
                     de.Responsible = list = new List<DamageEntry>();
                 }
 
-                var resp = list.FirstOrDefault(check => check.Damager == master);
+                DamageEntry resp = null;
+                foreach (var check in list)
+                {
+                    if (check.Damager == master)
+                    {
+                        resp = check;
+                        break;
+                    }
+                }
 
                 if (resp == null)
                 {
@@ -6020,7 +5993,7 @@ namespace Server
                 }
 
                 resp.DamageGiven += amount;
-                resp.LastDamage = DateTime.UtcNow;
+                resp.LastDamage = Core.Now;
             }
 
             return de;
@@ -6564,8 +6537,8 @@ namespace Server
 
                         if (m_Criminal)
                         {
-                            m_ExpireCriminal ??= Timer.DelayCall(ExpireCriminalDelay, ExpireCriminal);
-                            m_ExpireCriminal.Start();
+                            ExpireCriminalTimer ??= Timer.DelayCall(ExpireCriminalDelay, ExpireCriminal);
+                            ExpireCriminalTimer.Start();
                         }
 
                         if (ShouldCheckStatTimers)
@@ -7039,24 +7012,6 @@ namespace Server
             eable.Free();
         }
 
-        public bool Send(Packet p) => Send(p, false);
-
-        public bool Send(Packet p, bool throwOnOffline)
-        {
-            if (m_NetState != null)
-            {
-                m_NetState.Send(p);
-                return true;
-            }
-
-            if (throwOnOffline)
-            {
-                throw new MobileNotConnectedException(this, "Packet could not be sent.");
-            }
-
-            return false;
-        }
-
         /// <summary>
         ///     Overridable. Event invoked before the Mobile says something.
         ///     <seealso cref="DoSpeech" />
@@ -7398,6 +7353,7 @@ namespace Server
             m_PropertyList = null;
         }
 
+#nullable enable
         public void InvalidateProperties()
         {
             if (!ObjectPropertyList.Enabled)
@@ -7432,6 +7388,7 @@ namespace Server
                 ClearProperties();
             }
         }
+#nullable restore
 
         public virtual void SetLocation(Point3D newLocation, bool isTeleport)
         {
@@ -7933,11 +7890,22 @@ namespace Server
             DamageEntries = new List<DamageEntry>();
 
             NextSkillTime = Core.TickCount;
-            CreationTime = DateTime.UtcNow;
+            CreationTime = Core.Now;
         }
 
         public virtual void Delta(MobileDelta flag)
         {
+#if THREADGUARD
+            if (Thread.CurrentThread != Core.Thread)
+            {
+                Utility.PushColor(ConsoleColor.Red);
+                Console.WriteLine("Attempting to queue a delta change from an invalid thread!");
+                Console.WriteLine(new StackTrace());
+                Utility.PopColor();
+                return;
+            }
+#endif
+
             if (m_Map == null || m_Map == Map.Internal || Deleted)
             {
                 return;
@@ -7948,50 +7916,49 @@ namespace Server
             if (!m_InDeltaQueue)
             {
                 m_InDeltaQueue = true;
-
-                if (_processing)
-                {
-                    lock (m_DeltaQueueR)
-                    {
-                        m_DeltaQueueR.Enqueue(this);
-
-                        try
-                        {
-                            using (var op = new StreamWriter("delta-recursion.log", true))
-                            {
-                                op.WriteLine("# {0}", DateTime.UtcNow);
-                                op.WriteLine(new StackTrace());
-                                op.WriteLine();
-                            }
-                        }
-                        catch
-                        {
-                            // ignored
-                        }
-                    }
-                }
-                else
-                {
-                    m_DeltaQueue.Enqueue(this);
-                }
+                m_DeltaQueue.Enqueue(this);
             }
         }
 
-        public static void ProcessDeltaQueue()
+        public static int ProcessDeltaQueue()
         {
-            _processing = true;
+            int count = 0;
 
-            while (m_DeltaQueue.TryDequeue(out var m))
+            var limit = m_DeltaQueue.Count;
+
+            while (m_DeltaQueue.Count > 0 && --limit >= 0)
             {
-                m.ProcessDelta();
+                var mob = m_DeltaQueue.Dequeue();
+
+                if (mob == null)
+                {
+                    continue;
+                }
+
+                count++;
+
+                mob.m_InDeltaQueue = false;
+
+                try
+                {
+                    mob.ProcessDelta();
+                }
+                catch (Exception ex)
+                {
+#if DEBUG
+                    Console.WriteLine("Process Delta Queue for {0} failed: {1}", mob, ex);
+#endif
+                }
             }
 
-            _processing = false;
-
-            while (m_DeltaQueueR.TryDequeue(out var m))
+            if (m_DeltaQueue.Count > 0)
             {
-                m.ProcessDelta();
+                Utility.PushColor(ConsoleColor.DarkYellow);
+                Console.WriteLine("Warning: {0} mobiles left in delta queue after processing.", m_DeltaQueue.Count);
+                Utility.PopColor();
             }
+
+            return count;
         }
 
         public virtual void OnKillsChange(int oldValue)
@@ -8092,8 +8059,7 @@ namespace Server
         /// </summary>
         public virtual void OnSingleClick(Mobile from)
         {
-            if (Deleted ||
-                AccessLevel == AccessLevel.Player && DisableHiddenSelfClick && Hidden && from == this)
+            if (Deleted || AccessLevel == AccessLevel.Player && DisableHiddenSelfClick && Hidden && from == this)
             {
                 return;
             }
@@ -8142,7 +8108,7 @@ namespace Server
                 hue = Notoriety.GetHue(Notoriety.Compute(from, this));
             }
 
-            var name = Name ?? string.Empty;
+            var name = Name ?? "";
 
             var prefix = "";
 
@@ -8375,17 +8341,12 @@ namespace Server
         public void Yell(int number, string args = "") =>
             PublicOverheadMessage(MessageType.Yell, YellHue, number, args);
 
-        public bool SendHuePicker(HuePicker p, bool throwOnOffline = false)
+        public bool SendHuePicker(HuePicker p)
         {
             if (m_NetState != null)
             {
                 p.SendTo(m_NetState);
                 return true;
-            }
-
-            if (throwOnOffline)
-            {
-                throw new MobileNotConnectedException(this, "Hue picker could not be sent.");
             }
 
             return false;
@@ -8605,12 +8566,7 @@ namespace Server
             }
         }
 
-        public virtual void DoHarmful(Mobile target)
-        {
-            DoHarmful(target, false);
-        }
-
-        public virtual void DoHarmful(Mobile target, bool indirect)
+        public virtual void DoHarmful(Mobile target, bool indirect = false)
         {
             if (target == null || Deleted)
             {
@@ -9108,8 +9064,8 @@ namespace Server
             var rx = (dx - dy) * 44;
             var ry = (dx + dy) * 44;
 
-            var ax = Math.Abs(rx);
-            var ay = Math.Abs(ry);
+            var ax = rx.Abs();
+            var ay = ry.Abs();
 
             Direction ret;
 
@@ -9162,7 +9118,7 @@ namespace Server
 
                     if (length != buffer.Length)
                     {
-                        buffer = buffer.Slice(0, length); // Adjust to the actual size
+                        buffer = buffer[..length]; // Adjust to the actual size
                     }
 
                     state.Send(buffer);
@@ -9193,7 +9149,7 @@ namespace Server
 
                     if (length != buffer.Length)
                     {
-                        buffer = buffer.Slice(0, length); // Adjust to the actual size
+                        buffer = buffer[..length]; // Adjust to the actual size
                     }
 
                     state.Send(buffer);
@@ -9227,7 +9183,7 @@ namespace Server
 
                     if (length != buffer.Length)
                     {
-                        buffer = buffer.Slice(0, length); // Adjust to the actual size
+                        buffer = buffer[..length]; // Adjust to the actual size
                     }
 
                     state.Send(buffer);
@@ -9275,7 +9231,7 @@ namespace Server
 
                     if (length != buffer.Length)
                     {
-                        buffer = buffer.Slice(0, length); // Adjust to the actual size
+                        buffer = buffer[..length]; // Adjust to the actual size
                     }
 
                     state.Send(buffer);
@@ -9306,7 +9262,7 @@ namespace Server
 
                     if (length != buffer.Length)
                     {
-                        buffer = buffer.Slice(0, length); // Adjust to the actual size
+                        buffer = buffer[..length]; // Adjust to the actual size
                     }
 
                     state.Send(buffer);

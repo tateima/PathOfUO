@@ -19,6 +19,7 @@ using System.Buffers.Binary;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Server.Text;
 
 namespace Server.Network
 {
@@ -101,13 +102,13 @@ namespace Server.Network
 
             if (Position < _first.Length)
             {
-                if (!BinaryPrimitives.TryReadInt16BigEndian(_first.Slice(Position), out value))
+                if (!BinaryPrimitives.TryReadInt16BigEndian(_first[Position..], out value))
                 {
                     // Not enough space. Split the spans
                     return (short)((ReadByte() >> 8) | ReadByte());
                 }
             }
-            else if (!BinaryPrimitives.TryReadInt16BigEndian(_second.Slice(Position - _first.Length), out value))
+            else if (!BinaryPrimitives.TryReadInt16BigEndian(_second[(Position - _first.Length)..], out value))
             {
                 throw new OutOfMemoryException();
             }
@@ -123,13 +124,13 @@ namespace Server.Network
 
             if (Position < _first.Length)
             {
-                if (!BinaryPrimitives.TryReadUInt16BigEndian(_first.Slice(Position), out value))
+                if (!BinaryPrimitives.TryReadUInt16BigEndian(_first[Position..], out value))
                 {
                     // Not enough space. Split the spans
                     return (ushort)((ReadByte() >> 8) | ReadByte());
                 }
             }
-            else if (!BinaryPrimitives.TryReadUInt16BigEndian(_second.Slice(Position - _first.Length), out value))
+            else if (!BinaryPrimitives.TryReadUInt16BigEndian(_second[(Position - _first.Length)..], out value))
             {
                 throw new OutOfMemoryException();
             }
@@ -145,13 +146,13 @@ namespace Server.Network
 
             if (Position < _first.Length)
             {
-                if (!BinaryPrimitives.TryReadInt32BigEndian(_first.Slice(Position), out value))
+                if (!BinaryPrimitives.TryReadInt32BigEndian(_first[Position..], out value))
                 {
                     // Not enough space. Split the spans
                     return (ReadByte() >> 24) | (ReadByte() >> 16) | (ReadByte() >> 8) | ReadByte();
                 }
             }
-            else if (!BinaryPrimitives.TryReadInt32BigEndian(_second.Slice(Position - _first.Length), out value))
+            else if (!BinaryPrimitives.TryReadInt32BigEndian(_second[(Position - _first.Length)..], out value))
             {
                 throw new OutOfMemoryException();
             }
@@ -167,13 +168,13 @@ namespace Server.Network
 
             if (Position < _first.Length)
             {
-                if (!BinaryPrimitives.TryReadUInt32BigEndian(_first.Slice(Position), out value))
+                if (!BinaryPrimitives.TryReadUInt32BigEndian(_first[Position..], out value))
                 {
                     // Not enough space. Split the spans
                     return (uint)((ReadByte() >> 24) | (ReadByte() >> 16) | (ReadByte() >> 8) | ReadByte());
                 }
             }
-            else if (!BinaryPrimitives.TryReadUInt32BigEndian(_second.Slice(Position - _first.Length), out value))
+            else if (!BinaryPrimitives.TryReadUInt32BigEndian(_second[(Position - _first.Length)..], out value))
             {
                 throw new OutOfMemoryException();
             }
@@ -189,7 +190,7 @@ namespace Server.Network
 
             if (Position < _first.Length)
             {
-                if (!BinaryPrimitives.TryReadInt64BigEndian(_first.Slice(Position), out value))
+                if (!BinaryPrimitives.TryReadInt64BigEndian(_first[Position..], out value))
                 {
                     // Not enough space. Split the spans
                     return ((long)ReadByte() >> 56) |
@@ -202,7 +203,7 @@ namespace Server.Network
                            ReadByte();
                 }
             }
-            else if (!BinaryPrimitives.TryReadInt64BigEndian(_second.Slice(Position - _first.Length), out value))
+            else if (!BinaryPrimitives.TryReadInt64BigEndian(_second[(Position - _first.Length)..], out value))
             {
                 throw new OutOfMemoryException();
             }
@@ -218,7 +219,7 @@ namespace Server.Network
 
             if (Position < _first.Length)
             {
-                if (!BinaryPrimitives.TryReadUInt64BigEndian(_first.Slice(Position), out value))
+                if (!BinaryPrimitives.TryReadUInt64BigEndian(_first[Position..], out value))
                 {
                     // Not enough space. Split the spans
                     return ((ulong)ReadByte() >> 56) |
@@ -231,7 +232,7 @@ namespace Server.Network
                            ReadByte();
                 }
             }
-            else if (!BinaryPrimitives.TryReadUInt64BigEndian(_second.Slice(Position - _first.Length), out value))
+            else if (!BinaryPrimitives.TryReadUInt64BigEndian(_second[(Position - _first.Length)..], out value))
             {
                 throw new OutOfMemoryException();
             }
@@ -243,7 +244,7 @@ namespace Server.Network
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string ReadString(Encoding encoding, bool safeString = false, int fixedLength = -1)
         {
-            int sizeT = Utility.GetByteLengthForEncoding(encoding);
+            int sizeT = TextEncoding.GetByteLengthForEncoding(encoding);
 
             bool isFixedLength = fixedLength > -1;
 
@@ -271,7 +272,7 @@ namespace Server.Network
                 var firstLength = Math.Min(_first.Length - Position, size);
 
                 // Find terminator
-                index = Utility.IndexOfTerminator(_first.Slice(Position, firstLength), sizeT);
+                index = _first.Slice(Position, firstLength).IndexOfTerminator(sizeT);
 
                 if (index < 0)
                 {
@@ -283,18 +284,18 @@ namespace Server.Network
                     }
                     else
                     {
-                        index = Utility.IndexOfTerminator(_second.Slice(0, remaining), sizeT);
+                        index = _second[..remaining].IndexOfTerminator(sizeT);
 
                         int secondLength = index < 0 ? remaining : index;
                         int length = firstLength + secondLength;
 
                         // Assume no strings should be too long for the stack
                         Span<byte> bytes = stackalloc byte[length];
-                        _first.Slice(Position).CopyTo(bytes);
-                        _second.Slice(0, secondLength).CopyTo(bytes.Slice(firstLength));
+                        _first[Position..].CopyTo(bytes);
+                        _second[..secondLength].CopyTo(bytes[firstLength..]);
 
                         Position += length + (index >= 0 ? sizeT : 0);
-                        return Utility.GetString(bytes, encoding, safeString);
+                        return TextEncoding.GetString(bytes, encoding, safeString);
                     }
                 }
 
@@ -304,11 +305,11 @@ namespace Server.Network
             {
                 size = Math.Min(remaining, size);
                 span = _second.Slice( Position - _first.Length, size);
-                index = Utility.IndexOfTerminator(span, sizeT);
+                index = span.IndexOfTerminator(sizeT);
 
                 if (index >= 0)
                 {
-                    span = span.Slice(0, index);
+                    span = span[..index];
                 }
                 else
                 {
@@ -317,41 +318,41 @@ namespace Server.Network
             }
 
             Position += isFixedLength ? size : index + sizeT;
-            return Utility.GetString(span, encoding, safeString);
+            return TextEncoding.GetString(span, encoding, safeString);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadLittleUniSafe(int fixedLength) => ReadString(Utility.UnicodeLE, true, fixedLength);
+        public string ReadLittleUniSafe(int fixedLength) => ReadString(TextEncoding.UnicodeLE, true, fixedLength);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadLittleUniSafe() => ReadString(Utility.UnicodeLE, true);
+        public string ReadLittleUniSafe() => ReadString(TextEncoding.UnicodeLE, true);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadLittleUni(int fixedLength) => ReadString(Utility.UnicodeLE, false, fixedLength);
+        public string ReadLittleUni(int fixedLength) => ReadString(TextEncoding.UnicodeLE, false, fixedLength);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadLittleUni() => ReadString(Utility.UnicodeLE);
+        public string ReadLittleUni() => ReadString(TextEncoding.UnicodeLE);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadBigUniSafe(int fixedLength) => ReadString(Utility.Unicode, true, fixedLength);
+        public string ReadBigUniSafe(int fixedLength) => ReadString(TextEncoding.Unicode, true, fixedLength);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadBigUniSafe() => ReadString(Utility.Unicode, true);
+        public string ReadBigUniSafe() => ReadString(TextEncoding.Unicode, true);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadBigUni(int fixedLength) => ReadString(Utility.Unicode, false, fixedLength);
+        public string ReadBigUni(int fixedLength) => ReadString(TextEncoding.Unicode, false, fixedLength);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadBigUni() => ReadString(Utility.Unicode);
+        public string ReadBigUni() => ReadString(TextEncoding.Unicode);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadUTF8Safe(int fixedLength) => ReadString(Utility.UTF8, true, fixedLength);
+        public string ReadUTF8Safe(int fixedLength) => ReadString(TextEncoding.UTF8, true, fixedLength);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadUTF8Safe() => ReadString(Utility.UTF8, true);
+        public string ReadUTF8Safe() => ReadString(TextEncoding.UTF8, true);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadUTF8() => ReadString(Utility.UTF8);
+        public string ReadUTF8() => ReadString(TextEncoding.UTF8);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string ReadAsciiSafe(int fixedLength) => ReadString(Encoding.ASCII, true, fixedLength);
@@ -373,5 +374,21 @@ namespace Server.Network
                 SeekOrigin.End   => Length + offset,
                 _                => Position + offset // Current
             };
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Read(Span<byte> bytes)
+        {
+            if (bytes.Length < Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bytes));
+            }
+
+            if (_first.Length > 0 && !_first.TryCopyTo(bytes))
+            {
+                return false;
+            }
+
+            return _second.Length <= 0 || _second.TryCopyTo(bytes[_first.Length..]);
+        }
     }
 }

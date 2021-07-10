@@ -67,7 +67,7 @@ namespace Server.Spells.Necromancy
                 {
                     damage = Utility.RandomMinMax(3, 7);
                     timer.Delay += TimeSpan.FromSeconds(2.0);
-                    buffTime = timer.Next - DateTime.UtcNow;
+                    buffTime = timer.Next - Core.Now;
                 }
 
                 if (!HasReagents())

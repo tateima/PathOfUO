@@ -17,14 +17,14 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.Runtime.CompilerServices;
-using Microsoft.Toolkit.HighPerformance.Memory;
+using Microsoft.Toolkit.HighPerformance;
 
 namespace Server.Network
 {
     public static class PacketUtilities
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WritePacketLength(this CircularBufferWriter writer)
+        public static void WritePacketLength(this ref CircularBufferWriter writer)
         {
             var length = writer.Position;
             writer.Seek(1, SeekOrigin.Begin);
@@ -33,7 +33,7 @@ namespace Server.Network
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WritePacketLength(this SpanWriter writer)
+        public static void WritePacketLength(this ref SpanWriter writer)
         {
             writer.Seek(1, SeekOrigin.Begin);
             writer.Write((ushort)writer.BytesWritten);

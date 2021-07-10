@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Server.Accounting;
 using Server.ContextMenus;
 using Server.Engines.BulkOrders;
@@ -473,39 +472,19 @@ namespace Server.Mobiles
         [CommandProperty(AccessLevel.GameMaster)]
         public TimeSpan SavagePaintExpiration
         {
-            get
-            {
-                var ts = m_SavagePaintExpiration - DateTime.UtcNow;
-
-                if (ts < TimeSpan.Zero)
-                {
-                    ts = TimeSpan.Zero;
-                }
-
-                return ts;
-            }
-            set => m_SavagePaintExpiration = DateTime.UtcNow + value;
+            get => Utility.Max(m_SavagePaintExpiration - Core.Now, TimeSpan.Zero);
+            set => m_SavagePaintExpiration = Core.Now + value;
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
         public TimeSpan NextSmithBulkOrder
         {
-            get
-            {
-                var ts = m_NextSmithBulkOrder - DateTime.UtcNow;
-
-                if (ts < TimeSpan.Zero)
-                {
-                    ts = TimeSpan.Zero;
-                }
-
-                return ts;
-            }
+            get => Utility.Max(m_NextSmithBulkOrder - Core.Now, TimeSpan.Zero);
             set
             {
                 try
                 {
-                    m_NextSmithBulkOrder = DateTime.UtcNow + value;
+                    m_NextSmithBulkOrder = Core.Now + value;
                 }
                 catch
                 {
@@ -517,22 +496,12 @@ namespace Server.Mobiles
         [CommandProperty(AccessLevel.GameMaster)]
         public TimeSpan NextTailorBulkOrder
         {
-            get
-            {
-                var ts = m_NextTailorBulkOrder - DateTime.UtcNow;
-
-                if (ts < TimeSpan.Zero)
-                {
-                    ts = TimeSpan.Zero;
-                }
-
-                return ts;
-            }
+            get => Utility.Max(m_NextTailorBulkOrder - Core.Now, TimeSpan.Zero);
             set
             {
                 try
                 {
-                    m_NextTailorBulkOrder = DateTime.UtcNow + value;
+                    m_NextTailorBulkOrder = Core.Now + value;
                 }
                 catch
                 {
@@ -565,7 +534,7 @@ namespace Server.Mobiles
             {
                 if (NetState != null)
                 {
-                    return m_GameTime + (DateTime.UtcNow - SessionStart);
+                    return m_GameTime + (Core.Now - SessionStart);
                 }
 
                 return m_GameTime;
@@ -1232,13 +1201,22 @@ namespace Server.Mobiles
 
         public static void EquipMacro(Mobile m, List<Serial> list)
         {
-            if (m is PlayerMobile pm && pm.Backpack != null && pm.Alive)
+            if (m is PlayerMobile { Alive: true } pm && pm.Backpack != null)
             {
                 var pack = pm.Backpack;
 
                 foreach (var serial in list)
                 {
-                    var item = pack.Items.FirstOrDefault(i => i.Serial == serial);
+                    Item item = null;
+                    foreach (var i in pack.Items)
+                    {
+                        if (i.Serial == serial)
+                        {
+                            item = i;
+                            break;
+                        }
+                    }
+
                     if (item == null)
                     {
                         continue;
@@ -1315,7 +1293,7 @@ namespace Server.Mobiles
                 }
             }
 
-            if (m_MountBlock?.m_Timer.Running != true || m_MountBlock.m_Timer.Next < DateTime.UtcNow + duration)
+            if (m_MountBlock?.m_Timer.Running != true || m_MountBlock.m_Timer.Next < Core.Now + duration)
             {
                 m_MountBlock = new MountBlock(duration, type, this);
             }
@@ -1462,7 +1440,7 @@ namespace Server.Mobiles
 
                     if (from.NetState != null)
                     {
-                        Timer.DelayCall(TimeSpan.FromSeconds(1.0), from.NetState.Dispose);
+                        Timer.DelayCall(TimeSpan.FromSeconds(1.0), from.NetState.Disconnect, "Server is locked down");
                     }
                 }
                 else if (from.AccessLevel >= AccessLevel.Administrator)
@@ -1743,12 +1721,12 @@ namespace Server.Mobiles
         {
             if (m is PlayerMobile pm)
             {
-                pm.SessionStart = DateTime.UtcNow;
+                pm.SessionStart = Core.Now;
 
                 pm.Quest?.StartTimer();
 
                 pm.BedrollLogout = false;
-                pm.LastOnline = DateTime.UtcNow;
+                pm.LastOnline = Core.Now;
             }
 
             DisguiseTimers.StartTimer(m);
@@ -1790,13 +1768,13 @@ namespace Server.Mobiles
 
             if (from is PlayerMobile pm)
             {
-                pm.m_GameTime += DateTime.UtcNow - pm.SessionStart;
+                pm.m_GameTime += Core.Now - pm.SessionStart;
 
                 pm.Quest?.StopTimer();
 
                 pm.SpeechLog = null;
                 pm.ClearQuestArrow();
-                pm.LastOnline = DateTime.UtcNow;
+                pm.LastOnline = Core.Now;
             }
 
             DisguiseTimers.StopTimer(from);
@@ -2835,7 +2813,7 @@ namespace Server.Mobiles
                 }
             }
 
-            if (Kills >= 5 && DateTime.UtcNow >= m_NextJustAward)
+            if (Kills >= 5 && Core.Now >= m_NextJustAward)
             {
                 var m = FindMostRecentDamager(false);
 
@@ -2868,7 +2846,7 @@ namespace Server.Mobiles
                         m.FixedParticles(0x375A, 9, 20, 5027, EffectLayer.Waist);
                         m.PlaySound(0x1F7);
 
-                        m_NextJustAward = DateTime.UtcNow + TimeSpan.FromMinutes(pointsToGain / 3.0);
+                        m_NextJustAward = Core.Now + TimeSpan.FromMinutes(pointsToGain / 3.0);
                     }
                 }
             }
@@ -3023,7 +3001,7 @@ namespace Server.Mobiles
 
                     if (length != buffer.Length)
                     {
-                        buffer = buffer.Slice(0, length); // Adjust to the actual size
+                        buffer = buffer[..length]; // Adjust to the actual size
                     }
 
                     ns.Send(buffer);
@@ -3123,7 +3101,7 @@ namespace Server.Mobiles
 
             if (tbl.TryGetValue(obj, out var count))
             {
-                if (count.TimeStamp + SkillCheck.AntiMacroExpire <= DateTime.UtcNow)
+                if (count.TimeStamp + SkillCheck.AntiMacroExpire <= Core.Now)
                 {
                     count.Count = 1;
                     return true;
@@ -3481,12 +3459,20 @@ namespace Server.Mobiles
 
         public override void Serialize(IGenericWriter writer)
         {
+            var toRemove = new List<object>();
+
             // cleanup our anti-macro table
             foreach (var t in m_AntiMacroTable.Values)
             {
-                var toRemove = t.Where(kvp => kvp.Value.TimeStamp + SkillCheck.AntiMacroExpire <= DateTime.UtcNow)
-                    .Select(kvp => kvp.Key)
-                    .ToList();
+                toRemove.Clear();
+
+                foreach (var (k, v) in t)
+                {
+                    if (v.TimeStamp + SkillCheck.AntiMacroExpire <= Core.Now)
+                    {
+                        toRemove.Add(k);
+                    }
+                }
 
                 foreach (var key in toRemove)
                 {
@@ -4329,7 +4315,7 @@ namespace Server.Mobiles
 
             for (var i = 0; i < m_StuckMenuUses.Length; ++i)
             {
-                if (DateTime.UtcNow - m_StuckMenuUses[i] > TimeSpan.FromDays(1.0))
+                if (Core.Now - m_StuckMenuUses[i] > TimeSpan.FromDays(1.0))
                 {
                     return true;
                 }
@@ -4347,9 +4333,9 @@ namespace Server.Mobiles
 
             for (var i = 0; i < m_StuckMenuUses.Length; ++i)
             {
-                if (DateTime.UtcNow - m_StuckMenuUses[i] > TimeSpan.FromDays(1.0))
+                if (Core.Now - m_StuckMenuUses[i] > TimeSpan.FromDays(1.0))
                 {
-                    m_StuckMenuUses[i] = DateTime.UtcNow;
+                    m_StuckMenuUses[i] = Core.Now;
                     return;
                 }
             }
@@ -4625,9 +4611,9 @@ namespace Server.Mobiles
                 return false;
             }
 
-            if (DateTime.UtcNow - m_LastYoungMessage > TimeSpan.FromMinutes(1.0))
+            if (Core.Now - m_LastYoungMessage > TimeSpan.FromMinutes(1.0))
             {
-                m_LastYoungMessage = DateTime.UtcNow;
+                m_LastYoungMessage = Core.Now;
                 // A monster looks at you menacingly but does not attack.
                 // You would be under attack now if not for your status as a new citizen of Britannia.
                 SendLocalizedMessage(1019067);
@@ -4638,9 +4624,9 @@ namespace Server.Mobiles
 
         public bool CheckYoungHealTime()
         {
-            if (DateTime.UtcNow - m_LastYoungHeal > TimeSpan.FromMinutes(5.0))
+            if (Core.Now - m_LastYoungHeal > TimeSpan.FromMinutes(5.0))
             {
-                m_LastYoungHeal = DateTime.UtcNow;
+                m_LastYoungHeal = Core.Now;
                 return true;
             }
 
@@ -4758,7 +4744,8 @@ namespace Server.Mobiles
 
         public virtual bool HasRecipe(Recipe r) => r != null && HasRecipe(r.ID);
 
-        public virtual bool HasRecipe(int recipeID) => m_AcquiredRecipes.TryGetValue(recipeID, out var value) && value;
+        public virtual bool HasRecipe(int recipeID) =>
+            m_AcquiredRecipes != null && m_AcquiredRecipes.TryGetValue(recipeID, out var value) && value;
 
         public virtual void AcquireRecipe(Recipe r)
         {
@@ -4771,7 +4758,6 @@ namespace Server.Mobiles
         public virtual void AcquireRecipe(int recipeID)
         {
             m_AcquiredRecipes ??= new Dictionary<int, bool>();
-
             m_AcquiredRecipes[recipeID] = true;
         }
 
@@ -4855,7 +4841,7 @@ namespace Server.Mobiles
                 set
                 {
                     m_Count = value;
-                    TimeStamp = DateTime.UtcNow;
+                    TimeStamp = Core.Now;
                 }
             }
         }

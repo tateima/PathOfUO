@@ -239,12 +239,12 @@ namespace Server.Items
 
                 if (text.Length > 255)
                 {
-                    text = text.Substring(0, 255);
+                    text = text[..255];
                 }
 
                 if (text.Length > 0)
                 {
-                    var message = new PlayerBBMessage(DateTime.UtcNow, from, text);
+                    var message = new PlayerBBMessage(Core.Now, from, text);
 
                     if (m_Greeting)
                     {
@@ -316,7 +316,7 @@ namespace Server.Items
 
                 if (text.Length > 255)
                 {
-                    text = text.Substring(0, 255);
+                    text = text[..255];
                 }
 
                 if (text.Length > 0)

@@ -127,7 +127,7 @@ namespace Server.Spells.Necromancy
             {
                 m_Caster = caster;
                 m_Target = target;
-                m_End = DateTime.UtcNow + delay;
+                m_End = Core.Now + delay;
 
                 Priority = TimerPriority.TwoFiftyMS;
             }
@@ -135,7 +135,7 @@ namespace Server.Spells.Necromancy
             protected override void OnTick()
             {
                 if (m_Caster.Deleted || m_Target.Deleted || !m_Caster.Alive || !m_Target.Alive ||
-                    DateTime.UtcNow >= m_End)
+                    Core.Now >= m_End)
                 {
                     DoExpire();
                 }

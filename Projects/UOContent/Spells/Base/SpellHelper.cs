@@ -216,7 +216,7 @@ namespace Server.Spells
             {
                 var info = m.Aggressed[i];
 
-                if (info.Defender.Player && DateTime.UtcNow - info.LastCombatTime < CombatHeatDelay)
+                if (info.Defender.Player && Core.Now - info.LastCombatTime < CombatHeatDelay)
                 {
                     return true;
                 }
@@ -228,7 +228,7 @@ namespace Server.Spells
                 {
                     var info = m.Aggressors[i];
 
-                    if (info.Attacker.Player && DateTime.UtcNow - info.LastCombatTime < CombatHeatDelay)
+                    if (info.Attacker.Player && Core.Now - info.LastCombatTime < CombatHeatDelay)
                     {
                         return true;
                     }
@@ -259,7 +259,7 @@ namespace Server.Spells
             return false;
         }
 
-        public static bool CanRevealCaster(Mobile m) => m is BaseCreature c && !c.Controlled;
+        public static bool CanRevealCaster(Mobile m) => m is BaseCreature { Controlled: false };
 
         public static void GetSurfaceTop(ref IPoint3D p)
         {
@@ -666,8 +666,8 @@ namespace Server.Spells
             }
 
             // Always allow monsters to teleport
-            if (caster is BaseCreature bc && !bc.Controlled && !bc.Summoned &&
-                (type == TravelCheckType.TeleportTo || type == TravelCheckType.TeleportFrom))
+            if (caster is BaseCreature { Controlled: false, Summoned: false } &&
+                type is TravelCheckType.TeleportTo or TravelCheckType.TeleportFrom)
             {
                 return true;
             }
@@ -681,7 +681,7 @@ namespace Server.Spells
             if (caster != null)
             {
                 var destination = Region.Find(loc, map) as BaseRegion;
-                var current = Region.Find(caster.Location, map) as BaseRegion;
+                var current = Region.Find(caster.Location, caster.Map) as BaseRegion;
 
                 if (destination?.CheckTravel(caster, loc, type) == false || current?.CheckTravel(caster, loc, type) == false)
                 {

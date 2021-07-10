@@ -1,8 +1,22 @@
+/*************************************************************************
+ * ModernUO                                                              *
+ * Copyright (C) 2019-2021 - ModernUO Development Team                   *
+ * Email: hi@modernuo.com                                                *
+ * File: Timer.cs                                                        *
+ *                                                                       *
+ * This program is free software: you can redistribute it and/or modify  *
+ * it under the terms of the GNU General Public License as published by  *
+ * the Free Software Foundation, either version 3 of the License, or     *
+ * (at your option) any later version.                                   *
+ *                                                                       *
+ * You should have received a copy of the GNU General Public License     *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *************************************************************************/
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using Server.Diagnostics;
 
 namespace Server
@@ -24,9 +38,7 @@ namespace Server
         private static readonly Queue<Timer> m_Queue = new();
 
         private static int m_QueueCountAtSlice;
-        private readonly int m_Count;
         private long m_Delay;
-        private int m_Index;
         private long m_Interval;
         private List<Timer> m_List;
         private long m_Next;
@@ -44,7 +56,7 @@ namespace Server
         {
             m_Delay = (long)delay.TotalMilliseconds;
             m_Interval = (long)interval.TotalMilliseconds;
-            m_Count = count;
+            Count = count;
 
             if (!m_PrioritySet)
             {
@@ -94,6 +106,10 @@ namespace Server
             set => m_Interval = (long)value.TotalMilliseconds;
         }
 
+        public int Index { get; private set; }
+
+        public int Count { get; }
+
         public bool Running
         {
             get => m_Running;
@@ -134,13 +150,13 @@ namespace Server
             return TimerProfile.Acquire(name);
         }
 
-        public static void Slice()
+        public static int Slice()
         {
+            var index = 0;
+
             lock (m_Queue)
             {
                 m_QueueCountAtSlice = m_Queue.Count;
-
-                var index = 0;
 
                 while (index < BreakCount && m_Queue.Count != 0)
                 {
@@ -151,11 +167,13 @@ namespace Server
 
                     t.OnTick();
                     t.m_Queued = false;
-                    ++index;
+                    index++;
 
                     prof?.Finish();
                 }
             }
+
+            return index;
         }
 
         public void RegCreation()
@@ -239,15 +257,6 @@ namespace Server
 
         protected virtual void OnTick()
         {
-        }
-
-        public static Task Pause(int ms) => Pause(TimeSpan.FromMilliseconds(ms));
-
-        public static Task Pause(TimeSpan ms)
-        {
-            var t = new DelayTaskTimer(ms);
-            t.Start();
-            return t.Task;
         }
 
         public class TimerThread
@@ -365,7 +374,7 @@ namespace Server
                         if (tce.m_IsAdd)
                         {
                             timer.m_Next = curTicks + timer.m_Delay;
-                            timer.m_Index = 0;
+                            timer.Index = 0;
                         }
 
                         if (newIndex >= 0)
@@ -425,7 +434,7 @@ namespace Server
                                     m_Queue.Enqueue(t);
                                 }
 
-                                if (t.m_Count != 0 && ++t.m_Index >= t.m_Count)
+                                if (t.Count != 0 && ++t.Index >= t.Count)
                                 {
                                     t.Stop();
                                 }
@@ -491,21 +500,6 @@ namespace Server
 
                     return e;
                 }
-            }
-        }
-
-        private class DelayTaskTimer : Timer
-        {
-            private readonly TaskCompletionSource<DelayTaskTimer> m_TaskCompleter;
-
-            public DelayTaskTimer(TimeSpan delay) : base(delay) =>
-                m_TaskCompleter = new TaskCompletionSource<DelayTaskTimer>();
-
-            public Task Task => m_TaskCompleter.Task;
-
-            protected override void OnTick()
-            {
-                m_TaskCompleter.SetResult(this);
             }
         }
     }

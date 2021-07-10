@@ -25,7 +25,7 @@ namespace Server.Network
             IncomingPackets.Register(0x6C, 19, true, TargetResponse);
         }
 
-        public static void TargetResponse(NetState state, CircularBufferReader reader)
+        public static void TargetResponse(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             int type = reader.ReadByte();
             var targetID = reader.ReadInt32();
@@ -33,7 +33,8 @@ namespace Server.Network
             Serial serial = reader.ReadUInt32();
             int x = reader.ReadInt16();
             int y = reader.ReadInt16();
-            int z = reader.ReadInt16();
+            reader.ReadByte();
+            int z = reader.ReadSByte();
             int graphic = reader.ReadUInt16();
 
             if (targetID == unchecked((int)0xDEADBEEF))

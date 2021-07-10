@@ -1,5 +1,20 @@
+/*************************************************************************
+ * ModernUO                                                              *
+ * Copyright (C) 2019-2021 - ModernUO Development Team                   *
+ * Email: hi@modernuo.com                                                *
+ * File: Guild.cs                                                        *
+ *                                                                       *
+ * This program is free software: you can redistribute it and/or modify  *
+ * it under the terms of the GNU General Public License as published by  *
+ * the Free Software Foundation, either version 3 of the License, or     *
+ * (at your option) any later version.                                   *
+ *                                                                       *
+ * You should have received a copy of the GNU General Public License     *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *************************************************************************/
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Server.Guilds
 {
@@ -12,16 +27,29 @@ namespace Server.Guilds
 
     public abstract class BaseGuild : ISerializable
     {
-        protected BaseGuild(Serial serial)
-        {
-            Serial = serial;
-            World.AddGuild(this);
-        }
-
         protected BaseGuild()
         {
             Serial = World.NewGuild;
             World.AddGuild(this);
+
+            SetTypeRef(GetType());
+        }
+
+        protected BaseGuild(Serial serial)
+        {
+            Serial = serial;
+            SetTypeRef(GetType());
+        }
+
+        public void SetTypeRef(Type type)
+        {
+            TypeRef = World.GuildTypes.IndexOf(type);
+
+            if (TypeRef == -1)
+            {
+                World.GuildTypes.Add(type);
+                TypeRef = World.GuildTypes.Count - 1;
+            }
         }
 
         public abstract string Abbreviation { get; set; }
@@ -35,19 +63,41 @@ namespace Server.Guilds
         [CommandProperty(AccessLevel.Counselor)]
         public Serial Serial { get; }
 
+        long ISerializable.SavePosition { get; set; } = -1;
+
         BufferWriter ISerializable.SaveBuffer { get; set; }
 
-        public int TypeRef => 0;
+        public int TypeRef { get; private set; }
 
         public abstract void Serialize(IGenericWriter writer);
         public abstract void Deserialize(IGenericReader reader);
         public abstract void OnDelete(Mobile mob);
 
-        public static BaseGuild FindByName(string name) =>
-            World.Guilds.Values.FirstOrDefault(g => g.Name == name);
+        public static BaseGuild FindByName(string name)
+        {
+            foreach (var g in World.Guilds.Values)
+            {
+                if (g.Name == name)
+                {
+                    return g;
+                }
+            }
 
-        public static BaseGuild FindByAbbrev(string abbr) =>
-            World.Guilds.Values.FirstOrDefault(g => g.Abbreviation == abbr);
+            return null;
+        }
+
+        public static BaseGuild FindByAbbrev(string abbr)
+        {
+            foreach (var g in World.Guilds.Values)
+            {
+                if (g.Abbreviation == abbr)
+                {
+                    return g;
+                }
+            }
+
+            return null;
+        }
 
         public static HashSet<BaseGuild> Search(string find)
         {

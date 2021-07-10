@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Server.Json;
+using Server.Network;
 using Server.Utilities;
 
 namespace Server.Engines.Spawners
@@ -43,6 +44,8 @@ namespace Server.Engines.Spawners
                 var file = files[i];
                 from.SendMessage("GenerateSpawners: Generating spawners for {0}...", file.Name);
 
+                NetState.FlushAll();
+
                 try
                 {
                     var spawners = JsonConfig.Deserialize<List<DynamicJson>>(file.FullName);
@@ -67,7 +70,7 @@ namespace Server.Engines.Spawners
             for (var i = 0; i < spawners.Count; i++)
             {
                 var json = spawners[i];
-                var type = AssemblyHandler.FindFirstTypeForName(json.Type);
+                var type = AssemblyHandler.FindTypeByName(json.Type);
 
                 if (type == null || !typeof(BaseSpawner).IsAssignableFrom(type))
                 {

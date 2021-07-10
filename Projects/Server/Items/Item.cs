@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using Server.ContextMenus;
 using Server.Items;
@@ -196,10 +194,7 @@ namespace Server
     {
         public const int QuestItemHue = 0x4EA; // Hmmmm... "for EA"?
         public static readonly List<Item> EmptyItems = new();
-
-        private static readonly List<Item> m_DeltaQueue = new();
-
-        private static bool _processing;
+        private static readonly Queue<Item> m_DeltaQueue = new();
 
         private static int m_OpenSlots;
         private int m_Amount;
@@ -220,9 +215,6 @@ namespace Server
 
         private ObjectPropertyList m_PropertyList;
 
-        // Position in the save buffer where serialization ends. -1 if dirty
-        private int _savePosition = -1;
-
         [Constructible]
         public Item(int itemID = 0)
         {
@@ -238,27 +230,22 @@ namespace Server
             SetLastMoved();
 
             World.AddEntity(this);
-
-            var ourType = GetType();
-            TypeRef = World.ItemTypes.IndexOf(ourType);
-
-            if (TypeRef == -1)
-            {
-                World.ItemTypes.Add(ourType);
-                TypeRef = World.ItemTypes.Count - 1;
-            }
+            SetTypeRef(GetType());
         }
 
         public Item(Serial serial)
         {
             Serial = serial;
+            SetTypeRef(GetType());
+        }
 
-            var ourType = GetType();
-            TypeRef = World.ItemTypes.IndexOf(ourType);
+        public void SetTypeRef(Type type)
+        {
+            TypeRef = World.ItemTypes.IndexOf(type);
 
             if (TypeRef == -1)
             {
-                World.ItemTypes.Add(ourType);
+                World.ItemTypes.Add(type);
                 TypeRef = World.ItemTypes.Count - 1;
             }
         }
@@ -796,22 +783,17 @@ namespace Server
             AddNameProperties(list);
         }
 
+        long ISerializable.SavePosition { get; set; } = -1;
+
         BufferWriter ISerializable.SaveBuffer { get; set; }
 
         [CommandProperty(AccessLevel.Counselor)]
         public Serial Serial { get; }
 
-        public int TypeRef { get; }
+        public int TypeRef { get; private set; }
 
         public virtual void Serialize(IGenericWriter writer)
         {
-            // The item is clean, so let's skip
-            if (_savePosition > -1)
-            {
-                writer.Seek(_savePosition, SeekOrigin.Begin);
-                return;
-            }
-
             writer.Write(9); // version
 
             var flags = SaveFlag.None;
@@ -959,7 +941,7 @@ namespace Server
 
             /* begin last moved time optimization */
             var ticks = LastMoved.Ticks;
-            var now = DateTime.UtcNow.Ticks;
+            var now = Core.Now.Ticks;
 
             var minutes = new TimeSpan(now - ticks).TotalMinutes;
 
@@ -1136,9 +1118,9 @@ namespace Server
 
                 if (m_Map != null)
                 {
-                    Span<byte> oldWorldItem = stackalloc byte[OutgoingItemPackets.MaxWorldItemPacketLength].InitializePacket();
-                    Span<byte> saWorldItem = stackalloc byte[OutgoingItemPackets.MaxWorldItemPacketLength].InitializePacket();
-                    Span<byte> hsWorldItem = stackalloc byte[OutgoingItemPackets.MaxWorldItemPacketLength].InitializePacket();
+                    Span<byte> oldWorldItem = stackalloc byte[OutgoingEntityPackets.MaxWorldEntityPacketLength].InitializePacket();
+                    Span<byte> saWorldItem = stackalloc byte[OutgoingEntityPackets.MaxWorldEntityPacketLength].InitializePacket();
+                    Span<byte> hsWorldItem = stackalloc byte[OutgoingEntityPackets.MaxWorldEntityPacketLength].InitializePacket();
                     Span<byte> opl = ObjectPropertyList.Enabled ? stackalloc byte[OutgoingEntityPackets.OPLPacketLength].InitializePacket() : null;
 
                     var eable = m_Map.GetClientsInRange(m_Location, GetMaxUpdateRange());
@@ -1151,20 +1133,20 @@ namespace Server
                         {
                             if (state.HighSeas)
                             {
-                                var length = OutgoingItemPackets.CreateWorldItemNew(hsWorldItem, this, true);
+                                var length = OutgoingEntityPackets.CreateWorldEntity(hsWorldItem, this, true);
                                 if (length != hsWorldItem.Length)
                                 {
-                                    hsWorldItem = hsWorldItem.Slice(0, length);
+                                    hsWorldItem = hsWorldItem[..length];
                                 }
 
                                 SendInfoTo(state, hsWorldItem, opl);
                             }
                             else if (state.StygianAbyss)
                             {
-                                var length = OutgoingItemPackets.CreateWorldItemNew(saWorldItem, this, false);
+                                var length = OutgoingEntityPackets.CreateWorldEntity(saWorldItem, this, false);
                                 if (length != saWorldItem.Length)
                                 {
-                                    saWorldItem = saWorldItem.Slice(0, length);
+                                    saWorldItem = saWorldItem[..length];
                                 }
 
                                 SendInfoTo(state, saWorldItem, opl);
@@ -1174,7 +1156,7 @@ namespace Server
                                 var length = OutgoingItemPackets.CreateWorldItem(oldWorldItem, this);
                                 if (length != oldWorldItem.Length)
                                 {
-                                    oldWorldItem = oldWorldItem.Slice(0, length);
+                                    oldWorldItem = oldWorldItem[..length];
                                 }
 
                                 SendInfoTo(state, oldWorldItem, opl);
@@ -1606,21 +1588,21 @@ namespace Server
         [CommandProperty(AccessLevel.Counselor, AccessLevel.GameMaster)]
         public int X
         {
-            get => m_Location.m_X;
+            get => Location.m_X;
             set => Location = new Point3D(value, m_Location.m_Y, m_Location.m_Z);
         }
 
         [CommandProperty(AccessLevel.Counselor, AccessLevel.GameMaster)]
         public int Y
         {
-            get => m_Location.m_Y;
+            get => Location.m_Y;
             set => Location = new Point3D(m_Location.m_X, value, m_Location.m_Z);
         }
 
         [CommandProperty(AccessLevel.Counselor, AccessLevel.GameMaster)]
         public int Z
         {
-            get => m_Location.m_Z;
+            get => Location.m_Z;
             set => Location = new Point3D(m_Location.m_X, m_Location.m_Y, value);
         }
 
@@ -2284,7 +2266,7 @@ namespace Server
 
         public void SetLastMoved()
         {
-            LastMoved = DateTime.UtcNow;
+            LastMoved = Core.Now;
         }
 
         public virtual bool CanStackWith(Item dropped) =>
@@ -2411,6 +2393,7 @@ namespace Server
             m_PropertyList = null;
         }
 
+#nullable enable
         public void InvalidateProperties()
         {
             if (!ObjectPropertyList.Enabled)
@@ -2445,6 +2428,7 @@ namespace Server
                 ClearProperties();
             }
         }
+#nullable restore
 
         public virtual int GetPacketFlags()
         {
@@ -2497,6 +2481,7 @@ namespace Server
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool GetSaveFlag(SaveFlag flags, SaveFlag toGet) => (flags & toGet) != 0;
 
         public IPooledEnumerable<IEntity> GetObjectsInRange(int range)
@@ -2599,11 +2584,11 @@ namespace Server
 
                             try
                             {
-                                LastMoved = DateTime.UtcNow - TimeSpan.FromMinutes(minutes);
+                                LastMoved = Core.Now - TimeSpan.FromMinutes(minutes);
                             }
                             catch
                             {
-                                LastMoved = DateTime.UtcNow;
+                                LastMoved = Core.Now;
                             }
                         }
 
@@ -3242,69 +3227,55 @@ namespace Server
             if (!GetFlag(ImplFlag.InQueue))
             {
                 SetFlag(ImplFlag.InQueue, true);
-
-                if (_processing)
-                {
-                    try
-                    {
-                        using var op = new StreamWriter("delta-recursion.log", true);
-                        op.WriteLine("# {0}", DateTime.UtcNow);
-                        op.WriteLine(new StackTrace());
-                        op.WriteLine();
-                    }
-                    catch
-                    {
-                        // ignored
-                    }
-                }
-                else
-                {
-                    m_DeltaQueue.Add(this);
-                }
+                m_DeltaQueue.Enqueue(this);
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void RemDelta(ItemDelta flags)
         {
             m_DeltaFlags &= ~flags;
-
-            if (GetFlag(ImplFlag.InQueue) && m_DeltaFlags == ItemDelta.None)
-            {
-                SetFlag(ImplFlag.InQueue, false);
-
-                if (_processing)
-                {
-                    try
-                    {
-                        using var op = new StreamWriter("delta-recursion.log", true);
-                        op.WriteLine("# {0}", DateTime.UtcNow);
-                        op.WriteLine(new StackTrace());
-                        op.WriteLine();
-                    }
-                    catch
-                    {
-                        // ignored
-                    }
-                }
-                else
-                {
-                    m_DeltaQueue.Remove(this);
-                }
-            }
         }
 
-        public static void ProcessDeltaQueue()
+        public static int ProcessDeltaQueue()
         {
-            _processing = true;
+            int count = 0;
 
-            for (var i = 0; i < m_DeltaQueue.Count; i++)
+            var limit = m_DeltaQueue.Count;
+
+            while (m_DeltaQueue.Count > 0 && --limit >= 0)
             {
-                m_DeltaQueue[i].ProcessDelta();
+                var item = m_DeltaQueue.Dequeue();
+
+                if (item == null)
+                {
+                    continue;
+                }
+
+                count++;
+
+                item.SetFlag(ImplFlag.InQueue, false);
+
+                try
+                {
+                    item.ProcessDelta();
+                }
+                catch (Exception ex)
+                {
+#if DEBUG
+                    Console.WriteLine("Process Delta Queue for {0} failed: {1}", item, ex);
+#endif
+                }
             }
 
-            m_DeltaQueue.Clear();
+            if (m_DeltaQueue.Count > 0)
+            {
+                Utility.PushColor(ConsoleColor.DarkYellow);
+                Console.WriteLine("Warning: {0} items left in delta queue after processing.", m_DeltaQueue.Count);
+                Utility.PopColor();
+            }
 
-            _processing = false;
+            return count;
         }
 
         public virtual void OnDelete()
@@ -3345,7 +3316,7 @@ namespace Server
 
                     if (length != buffer.Length)
                     {
-                        buffer = buffer.Slice(0, length); // Adjust to the actual size
+                        buffer = buffer[..length]; // Adjust to the actual size
                     }
 
                     state.Send(buffer);
@@ -3379,7 +3350,7 @@ namespace Server
 
                     if (length != buffer.Length)
                     {
-                        buffer = buffer.Slice(0, length); // Adjust to the actual size
+                        buffer = buffer[..length]; // Adjust to the actual size
                     }
 
                     state.Send(buffer);
@@ -3617,28 +3588,27 @@ namespace Server
 
             var eable = map.GetItemsInRange(p, 0);
 
-            var items = eable.Where(
-                item =>
+            var items = new List<Item>();
+            foreach (var item in eable)
+            {
+                if (item is BaseMulti || item.ItemID > TileData.MaxItemValue)
                 {
-                    if (item is BaseMulti || item.ItemID > TileData.MaxItemValue)
-                    {
-                        return false;
-                    }
-
-                    var id = item.ItemData;
-
-                    if (id.Surface)
-                    {
-                        var top = item.Z + id.CalcHeight;
-                        if (top <= maxZ && top >= z)
-                        {
-                            z = top;
-                        }
-                    }
-
-                    return true;
+                    continue;
                 }
-            ).ToList();
+
+                var id = item.ItemData;
+
+                if (id.Surface)
+                {
+                    var top = item.Z + id.CalcHeight;
+                    if (top <= maxZ && top >= z)
+                    {
+                        z = top;
+                    }
+                }
+
+                items.Add(item);
+            }
 
             eable.Free();
 

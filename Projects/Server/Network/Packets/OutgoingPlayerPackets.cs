@@ -61,7 +61,7 @@ namespace Server.Network
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SendDeathStatus(this NetState ns, bool dead) =>
-            ns?.Send(stackalloc byte[] { 0x2C, dead ? 0 : 2 });
+            ns?.Send(stackalloc byte[] { 0x2C, dead ? (byte)0 : (byte)2 });
 
         public static void SendToggleSpecialAbility(this NetState ns, int abilityId, bool active)
         {
@@ -303,6 +303,8 @@ namespace Server.Network
             ns.Send(writer.Span);
         }
 
+        public static void SendStopMusic(this NetState ns) => ns?.Send(stackalloc byte[] { 0x6D, 0x1F, 0xFF });
+
         public static void SendScrollMessage(this NetState ns, int type, int tip, string text)
         {
             if (ns == null)
@@ -324,9 +326,8 @@ namespace Server.Network
             ns.Send(writer.Span);
         }
 
-        // TODO: Use DateTime caching against core loop
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SendCurrentTime(this NetState ns) => ns.SendCurrentTime(DateTime.UtcNow);
+        public static void SendCurrentTime(this NetState ns) => ns.SendCurrentTime(Core.Now);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SendCurrentTime(this NetState ns, DateTime date) =>

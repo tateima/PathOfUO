@@ -24,23 +24,26 @@ namespace Server.Accounting
                 return;
             }
 
-            IncomingPackets.RegisterThrottler(0x80, Throttle_Callback);
-            IncomingPackets.RegisterThrottler(0x91, Throttle_Callback);
-            IncomingPackets.RegisterThrottler(0xCF, Throttle_Callback);
+            IncomingPackets.RegisterThrottler(0x80, Throttle);
+            IncomingPackets.RegisterThrottler(0x91, Throttle);
+            IncomingPackets.RegisterThrottler(0xCF, Throttle);
         }
 
-        public static TimeSpan Throttle_Callback(NetState ns)
+        public static bool Throttle(int packetId, NetState ns, out bool drop)
         {
             var accessLog = FindAccessLog(ns);
 
             if (accessLog == null)
             {
-                return TimeSpan.Zero;
+                drop = false;
+                return true;
             }
 
-            var date = DateTime.UtcNow;
+            var date = Core.Now;
             var access = accessLog.LastAccessTime + ComputeThrottle(accessLog.Counts);
-            return date >= access ? TimeSpan.Zero : date - access;
+            var allow = date >= access;
+            drop = !allow;
+            return allow;
         }
 
         public static InvalidAccountAccessLog FindAccessLog(NetState ns)
@@ -93,7 +96,7 @@ namespace Server.Accounting
                     using var op = new StreamWriter("throttle.log", true);
                     op.WriteLine(
                         "{0}\t{1}\t{2}",
-                        DateTime.UtcNow,
+                        Core.Now,
                         ns,
                         accessLog.Counts
                     );
@@ -148,13 +151,13 @@ namespace Server.Accounting
 
         public DateTime LastAccessTime { get; set; }
 
-        public bool HasExpired => DateTime.UtcNow >= LastAccessTime + TimeSpan.FromHours(1.0);
+        public bool HasExpired => Core.Now >= LastAccessTime + TimeSpan.FromHours(1.0);
 
         public int Counts { get; set; }
 
         public void RefreshAccessTime()
         {
-            LastAccessTime = DateTime.UtcNow;
+            LastAccessTime = Core.Now;
         }
     }
 }

@@ -979,7 +979,7 @@ namespace Server.Mobiles
             {
                 if (m_DeleteTimer?.Running == true)
                 {
-                    return m_DeleteTimer.Next - DateTime.UtcNow;
+                    return m_DeleteTimer.Next - Core.Now;
                 }
 
                 return TimeSpan.Zero;
@@ -1439,7 +1439,7 @@ namespace Server.Mobiles
 
         public void Unpacify()
         {
-            BardEndTime = DateTime.UtcNow;
+            BardEndTime = Core.Now;
             BardPacified = false;
         }
 
@@ -1931,7 +1931,7 @@ namespace Server.Mobiles
                 if (m_bSummoned)
                 {
                     SummonEnd = reader.ReadDeltaTime();
-                    new UnsummonTimer(m_ControlMaster, this, SummonEnd - DateTime.UtcNow).Start();
+                    new UnsummonTimer(m_ControlMaster, this, SummonEnd - Core.Now).Start();
                 }
 
                 ControlSlots = reader.ReadInt();
@@ -2591,7 +2591,7 @@ namespace Server.Mobiles
             }
         }
 
-        public override void DoHarmful(Mobile target, bool indirect)
+        public override void DoHarmful(Mobile target, bool indirect = false)
         {
             base.DoHarmful(target, indirect);
 
@@ -2655,7 +2655,7 @@ namespace Server.Mobiles
             {
                 // idling...
 
-                if (DateTime.UtcNow >= m_IdleReleaseTime)
+                if (Core.Now >= m_IdleReleaseTime)
                 {
                     m_IdleReleaseTime = DateTime.MinValue;
                     return false; // idle is over
@@ -2669,7 +2669,7 @@ namespace Server.Mobiles
                 return false; // not idling, but don't want to enter idle state
             }
 
-            m_IdleReleaseTime = DateTime.UtcNow + TimeSpan.FromSeconds(Utility.RandomMinMax(15, 25));
+            m_IdleReleaseTime = Core.Now + TimeSpan.FromSeconds(Utility.RandomMinMax(15, 25));
 
             if (Body.IsHuman)
             {
@@ -3295,7 +3295,7 @@ namespace Server.Mobiles
                 {
                     if (OwnerAbandonTime == DateTime.MinValue)
                     {
-                        OwnerAbandonTime = DateTime.UtcNow;
+                        OwnerAbandonTime = Core.Now;
                     }
                 }
                 else
@@ -3589,7 +3589,7 @@ namespace Server.Mobiles
             }
 
             new UnsummonTimer(caster, creature, duration).Start();
-            creature.SummonEnd = DateTime.UtcNow + duration;
+            creature.SummonEnd = Core.Now + duration;
 
             creature.MoveToWorld(p, caster.Map);
 
@@ -3768,7 +3768,7 @@ namespace Server.Mobiles
                 BardMaster = master;
                 BardTarget = target;
                 Combatant = target;
-                BardEndTime = DateTime.UtcNow + TimeSpan.FromSeconds(30.0);
+                BardEndTime = Core.Now + TimeSpan.FromSeconds(30.0);
 
                 if (target is BaseCreature t)
                 {
@@ -3782,7 +3782,7 @@ namespace Server.Mobiles
                     t.BardMaster = master;
                     t.BardTarget = this;
                     t.Combatant = this;
-                    t.BardEndTime = DateTime.UtcNow + TimeSpan.FromSeconds(30.0);
+                    t.BardEndTime = Core.Now + TimeSpan.FromSeconds(30.0);
                 }
             }
             else
@@ -3897,7 +3897,7 @@ namespace Server.Mobiles
             {
                 if (OwnerAbandonTime == DateTime.MinValue)
                 {
-                    OwnerAbandonTime = DateTime.UtcNow;
+                    OwnerAbandonTime = Core.Now;
                 }
             }
             else
@@ -3971,7 +3971,7 @@ namespace Server.Mobiles
 
         private void CheckShout(PlayerMobile pm, Point3D oldLocation)
         {
-            if (m_MLNextShout > DateTime.UtcNow || pm.Hidden || !pm.Alive)
+            if (m_MLNextShout > Core.Now || pm.Hidden || !pm.Alive)
             {
                 return;
             }
@@ -3998,7 +3998,7 @@ namespace Server.Mobiles
             }
 
             Shout(pm);
-            m_MLNextShout = DateTime.UtcNow + ShoutDelay;
+            m_MLNextShout = Core.Now + ShoutDelay;
         }
 
         public virtual void Shout(PlayerMobile pm)
@@ -4225,7 +4225,7 @@ namespace Server.Mobiles
                 return false;
             }
 
-            if (DateTime.UtcNow >= EndFleeTime)
+            if (Core.Now >= EndFleeTime)
             {
                 StopFlee();
                 return false;
@@ -4236,7 +4236,7 @@ namespace Server.Mobiles
 
         public virtual void BeginFlee(TimeSpan maxDuration)
         {
-            EndFleeTime = DateTime.UtcNow + maxDuration;
+            EndFleeTime = Core.Now + maxDuration;
         }
 
         public virtual bool IsPetFriend(Mobile m) => Friends?.Contains(m) == true;
@@ -4436,9 +4436,9 @@ namespace Server.Mobiles
                                 {
                                     if (BondingBegin == DateTime.MinValue)
                                     {
-                                        BondingBegin = DateTime.UtcNow;
+                                        BondingBegin = Core.Now;
                                     }
-                                    else if (BondingBegin + BondingDelay <= DateTime.UtcNow)
+                                    else if (BondingBegin + BondingDelay <= Core.Now)
                                     {
                                         IsBonded = true;
                                         BondingBegin = DateTime.MinValue;
@@ -5655,7 +5655,7 @@ namespace Server.Mobiles
 
         public LoyaltyTimer() : base(InternalDelay, InternalDelay)
         {
-            m_NextHourlyCheck = DateTime.UtcNow + TimeSpan.FromHours(1.0);
+            m_NextHourlyCheck = Core.Now + TimeSpan.FromHours(1.0);
             Priority = TimerPriority.FiveSeconds;
         }
 
@@ -5666,12 +5666,12 @@ namespace Server.Mobiles
 
         protected override void OnTick()
         {
-            if (DateTime.UtcNow < m_NextHourlyCheck)
+            if (Core.Now < m_NextHourlyCheck)
             {
                 return;
             }
 
-            m_NextHourlyCheck = DateTime.UtcNow + TimeSpan.FromHours(1.0);
+            m_NextHourlyCheck = Core.Now + TimeSpan.FromHours(1.0);
 
             var toRelease = new List<BaseCreature>();
 
@@ -5700,9 +5700,9 @@ namespace Server.Mobiles
                     {
                         if (c.OwnerAbandonTime == DateTime.MinValue)
                         {
-                            c.OwnerAbandonTime = DateTime.UtcNow;
+                            c.OwnerAbandonTime = Core.Now;
                         }
-                        else if (c.OwnerAbandonTime + c.BondingAbandonDelay <= DateTime.UtcNow)
+                        else if (c.OwnerAbandonTime + c.BondingAbandonDelay <= Core.Now)
                         {
                             toRemove.Add(c);
                         }

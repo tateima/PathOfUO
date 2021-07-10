@@ -130,7 +130,7 @@ namespace Server.Items
             {
                 list.Add(
                     1070721,
-                    "#{0}\t{1:0.0}",
+                    "#{0}\t{1:F1}",
                     AosSkillBonuses.GetLabel(Skill),
                     SkillValue
                 ); // Skill stored: ~1_skillname~ ~2_skillamount~
@@ -145,7 +145,7 @@ namespace Server.Items
             {
                 var info = m.Aggressed[i];
 
-                if (DateTime.UtcNow - info.LastCombatTime < time)
+                if (Core.Now - info.LastCombatTime < time)
                 {
                     return true;
                 }
@@ -231,7 +231,7 @@ namespace Server.Items
                 return false;
             }
 
-            if ((from as PlayerMobile)?.AcceleratedStart > DateTime.UtcNow)
+            if ((from as PlayerMobile)?.AcceleratedStart > Core.Now)
             {
                 // You may not use a soulstone while your character is under the effects of a Scroll of Alacrity.
                 from.SendLocalizedMessage(1078115);
@@ -461,10 +461,10 @@ namespace Server.Items
                 AddHtmlLocalized(210, 200, 390, 20, AosSkillBonuses.GetLabel(skill.SkillName), 0x7FFF);
 
                 AddHtmlLocalized(10, 220, 390, 20, 1062298, 0x7FFF); // Current Value:
-                AddLabel(210, 220, 0x481, skill.Base.ToString("0.0"));
+                AddLabel(210, 220, 0x481, skill.Base.ToString("F1"));
 
                 AddHtmlLocalized(10, 240, 390, 20, 1062299, 0x7FFF); // Current Cap:
-                AddLabel(210, 240, 0x481, skill.Cap.ToString("0.0"));
+                AddLabel(210, 240, 0x481, skill.Cap.ToString("F1"));
 
                 AddHtmlLocalized(10, 260, 390, 20, 1062300, 0x7FFF); // New Value:
                 AddLabel(210, 260, 0x481, "0.0");
@@ -611,13 +611,13 @@ namespace Server.Items
                 var fromSkill = from.Skills[stone.Skill];
 
                 AddHtmlLocalized(10, 220, 390, 20, 1062298, 0x7FFF); // Current Value:
-                AddLabel(210, 220, 0x481, fromSkill.Base.ToString("0.0"));
+                AddLabel(210, 220, 0x481, fromSkill.Base.ToString("F1"));
 
                 AddHtmlLocalized(10, 240, 390, 20, 1062299, 0x7FFF); // Current Cap:
-                AddLabel(210, 240, 0x481, fromSkill.Cap.ToString("0.0"));
+                AddLabel(210, 240, 0x481, fromSkill.Cap.ToString("F1"));
 
                 AddHtmlLocalized(10, 260, 390, 20, 1062300, 0x7FFF); // New Value:
-                AddLabel(210, 260, 0x481, stone.SkillValue.ToString("0.0"));
+                AddLabel(210, 260, 0x481, stone.SkillValue.ToString("F1"));
 
                 AddButton(10, 360, 0xFA5, 0xFA6, 2);
                 AddHtmlLocalized(
@@ -743,7 +743,7 @@ namespace Server.Items
                     return;
                 }
 
-                if ((from as PlayerMobile)?.AcceleratedStart > DateTime.UtcNow)
+                if ((from as PlayerMobile)?.AcceleratedStart > Core.Now)
                 {
                     // <CENTER>Unable to Absorb Selected Skill from Soulstone</CENTER>
 

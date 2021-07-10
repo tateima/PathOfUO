@@ -1,43 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using Server.Items;
 using CPA = Server.CommandPropertyAttribute;
 
+using static Server.Attributes;
+using static Server.Types;
+
 namespace Server.Commands
 {
     public static class Add
     {
-        private static readonly Type m_EntityType = typeof(IEntity);
-
-        private static readonly Type m_ConstructibleType = typeof(ConstructibleAttribute);
-
-        private static readonly Type m_EnumType = typeof(Enum);
-
-        private static readonly Type m_TypeType = typeof(Type);
-
-        private static readonly Type m_ParsableType = typeof(ParsableAttribute);
-
-        private static readonly Type[] m_ParseTypes = { typeof(string) };
         private static readonly object[] m_ParseArgs = new object[1];
-
-        private static readonly Type[] m_SignedNumerics =
-        {
-            typeof(long),
-            typeof(int),
-            typeof(short),
-            typeof(sbyte)
-        };
-
-        private static readonly Type[] m_UnsignedNumerics =
-        {
-            typeof(ulong),
-            typeof(uint),
-            typeof(ushort),
-            typeof(byte)
-        };
 
         public static void Initialize()
         {
@@ -112,7 +88,7 @@ namespace Server.Commands
                 }
             }
 
-            var type = AssemblyHandler.FindFirstTypeForName(name);
+            var type = AssemblyHandler.FindTypeByName(name);
 
             if (!IsEntity(type))
             {
@@ -120,17 +96,19 @@ namespace Server.Commands
                 return;
             }
 
-            var time = DateTime.UtcNow;
+            var watch = new Stopwatch();
+            watch.Start();
 
             var built = BuildObjects(from, type, start, end, args, props, packs, outline, mapAvg);
 
             if (built > 0)
             {
+                watch.Stop();
                 from.SendMessage(
-                    "{0} object{1} generated in {2:F1} seconds.",
+                    "{0} object{1} generated in {2:F2} seconds.",
                     built,
                     built != 1 ? "s" : "",
-                    (DateTime.UtcNow - time).TotalSeconds
+                    watch.Elapsed.TotalSeconds
                 );
             }
             else
@@ -142,7 +120,7 @@ namespace Server.Commands
         public static void FixSetString(ref string[] args, int index)
         {
             var old = args;
-            args = new string[index];
+            args = GC.AllocateUninitializedArray<string>(index);
 
             Array.Copy(old, 0, args, 0, index);
         }
@@ -150,7 +128,7 @@ namespace Server.Commands
         public static void FixArgs(ref string[] args)
         {
             var old = args;
-            args = new string[args.Length - 1];
+            args = GC.AllocateUninitializedArray<string>(args.Length - 1);
 
             Array.Copy(old, 1, args, 0, args.Length);
         }
@@ -191,7 +169,7 @@ namespace Server.Commands
                     }
                     else
                     {
-                        var attr = Properties.GetCPA(thisProp);
+                        var attr = GetCPA(thisProp);
 
                         if (attr == null)
                         {
@@ -230,7 +208,14 @@ namespace Server.Commands
 
                 // Handle optional constructors
                 var paramList = ctor.GetParameters();
-                var totalParams = paramList.Count(t => !t.HasDefaultValue);
+                var totalParams = 0;
+                for (var j = 0; j < paramList.Length; j++)
+                {
+                    if (!paramList[j].HasDefaultValue)
+                    {
+                        totalParams++;
+                    }
+                }
 
                 if (args.Length >= totalParams && args.Length <= paramList.Length)
                 {
@@ -290,7 +275,7 @@ namespace Server.Commands
 
                 if (IsType(type))
                 {
-                    return AssemblyHandler.FindFirstTypeForName(value);
+                    return AssemblyHandler.FindTypeByName(value);
                 }
 
                 if (IsParsable(type))
@@ -304,15 +289,15 @@ namespace Server.Commands
                 {
                     if (IsSignedNumeric(type))
                     {
-                        obj = Convert.ToInt64(value.Substring(2), 16);
+                        obj = Convert.ToInt64(value[2..], 16);
                     }
                     else if (IsUnsignedNumeric(type))
                     {
-                        obj = Convert.ToUInt64(value.Substring(2), 16);
+                        obj = Convert.ToUInt64(value[2..], 16);
                     }
                     else
                     {
-                        obj = Convert.ToInt32(value.Substring(2), 16);
+                        obj = Convert.ToInt32(value[2..], 16);
                     }
                 }
 
@@ -750,54 +735,19 @@ namespace Server.Commands
             InternalAvg_OnCommand(e, true);
         }
 
-        public static bool IsEntity(Type t) => m_EntityType.IsAssignableFrom(t);
+        public static bool IsEnum(Type type) => type.IsSubclassOf(OfEnum);
 
-        public static bool IsConstructible(ConstructorInfo ctor, AccessLevel accessLevel)
-        {
-            var attrs = ctor.GetCustomAttributes(m_ConstructibleType, false);
+        public static bool IsType(Type type) => type == OfType || type.IsSubclassOf(OfType);
 
-            return attrs.Length != 0 && accessLevel >= ((ConstructibleAttribute)attrs[0]).AccessLevel;
-        }
-
-        public static bool IsEnum(Type type) => type.IsSubclassOf(m_EnumType);
-
-        public static bool IsType(Type type) => type == m_TypeType || type.IsSubclassOf(m_TypeType);
-
-        public static bool IsParsable(Type type) => type.IsDefined(m_ParsableType, false);
+        public static bool IsParsable(Type type) => type.IsDefined(OfParsable, false);
 
         public static object ParseParsable(Type type, string value)
         {
-            var method = type.GetMethod("Parse", m_ParseTypes);
+            var method = type.GetMethod("Parse", ParseTypes);
 
             m_ParseArgs[0] = value;
 
             return method?.Invoke(null, m_ParseArgs);
-        }
-
-        public static bool IsSignedNumeric(Type type)
-        {
-            for (var i = 0; i < m_SignedNumerics.Length; ++i)
-            {
-                if (type == m_SignedNumerics[i])
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public static bool IsUnsignedNumeric(Type type)
-        {
-            for (var i = 0; i < m_UnsignedNumerics.Length; ++i)
-            {
-                if (type == m_UnsignedNumerics[i])
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private enum TileZType

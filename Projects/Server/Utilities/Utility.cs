@@ -3,14 +3,12 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml;
-using Microsoft.Toolkit.HighPerformance.Extensions;
+using Microsoft.Toolkit.HighPerformance;
 using Server.Buffers;
 using Server.Random;
 
@@ -18,8 +16,6 @@ namespace Server
 {
     public static class Utility
     {
-        private static Encoding m_UTF8, m_UTF8WithEncoding, m_Unicode, m_UnicodeLE;
-
         private static Dictionary<IPAddress, IPAddress> _ipAddressTable;
 
         private static readonly SkillName[] m_AllSkills =
@@ -104,62 +100,6 @@ namespace Server
         };
 
         private static readonly Stack<ConsoleColor> m_ConsoleColors = new();
-
-        public static Encoding UTF8 => m_UTF8 ??= new UTF8Encoding(false, false);
-        public static Encoding UTF8WithEncoding => m_UTF8WithEncoding ??= new UTF8Encoding(true, false);
-        public static Encoding Unicode => m_Unicode ??= new UnicodeEncoding(true, false, false);
-        public static Encoding UnicodeLE => m_UnicodeLE ??= new UnicodeEncoding(false, false, false);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetByteLengthForEncoding(Encoding encoding) =>
-            encoding.BodyName switch
-            {
-                "utf-16BE" => 2,
-                "utf-16"   => 2,
-                "utf-32BE" => 4,
-                "utf-32"   => 4,
-                _          => 1
-            };
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfTerminator(ReadOnlySpan<byte> buffer, int sizeT) =>
-            sizeT switch
-            {
-                2 => MemoryMarshal.Cast<byte, char>(buffer).IndexOf((char)0) * 2,
-                4 => MemoryMarshal.Cast<byte, uint>(buffer).IndexOf((uint)0) * 4,
-                _ => buffer.IndexOf((byte)0)
-            };
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsSafeChar(ushort c) => c >= 0x20 && c < 0xFFFE;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static string GetString(ReadOnlySpan<byte> span, Encoding encoding, bool safeString = false)
-        {
-            string s = encoding.GetString(span);
-
-            if (!safeString)
-            {
-                return s;
-            }
-
-            ReadOnlySpan<char> chars = s.AsSpan();
-
-            using ValueStringBuilder sb = new ValueStringBuilder(stackalloc char[256]);
-            var hasDoneAnyReplacements = false;
-
-            for (int i = 0, last = 0; i < chars.Length; i++)
-            {
-                if (!IsSafeChar(chars[i]) && i == chars.Length - 1)
-                {
-                    hasDoneAnyReplacements = true;
-                    sb.Append(chars.Slice(last, i - last));
-                    last = i + 1; // Skip the unsafe char
-                }
-            }
-
-            return !hasDoneAnyReplacements ? s : sb.ToString();
-        }
 
         public static void Separate(StringBuilder sb, string value, string separator)
         {
@@ -376,7 +316,7 @@ namespace Server
                             }
 
                             isRange = true;
-                            match = match && num > number;
+                            match = match && num >= number;
                             number = 0;
                             break;
                         }
@@ -446,7 +386,7 @@ namespace Server
             var sectionStart = 0;
             var hasCompressor = false;
 
-            var num = BinaryPrimitives.ReadUInt16BigEndian(ip.Slice(0, 2));
+            var num = BinaryPrimitives.ReadUInt16BigEndian(ip[..2]);
 
             for (int i = 0; i < end; i++)
             {
@@ -532,10 +472,10 @@ namespace Server
                     // IPv4 matching at the end
                     if (section == 6 && num == 0xFFFF)
                     {
-                        var ipv4 = val.Slice(i + 1);
+                        var ipv4 = val[(i + 1)..];
                         if (ipv4.Contains('.'))
                         {
-                            return IPv4Match(ipv4, ip.Slice(ip.Length - 4), out valid);
+                            return IPv4Match(ipv4, ip[^4..], out valid);
                         }
                     }
 
@@ -563,7 +503,7 @@ namespace Server
 
                     if (i + 1 < end)
                     {
-                        var remainingColons = val.Slice(i + 1).Count(':');
+                        var remainingColons = val[(i + 1)..].Count(':');
                         // double colon must be at least 2 sections
                         // we need at least 1 section remaining out of 8
                         // This means 8 - 2 would be 6 sections (5 colons)
@@ -614,36 +554,15 @@ namespace Server
 
         public static string FixHtml(string str)
         {
-            if (str == null)
-            {
-                return "";
-            }
-
-            var hasOpen = str.ContainsOrdinal('<');
-            var hasClose = str.ContainsOrdinal('>');
-            var hasPound = str.ContainsOrdinal('#');
-
-            if (!hasOpen && !hasClose && !hasPound)
+            if (string.IsNullOrEmpty(str))
             {
                 return str;
             }
 
-            var sb = new StringBuilder(str);
-
-            if (hasOpen)
-            {
-                sb.Replace('<', '(');
-            }
-
-            if (hasClose)
-            {
-                sb.Replace('>', ')');
-            }
-
-            if (hasPound)
-            {
-                sb.Replace('#', '-');
-            }
+            using var sb = new ValueStringBuilder(str, stackalloc char[Math.Min(40960, str.Length)]);
+            ReadOnlySpan<char> invalid = stackalloc []{ '<', '>', '#' };
+            ReadOnlySpan<char> replacement = stackalloc []{ '(', ')', '-' };
+            sb.ReplaceAny(invalid, replacement, 0, sb.Length);
 
             return sb.ToString();
         }
@@ -657,8 +576,8 @@ namespace Server
             var dx = to.X - from.X;
             var dy = to.Y - from.Y;
 
-            var adx = Math.Abs(dx);
-            var ady = Math.Abs(dy);
+            var adx = Abs(dx);
+            var ady = Abs(dy);
 
             if (adx >= ady * 3)
             {
@@ -821,7 +740,12 @@ namespace Server
 
             var byteIndex = 0;
 
-            var length = mems.Sum(mem => mem.Length);
+            var length = 0;
+            for (var i = 0; i < mems.Length; i++)
+            {
+                length += mems[i].Length;
+            }
+
             var position = 0;
             var memIndex = 0;
             var span = mems[memIndex].Span;
@@ -1047,7 +971,7 @@ namespace Server
 #pragma warning disable CA1806 // Do not ignore method results
             if (value.StartsWithOrdinal("0x"))
             {
-                int.TryParse(value.Slice(2), NumberStyles.HexNumber, null, out i);
+                int.TryParse(value[2..], NumberStyles.HexNumber, null, out i);
             }
             else
             {
@@ -1065,7 +989,7 @@ namespace Server
 #pragma warning disable CA1806 // Do not ignore method results
             if (value.InsensitiveStartsWith("0x"))
             {
-                uint.TryParse(value.Slice(2), NumberStyles.HexNumber, null, out i);
+                uint.TryParse(value[2..], NumberStyles.HexNumber, null, out i);
             }
             else
             {
@@ -1078,12 +1002,12 @@ namespace Server
 
         public static bool ToInt32(ReadOnlySpan<char> value, out int i) =>
             value.InsensitiveStartsWith("0x")
-                ? int.TryParse(value.Slice(2), NumberStyles.HexNumber, null, out i)
+                ? int.TryParse(value[2..], NumberStyles.HexNumber, null, out i)
                 : int.TryParse(value, out i);
 
         public static bool ToUInt32(ReadOnlySpan<char> value, out uint i) =>
             value.InsensitiveStartsWith("0x")
-                ? uint.TryParse(value.Slice(2), NumberStyles.HexNumber, null, out i)
+                ? uint.TryParse(value[2..], NumberStyles.HexNumber, null, out i)
                 : uint.TryParse(value, out i);
 
         public static int GetXMLInt32(string intString, int defaultValue)
@@ -1413,7 +1337,10 @@ namespace Server
             val.CompareTo(max) > 0 ? max : val;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TimeSpan Max(this TimeSpan val, TimeSpan max) => val > max ? max : val;
+        public static T Min<T>(T val, T min) where T : IComparable<T> => val.CompareTo(min) < 0 ? val : min;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T Max<T>(T val, T max) where T : IComparable<T> => val.CompareTo(max) > 0 ? val : max;
 
         public static string TrimMultiline(this string str, string lineSeparator = "\n")
         {
@@ -1465,5 +1392,105 @@ namespace Server
             i = (i & 0x3333333333333333UL) + ((i >> 2) & 0x3333333333333333UL);
             return (int)(unchecked(((i + (i >> 4)) & 0xF0F0F0F0F0F0F0FUL) * 0x101010101010101UL) >> 56);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int Abs(this int value)
+        {
+            int mask = value >> 31;
+            return (value + mask) ^ mask;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long Abs(this long value)
+        {
+            long mask = value >> 63;
+            return (value + mask) ^ mask;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int CountDigits(this uint value)
+        {
+            int digits = 1;
+            if (value >= 100000)
+            {
+                value /= 100000;
+                digits += 5;
+            }
+
+            if (value < 10)
+            {
+                // no-op
+            }
+            else if (value < 100)
+            {
+                digits++;
+            }
+            else if (value < 1000)
+            {
+                digits += 2;
+            }
+            else if (value < 10000)
+            {
+                digits += 3;
+            }
+            else
+            {
+                digits += 4;
+            }
+
+            return digits;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int CountDigits(this int value)
+        {
+            int absValue = Abs(value);
+
+            int digits = 1;
+            if (absValue >= 100000)
+            {
+                absValue /= 100000;
+                digits += 5;
+            }
+
+            if (absValue < 10)
+            {
+                // no-op
+            }
+            else if (absValue < 100)
+            {
+                digits++;
+            }
+            else if (absValue < 1000)
+            {
+                digits += 2;
+            }
+            else if (absValue < 10000)
+            {
+                digits += 3;
+            }
+            else
+            {
+                digits += 4;
+            }
+
+            if (value < 0)
+            {
+                digits += 1; // negative
+            }
+
+            return digits;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint DivRem(uint a, uint b, out uint result)
+        {
+            uint div = a / b;
+            result = a - div * b;
+            return div;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string GetTimeStamp() => Core.Now.ToString("yyyy-MM-dd-HH-mm-ss");
     }
 }

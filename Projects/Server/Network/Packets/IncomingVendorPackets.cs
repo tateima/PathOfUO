@@ -25,7 +25,7 @@ namespace Server.Network
             IncomingPackets.Register(0x9F, 0, true, VendorSellReply);
         }
 
-        public static void VendorBuyReply(NetState state, CircularBufferReader reader)
+        public static void VendorBuyReply(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             var vendor = World.FindMobile(reader.ReadUInt32());
 
@@ -38,7 +38,7 @@ namespace Server.Network
 
             if (!vendor.Deleted && Utility.RangeCheck(vendor.Location, state.Mobile.Location, 10) && flag == 0x02)
             {
-                var msgSize = reader.Remaining;
+                var msgSize = packetLength - 8; // Remaining bytes
 
                 if (msgSize / 7 > 100)
                 {
@@ -65,7 +65,7 @@ namespace Server.Network
             state.SendEndVendorBuy(vendor.Serial);
         }
 
-        public static void VendorSellReply(NetState state, CircularBufferReader reader)
+        public static void VendorSellReply(NetState state, CircularBufferReader reader, ref int packetLength)
         {
             Serial serial = reader.ReadUInt32();
             var vendor = World.FindMobile(serial);

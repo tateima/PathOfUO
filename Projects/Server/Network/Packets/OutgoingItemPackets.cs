@@ -21,18 +21,17 @@ namespace Server.Network
 {
     public static class OutgoingItemPackets
     {
-        public const int MaxWorldItemPacketLength = 26;
-
         public static int CreateWorldItem(Span<byte> buffer, Item item)
         {
             if (buffer[0] != 0)
             {
+                // This assumes the packet was sliced properly
                 return buffer.Length;
             }
-            
+
             var itemID = item is BaseMulti ? item.ItemID | 0x4000 : item.ItemID & 0x3FFF;
-            var hasAmount = item.Amount != 0;
             var amount = item.Amount;
+            var hasAmount = amount != 0;
             var serial = hasAmount ? item.Serial | 0x80000000 : item.Serial & 0x7FFFFFFF;
             var loc = item.Location;
             var hue = item.Hue;
@@ -54,7 +53,7 @@ namespace Server.Network
             writer.Write(serial);
             writer.Write((ushort)itemID);
 
-            if (amount != 0)
+            if (hasAmount)
             {
                 writer.Write((ushort)amount);
             }
@@ -62,24 +61,24 @@ namespace Server.Network
             writer.Write((ushort)x);
             writer.Write((ushort)y);
 
-            if (direction != 0)
+            if (hasDirection)
             {
                 writer.Write((byte)direction);
             }
 
             writer.Write((sbyte)loc.Z);
 
-            if (hue != 0)
+            if (hasHue)
             {
                 writer.Write((ushort)hue);
             }
 
-            if (flags != 0)
+            if (hasFlags)
             {
                 writer.Write((byte)flags);
             }
 
-            return writer.Position;
+            return writer.BytesWritten;
         }
 
         public static void SendWorldItem(this NetState ns, Item item)
@@ -89,62 +88,13 @@ namespace Server.Network
                 return;
             }
 
-            Span<byte> buffer = stackalloc byte[MaxWorldItemPacketLength];
+            Span<byte> buffer = stackalloc byte[OutgoingEntityPackets.MaxWorldEntityPacketLength].InitializePacket();
 
             var length = ns.StygianAbyss ?
-                CreateWorldItemNew(buffer, item, ns.HighSeas) :
+                OutgoingEntityPackets.CreateWorldEntity(buffer, item, ns.HighSeas) :
                 CreateWorldItem(buffer, item);
 
-            ns.Send(buffer.Slice(0, length));
-        }
-
-        public static int CreateWorldItemNew(Span<byte> buffer, Item item, bool isHS)
-        {
-            if (buffer[0] != 0)
-            {
-                return buffer.Length;
-            }
-
-            var writer = new SpanWriter(buffer);
-            writer.Write((byte)0xF3); // Packet ID
-            writer.Write((short)0x1); // command
-
-            var itemID = item.ItemID;
-
-            if (item is BaseMulti)
-            {
-                writer.Write((byte)2);
-                writer.Write(item.Serial);
-                writer.Write((short)(itemID & 0x3FFF));
-                writer.Write((byte)0);
-            }
-            else
-            {
-                writer.Write((byte)0);
-                writer.Write(item.Serial);
-                writer.Write((short)(itemID & (isHS ? 0xFFFF : 0x7FFF)));
-                writer.Write((byte)0);
-            }
-
-            var amount = item.Amount;
-            writer.Write((short)amount); // Min
-            writer.Write((short)amount); // Max
-
-            var loc = item.Location;
-            writer.Write((short)loc.X);
-            writer.Write((short)loc.Y);
-            writer.Write((sbyte)loc.Z);
-
-            writer.Write((byte)item.Light);
-            writer.Write((short)item.Hue);
-            writer.Write((byte)item.GetPacketFlags());
-
-            if (isHS)
-            {
-                writer.Write((short)0);
-            }
-
-            return writer.Position;
+            ns.Send(buffer[..length]);
         }
     }
 }

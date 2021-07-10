@@ -141,7 +141,7 @@ namespace Server.Network
             {
                 if (_pipe._writeAwaitBeginning)
                 {
-                    throw new Exception("Double await on reader");
+                    throw new Exception("Double await on writer");
                 }
 
                 return this;
@@ -212,7 +212,24 @@ namespace Server.Network
             {
                 _pipe._closed = true;
 
-                Flush();
+                var waiting = _pipe._readAwaitBeginning;
+
+                if (!waiting)
+                {
+                    return;
+                }
+
+                Action continuation;
+
+                do
+                {
+                    continuation = _pipe._readContinuation;
+                } while (continuation == null);
+
+                _pipe._readContinuation = null;
+                _pipe._readAwaitBeginning = false;
+
+                ThreadPool.UnsafeQueueUserWorkItem(_ => continuation(), true);
             }
 
             public void Flush()
@@ -253,6 +270,11 @@ namespace Server.Network
                 get
                 {
                     if (GetAvailable() > 0)
+                    {
+                        return true;
+                    }
+
+                    if (_pipe._closed)
                     {
                         return true;
                     }
@@ -363,7 +385,7 @@ namespace Server.Network
 
             public void Commit()
             {
-                if (_pipe._readIdx == (_pipe._writeIdx + 1) % _pipe.Size)
+                if (_pipe._readIdx == ((_pipe._writeIdx + 1) & (_pipe.Size - 1)))
                 {
                     return;
                 }
@@ -383,7 +405,31 @@ namespace Server.Network
                 } while (continuation == null);
 
                 _pipe._writeContinuation = null;
-                _pipe._readAwaitBeginning = false;
+                _pipe._writeAwaitBeginning = false;
+
+                ThreadPool.UnsafeQueueUserWorkItem(_ => continuation(), true);
+            }
+
+            public void Close()
+            {
+                _pipe._closed = true;
+
+                var waiting = _pipe._writeAwaitBeginning;
+
+                if (!waiting)
+                {
+                    return;
+                }
+
+                Action continuation;
+
+                do
+                {
+                    continuation = _pipe._writeContinuation;
+                } while (continuation == null);
+
+                _pipe._writeContinuation = null;
+                _pipe._writeAwaitBeginning = false;
 
                 ThreadPool.UnsafeQueueUserWorkItem(_ => continuation(), true);
             }
@@ -399,6 +445,11 @@ namespace Server.Network
                 get
                 {
                     if (GetAvailable() > 0)
+                    {
+                        return true;
+                    }
+
+                    if (_pipe._closed)
                     {
                         return true;
                     }
@@ -427,6 +478,12 @@ namespace Server.Network
 
         public Pipe(T[] buf)
         {
+            // Test if the buffer is a power of two
+            if (buf.Length == 0 || (buf.Length & (buf.Length - 1)) != 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(buf), "Pipe buffers must have a length that is a power of two");
+            }
+
             _buffer = buf;
             _writeIdx = 0;
             _readIdx = 0;

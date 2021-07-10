@@ -23,7 +23,7 @@ namespace Server.Engines.ConPVP
         {
         }
 
-        [CommandProperty(AccessLevel.GameMaster)]
+        [CommandProperty(AccessLevel.GameMaster, canModify: true)]
         public Tournament Tournament { get; private set; }
 
         public static bool IsActive
@@ -128,7 +128,7 @@ namespace Server.Engines.ConPVP
             {
                 if (m_Tournament.Stage == TournamentStage.Inactive)
                 {
-                    m_Tournament.SignupStart = DateTime.UtcNow;
+                    m_Tournament.SignupStart = Core.Now;
                     m_Tournament.Stage = TournamentStage.Signup;
                     m_Tournament.Participants.Clear();
                     m_Tournament.Pyramid.Levels.Clear();

@@ -681,7 +681,7 @@ namespace Server.Engines.ConPVP
         {
             if (CurrentStage == TournamentStage.Signup)
             {
-                var until = SignupStart + SignupPeriod - DateTime.UtcNow;
+                var until = SignupStart + SignupPeriod - Core.Now;
 
                 if (until <= TimeSpan.Zero)
                 {
@@ -741,7 +741,7 @@ namespace Server.Engines.ConPVP
                     else
                     {
                         /*Alert( "Is this all?", "Pitiful. Signup extended." );
-                        m_SignupStart = DateTime.UtcNow;*/
+                        m_SignupStart = Core.Now;*/
 
                         Alert("Is this all?", "Pitiful. Tournament cancelled.");
                         CurrentStage = TournamentStage.Inactive;
@@ -996,10 +996,11 @@ namespace Server.Engines.ConPVP
             {
                 for (var j = 0; j < alerts.Length; ++j)
                 {
-                    var alert = alerts[j];
                     Timer.DelayCall(
                         TimeSpan.FromSeconds(Math.Max(j - 0.5, 0.0)),
-                        () => arena.Announcer.PublicOverheadMessage(MessageType.Regular, 0x35, false, alert)
+                        (announcer, alert) => announcer.PublicOverheadMessage(MessageType.Regular, 0x35, false, alert),
+                        arena.Announcer,
+                        alerts[j]
                     );
                 }
             }

@@ -1,5 +1,8 @@
 using System;
-using System.IO;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
+using Server.Json;
 
 namespace Server
 {
@@ -7,80 +10,48 @@ namespace Server
     {
         public const int DefaultItemID = 0x1870; // Yellow virtue stone
 
-        private static int[] m_Table;
+        private static int[] _shrinkTable; // body is the index, value is the item id
 
-        public static int Lookup(Mobile m) => Lookup(m.Body.BodyID, DefaultItemID);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int Lookup(Mobile m, int defaultValue = DefaultItemID) => Lookup(m.Body.BodyID, defaultValue);
 
-        public static int Lookup(int body) => Lookup(body, DefaultItemID);
-
-        public static int Lookup(Mobile m, int defaultValue) => Lookup(m.Body.BodyID, defaultValue);
-
-        public static int Lookup(int body, int defaultValue)
+        public static int Lookup(int body, int defaultValue = DefaultItemID)
         {
-            if (m_Table == null)
+            _shrinkTable ??= Load();
+            if (body < 0 || body >= _shrinkTable.Length)
             {
-                Load();
+                return defaultValue;
             }
 
-            var val = 0;
-
-            if (body >= 0 && body < m_Table!.Length)
-            {
-                val = m_Table[body];
-            }
-
-            if (val == 0)
-            {
-                val = defaultValue;
-            }
-
-            return val;
+            var val = _shrinkTable[body];
+            return val == 0 ? defaultValue : val;
         }
 
-        private static void Load()
+        private static int[] Load()
         {
-            var path = Path.Combine(Core.BaseDirectory, "Data/shrink.cfg");
-
-            if (!File.Exists(path))
+            var path = "Data/shrink.json";
+            var table = JsonConfig.Deserialize<Dictionary<string, string>>(path);
+            if (table == null)
             {
-                m_Table = Array.Empty<int>();
-                return;
+                throw new JsonException($"Failed to deserialize {path}.");
             }
 
-            m_Table = new int[1000];
+            int length = 0;
 
-            using var ip = new StreamReader(path);
-            string line;
-
-            while ((line = ip.ReadLine()) != null)
+            foreach (var key in table.Keys)
             {
-                line = line.Trim();
-
-                if (line.Length == 0 || line.StartsWithOrdinal("#"))
-                {
-                    continue;
-                }
-
-                try
-                {
-                    var split = line.Split('\t');
-
-                    if (split.Length >= 2)
-                    {
-                        var body = Utility.ToInt32(split[0]);
-                        var item = Utility.ToInt32(split[1]);
-
-                        if (body >= 0 && body < m_Table.Length)
-                        {
-                            m_Table[body] = item;
-                        }
-                    }
-                }
-                catch
-                {
-                    // ignored
-                }
+                var index = Utility.ToInt32(key);
+                length = Math.Max(length, index + 1);
             }
+
+            var list = new int[length];
+            foreach (var (body, item) in table)
+            {
+                var index = Utility.ToInt32(body);
+                list[index] = Utility.ToInt32(item);
+            }
+
+            return list;
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Xml;
 using Server.Accounting.Security;
@@ -10,48 +11,137 @@ using Server.Network;
 
 namespace Server.Accounting
 {
-    public class Account : IAccount, IComparable<Account>
+    [Serializable(2)]
+    public partial class Account : IAccount, IComparable<Account>, ISerializable
     {
         public static readonly TimeSpan YoungDuration = TimeSpan.FromHours(40.0);
         public static readonly TimeSpan InactiveDuration = TimeSpan.FromDays(180.0);
         public static readonly TimeSpan EmptyInactiveDuration = TimeSpan.FromDays(30.0);
-        private readonly Mobile[] m_Mobiles;
 
-        private AccessLevel m_AccessLevel;
-        private List<AccountComment> m_Comments;
-        private PasswordProtectionAlgorithm m_PasswordAlgorithm;
-        private List<AccountTag> m_Tags;
-        private TimeSpan m_TotalGameTime;
+        [SerializableField(0)]
+        private string _username;
+
+        [SerializableField(1)]
+        private PasswordProtectionAlgorithm _passwordAlgorithm;
+
+        [SerializableField(2)]
+        private string _password;
+
+        [SerializableField(3)]
+        private AccessLevel _accessLevel;
+
+        [SerializableField(4)]
+        private int _flags;
+
+        [SerializableField(5, setter: "private")]
+        private DateTime _created;
+
+        [SerializableField(6)]
+        private DateTime _lastLogin;
+
+        /// <summary>
+        ///     This amount represents the current amount of Gold owned by the player.
+        ///     The value does not include the value of Platinum and ranges from
+        ///     0 to 999,999,999 by default.
+        /// </summary>
+        [SerializableField(7, setter: "private")]
+        [SerializableFieldAttr("[CommandProperty(AccessLevel.Administrator)]")]
+        public int _totalGold;
+
+        /// <summary>
+        ///     This amount represents the current amount of Platinum owned by the player.
+        ///     The value does not include the value of Gold and ranges from
+        ///     0 to 2,147,483,647 by default.
+        ///     One Platinum represents the value of CurrencyThreshold in Gold.
+        /// </summary>
+        [SerializableField(8, setter: "private")]
+        [SerializableFieldAttr("[CommandProperty(AccessLevel.Administrator)]")]
+        public int _totalPlat;
+
+        [SerializableField(9, "private", "private")]
+        private Mobile[] _mobiles;
+
+        [SerializableField(10, setter: "private")]
+        private List<AccountComment> _comments;
+
+        [SerializableField(11, setter: "private")]
+        private List<AccountTag> _tags;
+
+        [SerializableField(12)]
+        private IPAddress[] _loginIPs;
+
+        /// <summary>
+        ///     List of IP addresses for restricted access. '*' wildcard supported. If the array contains zero entries, all IP addresses
+        ///     are allowed.
+        /// </summary>
+        [SerializableField(13)]
+        private string[] _ipRestrictions;
+
+        private TimeSpan _totalGameTime;
+
+        /// <summary>
+        ///     Gets the total game time of this account, also considering the game time of characters
+        ///     that have been deleted.
+        /// </summary>
+        [SerializableField(14)]
+        public TimeSpan TotalGameTime
+        {
+            get
+            {
+                for (var i = 0; i < _mobiles.Length; i++)
+                {
+                    if (_mobiles[i] is PlayerMobile m && m.NetState != null)
+                    {
+                        return _totalGameTime + (Core.Now - m.SessionStart);
+                    }
+                }
+
+                return _totalGameTime;
+            }
+            private set
+            {
+                _totalGameTime = value;
+                ((ISerializable)this).MarkDirty();
+            }
+        }
+
+        [SerializableField(15)]
+        [SerializableFieldAttr("[CommandProperty(AccessLevel.Administrator)]")]
+        private string _email;
 
         private Timer m_YoungTimer;
 
-        public Account(string username, string password)
+        public Account(string username, string password) : this(Accounts.NewAccount)
         {
-            Username = username;
+            _username = username;
 
             SetPassword(password);
 
-            m_AccessLevel = AccessLevel.Player;
+            _accessLevel = AccessLevel.Player;
 
-            Created = LastLogin = DateTime.UtcNow;
-            m_TotalGameTime = TimeSpan.Zero;
+            _created = _lastLogin = Core.Now;
+            _totalGameTime = TimeSpan.Zero;
 
-            m_Mobiles = new Mobile[7];
+            _mobiles = new Mobile[7];
 
-            IPRestrictions = Array.Empty<string>();
-            LoginIPs = Array.Empty<IPAddress>();
+            _ipRestrictions = Array.Empty<string>();
+            _loginIPs = Array.Empty<IPAddress>();
 
             Accounts.Add(this);
+            ((ISerializable)this).MarkDirty();
         }
 
         public Account(XmlElement node)
         {
-            Username = Utility.GetText(node["username"], "empty");
+            Serial = Accounts.NewAccount;
+            SetTypeRef(GetType());
 
-            Enum.TryParse(Utility.GetText(node["passwordAlgorithm"], null), true, out m_PasswordAlgorithm);
+            _username = Utility.GetText(node["username"], "empty");
+
+            Enum.TryParse(Utility.GetText(node["passwordAlgorithm"], null), true, out _passwordAlgorithm);
 
             // Backward compatibility with RunUO/ServUO
-            if (m_PasswordAlgorithm == PasswordProtectionAlgorithm.None)
+            if (_passwordAlgorithm == PasswordProtectionAlgorithm.None)
             {
                 var upgraded =
                     UpgradePassword(
@@ -69,44 +159,44 @@ namespace Server.Accounting
             }
             else
             {
-                Password = Utility.GetText(node["password"], null);
+                _password = Utility.GetText(node["password"], null);
             }
 
-            Enum.TryParse(Utility.GetText(node["accessLevel"], "Player"), true, out m_AccessLevel);
-            Flags = Utility.GetXMLInt32(Utility.GetText(node["flags"], "0"), 0);
-            Created = Utility.GetXMLDateTime(Utility.GetText(node["created"], null), DateTime.UtcNow);
-            LastLogin = Utility.GetXMLDateTime(Utility.GetText(node["lastLogin"], null), DateTime.UtcNow);
+            Enum.TryParse(Utility.GetText(node["accessLevel"], "Player"), true, out _accessLevel);
+            _flags = Utility.GetXMLInt32(Utility.GetText(node["flags"], "0"), 0);
+            _created = Utility.GetXMLDateTime(Utility.GetText(node["created"], null), Core.Now);
+            _lastLogin = Utility.GetXMLDateTime(Utility.GetText(node["lastLogin"], null), Core.Now);
 
-            TotalGold = Utility.GetXMLInt32(Utility.GetText(node["totalGold"], "0"), 0);
-            TotalPlat = Utility.GetXMLInt32(Utility.GetText(node["totalPlat"], "0"), 0);
+            _totalGold = Utility.GetXMLInt32(Utility.GetText(node["totalGold"], "0"), 0);
+            _totalPlat = Utility.GetXMLInt32(Utility.GetText(node["totalPlat"], "0"), 0);
 
-            m_Mobiles = LoadMobiles(node);
-            m_Comments = LoadComments(node);
-            m_Tags = LoadTags(node);
-            LoginIPs = LoadAddressList(node);
-            IPRestrictions = LoadAccessCheck(node);
+            _mobiles = LoadMobiles(node);
+            _comments = LoadComments(node);
+            _tags = LoadTags(node);
+            _loginIPs = LoadAddressList(node);
+            _ipRestrictions = LoadAccessCheck(node);
 
-            for (var i = 0; i < m_Mobiles.Length; ++i)
+            for (var i = 0; i < _mobiles.Length; ++i)
             {
-                if (m_Mobiles[i] != null)
+                if (_mobiles[i] != null)
                 {
-                    m_Mobiles[i].Account = this;
+                    _mobiles[i].Account = this;
                 }
             }
 
             var totalGameTime = Utility.GetXMLTimeSpan(Utility.GetText(node["totalGameTime"], null), TimeSpan.Zero);
             if (totalGameTime == TimeSpan.Zero)
             {
-                for (var i = 0; i < m_Mobiles.Length; i++)
+                for (var i = 0; i < _mobiles.Length; i++)
                 {
-                    if (m_Mobiles[i] is PlayerMobile m)
+                    if (_mobiles[i] is PlayerMobile m)
                     {
                         totalGameTime += m.GameTime;
                     }
                 }
             }
 
-            m_TotalGameTime = totalGameTime;
+            _totalGameTime = totalGameTime;
 
             if (Young)
             {
@@ -114,43 +204,24 @@ namespace Server.Accounting
             }
 
             Accounts.Add(this);
+            ((ISerializable)this).MarkDirty();
+        }
+
+        public void SetTypeRef(Type type)
+        {
+            TypeRef = Accounts.Types.IndexOf(type);
+
+            if (TypeRef == -1)
+            {
+                Accounts.Types.Add(type);
+                TypeRef = Accounts.Types.Count - 1;
+            }
         }
 
         /// <summary>
         ///     Object detailing information about the hardware of the last person to log into this account
         /// </summary>
         public HardwareInfo HardwareInfo { get; set; }
-
-        /// <summary>
-        ///     List of IP addresses for restricted access. '*' wildcard supported. If the array contains zero entries, all IP addresses
-        ///     are allowed.
-        /// </summary>
-        public string[] IPRestrictions { get; set; }
-
-        /// <summary>
-        ///     List of IP addresses which have successfully logged into this account.
-        /// </summary>
-        public IPAddress[] LoginIPs { get; set; }
-
-        /// <summary>
-        ///     List of account comments. Type of contained objects is AccountComment.
-        /// </summary>
-        public List<AccountComment> Comments => m_Comments ?? (m_Comments = new List<AccountComment>());
-
-        /// <summary>
-        ///     List of account tags. Type of contained objects is AccountTag.
-        /// </summary>
-        public List<AccountTag> Tags => m_Tags ?? (m_Tags = new List<AccountTag>());
-
-        /// <summary>
-        ///     Account username and password. May be null.
-        /// </summary>
-        public string Password { get; set; }
-
-        /// <summary>
-        ///     Internal bitfield of account flags. Consider using direct access properties (Banned, Young), or GetFlag/SetFlag methods
-        /// </summary>
-        public int Flags { get; set; }
 
         /// <summary>
         ///     Gets or sets a flag indicating if this account is banned.
@@ -168,7 +239,7 @@ namespace Server.Accounting
 
                 if (GetBanTags(out var banTime, out var banDuration))
                 {
-                    if (banDuration != TimeSpan.MaxValue && DateTime.UtcNow >= banTime + banDuration)
+                    if (banDuration != TimeSpan.MaxValue && Core.Now >= banTime + banDuration)
                     {
                         SetUnspecifiedBan(null); // clear
                         Banned = false;
@@ -197,16 +268,6 @@ namespace Server.Accounting
         }
 
         /// <summary>
-        ///     The date and time of when this account was created.
-        /// </summary>
-        public DateTime Created { get; }
-
-        /// <summary>
-        ///     Gets or sets the date and time when this account was last accessed.
-        /// </summary>
-        public DateTime LastLogin { get; set; }
-
-        /// <summary>
         ///     An account is considered inactive based upon LastLogin and InactiveDuration.  If the account is empty, it is based upon
         ///     EmptyInactiveDuration
         /// </summary>
@@ -219,30 +280,112 @@ namespace Server.Accounting
                     return false;
                 }
 
-                var inactiveLength = DateTime.UtcNow - LastLogin;
+                var inactiveLength = Core.Now - _lastLogin;
 
                 return inactiveLength > (Count == 0 ? EmptyInactiveDuration : InactiveDuration);
             }
         }
 
-        /// <summary>
-        ///     Gets the total game time of this account, also considering the game time of characters
-        ///     that have been deleted.
-        /// </summary>
-        public TimeSpan TotalGameTime
+        public int TypeRef { get; private set; }
+
+        public Serial Serial { get; set; }
+
+        [AfterDeserialization]
+        private void AfterDeserialization()
         {
-            get
+            if (_comments.Count == 0)
             {
-                for (var i = 0; i < m_Mobiles.Length; i++)
+                _comments = null;
+            }
+
+            if (_tags.Count == 0)
+            {
+                _tags = null;
+            }
+
+            for (var i = 0; i < _mobiles.Length; ++i)
+            {
+                if (_mobiles[i] != null)
                 {
-                    if (m_Mobiles[i] is PlayerMobile m && m.NetState != null)
+                    _mobiles[i].Account = this;
+                }
+            }
+
+            if (_totalGameTime == TimeSpan.Zero)
+            {
+                for (var i = 0; i < _mobiles.Length; i++)
+                {
+                    if (_mobiles[i] is PlayerMobile m)
                     {
-                        return m_TotalGameTime + (DateTime.UtcNow - m.SessionStart);
+                        _totalGameTime += m.GameTime;
                     }
                 }
-
-                return m_TotalGameTime;
             }
+
+            if (Young)
+            {
+                CheckYoung();
+            }
+        }
+
+        // Handle old deserialization before codegen
+        private void Deserialize(IGenericReader reader, int version)
+        {
+            // Due to a bug where we were not versioning at all, reset so we don't have an issue deserializing
+            reader.Seek(0, SeekOrigin.Begin);
+
+            _username = reader.ReadString();
+            _passwordAlgorithm = (PasswordProtectionAlgorithm)reader.ReadInt();
+            _password = reader.ReadString();
+            _accessLevel = (AccessLevel)reader.ReadInt();
+            _flags = reader.ReadInt();
+            _created = reader.ReadDateTime();
+            _lastLogin = reader.ReadDateTime();
+
+            _totalGold = reader.ReadInt();
+            _totalPlat = reader.ReadInt();
+
+            var length = reader.ReadInt();
+            _mobiles = new Mobile[length];
+            for (int i = 0; i < length; i++)
+            {
+                _mobiles[i] = reader.ReadEntity<Mobile>();
+            }
+
+            length = reader.ReadInt();
+            _comments = length > 0 ? new List<AccountComment>(length) : null;
+            for (int i = 0; i < length; i++)
+            {
+                _comments!.Add(new AccountComment(reader));
+            }
+
+            length = reader.ReadInt();
+            _tags = length > 0 ? new List<AccountTag>(length) : null;
+            for (int i = 0; i < length; i++)
+            {
+                _tags!.Add(new AccountTag(reader));
+            }
+
+            length = reader.ReadInt();
+            _loginIPs = new IPAddress[length];
+            for (int i = 0; i < length; i++)
+            {
+                if (IPAddress.TryParse(reader.ReadString(), out var address))
+                {
+                    _loginIPs[i] = Utility.Intern(address);
+                }
+            }
+
+            length = reader.ReadInt();
+            _ipRestrictions = new string[length];
+            for (int i = 0; i < length; i++)
+            {
+                _ipRestrictions[i] = reader.ReadString();
+            }
+
+            _totalGameTime = reader.ReadTimeSpan();
+
+            Timer.DelayCall(AfterDeserialization);
         }
 
         /// <summary>
@@ -269,56 +412,40 @@ namespace Server.Accounting
                 m.Delete();
 
                 m.Account = null;
-                m_Mobiles[i] = null;
+                _mobiles[i] = null;
             }
 
-            if (LoginIPs.Length != 0 && AccountHandler.IPTable.ContainsKey(LoginIPs[0]))
+            if (_loginIPs.Length != 0 && AccountHandler.IPTable.ContainsKey(_loginIPs[0]))
             {
-                --AccountHandler.IPTable[LoginIPs[0]];
+                --AccountHandler.IPTable[_loginIPs[0]];
             }
 
-            Accounts.Remove(Username);
+            Deleted = true;
+            Accounts.Remove(this);
         }
 
-        /// <summary>
-        ///     Account username. Case insensitive validation.
-        /// </summary>
-        public string Username { get; set; }
-
-        /// <summary>
-        ///     Account email address.
-        /// </summary>
-        public string Email { get; set; }
-
-        /// <summary>
-        ///     Initial AccessLevel for new characters created on this account.
-        /// </summary>
-        public AccessLevel AccessLevel
-        {
-            get => m_AccessLevel;
-            set => m_AccessLevel = value;
-        }
+        public bool Deleted { get; private set; }
 
         public void SetPassword(string plainPassword)
         {
             Password = AccountSecurity.CurrentPasswordProtection.EncryptPassword(plainPassword);
-            m_PasswordAlgorithm = AccountSecurity.CurrentAlgorithm;
+            PasswordAlgorithm = AccountSecurity.CurrentAlgorithm;
         }
 
         public bool CheckPassword(string plainPassword)
         {
-            var phrase = m_PasswordAlgorithm == PasswordProtectionAlgorithm.SHA1
-                ? $"{Username}{plainPassword}"
+            var phrase = _passwordAlgorithm == PasswordProtectionAlgorithm.SHA1
+                ? $"{_username}{plainPassword}"
                 : plainPassword;
 
-            var ok = AccountSecurity.GetPasswordProtection(m_PasswordAlgorithm).ValidatePassword(Password, phrase);
+            var ok = AccountSecurity.GetPasswordProtection(_passwordAlgorithm).ValidatePassword(Password, phrase);
             if (!ok)
             {
                 return false;
             }
 
             // Upgrade the password protection in case we change the algorithm
-            if (m_PasswordAlgorithm != AccountSecurity.CurrentAlgorithm)
+            if (_passwordAlgorithm != AccountSecurity.CurrentAlgorithm)
             {
                 SetPassword(plainPassword);
             }
@@ -357,7 +484,7 @@ namespace Server.Accounting
         /// <summary>
         ///     Gets the maximum amount of characters that this account can hold.
         /// </summary>
-        public int Length => m_Mobiles.Length;
+        public int Length => _mobiles.Length;
 
         /// <summary>
         ///     Gets or sets the character at a specified index for this account. Out of bound index values are handled; null returned
@@ -367,9 +494,9 @@ namespace Server.Accounting
         {
             get
             {
-                if (index >= 0 && index < m_Mobiles.Length)
+                if (index >= 0 && index < _mobiles.Length)
                 {
-                    var m = m_Mobiles[index];
+                    var m = _mobiles[index];
 
                     if (m?.Deleted != true)
                     {
@@ -379,48 +506,33 @@ namespace Server.Accounting
                     // This is the only place that clears a mobile for garbage collection
                     // outside of an entire account deletion.
                     m.Account = null;
-                    m_Mobiles[index] = null;
+                    _mobiles[index] = null;
+                    ((ISerializable)this).MarkDirty();
                 }
 
                 return null;
             }
             set
             {
-                if (index >= 0 && index < m_Mobiles.Length)
+                if (index >= 0 && index < _mobiles.Length)
                 {
-                    if (m_Mobiles[index] != null)
+                    if (_mobiles[index] != null)
                     {
-                        m_Mobiles[index].Account = null;
+                        _mobiles[index].Account = null;
                     }
 
-                    m_Mobiles[index] = value;
+                    _mobiles[index] = value;
+                    ((ISerializable)this).MarkDirty();
 
-                    if (m_Mobiles[index] != null)
+                    if (_mobiles[index] != null)
                     {
-                        m_Mobiles[index].Account = this;
+                        _mobiles[index].Account = this;
                     }
                 }
             }
         }
 
         public int CompareTo(IAccount other) => string.CompareOrdinal(Username, other?.Username);
-
-        /// <summary>
-        ///     This amount represents the current amount of Gold owned by the player.
-        ///     The value does not include the value of Platinum and ranges from
-        ///     0 to 999,999,999 by default.
-        /// </summary>
-        [CommandProperty(AccessLevel.Administrator)]
-        public int TotalGold { get; private set; }
-
-        /// <summary>
-        ///     This amount represents the current amount of Platinum owned by the player.
-        ///     The value does not include the value of Gold and ranges from
-        ///     0 to 2,147,483,647 by default.
-        ///     One Platinum represents the value of CurrencyThreshold in Gold.
-        /// </summary>
-        [CommandProperty(AccessLevel.Administrator)]
-        public int TotalPlat { get; private set; }
 
         /// <summary>
         ///     Attempts to deposit the given amount of Gold into this account.
@@ -473,7 +585,7 @@ namespace Server.Accounting
                 return true;
             }
 
-            if (amount > TotalGold)
+            if (amount > _totalGold)
             {
                 return false;
             }
@@ -495,7 +607,7 @@ namespace Server.Accounting
                 return true;
             }
 
-            if (amount > TotalPlat)
+            if (amount > _totalPlat)
             {
                 return false;
             }
@@ -510,15 +622,15 @@ namespace Server.Accounting
         ///     This is strictly for backwards compatibility
         /// </summary>
         /// <returns>Total gold, capped at Int32.MaxValue</returns>
-        public long GetTotalGold() => TotalGold + TotalPlat * AccountGold.CurrencyThreshold;
+        public long GetTotalGold() => _totalGold + _totalPlat * AccountGold.CurrencyThreshold;
 
-        public int CompareTo(Account other) => string.CompareOrdinal(Username, other?.Username);
+        public int CompareTo(Account other) => string.CompareOrdinal(_username, other?._username);
 
         /// <summary>
         ///     Gets the value of a specific flag in the Flags bitfield.
         /// </summary>
         /// <param name="index">The zero-based flag index.</param>
-        public bool GetFlag(int index) => (Flags & (1 << index)) != 0;
+        public bool GetFlag(int index) => (_flags & (1 << index)) != 0;
 
         /// <summary>
         ///     Sets the value of a specific flag in the Flags bitfield.
@@ -544,7 +656,8 @@ namespace Server.Accounting
         /// <param name="value">New tag value.</param>
         public void AddTag(string name, string value)
         {
-            Tags.Add(new AccountTag(name, value));
+            _tags.Add(new AccountTag(name, value));
+            ((ISerializable)this).MarkDirty();
         }
 
         /// <summary>
@@ -553,18 +666,19 @@ namespace Server.Accounting
         /// <param name="name">Tag name to remove.</param>
         public void RemoveTag(string name)
         {
-            for (var i = Tags.Count - 1; i >= 0; --i)
+            for (var i = _tags.Count - 1; i >= 0; --i)
             {
-                if (i >= Tags.Count)
+                if (i >= _tags.Count)
                 {
                     continue;
                 }
 
-                var tag = Tags[i];
+                var tag = _tags[i];
 
                 if (tag.Name == name)
                 {
-                    Tags.RemoveAt(i);
+                    _tags.RemoveAt(i);
+                    ((ISerializable)this).MarkDirty();
                 }
             }
         }
@@ -576,13 +690,14 @@ namespace Server.Accounting
         /// <param name="value">Tag value.</param>
         public void SetTag(string name, string value)
         {
-            for (var i = 0; i < Tags.Count; ++i)
+            for (var i = 0; i < _tags.Count; ++i)
             {
-                var tag = Tags[i];
+                var tag = _tags[i];
 
                 if (tag.Name == name)
                 {
                     tag.Value = value;
+                    ((ISerializable)this).MarkDirty();
                     return;
                 }
             }
@@ -596,9 +711,9 @@ namespace Server.Accounting
         /// <param name="name">Name of the desired tag value.</param>
         public string GetTag(string name)
         {
-            for (var i = 0; i < Tags.Count; ++i)
+            for (var i = 0; i < _tags.Count; ++i)
             {
-                var tag = Tags[i];
+                var tag = _tags[i];
 
                 if (tag.Name == name)
                 {
@@ -689,7 +804,7 @@ namespace Server.Accounting
 
         private static void EventSink_Disconnected(Mobile m)
         {
-            if (!(m.Account is Account acc))
+            if (m.Account is not Account acc)
             {
                 return;
             }
@@ -700,22 +815,22 @@ namespace Server.Accounting
                 acc.m_YoungTimer = null;
             }
 
-            if (!(m is PlayerMobile pm))
+            if (m is not PlayerMobile pm)
             {
                 return;
             }
 
-            acc.m_TotalGameTime += DateTime.UtcNow - pm.SessionStart;
+            acc.TotalGameTime += Core.Now - pm.SessionStart;
         }
 
         private static void EventSink_Login(Mobile m)
         {
-            if (!(m is PlayerMobile pm))
+            if (m is not PlayerMobile pm)
             {
                 return;
             }
 
-            if (!(m.Account is Account acc))
+            if (m.Account is not Account acc)
             {
                 return;
             }
@@ -737,9 +852,9 @@ namespace Server.Accounting
         {
             Young = false;
 
-            for (var i = 0; i < m_Mobiles.Length; i++)
+            for (var i = 0; i < _mobiles.Length; i++)
             {
-                if (m_Mobiles[i] is PlayerMobile m && m.Young)
+                if (_mobiles[i] is PlayerMobile { Young: true } m)
                 {
                     m.Young = false;
 
@@ -769,12 +884,12 @@ namespace Server.Accounting
 
         private bool UpgradePassword(string password, PasswordProtectionAlgorithm algorithm)
         {
-            if (password == null || algorithm < m_PasswordAlgorithm)
+            if (password == null || algorithm < _passwordAlgorithm)
             {
                 return false;
             }
 
-            m_PasswordAlgorithm = algorithm;
+            PasswordAlgorithm = algorithm;
             Password = password.ReplaceOrdinal("-", string.Empty);
             return true;
         }
@@ -784,7 +899,7 @@ namespace Server.Accounting
         /// </summary>
         /// <param name="node">The XmlElement from which to deserialize.</param>
         /// <returns>String list. Value will never be null.</returns>
-        public static string[] LoadAccessCheck(XmlElement node)
+        private static string[] LoadAccessCheck(XmlElement node)
         {
             string[] stringList;
             var accessCheck = node["accessCheck"];
@@ -818,7 +933,7 @@ namespace Server.Accounting
         /// </summary>
         /// <param name="node">The XmlElement from which to deserialize.</param>
         /// <returns>Address list. Value will never be null.</returns>
-        public static IPAddress[] LoadAddressList(XmlElement node)
+        private static IPAddress[] LoadAddressList(XmlElement node)
         {
             IPAddress[] list;
             var addressList = node["addressList"];
@@ -867,7 +982,7 @@ namespace Server.Accounting
         /// </summary>
         /// <param name="node">The XmlElement instance from which to deserialize.</param>
         /// <returns>Mobile list. Value will never be null.</returns>
-        public static Mobile[] LoadMobiles(XmlElement node)
+        private static Mobile[] LoadMobiles(XmlElement node)
         {
             var list = new Mobile[7];
             var chars = node["chars"];
@@ -905,7 +1020,7 @@ namespace Server.Accounting
         /// </summary>
         /// <param name="node">The XmlElement from which to deserialize.</param>
         /// <returns>Comment list. Value will never be null.</returns>
-        public static List<AccountComment> LoadComments(XmlElement node)
+        private static List<AccountComment> LoadComments(XmlElement node)
         {
             List<AccountComment> list = null;
             var comments = node["comments"];
@@ -935,7 +1050,7 @@ namespace Server.Accounting
         /// </summary>
         /// <param name="node">The XmlElement from which to deserialize.</param>
         /// <returns>Tag list. Value will never be null.</returns>
-        public static List<AccountTag> LoadTags(XmlElement node)
+        private static List<AccountTag> LoadTags(XmlElement node)
         {
             List<AccountTag> list = null;
             var tags = node["tags"];
@@ -975,7 +1090,7 @@ namespace Server.Accounting
             {
                 var hasAccess = false;
 
-                if (m_AccessLevel >= level)
+                if (_accessLevel >= level)
                 {
                     hasAccess = true;
                 }
@@ -992,7 +1107,7 @@ namespace Server.Accounting
                     }
                 }
 
-                Console.WriteLine("{0} {1}", hasAccess ? "yes" : "no", m_AccessLevel);
+                Console.WriteLine("{0} {1}", hasAccess ? "yes" : "no", _accessLevel);
 
                 if (!hasAccess)
                 {
@@ -1000,11 +1115,11 @@ namespace Server.Accounting
                 }
             }
 
-            var accessAllowed = IPRestrictions.Length == 0 || IPLimiter.IsExempt(ipAddress);
+            var accessAllowed = _ipRestrictions.Length == 0 || IPLimiter.IsExempt(ipAddress);
 
-            for (var i = 0; !accessAllowed && i < IPRestrictions.Length; ++i)
+            for (var i = 0; !accessAllowed && i < _ipRestrictions.Length; ++i)
             {
-                accessAllowed = IPAddress.Parse(IPRestrictions[i]).Equals(ipAddress);
+                accessAllowed = IPAddress.Parse(_ipRestrictions[i]).Equals(ipAddress);
             }
 
             return accessAllowed;
@@ -1029,7 +1144,7 @@ namespace Server.Accounting
                 return;
             }
 
-            if (LoginIPs.Length == 0)
+            if (_loginIPs.Length == 0)
             {
                 AccountHandler.IPTable.TryGetValue(ipAddress, out var result);
                 AccountHandler.IPTable[ipAddress] = result + 1;
@@ -1037,9 +1152,9 @@ namespace Server.Accounting
 
             var contains = false;
 
-            for (var i = 0; !contains && i < LoginIPs.Length; ++i)
+            for (var i = 0; !contains && i < _loginIPs.Length; ++i)
             {
-                contains = LoginIPs[i].Equals(ipAddress);
+                contains = _loginIPs[i].Equals(ipAddress);
             }
 
             if (contains)
@@ -1047,7 +1162,7 @@ namespace Server.Accounting
                 return;
             }
 
-            var old = LoginIPs;
+            var old = _loginIPs;
             LoginIPs = new IPAddress[old.Length + 1];
 
             for (var i = 0; i < old.Length; ++i)
@@ -1078,135 +1193,7 @@ namespace Server.Accounting
             return hasAccess;
         }
 
-        /// <summary>
-        ///     Serializes this Account instance to an XmlTextWriter.
-        /// </summary>
-        /// <param name="xml">The XmlTextWriter instance from which to serialize.</param>
-        public void Save(XmlTextWriter xml)
-        {
-            xml.WriteStartElement("account");
-
-            xml.WriteStartElement("username");
-            xml.WriteString(Username);
-            xml.WriteEndElement();
-
-            xml.WriteStartElement("passwordAlgorithm");
-            xml.WriteString(m_PasswordAlgorithm.ToString());
-            xml.WriteEndElement();
-
-            xml.WriteStartElement("password");
-            xml.WriteString(Password);
-            xml.WriteEndElement();
-
-            if (m_AccessLevel != AccessLevel.Player)
-            {
-                xml.WriteStartElement("accessLevel");
-                xml.WriteString(m_AccessLevel.ToString());
-                xml.WriteEndElement();
-            }
-
-            if (Flags != 0)
-            {
-                xml.WriteStartElement("flags");
-                xml.WriteString(XmlConvert.ToString(Flags));
-                xml.WriteEndElement();
-            }
-
-            xml.WriteStartElement("created");
-            xml.WriteString(XmlConvert.ToString(Created, XmlDateTimeSerializationMode.Utc));
-            xml.WriteEndElement();
-
-            xml.WriteStartElement("lastLogin");
-            xml.WriteString(XmlConvert.ToString(LastLogin, XmlDateTimeSerializationMode.Utc));
-            xml.WriteEndElement();
-
-            xml.WriteStartElement("totalGameTime");
-            xml.WriteString(XmlConvert.ToString(TotalGameTime));
-            xml.WriteEndElement();
-
-            xml.WriteStartElement("chars");
-
-            for (var i = 0; i < m_Mobiles.Length; ++i)
-            {
-                var m = m_Mobiles[i];
-
-                if (m?.Deleted == false)
-                {
-                    xml.WriteStartElement("char");
-                    xml.WriteAttributeString("index", i.ToString());
-                    xml.WriteString(m.Serial.Value.ToString());
-                    xml.WriteEndElement();
-                }
-            }
-
-            xml.WriteEndElement();
-
-            if (m_Comments?.Count > 0)
-            {
-                xml.WriteStartElement("comments");
-
-                for (var i = 0; i < m_Comments.Count; ++i)
-                {
-                    m_Comments[i].Save(xml);
-                }
-
-                xml.WriteEndElement();
-            }
-
-            if (m_Tags?.Count > 0)
-            {
-                xml.WriteStartElement("tags");
-
-                for (var i = 0; i < m_Tags.Count; ++i)
-                {
-                    m_Tags[i].Save(xml);
-                }
-
-                xml.WriteEndElement();
-            }
-
-            if (LoginIPs.Length > 0)
-            {
-                xml.WriteStartElement("addressList");
-
-                xml.WriteAttributeString("count", LoginIPs.Length.ToString());
-
-                for (var i = 0; i < LoginIPs.Length; ++i)
-                {
-                    xml.WriteStartElement("ip");
-                    xml.WriteString(LoginIPs[i].ToString());
-                    xml.WriteEndElement();
-                }
-
-                xml.WriteEndElement();
-            }
-
-            if (IPRestrictions.Length > 0)
-            {
-                xml.WriteStartElement("accessCheck");
-
-                for (var i = 0; i < IPRestrictions.Length; ++i)
-                {
-                    xml.WriteStartElement("ip");
-                    xml.WriteString(IPRestrictions[i]);
-                    xml.WriteEndElement();
-                }
-
-                xml.WriteEndElement();
-            }
-
-            xml.WriteStartElement("totalGold");
-            xml.WriteString(XmlConvert.ToString(TotalGold));
-            xml.WriteEndElement();
-
-            xml.WriteStartElement("totalPlat");
-            xml.WriteString(XmlConvert.ToString(TotalPlat));
-            xml.WriteEndElement();
-
-            xml.WriteEndElement();
-        }
-
-        public override string ToString() => Username;
+        public override string ToString() => _username;
 
         private class YoungTimer : Timer
         {

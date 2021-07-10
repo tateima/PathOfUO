@@ -16,7 +16,7 @@ namespace Server.Accounting
         {
             AddedBy = addedBy;
             m_Content = content;
-            LastModified = DateTime.UtcNow;
+            LastModified = Core.Now;
         }
 
         /// <summary>
@@ -26,8 +26,19 @@ namespace Server.Accounting
         public AccountComment(XmlElement node)
         {
             AddedBy = Utility.GetAttribute(node, "addedBy", "empty");
-            LastModified = Utility.GetXMLDateTime(Utility.GetAttribute(node, "lastModified"), DateTime.UtcNow);
+            LastModified = Utility.GetXMLDateTime(Utility.GetAttribute(node, "lastModified"), Core.Now);
             m_Content = Utility.GetText(node, "");
+        }
+
+        /// <summary>
+        ///     Deserializes an AccountComment instance.
+        /// </summary>
+        /// <param name="node">The deserialization reader</param>
+        public AccountComment(IGenericReader reader)
+        {
+            AddedBy = reader.ReadString();
+            LastModified = reader.ReadDateTime();
+            m_Content = reader.ReadString();
         }
 
         /// <summary>
@@ -44,7 +55,7 @@ namespace Server.Accounting
             set
             {
                 m_Content = value;
-                LastModified = DateTime.UtcNow;
+                LastModified = Core.Now;
             }
         }
 
@@ -54,20 +65,14 @@ namespace Server.Accounting
         public DateTime LastModified { get; private set; }
 
         /// <summary>
-        ///     Serializes this AccountComment instance to an XmlTextWriter.
+        ///     Serializes this AccountComment instance.
         /// </summary>
-        /// <param name="xml">The XmlTextWriter instance from which to serialize.</param>
-        public void Save(XmlTextWriter xml)
+        /// <param name="xml">The serialization writer.</param>
+        public void Serialize(IGenericWriter writer)
         {
-            xml.WriteStartElement("comment");
-
-            xml.WriteAttributeString("addedBy", AddedBy);
-
-            xml.WriteAttributeString("lastModified", XmlConvert.ToString(LastModified, XmlDateTimeSerializationMode.Utc));
-
-            xml.WriteString(m_Content);
-
-            xml.WriteEndElement();
+            writer.Write(AddedBy ?? "empty");
+            writer.Write(LastModified);
+            writer.Write(m_Content);
         }
     }
 }

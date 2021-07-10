@@ -99,7 +99,7 @@ namespace Server.Misc
                     return true;
                 case ProfanityAction.Disconnect:
                     {
-                        from.NetState?.Dispose();
+                        from.NetState?.Disconnect("Using profanity.");
 
                         return false;
                     }

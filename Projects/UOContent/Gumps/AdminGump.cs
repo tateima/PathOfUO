@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using Server.Accounting;
+using Server.Buffers;
 using Server.Commands;
 using Server.Items;
 using Server.Misc;
@@ -185,7 +185,7 @@ namespace Server.Gumps
                         AddLabel(150, 270, LabelHue, Core.ScriptItems.ToString());
 
                         AddLabel(20, 290, LabelHue, "Uptime:");
-                        AddLabel(150, 290, LabelHue, FormatTimeSpan(DateTime.UtcNow - Clock.ServerStart));
+                        AddLabel(150, 290, LabelHue, FormatTimeSpan(TimeSpan.FromMilliseconds(Core.TickCount)));
 
                         AddLabel(20, 310, LabelHue, "Memory:");
                         AddLabel(150, 310, LabelHue, FormatByteAmount(GC.GetTotalMemory(false)));
@@ -222,11 +222,7 @@ namespace Server.Gumps
                     }
                 case AdminGumpPage.Information_Perf:
                     {
-                        AddLabel(20, 130, LabelHue, "Cycles Per Second:");
-                        AddLabel(40, 150, LabelHue, $"Current: {Core.CyclesPerSecond:N2}");
-                        AddLabel(40, 170, LabelHue, $"Average: {Core.AverageCPS:N2}");
-
-                        var sb = new StringBuilder();
+                        using var sb = new ValueStringBuilder();
 
                         ThreadPool.GetAvailableThreads(out var curUser, out var curIOCP);
                         ThreadPool.GetMaxThreads(out var maxUser, out var maxIOCP);
@@ -257,12 +253,10 @@ namespace Server.Gumps
                     {
                         AddHtml(10, 125, 400, 20, Color(Center("Generating"), LabelColor32));
 
-                        AddButtonLabeled(220, 150, GetButtonID(3, 107), "Rebuild Categorization");
-
                         AddButtonLabeled(20, 175, GetButtonID(3, 101), "Teleporters");
                         AddButtonLabeled(220, 175, GetButtonID(3, 102), "Moongates");
 
-                        AddButtonLabeled(20, 200, GetButtonID(3, 103), "Vendors");
+                        AddButtonLabeled(20, 200, GetButtonID(3, 103), "Generate Spawns");
                         AddButtonLabeled(220, 200, GetButtonID(3, 106), "Decoration");
 
                         AddButtonLabeled(20, 225, GetButtonID(3, 104), "Doors");
@@ -646,7 +640,7 @@ namespace Server.Gumps
                             AddLabel(12, 140, LabelHue, "There are no accounts to display.");
                         }
 
-                        var sb = new StringBuilder();
+                        using var sb = new ValueStringBuilder();
 
                         for (int i = 0, index = listPage * 12;
                             i < 12 && index >= 0 && index < sharedAccounts.Count;
@@ -662,10 +656,7 @@ namespace Server.Gumps
                             AddLabelCropped(12, offset, 60, 20, LabelHue, accts.Count.ToString());
                             AddLabelCropped(72, offset, 120, 20, LabelHue, ipAddr.ToString());
 
-                            if (sb.Length > 0)
-                            {
-                                sb.Length = 0;
-                            }
+                            sb.Reset();
 
                             for (var j = 0; j < accts.Count; ++j)
                             {
@@ -911,17 +902,7 @@ namespace Server.Gumps
                             }
                             else
                             {
-                                var remaining = DateTime.UtcNow - banTime;
-
-                                if (remaining < TimeSpan.Zero)
-                                {
-                                    remaining = TimeSpan.Zero;
-                                }
-                                else if (remaining > banDuration)
-                                {
-                                    remaining = banDuration;
-                                }
-
+                                var remaining = (Core.Now - banTime).Clamp(TimeSpan.Zero, banDuration);
                                 var remMinutes = remaining.TotalMinutes;
                                 var totMinutes = banDuration.TotalMinutes;
 
@@ -1075,7 +1056,7 @@ namespace Server.Gumps
 
                         if (m_List == null)
                         {
-                            ipRestrictions = a.IPRestrictions.ToList();
+                            ipRestrictions = a.IpRestrictions.ToList();
                             m_List = ipRestrictions.ToList<object>();
                         }
                         else
@@ -1199,7 +1180,7 @@ namespace Server.Gumps
 
                         AddButtonLabeled(20, 150, GetButtonID(5, 4), "Add Comment");
 
-                        var sb = new StringBuilder();
+                        var sb = new ValueStringBuilder();
 
                         if (a.Comments.Count == 0)
                         {
@@ -1214,12 +1195,17 @@ namespace Server.Gumps
                             }
 
                             var c = a.Comments[i];
-
-                            sb.AppendFormat("[{0} on {1}]<BR>{2}", c.AddedBy, c.LastModified, c.Content);
+                            sb.Append('[');
+                            sb.Append(c.AddedBy);
+                            sb.Append(" on ");
+                            sb.Append(c.LastModified.ToString());
+                            sb.Append("]<BR>");
+                            sb.Append(c.Content);
                         }
 
                         AddHtml(20, 180, 380, 190, sb.ToString(), true, true);
 
+                        sb.Dispose(); // Due to an analyzer bug, we can't use a using
                         goto case AdminGumpPage.AccountDetails;
                     }
                 case AdminGumpPage.AccountDetails_Tags:
@@ -1233,7 +1219,7 @@ namespace Server.Gumps
 
                         AddButtonLabeled(20, 150, GetButtonID(5, 5), "Add Tag");
 
-                        var sb = new StringBuilder();
+                        var sb = new ValueStringBuilder();
 
                         if (a.Tags.Count == 0)
                         {
@@ -1249,11 +1235,14 @@ namespace Server.Gumps
 
                             var tag = a.Tags[i];
 
-                            sb.AppendFormat("{0} = {1}", tag.Name, tag.Value);
+                            sb.Append(tag.Name);
+                            sb.Append(" = ");
+                            sb.Append(tag.Value);
                         }
 
                         AddHtml(20, 180, 380, 190, sb.ToString(), true, true);
 
+                        sb.Dispose();
                         goto case AdminGumpPage.AccountDetails;
                     }
                 case AdminGumpPage.Firewall:
@@ -1464,22 +1453,13 @@ namespace Server.Gumps
 
         public static string FormatByteAmount(long totalBytes)
         {
-            if (totalBytes > 1000000000)
+            return totalBytes switch
             {
-                return $"{(double)totalBytes / 1073741824:F1} GB";
-            }
-
-            if (totalBytes > 1000000)
-            {
-                return $"{(double)totalBytes / 1048576:F1} MB";
-            }
-
-            if (totalBytes > 1000)
-            {
-                return $"{(double)totalBytes / 1024:F1} KB";
-            }
-
-            return $"{totalBytes} Bytes";
+                > 1000000000 => $"{(double)totalBytes / 1073741824:F1} GB",
+                > 1000000    => $"{(double)totalBytes / 1048576:F1} MB",
+                > 1000       => $"{(double)totalBytes / 1024:F1} KB",
+                _            => $"{totalBytes} Bytes"
+            };
         }
 
         public static void Initialize()
@@ -1772,7 +1752,7 @@ namespace Server.Gumps
             {
                 if (!ban)
                 {
-                    NetState.Pause();
+                    NetState.FlushAll();
                 }
 
                 for (var i = 0; i < rads.Count; ++i)
@@ -1804,11 +1784,6 @@ namespace Server.Gumps
                         rads.RemoveAt(i--);
                         list.Remove(acct);
                     }
-                }
-
-                if (!ban)
-                {
-                    NetState.Resume();
                 }
 
                 from.SendGump(
@@ -2114,6 +2089,10 @@ namespace Server.Gumps
                                 InvokeCommand("DoorGen");
                                 notice = "Doors have been generated.";
                                 break;
+                            case 103:
+                                InvokeCommand("GenerateSpawners ./Data/Spawns/*.json");
+                                notice = "Spawners have been generated.";
+                                break;
                             case 105:
                                 InvokeCommand("SignGen");
                                 notice = "Signs have been generated.";
@@ -2121,10 +2100,6 @@ namespace Server.Gumps
                             case 106:
                                 InvokeCommand("Decorate");
                                 notice = "Decoration has been generated.";
-                                break;
-                            case 107:
-                                InvokeCommand("RebuildCategorization");
-                                notice = "Categorization menu has been regenerated. The server should be restarted.";
                                 break;
 
                             case 110:
@@ -2375,7 +2350,7 @@ namespace Server.Gumps
 
                                             if (!hasAccess)
                                             {
-                                                ns.Dispose();
+                                                ns.Disconnect("Server has been locked down.");
                                                 ++count;
                                             }
                                         }
@@ -2711,9 +2686,15 @@ namespace Server.Gumps
                                     }
                                     else
                                     {
-                                        results = Accounts.GetAccounts()
-                                            .Where(acct => acct.Username.InsensitiveContains(match))
-                                            .ToList();
+                                        results = new List<IAccount>();
+                                        foreach (var acct in Accounts.GetAccounts())
+                                        {
+                                            if (acct.Username.InsensitiveContains(match))
+                                            {
+                                                results.Add(acct);
+                                            }
+                                        }
+
                                         results.Sort(AccountComparer.Instance);
                                     }
 
@@ -2911,17 +2892,16 @@ namespace Server.Gumps
 
                                     if (list.Count > 0)
                                     {
-                                        var sb = new StringBuilder();
-
-                                        sb.AppendFormat(
-                                            "You are about to ban {0} account{1}. Do you wish to continue?",
-                                            list.Count,
-                                            list.Count != 1 ? "s" : ""
-                                        );
+                                        using var sb = new ValueStringBuilder();
+                                        sb.Append("You are about to ban ");
+                                        sb.Append(list.Count);
+                                        sb.Append(list.Count != 1 ? "accounts." : "account.");
+                                        sb.Append(" Do you wish to continue?");
 
                                         for (var i = 0; i < list.Count; ++i)
                                         {
-                                            sb.AppendFormat("<br>- {0}", list[i].Username);
+                                            sb.Append("<br>- ");
+                                            sb.Append(list[i].Username);
                                         }
 
                                         from.SendGump(
@@ -3020,7 +3000,7 @@ namespace Server.Gumps
                                     }
                                     else
                                     {
-                                        var list = a.IPRestrictions;
+                                        var list = a.IpRestrictions;
 
                                         var contains = false;
                                         for (var i = 0; !contains && i < list.Length; ++i)
@@ -3043,7 +3023,7 @@ namespace Server.Gumps
 
                                             newList[list.Length] = ip;
 
-                                            a.IPRestrictions = newList;
+                                            a.IpRestrictions = newList;
 
                                             notice = $"{ip} : Added to restriction list.";
                                         }
@@ -3741,7 +3721,7 @@ namespace Server.Gumps
                                             "kicking",
                                             CommandLogging.Format(m)
                                         );
-                                        ns.Dispose();
+                                        ns.Disconnect($"Kicked by {from}.");
                                         notice = "They have been kicked.";
                                     }
                                     else
@@ -3767,7 +3747,7 @@ namespace Server.Gumps
 
                                         var ns = m.NetState;
 
-                                        ns?.Dispose();
+                                        ns?.Disconnect($"Banned by {from}.");
 
                                         notice = "They have been banned.";
                                     }
@@ -3908,9 +3888,9 @@ namespace Server.Gumps
                             }
                             else if (m_PageType == AdminGumpPage.AccountDetails_Access_Restrictions)
                             {
-                                var list = a.IPRestrictions.ToList();
+                                var list = a.IpRestrictions.ToList();
                                 list.Remove(m_List[index] as string);
-                                a.IPRestrictions = list.ToArray();
+                                a.IpRestrictions = list.ToArray();
 
                                 from.SendGump(
                                     new AdminGump(

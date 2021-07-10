@@ -78,14 +78,13 @@ namespace Server.Spells.Necromancy
 
         public static void ClearMindRotScalar(Mobile m)
         {
-            if (!m_Table.Remove(m, out var tmpB))
+            if (m_Table.Remove(m, out var tmpB))
             {
-                return;
+                tmpB.m_MRExpireTimer.Stop();
+                m.SendLocalizedMessage(1060872); // Your mind feels normal again.
             }
 
             BuffInfo.RemoveBuff(m, BuffIcon.Mindrot);
-            tmpB.m_MRExpireTimer.Stop();
-            m.SendLocalizedMessage(1060872); // Your mind feels normal again.
         }
 
         public static bool HasMindRotScalar(Mobile m) => m_Table.ContainsKey(m);
@@ -125,13 +124,13 @@ namespace Server.Spells.Necromancy
         )
         {
             m_Target = target;
-            m_End = DateTime.UtcNow + delay;
+            m_End = Core.Now + delay;
             Priority = TimerPriority.TwoFiftyMS;
         }
 
         protected override void OnTick()
         {
-            if (m_Target.Deleted || !m_Target.Alive || DateTime.UtcNow >= m_End)
+            if (m_Target.Deleted || !m_Target.Alive || Core.Now >= m_End)
             {
                 MindRotSpell.ClearMindRotScalar(m_Target);
                 Stop();

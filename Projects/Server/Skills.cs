@@ -1,7 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using Server.Network;
 
 namespace Server
@@ -492,7 +490,7 @@ namespace Server
     }
 
     [PropertyObject]
-    public class Skills : IEnumerable<Skill>
+    public class Skills
     {
         private readonly Skill[] m_Skills;
         private Skill m_Highest;
@@ -632,189 +630,179 @@ namespace Server
             }
         }
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Alchemy => this[SkillName.Alchemy];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Anatomy => this[SkillName.Anatomy];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill AnimalLore => this[SkillName.AnimalLore];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill ItemID => this[SkillName.ItemID];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill ArmsLore => this[SkillName.ArmsLore];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Parry => this[SkillName.Parry];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Begging => this[SkillName.Begging];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Blacksmith => this[SkillName.Blacksmith];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Fletching => this[SkillName.Fletching];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Peacemaking => this[SkillName.Peacemaking];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Camping => this[SkillName.Camping];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Carpentry => this[SkillName.Carpentry];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Cartography => this[SkillName.Cartography];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Cooking => this[SkillName.Cooking];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill DetectHidden => this[SkillName.DetectHidden];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Discordance => this[SkillName.Discordance];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill EvalInt => this[SkillName.EvalInt];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Healing => this[SkillName.Healing];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Fishing => this[SkillName.Fishing];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Forensics => this[SkillName.Forensics];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Herding => this[SkillName.Herding];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Hiding => this[SkillName.Hiding];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Provocation => this[SkillName.Provocation];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Inscribe => this[SkillName.Inscribe];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Lockpicking => this[SkillName.Lockpicking];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Magery => this[SkillName.Magery];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill MagicResist => this[SkillName.MagicResist];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Tactics => this[SkillName.Tactics];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Snooping => this[SkillName.Snooping];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Musicianship => this[SkillName.Musicianship];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Poisoning => this[SkillName.Poisoning];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Archery => this[SkillName.Archery];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill SpiritSpeak => this[SkillName.SpiritSpeak];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Stealing => this[SkillName.Stealing];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Tailoring => this[SkillName.Tailoring];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill AnimalTaming => this[SkillName.AnimalTaming];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill TasteID => this[SkillName.TasteID];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Tinkering => this[SkillName.Tinkering];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Tracking => this[SkillName.Tracking];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Veterinary => this[SkillName.Veterinary];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Swords => this[SkillName.Swords];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Macing => this[SkillName.Macing];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Fencing => this[SkillName.Fencing];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Wrestling => this[SkillName.Wrestling];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Lumberjacking => this[SkillName.Lumberjacking];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Mining => this[SkillName.Mining];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Meditation => this[SkillName.Meditation];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Stealth => this[SkillName.Stealth];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill RemoveTrap => this[SkillName.RemoveTrap];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Necromancy => this[SkillName.Necromancy];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Focus => this[SkillName.Focus];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Chivalry => this[SkillName.Chivalry];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Bushido => this[SkillName.Bushido];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Ninjitsu => this[SkillName.Ninjitsu];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Spellweaving => this[SkillName.Spellweaving];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Mysticism => this[SkillName.Mysticism];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Imbuing => this[SkillName.Imbuing];
 
-        [CommandProperty(AccessLevel.Counselor)]
+        [CommandProperty(AccessLevel.Counselor, canModify: true)]
         public Skill Throwing => this[SkillName.Throwing];
-
-        public IEnumerator<Skill> GetEnumerator()
-        {
-            return m_Skills.Where(s => s != null).GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return m_Skills.Where(s => s != null).GetEnumerator();
-        }
 
         public override string ToString() => "...";
 
@@ -901,6 +889,47 @@ namespace Server
 
             Owner.OnSkillInvalidated(skill);
             Owner.NetState.SendSkillChange(skill);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SkillsEnumerator GetEnumerator() => new(m_Skills);
+
+        public ref struct SkillsEnumerator
+        {
+            private readonly Skill[] _skills;
+            private int _index;
+            private Skill _current;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal SkillsEnumerator(Skill[] skills)
+            {
+                _skills = skills;
+                _index = 0;
+                _current = default;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool MoveNext()
+            {
+                Skill[] localList = _skills;
+
+                while ((uint)_index < (uint)localList.Length)
+                {
+                    _current = _skills[_index++];
+                    if (_current != null)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            public Skill Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => _current;
+            }
         }
     }
 }
