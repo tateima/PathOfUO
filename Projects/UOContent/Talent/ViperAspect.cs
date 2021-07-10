@@ -25,7 +25,7 @@ namespace Server.Talent
 
         public void CheckHitEffect(Mobile attacker, Mobile target)
         {
-            if (Utility.Random(100) < 2)
+            if (Utility.Random(100) < Level/2)
             {
                 target.ApplyPoison(attacker, Poison.GetPoison(Level));
             }

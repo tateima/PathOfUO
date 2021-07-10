@@ -18,5 +18,22 @@ namespace Server.Talent
             ImageID = 40158;
         }
 
+        public void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
+        {
+            if (IsMobileType(target, OppositionGroup.HumanoidGroup, target.GetType()))
+            {
+                defender.Heal((damage/100)*Level);
+            }
+        }
+
+        public void CheckHitEffect(Mobile attacker, Mobile target)
+        {
+            if (IsMobileType(target, OppositionGroup.HumanoidGroup, target.GetType()) || target is PlayerMobile)
+            {
+                target.Damage(Level, attacker);
+            }
+        }
+
+
     }
 }

@@ -149,5 +149,20 @@ namespace Server.Talent
         public virtual bool HasSkillRequirement(Mobile mobile) {
             return true;
         }
+
+        public void CheckDefenseEffect(Mobile m, Mobile t, int d)
+        {
+            return;
+        }
+        public bool IsMobileType(Mobile mobile, Type[] group, Type type)
+        {
+            var contains = false;
+            for (var j = 0; !contains && j < group.Length; ++j)
+            {
+                contains = group[j].IsAssignableFrom(type);
+            }
+            return contains;
+        }
+
     }
 }

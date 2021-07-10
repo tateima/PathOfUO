@@ -11,11 +11,17 @@ namespace Server.Talent
     {
         public ExperiencedHunter() : base()
         {
-            TalentDependency = typeof(HunterOfWild);
             DisplayName = "Experienced hunter";
             Description = "Increases damage to animals.";
             ImageID = 39867;
         }
 
+        public void CheckHitEffect(Mobile attacker, Mobile target)
+        {
+            if (IsMobileType(target, OppositionGroup.AnimalGroup, target.GetType()))
+            {
+                target.Damage(Level, attacker);
+            }
+        }
     }
 }

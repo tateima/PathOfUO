@@ -14,10 +14,23 @@ namespace Server.Talent
             BlockedBy = new Type[] { typeof(ReptilianHunter) };
             TalentDependency = typeof(ExperiencedHunter);
             DisplayName = "Arachnid hunter";
-            Description = "Increases damage to arachnids and lowers damage from them.";
-            ImageID = 30213
-                ;
+            Description = "Increases damage to arachnids and heals damage from them.";
+            ImageID = 30213;
+        }
+        public void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
+        {
+            if (IsMobileType(target, OppositionGroup.ArachnidGroup, target.GetType()))
+            {
+                defender.Heal((damage / 100) * Level);
+            }
         }
 
+        public void CheckHitEffect(Mobile attacker, Mobile target)
+        {
+            if (IsMobileType(target, OppositionGroup.ArachnidGroup, target.GetType()))
+            {
+                target.Damage(Level, attacker);
+            }
+        }
     }
 }

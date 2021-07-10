@@ -2207,6 +2207,13 @@ namespace Server.Items
                     talent.CheckHitEffect(attacker, defender);
                 }
             }
+            if (defender is PlayerMobile)
+            {
+                foreach (BaseTalent talent in ((PlayerMobile)defender).Talents)
+                {
+                    talent.CheckDefenseEffect(defender, attacker, damage);
+                }
+            }
         }
 
         public virtual double GetAosDamage(Mobile attacker, int bonus, uint dice, uint sides)
