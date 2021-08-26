@@ -71,7 +71,7 @@ namespace Server.Spells.Necromancy
                     duration *= 0.5;
                 }
 
-                Timer.DelayCall(duration, mob => TryEndEffect(mob), m);
+                Timer.StartTimer(duration, () => TryEndEffect(m));
 
                 HarmfulSpell(m);
 

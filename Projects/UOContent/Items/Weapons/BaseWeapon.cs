@@ -1848,24 +1848,24 @@ namespace Server.Items
             }
 
             AddBlood(attacker, defender, damage);
+            int phys, fire, cold, pois, nrgy, chaos, direct;
 
-            GetDamageTypes(
-                attacker,
-                out var phys,
-                out var fire,
-                out var cold,
-                out var pois,
-                out var nrgy,
-                out var chaos,
-                out var direct
-            );
-
-            if (Core.ML && this is BaseRanged)
+            if (Core.ML && this is BaseRanged && attacker.FindItemOnLayer(Layer.Cloak) is BaseQuiver quiver)
             {
-                if (attacker.FindItemOnLayer(Layer.Cloak) is BaseQuiver quiver)
-                {
-                    quiver.AlterBowDamage(ref phys, ref fire, ref cold, ref pois, ref nrgy, ref chaos, ref direct);
-                }
+                quiver.AlterBowDamage(out phys, out fire, out cold, out pois, out nrgy, out chaos, out direct);
+            }
+            else
+            {
+                GetDamageTypes(
+                    attacker,
+                    out phys,
+                    out fire,
+                    out cold,
+                    out pois,
+                    out nrgy,
+                    out chaos,
+                    out direct
+                );
             }
 
             if (Consecrated)
@@ -1931,8 +1931,6 @@ namespace Server.Items
                 ImmolatingWeaponSpell.DoEffect(this, defender);
             }
 
-            var damageGiven = damage;
-
             if (a?.OnBeforeDamage(attacker, defender) == false)
             {
                 WeaponAbility.ClearCurrentAbility(attacker);
@@ -1947,7 +1945,7 @@ namespace Server.Items
 
             var ignoreArmor = a is ArmorIgnore || move?.IgnoreArmor(attacker) == true;
 
-            damageGiven = AOS.Damage(
+            var damageGiven = AOS.Damage(
                 defender,
                 attacker,
                 damage,
@@ -4054,22 +4052,18 @@ namespace Server.Items
                             m_Resource = CraftResource.Iron;
                         }
 
+                        Attributes = new AosAttributes(this);
+
                         if (GetSaveFlag(flags, SaveFlag.xAttributes))
                         {
-                            Attributes = new AosAttributes(this, reader);
+                            Attributes.Deserialize(reader);
                         }
-                        else
-                        {
-                            Attributes = new AosAttributes(this);
-                        }
+
+                        WeaponAttributes = new AosWeaponAttributes(this);
 
                         if (GetSaveFlag(flags, SaveFlag.xWeaponAttributes))
                         {
-                            WeaponAttributes = new AosWeaponAttributes(this, reader);
-                        }
-                        else
-                        {
-                            WeaponAttributes = new AosWeaponAttributes(this);
+                            WeaponAttributes.Deserialize(reader);
                         }
 
                         if (UseSkillMod && m_AccuracyLevel != WeaponAccuracyLevel.Regular && parentMobile != null)
@@ -4095,13 +4089,11 @@ namespace Server.Items
                             PlayerConstructed = true;
                         }
 
+                        SkillBonuses = new AosSkillBonuses(this);
+
                         if (GetSaveFlag(flags, SaveFlag.SkillBonuses))
                         {
-                            SkillBonuses = new AosSkillBonuses(this, reader);
-                        }
-                        else
-                        {
-                            SkillBonuses = new AosSkillBonuses(this);
+                            SkillBonuses.Deserialize(reader);
                         }
 
                         if (GetSaveFlag(flags, SaveFlag.Slayer2))
@@ -4109,13 +4101,11 @@ namespace Server.Items
                             m_Slayer2 = (SlayerName)reader.ReadInt();
                         }
 
+                        AosElementDamages = new AosElementAttributes(this);
+
                         if (GetSaveFlag(flags, SaveFlag.ElementalDamages))
                         {
-                            AosElementDamages = new AosElementAttributes(this, reader);
-                        }
-                        else
-                        {
-                            AosElementDamages = new AosElementAttributes(this);
+                            AosElementDamages.Deserialize(reader);
                         }
 
                         if (GetSaveFlag(flags, SaveFlag.EngravedText))
