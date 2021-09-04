@@ -3445,7 +3445,6 @@ namespace Server.Mobiles
                         }
                     }
                     m_ExperienceValue = (int)BaseInstrument.GetBaseDifficulty(this, false);
-
                     m_MaxLevel = Fame / 500;
                     if (m_MaxLevel < 1)
                     {

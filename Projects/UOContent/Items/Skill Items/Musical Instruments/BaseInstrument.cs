@@ -300,6 +300,11 @@ namespace Server.Items
                 val += 40.0;
             }
 
+            if (bc?.IsHeroic == true)
+            {
+                val += 20.0;
+            }
+
             if (Core.SE && val > 160.0 && cap)
             {
                 val = 160.0;
