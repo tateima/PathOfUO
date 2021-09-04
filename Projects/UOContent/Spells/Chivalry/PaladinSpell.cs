@@ -1,12 +1,31 @@
 using System;
+using Server.Talent;
+using Server.Mobiles;
 using Server.Network;
 
 namespace Server.Spells.Chivalry
 {
     public abstract class PaladinSpell : Spell
     {
+        private BaseTalent m_HolyAvenger;
+        public BaseTalent HolyAvenger
+        {
+            get { return m_HolyAvenger; }
+            set { m_HolyAvenger = value; }
+        }
+        private BaseTalent m_LightAffinity;
+        public BaseTalent LightAffinity
+        {
+            get { return m_LightAffinity; }
+            set { m_LightAffinity = value; }
+        }
         public PaladinSpell(Mobile caster, Item scroll, SpellInfo info) : base(caster, scroll, info)
         {
+            if (Caster is PlayerMobile player)
+            {
+                LightAffinity = player.GetTalent(typeof(LightAffinity));
+                HolyAvenger = player.GetTalent(typeof(HolyAvenger));
+            }
         }
 
         public abstract double RequiredSkill { get; }
@@ -22,7 +41,41 @@ namespace Server.Spells.Chivalry
         // public override int CastDelayBase => 1;
 
         public override int CastRecoveryBase => 7;
+        public bool CheckLightAffinity()
+        {
+            return m_LightAffinity != null;
+        }
 
+        public void LightAffinityScalar(ref double scalar)
+        {
+            if (CheckLightAffinity())
+            {
+                scalar += LightAffinity.ModifySpellScalar();
+            }
+        }
+        public void LightAffinityPower(ref int value)
+        {
+            if (CheckLightAffinity())
+            {
+                value += LightAffinity.Level;
+            }
+        }
+
+        public void HolyPower(ref int value)
+        {
+            if (HolyAvenger != null)
+            {
+                value += HolyAvenger.Level;
+            }
+        }
+        public int LightAffinityDuration()
+        {
+            if (CheckLightAffinity())
+            {
+                return LightAffinity.Level * 3;
+            }
+            return 0;
+        }
         public override bool CheckCast()
         {
             var mana = ScaleMana(RequiredMana);

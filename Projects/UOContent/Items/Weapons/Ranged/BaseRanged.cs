@@ -2,6 +2,7 @@ using System;
 using Server.Mobiles;
 using Server.Network;
 using Server.Spells;
+using Server.Talent;
 
 namespace Server.Items
 {
@@ -123,43 +124,52 @@ namespace Server.Items
 
         public override void OnMiss(Mobile attacker, Mobile defender)
         {
-            if (attacker.Player && Utility.RandomDouble() <= 0.4)
+            if (attacker.Player)
             {
-                if (Core.SE)
+                double modifier = 0.4;
+                BaseTalent carefulShooter = ((PlayerMobile)attacker).GetTalent(typeof(CarefulShooter));
+                if (carefulShooter != null)
                 {
-                    if (attacker is PlayerMobile pm)
+                    modifier += (double)carefulShooter.Level/2;
+                }
+                if (Utility.RandomDouble() <= modifier)
+                {
+                    if (Core.SE)
                     {
-                        var ammo = AmmoType;
-
-                        pm.RecoverableAmmo.TryGetValue(ammo, out var result);
-                        pm.RecoverableAmmo[ammo] = result + 1;
-
-                        if (!pm.Warmode)
+                        if (attacker is PlayerMobile pm)
                         {
-                            if (!_recoveryTimerToken.Running)
+                            var ammo = AmmoType;
+
+                            pm.RecoverableAmmo.TryGetValue(ammo, out var result);
+                            pm.RecoverableAmmo[ammo] = result + 1;
+
+                            if (!pm.Warmode)
                             {
-                                Timer.StartTimer(TimeSpan.FromSeconds(10),
-                                    () =>
-                                    {
-                                        _recoveryTimerToken.Cancel();
-                                        pm.RecoverAmmo();
-                                    },
-                                    out _recoveryTimerToken
-                                );
+                                if (!_recoveryTimerToken.Running)
+                                {
+                                    Timer.StartTimer(TimeSpan.FromSeconds(10),
+                                        () =>
+                                        {
+                                            _recoveryTimerToken.Cancel();
+                                            pm.RecoverAmmo();
+                                        },
+                                        out _recoveryTimerToken
+                                    );
+                                }
                             }
                         }
                     }
-                }
-                else
-                {
-                    Ammo.MoveToWorld(
-                        new Point3D(
-                            defender.X + Utility.RandomMinMax(-1, 1),
-                            defender.Y + Utility.RandomMinMax(-1, 1),
-                            defender.Z
-                        ),
-                        defender.Map
-                    );
+                    else
+                    {
+                        Ammo.MoveToWorld(
+                            new Point3D(
+                                defender.X + Utility.RandomMinMax(-1, 1),
+                                defender.Y + Utility.RandomMinMax(-1, 1),
+                                defender.Z
+                            ),
+                            defender.Map
+                        );
+                    }
                 }
             }
 

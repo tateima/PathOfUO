@@ -7,6 +7,7 @@ using Server.Spells;
 using Server.Spells.Necromancy;
 using Server.Spells.Spellweaving;
 using Server.Targeting;
+using Server.Talent;
 
 namespace Server.SkillHandlers
 {
@@ -483,9 +484,28 @@ namespace Server.SkillHandlers
                         {
                             if (m_Creature.Owners.Count == 0) // First tame
                             {
+                                double greaterDragonScale = 0.72;
+                                double greaterDragonCap = 0.90;
+                                double paralyzedScale = 0.86;
+                                double skillScale = 0.90;
+                                double statLossScale = 0.50;
+
+                                if (m_Tamer is PlayerMobile player)
+                                {
+                                    BaseTalent rangerCommand = player.GetTalent(typeof(RangerCommand));
+                                    if (rangerCommand != null)
+                                    {
+                                        greaterDragonScale += rangerCommand.ModifySpellScalar();
+                                        greaterDragonCap += rangerCommand.ModifySpellScalar();
+                                        paralyzedScale += rangerCommand.ModifySpellScalar();
+                                        skillScale += rangerCommand.ModifySpellScalar();
+                                        statLossScale += rangerCommand.ModifySpellScalar();
+                                    }
+                                }
+
                                 if (m_Creature is GreaterDragon)
                                 {
-                                    ScaleSkills(m_Creature, 0.72, 0.90); // 72% of original skills trainable to 90%
+                                    ScaleSkills(m_Creature, greaterDragonScale, greaterDragonCap); // 72% of original skills trainable to 90% + rangerCommand level scale
                                     m_Creature.Skills.Magery.Base =
                                         m_Creature.Skills.Magery
                                             .Cap; // Greater dragons have a 90% cap reduction and 90% skill reduction on magery
@@ -494,19 +514,21 @@ namespace Server.SkillHandlers
                                 {
                                     ScaleSkills(
                                         m_Creature,
-                                        0.86
-                                    ); // 86% of original skills if they were paralyzed during the taming
+                                        paralyzedScale
+                                    ); // 86% of original skills if they were paralyzed during the taming + rangerCommand level scale
                                 }
                                 else
                                 {
-                                    ScaleSkills(m_Creature, 0.90); // 90% of original skills
+                                    ScaleSkills(m_Creature, skillScale); // 90% of original skills + rangerCommand level scale
                                 }
 
                                 if (m_Creature.StatLossAfterTame)
                                 {
-                                    ScaleStats(m_Creature, 0.50);
+                                    ScaleStats(m_Creature, statLossScale);
                                 }
                             }
+
+
 
                             if (alreadyOwned)
                             {

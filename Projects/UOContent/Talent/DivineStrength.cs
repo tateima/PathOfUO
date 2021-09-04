@@ -1,9 +1,5 @@
 using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server.Talent
 {
@@ -11,11 +7,14 @@ namespace Server.Talent
     {
         public DivineStrength() : base()
         {
-            BlockedBy = new Type[] { typeof(DivineIntellect), typeof(DivineDexterity) };
+            BlockedBy = new Type[] { };
             DisplayName = "Divine strength";
-            Description = "Increases strength by a percentage.";
+            Description = "Increases strength by 2 per level.";
             ImageID = 39870;
         }
-
+        public override void UpdateMobile(Mobile mobile)
+        {
+            mobile.AddStatMod(new StatMod(StatType.Str, "DivineStr", Level*2, TimeSpan.Zero));
+        }
     }
 }

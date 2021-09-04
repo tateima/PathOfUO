@@ -68,22 +68,23 @@ namespace Server.Spells.Necromancy
                 m.CheckSkill(SkillName.MagicResist, 0.0, 120.0); // Skill check for gain
 
                 var duration = TimeSpan.FromSeconds((ss - mr) / 2.5 + 40.0);
-
                 ResistanceMod[] mods =
                 {
-                    new(ResistanceType.Fire, -15),
-                    new(ResistanceType.Poison, -15),
-                    new(ResistanceType.Cold, +10),
-                    new(ResistanceType.Physical, +10)
+                    new(ResistanceType.Fire, -(int)(15.0 * ReagentsScale())),
+                    new(ResistanceType.Poison, -(int)(15.0 * ReagentsScale())),
+                    new(ResistanceType.Cold, +(int)(10.0 * ReagentsScale())),
+                    new(ResistanceType.Physical, +(int)(10.0 * ReagentsScale()))
                 };
-                if (!HasReagents())
+                duration *= ReagentsScale();
+
+                if (CheckDarkAffinity())
                 {
-                    duration *= 0.5;
-                    foreach(ResistanceMod mod in mods)
+                    foreach (ResistanceMod mod in mods)
                     {
-                        mod.Offset = (int)(mod.Offset * 0.5);
+                        mod.Offset += DarkAffinity.Level;
                     }
                 }
+
                 timer = new ExpireTimer(m, mods, duration);
                 timer.Start();
 

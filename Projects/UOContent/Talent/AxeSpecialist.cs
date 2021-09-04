@@ -1,9 +1,5 @@
-using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Server.Items;
 
 namespace Server.Talent
 {
@@ -12,9 +8,17 @@ namespace Server.Talent
         public AxeSpecialist() : base()
         {
             TalentDependency = typeof(SwordsmanshipFocus);
+            RequiredWeaponSkill = SkillName.Swords;
+            RequiredWeapon = new Type[] { typeof(BaseAxe) };
+            IncreaseHitChance = true;
             DisplayName = "Axe specialist";
             Description = "Increases damage and hit chance of axe weapons.";
             ImageID = 30231;
+        }
+        
+        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        {
+            target.Damage(Level, attacker);
         }
 
     }

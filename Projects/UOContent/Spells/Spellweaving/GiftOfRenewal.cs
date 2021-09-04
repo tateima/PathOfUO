@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Server.Talent;
+using Server.Mobiles;
 using Server.Targeting;
 
 namespace Server.Spells.Spellweaving
@@ -59,7 +61,18 @@ namespace Server.Spells.Spellweaving
                     var skill = Caster.Skills.Spellweaving.Value;
 
                     var hitsPerRound = 5 + (int)(skill / 24) + FocusLevel;
+
                     var duration = 30 + FocusLevel * 10;
+
+                    if (Caster is PlayerMobile player)
+                    {
+                        BaseTalent lightAffinity = player.GetTalent(typeof(LightAffinity));
+                        if (lightAffinity != null)
+                        {
+                            hitsPerRound += lightAffinity.Level;
+                            duration += lightAffinity.Level * 2;
+                        }
+                    }
 
                     var t = new GiftOfRenewalTimer(Caster, m, hitsPerRound, duration);
 

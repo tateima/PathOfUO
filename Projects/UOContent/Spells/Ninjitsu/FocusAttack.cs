@@ -40,7 +40,7 @@ namespace Server.Spells.Ninjitsu
         {
             var ninjitsu = attacker.Skills.Ninjitsu.Value;
 
-            return 1.0 + ninjitsu * ninjitsu / 43636;
+            return 1.0 + NatureAffinityPower(attacker) + ninjitsu * ninjitsu / 43636;
         }
 
         public override double GetPropertyBonus(Mobile attacker)

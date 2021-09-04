@@ -4,6 +4,7 @@ using Server.Mobiles;
 using Server.Network;
 using Server.Spells;
 using Server.Spells.Necromancy;
+using Server.Talent;
 
 namespace Server.Items
 {
@@ -78,7 +79,14 @@ namespace Server.Items
                 {
                     damage *= 2;
                 }
-
+                if (m is PlayerMobile player)
+                {
+                    BaseTalent painManagement = player.GetTalent(typeof(PainManagement));
+                    if (painManagement != null)
+                    {
+                        damage = AOS.Scale(damage, 100-painManagement.ModifySpellMultiplier());
+                    }
+                }
                 m.PlaySound(0x133);
                 m.Damage(damage, from);
 

@@ -1,9 +1,5 @@
 using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server.Talent
 {
@@ -15,6 +11,11 @@ namespace Server.Talent
             DisplayName = "Keen senses";
             Description = "Chance of dodging incoming attacks.";
             ImageID = 30200;
+        }
+
+        public bool CheckDodge()
+        {
+            return (Utility.Random(100) < Level);
         }
 
     }

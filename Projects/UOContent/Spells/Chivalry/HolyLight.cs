@@ -63,7 +63,7 @@ namespace Server.Spells.Chivalry
                     }
 
                     var damage = Math.Clamp(ComputePowerValue(10) + Utility.RandomMinMax(0, 2), 8, 24);
-
+                    LightAffinityPower(ref damage);
                     Caster.DoHarmful(m);
                     SpellHelper.Damage(this, m, damage, 0, 0, 0, 0, 100);
                 }

@@ -49,6 +49,10 @@ namespace Server.Spells.Chivalry
                 var targets = Caster.GetMobilesInRange(8)
                     .Where(m => Caster != m && SpellHelper.ValidIndirectTarget(Caster, m) && Caster.CanBeHarmful(m, false));
 
+
+                int lightPower = 0;
+                LightAffinityPower(ref lightPower);
+
                 foreach (var m in targets)
                 {
                     if (m is BaseCreature bc)
@@ -57,6 +61,8 @@ namespace Server.Spells.Chivalry
                         {
                             var dispelChance = (50.0 + 100 * (chiv - bc.DispelDifficulty) / (bc.DispelFocus * 2)) / 100;
                             dispelChance *= dispelSkill / 100.0;
+                            
+                            dispelChance += lightPower;
 
                             if (dispelChance > Utility.RandomDouble())
                             {
@@ -80,6 +86,7 @@ namespace Server.Spells.Chivalry
                         {
                             // TODO: Is this right?
                             var fleeChance = (100 - Math.Sqrt(m.Fame / 2.0)) * chiv * dispelSkill;
+                            fleeChance += lightPower;
                             fleeChance /= 1000000;
 
                             if (fleeChance > Utility.RandomDouble())
@@ -95,7 +102,7 @@ namespace Server.Spells.Chivalry
                         // transformed ..
 
                         var drainChance = 0.5 * (Caster.Skills.Chivalry.Value / Math.Max(m.Skills.Necromancy.Value, 1));
-
+                        drainChance += lightPower;
                         if (drainChance > Utility.RandomDouble())
                         {
                             var drain = 5 * dispelSkill / 100;

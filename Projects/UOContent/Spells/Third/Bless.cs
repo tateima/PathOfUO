@@ -1,5 +1,7 @@
 using Server.Engines.ConPVP;
 using Server.Targeting;
+using Server.Talent;
+using Server.Mobiles;
 
 namespace Server.Spells.Third
 {
@@ -45,6 +47,14 @@ namespace Server.Spells.Third
                 m.PlaySound(0x1EA);
 
                 var percentage = (int)(SpellHelper.GetOffsetScalar(Caster, m, false) * 100);
+                if (Caster is PlayerMobile player)
+                {
+                    BaseTalent lightAffinity = player.GetTalent(typeof(LightAffinity));
+                    if (lightAffinity != null)
+                    {
+                        percentage += lightAffinity.Level;
+                    }
+                }
                 var length = SpellHelper.GetDuration(Caster, m);
 
                 var args = $"{percentage}\t{percentage}\t{percentage}";

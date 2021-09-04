@@ -5,6 +5,7 @@ using Server.Factions;
 using Server.Items;
 using Server.Mobiles;
 using Server.Utilities;
+using Server.Talent;
 
 namespace Server.Engines.Craft
 {
@@ -656,7 +657,22 @@ namespace Server.Engines.Craft
                     types[i] = new[] { baseType };
                 }
 
-                amounts[i] = craftRes.Amount;
+                int craftResAmount = craftRes.Amount;
+                // reduce amount required for Resourcesful Crafters
+                if (from is PlayerMobile crafter)
+                {
+                    BaseTalent resourcefulCrafter = crafter.GetTalent(typeof(ResourcefulCrafter));
+                    if (resourcefulCrafter != null)
+                    {
+                        craftResAmount = craftRes.Amount - resourcefulCrafter.Level;
+                        if (craftResAmount < 2)
+                        {
+                            craftResAmount = 2;
+                        }
+                    }
+                }
+
+                amounts[i] = craftResAmount;
 
                 // For stackable items that can ben crafted more than one at a time
                 if (UseAllRes)
@@ -1223,6 +1239,20 @@ namespace Server.Engines.Craft
                             item.Amount = maxAmount;
                         }
                     }
+                    BaseTalent warcraftFocus = ((PlayerMobile)from).GetTalent(typeof(WarCraftFocus));
+                    if (warcraftFocus != null)
+                    {
+                        if (item is BaseWeapon)
+                        {
+                            ((BaseWeapon)item).MaxDamage += warcraftFocus.Level;
+                            ((BaseWeapon)item).MinDamage += warcraftFocus.Level;
+                            ((BaseWeapon)item).DurabilityLevel += warcraftFocus.Level;
+                        } else if (item is BaseArmor)
+                        {
+                            ((BaseArmor)item).BaseArmorRating += warcraftFocus.Level;
+                            ((BaseArmor)item).Durability += warcraftFocus.Level;
+                        }
+                    }
 
                     from.AddToBackpack(item);
 
@@ -1344,7 +1374,21 @@ namespace Server.Engines.Craft
                     return;
                 }
 
-                tool.UsesRemaining--;
+                bool saveUse = false;
+                if (from is PlayerMobile crafter)
+                {
+                    BaseTalent strongTools = crafter.GetTalent(typeof(StrongTools));
+                    if (strongTools != null)
+                    {
+                        // max 10% chance to save use 2% per point in Strong Tools
+                        saveUse = Utility.Random(100) < (strongTools.Level * 2);
+                    }
+                }
+                
+                if (!saveUse)
+                {
+                    tool.UsesRemaining--;
+                }
 
                 if (tool.UsesRemaining < 1 && tool.BreakOnDepletion)
                 {

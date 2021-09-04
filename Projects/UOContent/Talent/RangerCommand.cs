@@ -1,9 +1,5 @@
 using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server.Talent
 {
@@ -14,9 +10,12 @@ namespace Server.Talent
         {
             TalentDependency = typeof(NatureAffinity);
             DisplayName = "Ranger command";
-            Description = "Increase power of pets.";
+            Description = "Decreases stat and skill loss of tamed creatures by 1% per level.";
             ImageID = 30039;
         }
-
+        public override double ModifySpellScalar()
+        {
+            return (Level / 100);
+        }
     }
 }

@@ -1,4 +1,6 @@
 using Server.Targeting;
+using Server.Talent;
+using Server.Mobiles;
 
 namespace Server.Spells.First
 {
@@ -57,12 +59,20 @@ namespace Server.Spells.First
 
                         m.SendLocalizedMessage(501783); // You feel yourself resisting magical energy.
                     }
-
                     damage *= GetDamageScalar(m);
                 }
 
                 source.MovingParticles(m, 0x36E4, 5, 0, false, false, 3006, 0, 0);
                 source.PlaySound(0x1E5);
+
+                if (Caster is PlayerMobile player)
+                {
+                    BaseTalent fireAffinity = player.GetTalent(typeof(FireAffinity));
+                    if (fireAffinity != null)
+                    {
+                        damage += fireAffinity.ModifySpellMultiplier();
+                    }
+                }
 
                 SpellHelper.Damage(this, m, damage, 0, 100, 0, 0, 0);
             }

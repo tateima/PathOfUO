@@ -2,6 +2,7 @@ using System;
 using Server.Items;
 using Server.Misc;
 using Server.Mobiles;
+using Server.Talent;
 using Server.Targeting;
 
 namespace Server.Spells.Sixth
@@ -190,6 +191,15 @@ namespace Server.Spells.Sixth
                     else
                     {
                         duration = 7.0 + m_Caster.Skills.Magery.Value * 0.2;
+                    }
+
+                    if (m_Caster is PlayerMobile player)
+                    {
+                        BaseTalent natureAffinity = player.GetTalent(typeof(NatureAffinity));
+                        if (natureAffinity != null)
+                        {
+                            duration += natureAffinity.Level * 2;
+                        }
                     }
 
                     m.Paralyze(TimeSpan.FromSeconds(duration));

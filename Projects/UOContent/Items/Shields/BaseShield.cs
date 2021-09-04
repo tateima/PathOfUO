@@ -1,5 +1,8 @@
 using System;
+using System.Linq;
+using Server.Mobiles;
 using Server.Network;
+using Server.Talent;
 
 namespace Server.Items
 {
@@ -187,6 +190,24 @@ namespace Server.Items
                             {
                                 Delete();
                             }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (owner is PlayerMobile owningPlayer && weapon.Parent is Mobile attacker)
+                {
+                    BaseTalent shieldFocus = owningPlayer.GetTalent(typeof(ShieldFocus));
+                    if (shieldFocus != null)
+                    {
+                        damage = AOS.Scale(damage, 100 - shieldFocus.Level);
+                    }
+                    foreach (BaseTalent talent in owningPlayer.Talents.Where(w => w.CanApplyHitEffect(this)))
+                    {
+                        if (owner != attacker)
+                        {
+                            talent.CheckHitEffect(owner, (Mobile)weapon.Parent, damage);
                         }
                     }
                 }

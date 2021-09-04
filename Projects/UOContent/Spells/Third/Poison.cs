@@ -1,4 +1,5 @@
 using Server.Mobiles;
+using Server.Talent;
 using Server.Targeting;
 
 namespace Server.Spells.Third
@@ -88,6 +89,16 @@ namespace Server.Spells.Third
                                 pm.DuelContext.Ruleset.GetOption("Skills", "Poisoning"))
                             {
                                 total += pm.Skills.Poisoning.Value;
+                            }
+                            BaseTalent spellMind = pm.GetTalent(typeof(SpellMind));
+                            if (spellMind != null)
+                            {
+                                total += spellMind.ModifySpellMultiplier();
+                            }
+                            BaseTalent darkAffinity = pm.GetTalent(typeof(DarkAffinity));
+                            if (darkAffinity != null)
+                            {
+                                total += darkAffinity.ModifySpellMultiplier();
                             }
                         }
                         else

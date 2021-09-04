@@ -1,6 +1,7 @@
 using System;
 using Server.Mobiles;
 using Server.Spells.Chivalry;
+using Server.Talent;
 using Server.Targeting;
 
 namespace Server.Spells.Fifth
@@ -79,6 +80,16 @@ namespace Server.Spells.Fifth
                 {
                     lord.OnParalyzed(Caster);
                     duration = 120;
+                }
+
+                // if has nature affinity empower paralyze
+                if (Caster is PlayerMobile player)
+                {
+                    BaseTalent natureAffinity = player.GetTalent(typeof(NatureAffinity));
+                    if (natureAffinity != null)
+                    {
+                        duration += natureAffinity.Level * 2;
+                    }
                 }
 
                 m.Paralyze(TimeSpan.FromSeconds(duration));

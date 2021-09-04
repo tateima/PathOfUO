@@ -4,6 +4,7 @@ using Server.Collections;
 using Server.Items;
 using Server.Misc;
 using Server.Mobiles;
+using Server.Talent;
 using Server.Targeting;
 
 namespace Server.Spells.Fifth
@@ -153,7 +154,21 @@ namespace Server.Spells.Fifth
 
                 if (Core.AOS)
                 {
-                    p = ((m_Caster.Skills.Magery.Fixed + m_Caster.Skills.Poisoning.Fixed) / 2) switch
+                    int value = (m_Caster.Skills.Magery.Fixed + m_Caster.Skills.Poisoning.Fixed) / 2;
+                    if (m_Caster is PlayerMobile player)
+                    {
+                        BaseTalent spellMind = player.GetTalent(typeof(SpellMind));
+                        if (spellMind != null)
+                        {
+                            value += spellMind.ModifySpellMultiplier();
+                        }
+                        BaseTalent darkAffinity = player.GetTalent(typeof(DarkAffinity));
+                        if (darkAffinity != null)
+                        {
+                            value += darkAffinity.ModifySpellMultiplier();
+                        }
+                    }
+                    p = (value) switch
                     {
                         >= 1000 => Poison.Deadly,
                         > 850   => Poison.Greater,

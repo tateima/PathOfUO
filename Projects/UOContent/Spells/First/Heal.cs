@@ -3,6 +3,7 @@ using Server.Items;
 using Server.Mobiles;
 using Server.Network;
 using Server.Targeting;
+using Server.Talent;
 
 namespace Server.Spells.First
 {
@@ -71,6 +72,16 @@ namespace Server.Spells.First
                 {
                     toHeal = (int)(Caster.Skills.Magery.Value * 0.1);
                     toHeal += Utility.Random(1, 5);
+                }
+                toHeal = (int)(toHeal * ReagentsScale());
+
+                if (Caster is PlayerMobile player)
+                {
+                    BaseTalent lightAffinity = player.GetTalent(typeof(LightAffinity));
+                    if (lightAffinity != null)
+                    {
+                        toHeal += AOS.Scale(toHeal, lightAffinity.ModifySpellMultiplier());
+                    }
                 }
 
                 // m.Heal( toHeal, Caster );

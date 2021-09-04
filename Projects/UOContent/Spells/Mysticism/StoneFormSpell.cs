@@ -103,11 +103,9 @@ namespace Server.Spells.Mysticism
                     Caster.HueMod = 0;
 
                     var offset = (int)((GetBaseSkill(Caster) + GetBoostSkill(Caster)) / 24.0);
-
-                    if (!HasReagents())
-                    {
-                        offset = (int) (offset * 0.5);
-                    }
+                    double reagentOffset = (double)offset;
+                    reagentOffset *= ReagentsScale();
+                    offset = (int)reagentOffset;
 
                     ResistanceMod[] mods =
                     {
@@ -118,6 +116,13 @@ namespace Server.Spells.Mysticism
                         new(ResistanceType.Energy, offset)
                     };
 
+                    if (CheckNatureAffinity())
+                    {
+                        foreach (ResistanceMod mod in mods)
+                        {
+                            mod.Offset += NatureAffinity.Level;
+                        }
+                    }
                     for (var i = 0; i < mods.Length; ++i)
                     {
                         Caster.AddResistanceMod(mods[i]);

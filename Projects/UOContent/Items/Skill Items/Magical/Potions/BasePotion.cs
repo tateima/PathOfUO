@@ -1,6 +1,8 @@
 using System;
 using Server.Engines.ConPVP;
 using Server.Engines.Craft;
+using Server.Mobiles;
+using Server.Talent;
 using Server.Utilities;
 
 namespace Server.Items
@@ -246,6 +248,16 @@ namespace Server.Items
             if (Core.ML && EP > 50 && m.AccessLevel <= AccessLevel.Player)
             {
                 EP = 50;
+            }
+
+            if (m is PlayerMobile player)
+            {
+                // if they have optimised consumption increase effectiveness by 2 points per level
+                BaseTalent optimisedConsumption = player.GetTalent(typeof(OptimisedConsumption));
+                if (optimisedConsumption != null)
+                {
+                   EP += (optimisedConsumption.Level * 2);
+                }
             }
 
             return EP + skillBonus;

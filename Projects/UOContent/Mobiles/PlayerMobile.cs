@@ -18,6 +18,7 @@ using Server.Gumps;
 using Server.Items;
 using Server.Misc;
 using Server.Movement;
+using System.Linq;
 using Server.Multis;
 using Server.Network;
 using Server.Regions;
@@ -377,9 +378,9 @@ namespace Server.Mobiles
                 {
                     m_TalentPoints += 1;
                 }
-                this.SendMessage("You have gained a level!");
-                this.FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
-                this.PlaySound(0x202);
+                SendMessage("You have gained a level!");
+                FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
+                PlaySound(0x202);
             }
         }
 
@@ -441,6 +442,12 @@ namespace Server.Mobiles
                 AddArmorRating(ref rating, ChestArmor);
                 AddArmorRating(ref rating, ShieldArmor);
 
+                BaseTalent ironSkin = GetTalent(typeof(IronSkin));
+                if (ironSkin != null)
+                {
+                    // 5 armor per level in ironskin
+                    rating += (double)(ironSkin.Level * 5);
+                }
                 return VirtualArmor + VirtualArmorMod + rating;
             }
         }
@@ -772,13 +779,34 @@ namespace Server.Mobiles
                 {
                     strBase = RawStr;
                 }
+                int hitsMax = strBase / 2 + 50 + strOffs;
+                BaseTalent giantsHeritage = GetTalent(typeof(GiantsHeritage));
+                if (giantsHeritage != null)
+                {
+                    hitsMax = giantsHeritage.CalculateResetValue(hitsMax);
+                    hitsMax = giantsHeritage.CalculateNewValue(hitsMax);
+                }
 
-                return strBase / 2 + 50 + strOffs;
+                return hitsMax;
             }
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
-        public override int StamMax => base.StamMax + AosAttributes.GetValue(this, AosAttribute.BonusStam);
+        public override int StamMax
+        {
+            get
+            {
+                int stamina = base.StamMax + AosAttributes.GetValue(this, AosAttribute.BonusStam);
+                BaseTalent giantsHeritage = GetTalent(typeof(GiantsHeritage));
+                if (giantsHeritage != null)
+                {
+                    stamina = giantsHeritage.CalculateResetValue(stamina);
+                    // 15 hits per level
+                    stamina += giantsHeritage.Level * 15;
+                }
+                return stamina;
+            }
+        }
 
         [CommandProperty(AccessLevel.GameMaster)]
         public override int ManaMax => base.ManaMax + AosAttributes.GetValue(this, AosAttribute.BonusMana) +
@@ -1019,6 +1047,18 @@ namespace Server.Mobiles
                     BuffInfo.RemoveBuff(this, BuffIcon.Fly);
                 }
             }
+        }
+
+        public BaseTalent GetTalent(Type type)
+        {
+            try
+            {
+                return Talents.Where(w => w.GetType() == type && w.Level > 0).First();
+            } catch (InvalidOperationException exception)
+            {
+                return null;
+            }
+            
         }
 
         public static Direction GetDirection4(Point3D from, Point3D to)
@@ -2102,6 +2142,10 @@ namespace Server.Mobiles
                     {
                         list.Add(new CallbackEntry(6169, ToggleQuestItem)); // Toggle Quest Item
                     }
+                    foreach (BaseTalent talent in Talents.Where(w => w.CanBeUsed && !w.OnCooldown))
+                    {
+                        list.Add(new UseTalentEntry(this, talent));
+                    }
                 }
 
                 var house = BaseHouse.FindHouseAt(this);
@@ -2663,7 +2707,16 @@ namespace Server.Mobiles
 
             RecoverAmmo();
 
-            return base.OnBeforeDeath();
+            // check for talent death effects
+            bool beforeDeathTalentSave = false;
+            foreach (BaseTalent talent in Talents.Where(w => w.HasBeforeDeathSave && !w.OnCooldown))
+            {
+                talent.CheckBeforeDeathEffect(this);
+                beforeDeathTalentSave = true;
+                break;
+            }
+
+            return (beforeDeathTalentSave && base.OnBeforeDeath());
         }
 
         private bool CheckInsuranceOnDeath(Item item)
@@ -2766,6 +2819,7 @@ namespace Server.Mobiles
 
         public override void OnDeath(Container c)
         {
+
             if (m_NonAutoreinsuredItems > 0)
             {
                 SendLocalizedMessage(1061115);
@@ -3018,7 +3072,17 @@ namespace Server.Mobiles
         {
             if (EvilOmenSpell.TryEndEffect(this))
             {
-                amount = (int)(amount * 1.25);
+                double modifier = 1.25;
+                if (from is PlayerMobile attacker)
+                {
+                    BaseTalent darkAffinity = attacker.GetTalent(typeof(DarkAffinity));
+                    if (darkAffinity != null)
+                    {
+                        // increase damage by 1% for each point in dark affinity
+                        modifier += (darkAffinity.Level / 100);
+                    }
+                }
+                amount = (int)(amount * modifier);
             }
 
             /* Per EA's UO Herald Pub48 (ML):
@@ -3055,6 +3119,12 @@ namespace Server.Mobiles
                         amount = (int)(amount * (1 - (double)talisman.Protection.Amount / 100));
                     }
                 }
+            }
+
+            BaseTalent planarShift = GetTalent(typeof(PlanarShift));
+            if (planarShift != null && planarShift.Activated)
+            {
+                amount = AOS.Scale(amount, 100-planarShift.ModifySpellMultiplier());
             }
 
             base.Damage(amount, from, informMount);
@@ -3130,6 +3200,8 @@ namespace Server.Mobiles
             switch (version)
             {
                 case 31:
+                    // reset followers to default
+                    FollowersMax = 5;
                     var talentCount = reader.ReadEncodedInt();
                     if (talentCount > 0)
                     {
@@ -3141,7 +3213,6 @@ namespace Server.Mobiles
                             var bt = TalentSerializer.Construct(type) as BaseTalent;
                             bt.Level = reader.ReadEncodedInt();
                             Talents.Add(bt);
-                            bt.UpdateMobile(this);
                         }
                     }
                     m_TalentPoints = reader.ReadInt();

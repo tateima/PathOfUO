@@ -3,6 +3,7 @@ using Server.Engines.ConPVP;
 using Server.Items;
 using Server.Mobiles;
 using Server.Targeting;
+using Server.Talent;
 
 namespace Server.SkillHandlers
 {
@@ -209,7 +210,19 @@ namespace Server.SkillHandlers
                                     {
                                         seconds = 10;
                                     }
-
+                                    if (from is PlayerMobile player)
+                                    {
+                                        BaseTalent resonance = player.GetTalent(typeof(Resonance));
+                                        if (resonance != null)
+                                        {
+                                            resonance.CheckHitEffect(player, bc, 0);
+                                        }
+                                        BaseTalent sonicAffinity = player.GetTalent(typeof(SonicAffinity));
+                                        if (sonicAffinity != null)
+                                        {
+                                            seconds += sonicAffinity.ModifySpellMultiplier();
+                                        }
+                                    }
                                     bc.Pacify(from, Core.Now + TimeSpan.FromSeconds(seconds));
                                 }
                                 else

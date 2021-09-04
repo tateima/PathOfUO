@@ -1,9 +1,5 @@
 using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server.Talent
 {
@@ -11,11 +7,20 @@ namespace Server.Talent
     {
         public Riposte() : base()
         {
+            RequiredWeaponSkill = SkillName.Fencing;
             TalentDependency = typeof(FencingFocus);
             DisplayName = "Riposte";
             Description = "Chance to deal damage to them if enemy misses.";
             ImageID = 30221;
         }
-
+        public virtual void CheckDefenderMissEffect(Mobile attacker, Mobile defender)
+        {
+            // 5% chance
+            if (Utility.Random(100) < Level)
+            {
+                // max 10 damage (2 per level)
+                attacker.Damage(Level * 2, defender);
+            }
+        }
     }
 }

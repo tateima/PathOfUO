@@ -1,4 +1,6 @@
 using System;
+using Server.Talent;
+using Server.Mobiles;
 using System.Collections.Generic;
 
 namespace Server.Spells.Second
@@ -76,16 +78,24 @@ namespace Server.Spells.Second
             {
                 target.PlaySound(0x1E9);
                 target.FixedParticles(0x375A, 9, 20, 5016, EffectLayer.Waist);
-
+                int lightPower = 0;
+                if (caster is PlayerMobile player)
+                {
+                    BaseTalent lightAffinity = player.GetTalent(typeof(LightAffinity));
+                    if (lightAffinity != null)
+                    {
+                        lightPower += lightAffinity.Level;
+                    }
+                }
                 mods = new Tuple<ResistanceMod, DefaultSkillMod>(
                     new ResistanceMod(
                         ResistanceType.Physical,
-                        -15 + Math.Min((int)(caster.Skills.Inscribe.Value / 20), 15)
+                        -15 + Math.Min((int)(caster.Skills.Inscribe.Value / 20) + lightPower, 15)
                     ),
                     new DefaultSkillMod(
                         SkillName.MagicResist,
                         true,
-                        -35 + Math.Min((int)(caster.Skills.Inscribe.Value / 20), 35)
+                        -35 + Math.Min((int)(caster.Skills.Inscribe.Value / 20) + lightPower, 35)
                     )
                 );
 

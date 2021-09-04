@@ -17,6 +17,11 @@ namespace Server.Talent
             Description = "Increase bond slot by one per level.";
             ImageID = 30207;
         }
+        public override void UpdateMobile(Mobile mobile)
+        {
+            mobile.FollowersMax = CalculateResetValue(mobile.FollowersMax);
+            mobile.FollowersMax = CalculateNewValue(mobile.FollowersMax);
+        }
 
     }
 }

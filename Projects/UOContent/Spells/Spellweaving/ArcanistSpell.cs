@@ -1,16 +1,48 @@
 using Server.Engines.MLQuests;
 using Server.Items;
 using Server.Mobiles;
+using Server.Talent;
 
 namespace Server.Spells.Spellweaving
 {
     public abstract class ArcanistSpell : Spell
     {
+        private BaseTalent m_LightAffinity;
+        public BaseTalent LightAffinity
+        {
+            get { return m_LightAffinity; }
+            set { m_LightAffinity = value; }
+        }
+        private BaseTalent m_DarkAffinity;
+        public BaseTalent DarkAffinity
+        {
+            get { return m_DarkAffinity; }
+            set { m_DarkAffinity = value; }
+        }
+        private BaseTalent m_NatureAffinity;
+        public BaseTalent NatureAffinity
+        {
+            get { return m_NatureAffinity; }
+            set { m_NatureAffinity = value; }
+        }
+        private BaseTalent m_FireAffinity;
+        public BaseTalent FireAffinity
+        {
+            get { return m_FireAffinity; }
+            set { m_FireAffinity = value; }
+        }
         private int m_CastTimeFocusLevel;
 
         public ArcanistSpell(Mobile caster, Item scroll, SpellInfo info)
             : base(caster, scroll, info)
         {
+            if (Caster is PlayerMobile player)
+            {
+                LightAffinity = player.GetTalent(typeof(LightAffinity));
+                DarkAffinity = player.GetTalent(typeof(DarkAffinity));
+                NatureAffinity = player.GetTalent(typeof(NatureAffinity));
+                FireAffinity = player.GetTalent(typeof(FireAffinity));
+            }
         }
 
         public abstract double RequiredSkill { get; }
@@ -23,6 +55,56 @@ namespace Server.Spells.Spellweaving
 
         public virtual int FocusLevel => m_CastTimeFocusLevel;
 
+        public bool CheckLightAffinity()
+        {
+            return m_LightAffinity != null;
+        }
+
+        public void LightAffinityPower(ref int value)
+        {
+            if (CheckLightAffinity())
+            {
+                value += LightAffinity.Level;
+            }
+        }
+
+        public bool CheckDarkAffinity()
+        {
+            return m_DarkAffinity != null;
+        }
+
+        public void DarkAffinityPower(ref int value)
+        {
+            if (CheckDarkAffinity())
+            {
+                value += DarkAffinity.Level*2;
+            }
+        }
+
+        public bool CheckFireAffinity()
+        {
+            return m_FireAffinity != null;
+        }
+
+        public void FireAffinityPower(ref int value)
+        {
+            if (CheckFireAffinity())
+            {
+                value += FireAffinity.Level;
+            }
+        }
+
+        public bool CheckNatureAffinity()
+        {
+            return m_NatureAffinity != null;
+        }
+        public void NatureAffinityPower(ref int value)
+        {
+            if (CheckNatureAffinity())
+            {
+                value += NatureAffinity.Level;
+            }
+        }
         public static int GetFocusLevel(Mobile from)
         {
             var focus = FindArcaneFocus(from);

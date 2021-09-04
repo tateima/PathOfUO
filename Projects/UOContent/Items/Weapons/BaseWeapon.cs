@@ -1129,6 +1129,25 @@ namespace Server.Items
             double ourValue, theirValue;
 
             var bonus = GetHitChanceBonus();
+            BaseTalent holyAvenger = null;
+            if (attacker is PlayerMobile)
+            {
+                PlayerMobile player = (PlayerMobile)attacker;
+                holyAvenger = player.GetTalent(typeof(HolyAvenger));
+                foreach (BaseTalent talent in player.Talents.Where(w => w.IncreaseHitChance && w.CanApplyHitEffect(this)))
+                {
+                    bonus += talent.GetHitChanceModifier();
+                }
+            }
+
+            if (defender is PlayerMobile)
+            {
+                BaseTalent keenSenses = ((PlayerMobile)defender).GetTalent(typeof(KeenSenses));
+                if (keenSenses != null && ((KeenSenses)keenSenses).CheckDodge())
+                {
+                    return false;
+                }
+            }
 
             if (Core.AOS)
             {
@@ -1147,6 +1166,10 @@ namespace Server.Items
                 if (DivineFurySpell.UnderEffect(attacker))
                 {
                     bonus += 10; // attacker gets 10% bonus when they're under divine fury
+                    if (holyAvenger != null)
+                    {
+                        bonus += holyAvenger.Level;
+                    }
                 }
 
                 if (CheckAnimal(attacker, typeof(GreyWolf)) || CheckAnimal(attacker, typeof(BakeKitsune)))
@@ -1263,6 +1286,21 @@ namespace Server.Items
             }
 
             double delayInSeconds;
+            int handFinesseBonus = 0;
+            int holyAvengerBonus = 0;
+            if (m is PlayerMobile player)
+            {
+                BaseTalent handFinesse = player.GetTalent(typeof(HandFinesse));
+                BaseTalent holyAvenger = player.GetTalent(typeof(HolyAvenger));
+                if (handFinesse != null)
+                {
+                    handFinesseBonus = (handFinesse.Level * 2);
+                }
+                if (holyAvenger != null)
+                {
+                    holyAvengerBonus += holyAvenger.Level;
+                }
+            }
 
             if (Core.SE)
             {
@@ -1276,7 +1314,7 @@ namespace Server.Items
 
                 if (DivineFurySpell.UnderEffect(m))
                 {
-                    bonus += 10;
+                    bonus += 10 + holyAvengerBonus;
                 }
 
                 // Bonus granted by successful use of Honorable Execution.
@@ -1311,6 +1349,9 @@ namespace Server.Items
                 {
                     bonus -= EssenceOfWindSpell.GetSSIMalus(m);
                 }
+
+                // add hand finesse bonus
+                bonus += handFinesseBonus;
 
                 if (bonus > 60)
                 {
@@ -1354,8 +1395,10 @@ namespace Server.Items
 
                 if (DivineFurySpell.UnderEffect(m))
                 {
-                    bonus += 10;
+                    bonus += 10 + holyAvengerBonus;
                 }
+
+                bonus += handFinesseBonus;
 
                 var discordanceEffect = 0;
 
@@ -1383,6 +1426,8 @@ namespace Server.Items
             }
             else
             {
+                // add hand finesse to speed divided by 2 (a total max of 5 points)
+                speed += (handFinesseBonus / 2);
                 var v = (m.Stam + 100) * (int)speed;
 
                 if (v <= 0)
@@ -1408,6 +1453,8 @@ namespace Server.Items
             var parry = defender.Skills.Parry.Value;
             var bushidoNonRacial = defender.Skills.Bushido.NonRacialValue;
             var bushido = defender.Skills.Bushido.Value;
+            var weapon = defender.Weapon as BaseWeapon;
+
             double chance;
 
             if (shield != null)
@@ -1440,8 +1487,6 @@ namespace Server.Items
             {
                 return false;
             }
-
-            var weapon = defender.Weapon as BaseWeapon;
 
             var divisor = weapon?.Layer == Layer.OneHanded ? 48000.0 : 41140.0;
 
@@ -1522,7 +1567,6 @@ namespace Server.Items
                     }
 
                     var shield = defender.FindItemOnLayer(Layer.TwoHanded) as BaseShield;
-
                     shield?.OnHit(this, damage);
                 }
             }
@@ -1719,6 +1763,17 @@ namespace Server.Items
 
             var damage = ComputeDamage(attacker, defender);
 
+            // get functional base talents
+            BaseTalent darkAffinity = null;
+            BaseTalent handFinesse = null;
+            BaseTalent holyAvenger = null;
+            if (attacker is PlayerMobile attackingPlayer)
+            {
+                darkAffinity = attackingPlayer.GetTalent(typeof(DarkAffinity));
+                handFinesse = attackingPlayer.GetTalent(typeof(HandFinesse));
+                holyAvenger = attackingPlayer.GetTalent(typeof(HolyAvenger));
+            }
+
             /*
              * The following damage bonuses multiply damage by a factor.
              * Capped at x3 (300%).
@@ -1758,7 +1813,13 @@ namespace Server.Items
                 {
                     if (pm.EnemyOfOneType != null && pm.EnemyOfOneType != attacker.GetType())
                     {
+                        BaseTalent defenderHolyAvenger = pm.GetTalent(typeof(HolyAvenger));
                         percentageBonus += 100;
+                        if (defenderHolyAvenger != null)
+                        {
+                            // reduce enemy of one damage debuff
+                            percentageBonus -= holyAvenger.Level * 2;
+                        }
                     }
                 }
             }
@@ -1777,6 +1838,11 @@ namespace Server.Items
                         defender.FixedEffect(0x37B9, 10, 5, 1160, 0);
 
                         percentageBonus += 50;
+                        if (holyAvenger != null)
+                        {
+                            // increase enemy of one buff
+                            percentageBonus += holyAvenger.Level;
+                        }
                     }
                 }
             }
@@ -1817,6 +1883,11 @@ namespace Server.Items
             if (attacker.Talisman is BaseTalisman talisman && talisman.Killer != null)
             {
                 percentageBonus += talisman.Killer.DamageBonus(defender);
+            }
+
+            if (holyAvenger != null && holyAvenger.IsMobileType(OppositionGroup.UndeadGroup, defender.GetType()) || holyAvenger.IsMobileType(OppositionGroup.AbyssalGroup, defender.GetType()))
+            {
+                percentageBonus += holyAvenger.Level * 2;
             }
 
             percentageBonus = Math.Min(percentageBonus, 300);
@@ -1998,6 +2069,10 @@ namespace Server.Items
                 if (context?.Type == typeof(VampiricEmbraceSpell))
                 {
                     lifeLeech += 20; // Vampiric embrace gives an additional 20% life leech
+                    if (darkAffinity != null)
+                    {
+                        lifeLeech += darkAffinity.Level / 2;
+                    }
                 }
 
                 if (context?.Type == typeof(WraithFormSpell))
@@ -2007,6 +2082,10 @@ namespace Server.Items
                                   100); // Wraith form gives an additional 5-20% mana leech
 
                     // Mana leeched by the Wraith Form spell is actually stolen, not just leeched.
+                    if (darkAffinity != null)
+                    {
+                        wraithLeech += darkAffinity.Level / 2;
+                    }
                     defender.Mana -= AOS.Scale(damageGiven, wraithLeech);
 
                     manaLeech += wraithLeech;
@@ -2033,7 +2112,10 @@ namespace Server.Items
                 }
             }
 
-            if (m_MaxHits > 0 && (MaxRange <= 1 && (defender is Slime || defender is AcidElemental) ||
+            // check for hand finesse weapon damage save 1% per level
+            bool handFinesseSave = (handFinesse != null && Utility.Random(100) < handFinesse.Level);
+
+            if (m_MaxHits > 0 && (MaxRange <= 1 && !handFinesseSave && (defender is Slime || defender is AcidElemental) ||
                                   Utility.RandomDouble() < .04)) // Stratics says 50% chance, seems more like 4%..
             {
                 if (MaxRange <= 1 && (defender is Slime || defender is AcidElemental))
@@ -2200,16 +2282,16 @@ namespace Server.Items
 
             if (attacker is PlayerMobile)
             {
-                foreach(BaseTalent talent in ((PlayerMobile)attacker).Talents)
+                foreach (BaseTalent talent in ((PlayerMobile)attacker).Talents.Where(w => w.CanApplyHitEffect(this)))
                 {
-                    talent.CheckHitEffect(attacker, defender);
+                    talent.CheckHitEffect(attacker, defender, damageGiven);
                 }
             }
             if (defender is PlayerMobile)
             {
-                foreach (BaseTalent talent in ((PlayerMobile)defender).Talents)
+                foreach (BaseTalent talent in ((PlayerMobile)defender).Talents.Where(w => w.HasDefenseEffect))
                 {
-                    talent.CheckDefenseEffect(defender, attacker, damage);
+                    talent.CheckDefenseEffect(defender, attacker, damageGiven);
                 }
             }
         }
@@ -2241,6 +2323,14 @@ namespace Server.Items
                 if (context?.Spell is ReaperFormSpell spell)
                 {
                     damageBonus += spell.SpellDamageBonus;
+                    if (attacker is PlayerMobile attackingPlayer)
+                    {
+                        BaseTalent natureAffinity = attackingPlayer.GetTalent(typeof(NatureAffinity));
+                        if (natureAffinity != null)
+                        {
+                            damageBonus += natureAffinity.ModifySpellMultiplier();
+                        }
+                    }
                 }
             }
 
@@ -2405,6 +2495,19 @@ namespace Server.Items
             {
                 target.ReceivedHonorContext?.OnTargetMissed(attacker);
             }
+            if (attacker is PlayerMobile attackingPlayer)
+            {
+                foreach (BaseTalent talent in attackingPlayer.Talents.Where(w => w.CanApplyHitEffect(this)))
+                {
+                    talent.CheckMissEffect(attacker, defender);
+                }
+            }
+            if (defender is PlayerMobile defendingPlayer) {
+                foreach (BaseTalent talent in defendingPlayer.Talents.Where(w => w.CanApplyHitEffect(this)))
+                {
+                    talent.CheckDefenderMissEffect(attacker, defender);
+                }
+            }
         }
 
         public virtual void GetBaseDamageRange(Mobile attacker, out int min, out int max)
@@ -2556,7 +2659,6 @@ namespace Server.Items
                     attacker.CheckSkill(SkillName.Lumberjacking, 0.0, 100.0); // Passively check Lumberjacking for gain
                 }
             }
-
             /*
              * These are the bonuses given by the physical characteristics of the mobile.
              * No caps apply.
@@ -2565,6 +2667,22 @@ namespace Server.Items
             var anatomyBonus = GetBonus(attacker.Skills.Anatomy.Value, 0.500, 100.0, 5.00);
             var tacticsBonus = GetBonus(attacker.Skills.Tactics.Value, 0.625, 100.0, 6.25);
             var lumberBonus = GetBonus(attacker.Skills.Lumberjacking.Value, 0.200, 100.0, 10.00);
+
+            int darkAffinityBonus = 0;
+            if (attacker is PlayerMobile player)
+            {
+                BaseTalent darkAffinity = player.GetTalent(typeof(DarkAffinity));
+                BaseTalent mageCombatant = player.GetTalent(typeof(MageCombatant));
+                if (darkAffinity != null)
+                {
+                    darkAffinityBonus += darkAffinity.Level;
+                }
+                if (mageCombatant != null)
+                {
+                    // switch tactics bonus to use Evaluating Intelligence instead
+                    tacticsBonus = GetBonus(attacker.Skills.EvalInt.Value, 0.625, 100.0, 6.25);
+                }
+            }
 
             if (Type != WeaponType.Axe)
             {
@@ -2580,7 +2698,7 @@ namespace Server.Items
             // Horrific Beast transformation gives a +25% bonus to damage.
             if (TransformationSpellHelper.UnderTransformation(attacker, typeof(HorrificBeastSpell)))
             {
-                damageBonus += 25;
+                damageBonus += 25 + darkAffinityBonus;
             }
 
             // Divine Fury gives a +10% bonus to damage.

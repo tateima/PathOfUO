@@ -75,6 +75,8 @@ namespace Server.Spells.Spellweaving
                     damage /= 100;
                 }
 
+                DarkAffinityPower(ref damage);
+
                 SpellHelper.Damage(this, m, damage, 0, 0, 0, 0, 0, 100);
             }
 

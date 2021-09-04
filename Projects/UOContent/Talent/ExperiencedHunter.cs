@@ -1,9 +1,5 @@
 using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server.Talent
 {
@@ -16,9 +12,9 @@ namespace Server.Talent
             ImageID = 39867;
         }
 
-        public void CheckHitEffect(Mobile attacker, Mobile target)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
-            if (IsMobileType(target, OppositionGroup.AnimalGroup, target.GetType()))
+            if (IsMobileType(OppositionGroup.AnimalGroup, target.GetType()))
             {
                 target.Damage(Level, attacker);
             }

@@ -17,7 +17,7 @@ namespace Server.Spells.Ninjitsu
         {
             var ninjitsu = attacker.Skills.Ninjitsu.Value;
 
-            return 1.0 + ninjitsu / 360 + Tracking.GetStalkingBonus(attacker, defender) / 100;
+            return 1.0 + NatureAffinityPower(attacker) + ninjitsu / 360 + Tracking.GetStalkingBonus(attacker, defender) / 100;
         }
 
         public override bool Validate(Mobile from)

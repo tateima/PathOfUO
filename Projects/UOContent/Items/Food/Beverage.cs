@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Server.Engines.Plants;
 using Server.Engines.Quests;
 using Server.Engines.Quests.Hag;
 using Server.Engines.Quests.Matriarch;
 using Server.Mobiles;
+using Server.Talent;
 using Server.Multis;
 using Server.Network;
+using Server.Gumps;
 using Server.Targeting;
 
 namespace Server.Items
@@ -928,7 +931,12 @@ namespace Server.Items
             }
             else if (from == targ)
             {
-                if (from.Thirst < 20)
+                BaseTalent optimisedConsumption = null;
+                if (from is PlayerMobile player)
+                {
+                    optimisedConsumption = player.GetTalent(typeof(OptimisedConsumption));
+                }
+                    if (from.Thirst < 20)
                 {
                     from.Thirst += 1;
                 }
@@ -945,8 +953,11 @@ namespace Server.Items
                     };
 
                     from.BAC = Math.Min(from.BAC + bac, 60);
-
                     CheckHeaveTimer(from);
+                    if (optimisedConsumption != null)
+                    {
+                        optimisedConsumption.UpdateMobile(from);
+                    }
                 }
 
                 from.PlaySound(Utility.RandomList(0x30, 0x2D6));
@@ -954,6 +965,17 @@ namespace Server.Items
                 if (Poison != null)
                 {
                     from.ApplyPoison(Poisoner, Poison);
+                }
+                else 
+                {
+                    // if they have optimised consumption return some mana
+                    if (optimisedConsumption != null)
+                    {
+                        if (!ContainsAlchohol && from.Mana < from.ManaMax)
+                        {
+                            from.Mana += optimisedConsumption.Level;
+                        }                        
+                    }
                 }
 
                 --Quantity;
@@ -1173,7 +1195,6 @@ namespace Server.Items
             else if (m_Table.Remove(from, out var t))
             {
                 t.Stop();
-
                 from.SendLocalizedMessage(500850); // You feel sober.
             }
         }

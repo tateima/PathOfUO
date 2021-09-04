@@ -5,6 +5,7 @@ using Server.Network;
 using Server.Spells;
 using Server.Spells.Necromancy;
 using Server.Spells.Ninjitsu;
+using Server.Talent;
 
 namespace Server
 {
@@ -154,6 +155,15 @@ namespace Server
                 if (m_Mobile is IHonorTarget honorTarget)
                 {
                     honorTarget.ReceivedHonorContext?.OnTargetPoisoned();
+                }
+
+                if (m_Mobile is PlayerMobile player)
+                {
+                    BaseTalent painManagement = player.GetTalent(typeof(PainManagement));
+                    if (painManagement != null)
+                    {
+                        damage = AOS.Scale(damage, 100 - painManagement.ModifySpellMultiplier());
+                    }
                 }
 
                 AOS.Damage(m_Mobile, From, damage, 0, 0, 0, 100, 0);

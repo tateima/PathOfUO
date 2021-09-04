@@ -6,6 +6,8 @@ using Server.Network;
 using Server.Spells.Bushido;
 using Server.Spells.Necromancy;
 using Server.Spells.Ninjitsu;
+using Server.Mobiles;
+using Server.Talent;
 
 namespace Server.Spells
 {
@@ -30,7 +32,20 @@ namespace Server.Spells
 
         public virtual int GetAccuracyBonus(Mobile attacker) => 0;
 
-        public virtual double GetDamageScalar(Mobile attacker, Mobile defender) => 1.0;
+        public virtual double NatureAffinityPower(Mobile attacker)
+        {
+            if (attacker is PlayerMobile player)
+            {
+                BaseTalent natureAffinity = player.GetTalent(typeof(NatureAffinity));
+                if (natureAffinity != null)
+                {
+                    return natureAffinity.ModifySpellScalar();
+                }
+            }
+            return 0.0;
+        }
+
+        public virtual double GetDamageScalar(Mobile attacker, Mobile defender) => 1.0 + NatureAffinityPower(attacker);
 
         // Called before swinging, to make sure the accuracy scalar is to be computed.
         public virtual bool OnBeforeSwing(Mobile attacker, Mobile defender) => true;

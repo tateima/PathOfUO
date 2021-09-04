@@ -15,7 +15,7 @@ namespace Server.Spells.Bushido
 
         public override double GetDamageScalar(Mobile attacker, Mobile defender) =>
             // TODO: 20 -> Perfection
-            1.0 + attacker.Skills.Bushido.Value * 20 / 10000;
+            1.0 + NatureAffinityPower(attacker) + attacker.Skills.Bushido.Value * 20 / 10000;
 
         public override void OnHit(Mobile attacker, Mobile defender, int damage)
         {

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Server.Items;
+using Server.Talent;
+using Server.Mobiles;
 
 namespace Server.Spells.Necromancy
 {
@@ -49,12 +51,11 @@ namespace Server.Spells.Necromancy
                 new SoundEffectTimer(Caster).Start();
 
                 var duration = TimeSpan.FromSeconds(Caster.Skills.SpiritSpeak.Value / 3.4 + 1.0);
-
-                if (!HasReagents())
+                duration *= ReagentsScale();
+                if (CheckDarkAffinity())
                 {
-                    duration *= 0.5;
+                    duration.Add(TimeSpan.FromSeconds(DarkAffinityDuration()));
                 }
-
                 m_Table.TryGetValue(weapon, out var timer);
                 timer?.Stop();
 

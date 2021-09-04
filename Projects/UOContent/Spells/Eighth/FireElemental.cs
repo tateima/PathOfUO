@@ -1,5 +1,6 @@
 using System;
 using Server.Mobiles;
+using Server.Talent;
 
 namespace Server.Spells.Eighth
 {
@@ -43,19 +44,32 @@ namespace Server.Spells.Eighth
         {
             if (CheckSequence())
             {
-                var duration = TimeSpan.FromSeconds(2 * Caster.Skills.Magery.Fixed / 5);
+                var duration = TimeSpan.FromSeconds(2 * Caster.Skills.Magery.Fixed / 5);              
 
                 if (Core.AOS)
                 {
-                    SpellHelper.Summon(new SummonedFireElemental(), Caster, 0x217, duration, false, false);
+                    SpellHelper.Summon((BaseCreature)CheckFireAffinity(new SummonedFireElemental()), Caster, 0x217, duration, false, false);
                 }
                 else
                 {
-                    SpellHelper.Summon(new FireElemental(), Caster, 0x217, duration, false, false);
+                    SpellHelper.Summon((BaseCreature)CheckFireAffinity(new FireElemental()), Caster, 0x217, duration, false, false);
                 }
             }
 
             FinishSequence();
+        }
+
+        public Mobile CheckFireAffinity(Mobile summon)
+        {
+            if (Caster is PlayerMobile player)
+            {
+                BaseTalent fireAffinity = player.GetTalent(typeof(FireAffinity));
+                if (fireAffinity != null)
+                {
+                    return fireAffinity.ScaleMobileStats(summon);
+                }
+            }
+            return summon;
         }
     }
 }

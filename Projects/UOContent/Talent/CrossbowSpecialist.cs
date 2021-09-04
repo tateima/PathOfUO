@@ -1,9 +1,5 @@
-using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Server.Items;
 
 namespace Server.Talent
 {
@@ -12,10 +8,16 @@ namespace Server.Talent
         public CrossbowSpecialist() : base()
         {
             TalentDependency = typeof(ArcherFocus);
+            RequiredWeapon = new Type[] { typeof(Crossbow), typeof(HeavyCrossbow), typeof(RepeatingCrossbow) };
+            RequiredWeaponSkill = SkillName.Archery;
+            IncreaseHitChance = true;
             DisplayName = "Crossbow specialist";
             Description = "Increases damage and hit chance of crossbow weapons.";
             ImageID = 39899;
         }
-
+        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        {
+            target.Damage(Level, attacker);
+        }
     }
 }

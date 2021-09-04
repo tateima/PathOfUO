@@ -65,11 +65,7 @@ namespace Server.Spells.Necromancy
                 }
 
                 var duration = TimeSpan.FromSeconds(Caster.Skills.SpiritSpeak.Value / 12 + 1.0);
-
-                if (!HasReagents())
-                {
-                    duration *= 0.5;
-                }
+                duration *= ReagentsScale();
 
                 Timer.StartTimer(duration, () => TryEndEffect(m));
 

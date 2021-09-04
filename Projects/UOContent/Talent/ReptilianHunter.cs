@@ -1,9 +1,5 @@
 using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server.Talent
 {
@@ -18,17 +14,17 @@ namespace Server.Talent
             ImageID = 49994;
         }
 
-        public void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
+        public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
         {
-            if (IsMobileType(target, OppositionGroup.ReptilianGroup, target.GetType()))
+            if (IsMobileType(OppositionGroup.ReptilianGroup, target.GetType()))
             {
-                defender.Heal((damage / 100) * Level);
+                defender.Heal(AOS.Scale(damage, Level));
             }
         }
 
-        public void CheckHitEffect(Mobile attacker, Mobile target)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
-            if (IsMobileType(target, OppositionGroup.ReptilianGroup, target.GetType()))
+            if (IsMobileType(OppositionGroup.ReptilianGroup, target.GetType()))
             {
                 target.Damage(Level, attacker);
             }

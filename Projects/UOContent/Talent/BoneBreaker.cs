@@ -1,9 +1,5 @@
 using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server.Talent
 {
@@ -13,9 +9,20 @@ namespace Server.Talent
         {
             TalentDependency = typeof(IronSkin);
             DisplayName = "Bone breaker";
-            Description = "Next hit paralyzes target for 20 seconds. 5 minute cooldown";
+            CanBeUsed = true;
+            Description = "Next hit paralyzes target for 1s per level. Level also reduces cooldown by 5s. 5m cooldown";
             ImageID = 30228;
         }
-
+        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        {
+            if (Activated)
+            {
+                Activated = false;
+                OnCooldown = true;
+                attacker.SendSound(0x125);
+                target.Paralyze(TimeSpan.FromSeconds(Level));
+                Timer.StartTimer(TimeSpan.FromSeconds(300-(Level*5)), ExpireTalentCooldown, out _talentTimerToken);
+            }
+        }
     }
 }

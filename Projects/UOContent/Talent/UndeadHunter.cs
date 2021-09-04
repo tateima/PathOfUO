@@ -18,17 +18,17 @@ namespace Server.Talent
             ImageID = 30147;
         }
 
-        public void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
+        public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
         {
-            if (IsMobileType(target, OppositionGroup.UndeadGroup, target.GetType()))
+            if (IsMobileType(OppositionGroup.UndeadGroup, target.GetType()))
             {
-                defender.Heal((damage / 100) * Level);
+                defender.Heal(AOS.Scale(damage, Level));
             }
         }
 
-        public void CheckHitEffect(Mobile attacker, Mobile target)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
-            if (IsMobileType(target, OppositionGroup.UndeadGroup, target.GetType()))
+            if (IsMobileType(OppositionGroup.UndeadGroup, target.GetType()))
             {
                 target.Damage(Level, attacker);
             }

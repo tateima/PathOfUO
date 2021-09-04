@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Server.Engines.ConPVP;
 using Server.Items;
 using Server.Misc;
@@ -14,6 +15,8 @@ using Server.Spells.Seventh;
 using Server.Spells.Sixth;
 using Server.Spells.Spellweaving;
 using Server.Targeting;
+using Server.Talent;
+
 
 namespace Server.Spells
 {
@@ -177,6 +180,13 @@ namespace Server.Spells
         public void HarmfulSpell(Mobile m)
         {
             (m as BaseCreature)?.OnHarmfulSpell(Caster);
+            if (Caster is PlayerMobile player)
+            {
+                foreach (BaseTalent talent in player.Talents.Where(w => w.CanScaleSpellDamage(this)))
+                {
+                    talent.CheckSpellEffect(Caster, m);
+                }
+            }
         }
 
         public virtual int GetNewAosDamage(int bonus, uint dice, uint sides, Mobile singleTarget)
@@ -202,9 +212,17 @@ namespace Server.Spells
         {
             var damage = Utility.Dice(dice, sides, bonus);
             var multiplier = 100;
-            if (!ConsumeReagents())
+            if (!HasReagents())
             {
-                multiplier = 50; // no reagents means 50% less damage
+                multiplier = (int)ReagentsScale()*100;
+            }
+            if (Caster is PlayerMobile)
+            {
+                PlayerMobile player = (PlayerMobile)Caster;
+                foreach (BaseTalent talent in player.Talents.Where(w => w.CanScaleSpellDamage(this)))
+                {
+                    multiplier += talent.ModifySpellMultiplier();
+                }
             }
             damage *= multiplier;
             var inscribeSkill = GetInscribeFixed(Caster);
@@ -250,18 +268,32 @@ namespace Server.Spells
         public virtual bool HasReagents()
         {
             bool hasReagents = true;
-            if (Caster is PlayerMobile)
+            if (Caster is PlayerMobile player)
             {
                 foreach (Type type in Info.Reagents)
                 {
                     hasReagents = (Caster.Backpack.FindItemsByType(type, true) != null);
                     if (!hasReagents)
                     {
+                        hasReagents = false;
                         break;
                     }
                 }
             }
             return hasReagents;
+        }
+        public virtual double ReagentsScale()
+        {
+            if (Caster is PlayerMobile player)
+            {
+                // 90% with max spellmind and no reagents, 125% with max spellmind and reagents
+                BaseTalent spellMind = player.GetTalent(typeof(SpellMind));
+                if (spellMind != null)
+                {
+                   return (HasReagents()) ? 1.0 + (spellMind.Level / 20) : 0.4 + (spellMind.Level / 10);
+                }
+            }
+            return 1.0;
         }
 
         public virtual double GetInscribeSkill(Mobile m) => m.Skills.Inscribe.Value;
@@ -280,9 +312,18 @@ namespace Server.Spells
 
             if (!Core.AOS) // EvalInt stuff for AoS is handled elsewhere
             {
-                if (!ConsumeReagents())
+                if (!HasReagents())
                 {
-                    scalar -= 0.5; // 50% less damage if it didnt use reagents
+                    scalar = ReagentsScale();
+                }
+                if (Caster is PlayerMobile)
+                {
+                    PlayerMobile player = (PlayerMobile)Caster;
+                    foreach (BaseTalent talent in player.Talents.Where(w => w.CanScaleSpellDamage(this)))
+                    {
+                        // add 1% for each talent point
+                        scalar += talent.ModifySpellScalar();
+                    }
                 }
                 var casterEI = Caster.Skills[DamageSkill].Value;
                 var targetRS = target.Skills.MagicResist.Value;
@@ -561,7 +602,17 @@ namespace Server.Spells
                         }
                     }
 
-                    if (ClearHandsOnCast)
+                    bool skipHandClear = false;
+                    if (Caster is PlayerMobile player)
+                    {
+                        BaseTalent mageCombatant = player.GetTalent(typeof(MageCombatant));
+                        if (mageCombatant != null)
+                        {
+                            skipHandClear = true;
+                        }
+                    }
+
+                    if (ClearHandsOnCast && !skipHandClear)
                     {
                         Caster.ClearHands();
                     }

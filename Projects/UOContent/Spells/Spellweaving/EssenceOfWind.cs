@@ -26,10 +26,16 @@ namespace Server.Spells.Spellweaving
 
                 var range = 5 + FocusLevel;
                 var damage = 25 + FocusLevel;
+                NatureAffinityPower(ref damage);
 
                 var skill = Caster.Skills.Spellweaving.Value;
+                int baseDuration = (int)(skill / 24) + FocusLevel;
+                if (CheckNatureAffinity())
+                {
+                    baseDuration += NatureAffinity.Level * 2;
+                }
 
-                var duration = TimeSpan.FromSeconds((int)(skill / 24) + FocusLevel);
+                var duration = TimeSpan.FromSeconds(baseDuration);
 
                 var fcMalus = FocusLevel + 1;
                 var ssiMalus = 2 * (FocusLevel + 1);

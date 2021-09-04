@@ -1,9 +1,6 @@
 using Server.Mobiles;
+using Server.Items;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server.Talent
 {
@@ -11,11 +8,17 @@ namespace Server.Talent
     {
         public TwoHandedMaceSpecialist() : base()
         {
-            BlockedBy = new Type[] { typeof(MaceSpecialist), typeof(MageCombatant) };
+            BlockedBy = new Type[] { typeof(MaceSpecialist) };
             TalentDependency = typeof(MacefightingFocus);
+            RequiredWeapon = new Type[] { typeof(WarHammer) };
             DisplayName = "Two handed macing specialist";
             Description = "Increases damage to two handed macefighting weapons.";
             ImageID = 39885;
+        }
+
+        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        {
+            target.Damage(Level * 2, attacker);
         }
 
     }

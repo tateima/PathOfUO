@@ -4,6 +4,7 @@ using Server.Items;
 using Server.Misc;
 using Server.Mobiles;
 using Server.Targeting;
+using Server.Talent;
 
 namespace Server.Spells.Fourth
 {
@@ -99,6 +100,14 @@ namespace Server.Spells.Fourth
 
                 m_Caster = caster;
 
+                if (caster is PlayerMobile player)
+                {
+                    BaseTalent fireAffinity = player.GetTalent(typeof(FireAffinity));
+                    if (fireAffinity != null)
+                    {
+                        damage += fireAffinity.ModifySpellMultiplier();
+                    }
+                }
                 m_Damage = damage;
 
                 m_End = Core.Now + duration;

@@ -1,12 +1,31 @@
-﻿using System;
+using System;
+using Server.Talent;
+using Server.Mobiles;
 
 namespace Server.Spells.Mysticism
 {
     public abstract class MysticSpell : Spell
     {
+        private BaseTalent m_DarkAffinity;
+        public BaseTalent DarkAffinity
+        {
+            get { return m_DarkAffinity; }
+            set { m_DarkAffinity = value; }
+        }
+        private BaseTalent m_NatureAffinity;
+        public BaseTalent NatureAffinity
+        {
+            get { return m_NatureAffinity; }
+            set { m_NatureAffinity = value; }
+        }
         public MysticSpell(Mobile caster, Item scroll, SpellInfo info)
             : base(caster, scroll, info)
         {
+            if (Caster is PlayerMobile player)
+            {
+                DarkAffinity = player.GetTalent(typeof(DarkAffinity));
+                NatureAffinity = player.GetTalent(typeof(NatureAffinity));
+            }
         }
 
         public abstract double RequiredSkill { get; }
@@ -75,6 +94,31 @@ namespace Server.Spells.Mysticism
         public virtual void SendCastEffect()
         {
             Caster.FixedEffect(0x37C4, 10, (int)(GetCastDelay().TotalSeconds * 28), 0x66C, 3);
+        }
+
+        public bool CheckDarkAffinity()
+        {
+            return m_DarkAffinity != null;
+        }
+
+        public void DarkAffinityPower(ref int value)
+        {
+            if (CheckDarkAffinity())
+            {
+                value += DarkAffinity.Level * 2;
+            }
+        }
+
+        public bool CheckNatureAffinity()
+        {
+            return m_NatureAffinity != null;
+        }
+        public void NatureAffinityPower(ref int value)
+        {
+            if (CheckNatureAffinity())
+            {
+                value += NatureAffinity.Level;
+            }
         }
 
         public static double GetBaseSkill(Mobile m) => m.Skills.Mysticism.Value;

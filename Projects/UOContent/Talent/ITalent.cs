@@ -11,8 +11,8 @@ namespace Server.Talent
     {
         public Type[] BlockedBy { get; set; }
         public Type TalentDependency { get; set; }
-        public void CheckHitEffect(Mobile m, Mobile t);
-        public void CheckSpellEffect(Spell spell);
+        public void CheckHitEffect(Mobile m, Mobile t, int d);
+        public int ModifySpellMultiplier();
         public void UpdateMobile(Mobile m);
         public bool HasSkillRequirement(Mobile m);
         public int ImageID { get; set; }

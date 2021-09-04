@@ -2,6 +2,7 @@ using System;
 using Server.Items;
 using Server.Mobiles;
 using Server.Targeting;
+using Server.Talent;
 
 namespace Server.SkillHandlers
 {
@@ -144,6 +145,17 @@ namespace Server.SkillHandlers
                             }
                             else
                             {
+                                BaseTalent resonance = null;
+                                BaseTalent sonicAffinity = null;
+                                if (from is PlayerMobile player)
+                                {
+                                    resonance = player.GetTalent(typeof(Resonance));
+                                    sonicAffinity = player.GetTalent(typeof(SonicAffinity));
+                                    if (sonicAffinity != null)
+                                    {
+                                        diff -= sonicAffinity.ModifySpellScalar();
+                                    }
+                                }
                                 // from.DoHarmful( m_Creature );
                                 // from.DoHarmful( creature );
 
@@ -156,6 +168,10 @@ namespace Server.SkillHandlers
                                 }
                                 else
                                 {
+                                    if (resonance != null)
+                                    {
+                                        resonance.CheckHitEffect(from, creature, 0);
+                                    }
                                     from.SendLocalizedMessage(501602); // Your music succeeds, as you start a fight.
                                     m_Instrument.PlayInstrumentWell(from);
                                     m_Instrument.ConsumeUse(from);

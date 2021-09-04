@@ -1,9 +1,5 @@
 using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server.Talent
 {
@@ -12,9 +8,21 @@ namespace Server.Talent
         public EscapeDeath() : base()
         {
             TalentDependency = typeof(KeenSenses);
+            HasBeforeDeathSave = true;
             DisplayName = "Escape death";
             Description = "Avoid a deathly blow. 5 minute cooldown.";
             ImageID = 39877;
+        }
+
+        public override void CheckBeforeDeathEffect(Mobile target)
+        {
+            if (!OnCooldown)
+            {
+                OnCooldown = true;
+                target.Hits = Level * 5;
+                target.FixedEffect(0x37B9, 10, 16);
+                Timer.StartTimer(TimeSpan.FromSeconds(300), ExpireTalentCooldown, out _talentTimerToken);
+            };
         }
 
     }

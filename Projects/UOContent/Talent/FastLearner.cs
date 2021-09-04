@@ -1,9 +1,5 @@
-using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Server.Mobiles;
 
 namespace Server.Talent
 {
@@ -13,7 +9,7 @@ namespace Server.Talent
         {
             TalentDependency = typeof(DivineIntellect);
             DisplayName = "Fast learner";
-            Description = "Increases your experience gain from sources.";
+            Description = "Increases your experience gain from sources by 2% per level.";
             ImageID = 30223;
         }
 

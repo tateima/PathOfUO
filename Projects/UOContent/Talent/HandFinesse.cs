@@ -1,9 +1,5 @@
 using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server.Talent
 {
@@ -13,9 +9,8 @@ namespace Server.Talent
         {
             TalentDependency = typeof(EscapeDeath);
             DisplayName = "Hand finesse";
-            Description = "Decrease time between attacks and reduce damage to items.";
+            Description = "Decrease time between attacks and reduce damage to weapons on hit.";
             ImageID = 30203;
         }
-
     }
 }

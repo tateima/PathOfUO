@@ -1,21 +1,18 @@
 using Server.Mobiles;
+using Server.Items;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Server.Talent
 {
     public class MageCombatant : BaseTalent, ITalent
     {
         public MageCombatant() : base()
         {
-            BlockedBy = new Type[] { typeof(MaceSpecialist), typeof(TwoHandedMaceSpecialist) };
-            TalentDependency = typeof(MacefightingFocus);
+            BlockedBy = new Type[] { typeof(ManaShield) };
+            TalentDependency = typeof(FastLearner);
             DisplayName = "Mage combatant";
-            Description = "Increases damage to spells when maces equipped.";
+            Description = "Uses Evaluating Intelligence instead of Tactics for combat damage. Allows casting while holding weapons.";
             ImageID = 39886;
+            MaxLevel = 1;
         }
 
     }

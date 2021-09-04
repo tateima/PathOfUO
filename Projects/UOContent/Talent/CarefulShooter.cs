@@ -1,9 +1,5 @@
-using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Server.Items;
 
 namespace Server.Talent
 {
@@ -12,10 +8,11 @@ namespace Server.Talent
         public CarefulShooter() : base()
         {
             TalentDependency = typeof(ArcherFocus);
+            RequiredWeaponSkill = SkillName.Archery;
+            RequiredWeapon = new Type[] { typeof(BaseRanged) };
             DisplayName = "Careful shooter";
             Description = "Lowers chance for arrow to be lost on miss.";
             ImageID = 30118;
         }
-
     }
 }

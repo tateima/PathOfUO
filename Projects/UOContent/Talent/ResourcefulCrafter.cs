@@ -1,9 +1,5 @@
 using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server.Talent
 {
@@ -11,7 +7,7 @@ namespace Server.Talent
     {
         public ResourcefulCrafter() : base()
         {
-            TalentDependency = typeof(CraftFocus);
+            TalentDependency = typeof(WarCraftFocus);
             DisplayName = "Resourceful";
             Description = "Reduce material costs for crafting.";
             ImageID = 30208;

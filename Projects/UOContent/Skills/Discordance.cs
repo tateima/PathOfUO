@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Server.Items;
 using Server.Mobiles;
 using Server.Targeting;
+using Server.Talent;
 
 namespace Server.SkillHandlers
 {
@@ -199,6 +200,18 @@ namespace Server.SkillHandlers
                             diff -= (music - 100.0) * 0.5;
                         }
 
+                        BaseTalent resonance = null;
+                        BaseTalent sonicAffinity = null;
+                        if (from is PlayerMobile player)
+                        {
+                            resonance = player.GetTalent(typeof(Resonance));
+                            sonicAffinity = player.GetTalent(typeof(SonicAffinity));
+                            if (sonicAffinity != null)
+                            {
+                                diff -= sonicAffinity.ModifySpellScalar();
+                            }
+                        }
+
                         if (!BaseInstrument.CheckMusicianship(from))
                         {
                             from.SendLocalizedMessage(500612); // You play poorly, and there is no effect.
@@ -231,6 +244,11 @@ namespace Server.SkillHandlers
                                 if (Core.SE && BaseInstrument.GetBaseDifficulty(targ, true) >= 160.0)
                                 {
                                     effect /= 2;
+                                }
+
+                                if (resonance != null)
+                                {
+                                    effect += resonance.ModifySpellMultiplier();
                                 }
 
                                 scalar = effect * 0.01;
@@ -297,6 +315,11 @@ namespace Server.SkillHandlers
                             );
 
                             m_Table[targ] = info;
+
+                            if (resonance != null)
+                            {
+                                resonance.CheckHitEffect(from, targ, 0);
+                            }
                         }
                         else
                         {

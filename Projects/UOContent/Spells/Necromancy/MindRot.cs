@@ -57,13 +57,17 @@ namespace Server.Spells.Necromancy
                         ((GetDamageSkill(Caster) - GetResistSkill(m)) / 5.0 + 20.0) * (m.Player ? 1.0 : 2.0)
                     );
                 m.CheckSkill(SkillName.MagicResist, 0.0, 120.0); // Skill check for gain
+                duration *= ReagentsScale();
 
-                if (!HasReagents())
-                {
-                    duration *= 0.5;
-                }
+                double playerScalar = 1.25;
+                double mobileScalar = 2.00;
 
-                SetMindRotScalar(Caster, m, m.Player ? 1.25 : 2.00, duration);
+                DarkAffinityScalar(ref playerScalar);
+                DarkAffinityScalar(ref mobileScalar);
+                SpellMindScalar(ref playerScalar);
+                SpellMindScalar(ref mobileScalar);
+
+                SetMindRotScalar(Caster, m, m.Player ? playerScalar : mobileScalar, duration);
 
                 HarmfulSpell(m);
             }

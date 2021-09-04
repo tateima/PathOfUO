@@ -3,6 +3,7 @@ using Server.Items;
 using Server.Mobiles;
 using Server.Network;
 using Server.Targeting;
+using Server.Talent;
 
 namespace Server.Spells.Fourth
 {
@@ -60,9 +61,15 @@ namespace Server.Spells.Fourth
 
                 var toHeal = (int)(Caster.Skills.Magery.Value * 0.4);
                 toHeal += Utility.Random(1, 10);
-                if (!HasReagents())
+                toHeal = (int)(toHeal * ReagentsScale());
+
+                if (Caster is PlayerMobile player)
                 {
-                    toHeal = (int)(toHeal * 0.5);
+                    BaseTalent lightAffinity = player.GetTalent(typeof(LightAffinity));
+                    if (lightAffinity != null)
+                    {
+                        toHeal += AOS.Scale(toHeal, lightAffinity.ModifySpellMultiplier());
+                    }
                 }
                 // m.Heal( toHeal, Caster );
                 SpellHelper.Heal(toHeal, m, Caster);

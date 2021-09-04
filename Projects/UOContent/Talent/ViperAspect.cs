@@ -1,42 +1,66 @@
 using Server.Mobiles;
 using Server.Spells;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server.Talent
 {
     public class ViperAspect : BaseTalent, ITalent
     {
-        public void UpdateMobile(Mobile m)
+        private Mobile m_Mobile;
+        public ViperAspect() : base()
         {
-            if (Core.AOS)
+            ResMod = new ResistanceMod(ResistanceType.Poison, Level * 5);
+            BlockedBy = new Type[] { typeof(DragonAspect) };
+            DisplayName = "Viper aspect";
+            CanBeUsed = true;
+            Description = "Increased poison resistance and adds a chance to poison your target on weapon or spell hit.";
+            ImageID = 30149;
+        }
+
+        public override void OnUse(Mobile mobile)
+        {
+            if (!OnCooldown)
             {
-                if (ReistanceMod != null)
+                m_Mobile = mobile;
+                OnCooldown = true;
+                if (Core.AOS)
                 {
-                    m.RemoveResistanceMod(ReistanceMod);
+                    m_Mobile.AddResistanceMod(ResMod);
+                    m_Mobile.FixedParticles(0x374A, 10, 15, 5021, EffectLayer.Waist);
+                    m_Mobile.PlaySound(0x205);
+
                 }
-                ReistanceMod = new ResistanceMod(ResistanceType.Poison, Level * 5);
-                m.AddResistanceMod(ReistanceMod);
+                Timer.StartTimer(TimeSpan.FromSeconds(60), ExpireTalentCooldown, out _talentTimerToken);
+            }
+        }
+        public override void ExpireTalentCooldown()
+        {
+            base.ExpireTalentCooldown();
+            if (m_Mobile != null)
+            {
+                if (Core.AOS)
+                {
+                    m_Mobile.RemoveResistanceMod(ResMod);
+                }
             }
         }
 
-        public void CheckHitEffect(Mobile attacker, Mobile target)
+        public void CheckViperEffect(Mobile attacker, Mobile target)
         {
-            if (Utility.Random(100) < Level/2)
+            if (Utility.Random(100) < Level)
             {
                 target.ApplyPoison(attacker, Poison.GetPoison(Level));
             }
         }
 
-        public ViperAspect() : base()
+        public override void CheckSpellEffect(Mobile attacker, Mobile target)
         {
-            BlockedBy = new Type[] { typeof(DragonAspect) };
-            DisplayName = "Viper aspect";
-            Description = "Increased poison resistance and adds a small chance to poison your target on hit.";
-            ImageID = 30149;
+            CheckViperEffect(attacker, target);
+        }
+
+        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        {
+            CheckViperEffect(attacker, target);
         }
 
     }

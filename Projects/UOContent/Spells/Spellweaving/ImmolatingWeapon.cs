@@ -52,6 +52,11 @@ namespace Server.Spells.Spellweaving
 
                     var duration = 10 + (int)(skill / 24) + FocusLevel;
                     var damage = 5 + (int)(skill / 24) + FocusLevel;
+                    FireAffinityPower(ref damage);
+                    if (CheckFireAffinity())
+                    {
+                        duration += FireAffinity.Level * 2;
+                    } 
 
                     var t = new ImmolatingWeaponTimer(TimeSpan.FromSeconds(duration), damage, Caster, weapon);
                     m_Table[weapon] = t;

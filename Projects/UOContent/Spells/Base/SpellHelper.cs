@@ -15,6 +15,7 @@ using Server.Spells.Necromancy;
 using Server.Spells.Ninjitsu;
 using Server.Spells.Seventh;
 using Server.Targeting;
+using Server.Talent;
 
 namespace Server
 {
@@ -1046,6 +1047,15 @@ namespace Server.Spells
         {
             var dmg = (int)damage;
 
+            if (spell.Caster is PlayerMobile player)
+            {
+                BaseTalent spellMind = player.GetTalent(typeof(SpellMind));
+                if (spellMind != null)
+                {
+                    dmg += spellMind.ModifySpellMultiplier();
+                }
+            }
+
             if (delay == TimeSpan.Zero)
             {
                 (from as BaseCreature)?.AlterSpellDamageTo(target, ref dmg);
@@ -1084,6 +1094,15 @@ namespace Server.Spells
                 return;
             }
 
+            if (from is PlayerMobile player)
+            {
+                BaseTalent spellMind = player.GetTalent(typeof(SpellMind));
+                if (spellMind != null)
+                {
+                    damageGiven += spellMind.ModifySpellMultiplier();
+                }
+            }
+
             if (context.Type == typeof(WraithFormSpell))
             {
                 var wraithLeech =
@@ -1105,6 +1124,15 @@ namespace Server.Spells
 
         public static void Heal(int amount, Mobile target, Mobile from, bool message = true)
         {
+
+            if (from is PlayerMobile player)
+            {
+                BaseTalent spellMind = player.GetTalent(typeof(SpellMind));
+                if (spellMind != null)
+                {
+                    amount += spellMind.ModifySpellMultiplier();
+                }
+            }
             // TODO: All Healing *spells* go through ArcaneEmpowerment
             target.Heal(amount, from, message);
         }

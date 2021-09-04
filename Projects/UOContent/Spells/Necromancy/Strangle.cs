@@ -112,10 +112,7 @@ namespace Server.Spells.Necromancy
             }
 
             var t_Duration = TimeSpan.FromSeconds(i_Length);
-            if (!HasReagents())
-            {
-                t_Duration *= 0.5;
-            }
+            t_Duration *= ReagentsScale();
             BuffInfo.AddBuff(m, new BuffInfo(BuffIcon.Strangle, 1075794, 1075795, t_Duration, m, args));
 
             FinishSequence();

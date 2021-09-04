@@ -58,7 +58,7 @@ namespace Server.Gumps
                 Type[] blockedBy = talent.BlockedBy;
                 BaseTalent hasBlocker = null;
                 string blockedByStr = "";
-                if (blockedBy != null)
+                if (blockedBy != null && !talent.IgnoreTalentBlock(from))
                 {
                     foreach(Type blockerType in blockedBy)
                     {
@@ -133,6 +133,7 @@ namespace Server.Gumps
                     talent.Level++;
                     playerTalents.Add(talent);
                     player.TalentPoints--;
+                    talent.UpdateMobile(player);
                 }
                    
                 player.SendGump(new CharacterSheetGump(player, m_LastPage));

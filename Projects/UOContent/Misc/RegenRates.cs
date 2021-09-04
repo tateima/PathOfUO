@@ -4,6 +4,7 @@ using Server.Mobiles;
 using Server.Spells;
 using Server.Spells.Necromancy;
 using Server.Spells.Ninjitsu;
+using Server.Talent;
 
 namespace Server.Misc
 {
@@ -134,6 +135,7 @@ namespace Server.Misc
 
         private static TimeSpan Mobile_ManaRegenRate(Mobile from)
         {
+            BaseTalent darkAffinity = null;
             if (from.Skills == null)
             {
                 return Mobile.DefaultManaRate;
@@ -142,6 +144,11 @@ namespace Server.Misc
             if (!from.Meditating)
             {
                 CheckBonusSkill(from, from.Mana, from.ManaMax, SkillName.Meditation);
+            }
+
+            if (from is PlayerMobile player)
+            {
+                darkAffinity = player.GetTalent(typeof(DarkAffinity));
             }
 
             double rate;
@@ -178,6 +185,11 @@ namespace Server.Misc
                 else if (CheckTransform(from, typeof(LichFormSpell)))
                 {
                     cappedPoints += 13;
+                }
+
+                if (darkAffinity != null)
+                {
+                    cappedPoints += darkAffinity.Level;
                 }
 
                 if (Core.ML && from is PlayerMobile)

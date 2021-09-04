@@ -69,11 +69,10 @@ namespace Server.Spells.Necromancy
                     timer.Delay += TimeSpan.FromSeconds(2.0);
                     buffTime = timer.Next - Core.Now;
                 }
+                damage *= ReagentsScale();
 
-                if (!HasReagents())
-                {
-                    damage *= 0.5;
-                }
+                DarkAffinityDamage(ref damage);
+                SpellMindDamage(ref damage);
 
                 BuffInfo.AddBuff(m, new BuffInfo(BuffIcon.PainSpike, 1075667, buffTime, m, Convert.ToString((int)damage)));
 

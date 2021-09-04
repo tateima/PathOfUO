@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Server.Spells.Mysticism
@@ -79,6 +79,9 @@ namespace Server.Spells.Mysticism
                 }
 
                 double damage = GetNewAosDamage(51, 1, 5, pvp);
+                int naturePower = 0;
+                NatureAffinityPower(ref naturePower);
+                damage += (double)naturePower;
 
                 foreach (var m in targets)
                 {

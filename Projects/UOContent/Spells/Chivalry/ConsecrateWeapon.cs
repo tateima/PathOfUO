@@ -83,6 +83,7 @@ namespace Server.Spells.Chivalry
                 );
 
                 var seconds = Math.Clamp(ComputePowerValue(20), 3.0, 11.0);
+                seconds += LightAffinityDuration();
 
                 var duration = TimeSpan.FromSeconds(seconds);
 

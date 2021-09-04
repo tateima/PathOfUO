@@ -20,6 +20,7 @@ using Server.Spells.Bushido;
 using Server.Spells.Necromancy;
 using Server.Spells.Sixth;
 using Server.Spells.Spellweaving;
+using Server.Talent;
 using Server.Targeting;
 using Server.Utilities;
 
@@ -1361,7 +1362,17 @@ namespace Server.Mobiles
 
             if (EvilOmenSpell.TryEndEffect(this))
             {
-                amount = (int)(amount * 1.25);
+                double modifier = 1.25;
+                if (from is PlayerMobile attacker)
+                {
+                    BaseTalent darkAffinity = attacker.GetTalent(typeof(DarkAffinity));
+                    if (darkAffinity != null)
+                    {
+                        // increase damage by 1% for each point in dark affinity
+                        modifier += darkAffinity.Level / 100;
+                    }
+                }
+                amount = (int)(amount * modifier);
             }
 
             if (from != null && BloodOathSpell.GetBloodOath(from) == this)
@@ -3402,7 +3413,8 @@ namespace Server.Mobiles
                         }
                     }
                     m_ExperienceValue = (int)BaseInstrument.GetBaseDifficulty(this, false);
-                    m_MaxLevel = (int)Fame / 500;
+
+                    m_MaxLevel = Fame / 500;
                     if (m_MaxLevel < 1)
                     {
                         m_MaxLevel = 1;
@@ -3417,6 +3429,11 @@ namespace Server.Mobiles
                             int levelIndex = Array.IndexOf(Enum.GetNames(typeof(Level)), player.Level) + 1;
                             if (levelIndex <= m_MaxLevel)
                             {
+                                BaseTalent fastLearner = player.GetTalent(typeof(FastLearner));
+                                if (fastLearner != null)
+                                {
+                                    m_ExperienceValue += AOS.Scale(m_ExperienceValue, (fastLearner.Level * 2));
+                                }
                                 player.Experience += m_ExperienceValue;
                             }
                         }
@@ -3424,6 +3441,14 @@ namespace Server.Mobiles
                 }
 
                 base.OnDeath(c);
+
+                if (LastKiller is PlayerMobile playerThatKilled)
+                {
+                    foreach (BaseTalent talent in playerThatKilled.Talents.Where(w => w.HasKillEffect))
+                    {
+                        talent.CheckKillEffect(this, LastKiller);
+                    }
+                }
 
                 if (DeleteCorpseOnDeath)
                 {
@@ -3574,6 +3599,15 @@ namespace Server.Mobiles
                     }
 
                     pack.Items[i].Delete();
+                }
+            }
+
+            if (caster is PlayerMobile player)
+            {
+                BaseTalent summonerCommand = player.GetTalent(typeof(SummonerCommand));
+                if (summonerCommand != null)
+                {
+                    creature = (BaseCreature)summonerCommand.ScaleMobile(creature);
                 }
             }
 
@@ -5008,6 +5042,45 @@ namespace Server.Mobiles
             }
 
             GenerateLoot();
+
+            if (LastKiller is PlayerMobile killer)
+            {
+                BaseTalent keenEye = killer.GetTalent(typeof(KeenEye));
+                if (keenEye != null && AI != AIType.AI_Animal && (Utility.Random(100) < keenEye.Level))
+                {
+                    if (Utility.Random(500) <= 1)
+                    {
+                        switch (Utility.Random(1, 3))
+                        {
+                            case 1:
+                                AddLoot(LootPack.Rich);
+                                break;
+                            case 2:
+                                AddLoot(LootPack.FilthyRich);
+                                break;
+                            case 3:
+                                AddLoot(LootPack.UltraRich);
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        switch (Utility.Random(1, 3))
+                        {
+                            case 1:
+                                AddLoot(LootPack.Poor);
+                                break;
+                            case 2:
+                                AddLoot(LootPack.Meager);
+                                break;
+                            case 3:
+                                AddLoot(LootPack.Average);
+                                break;
+                        }
+                    }
+                    
+                }
+            }
 
             if (m_Paragon)
             {

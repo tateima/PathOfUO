@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Server.Targeting;
 
 namespace Server.Spells.Mysticism
@@ -65,6 +65,11 @@ namespace Server.Spells.Mysticism
             }
 
             double damage = GetNewAosDamage(19, 1, 5, to);
+
+            int naturePower = 0;
+            NatureAffinityPower(ref naturePower);
+            damage += (double)naturePower;
+
 
             SpellHelper.Damage(this, to, damage, 0, 0, 0, 0, 100);
 

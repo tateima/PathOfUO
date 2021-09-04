@@ -36,11 +36,17 @@ namespace Server.Spells.Spellweaving
                 var sdiBonus = AosAttributes.GetValue(Caster, AosAttribute.SpellDamage);
 
                 var pvmDamage = damage * (100 + sdiBonus) / 100;
-
+                NatureAffinityPower(ref pvmDamage);
                 var pvpDamage = damage * (100 + Math.Min(sdiBonus, 15)) / 100;
+                NatureAffinityPower(ref pvpDamage);
 
                 var range = 2 + FocusLevel;
-                var duration = TimeSpan.FromSeconds(5 + FocusLevel);
+                int durationBase = 5;
+                if (CheckNatureAffinity())
+                {
+                    durationBase += NatureAffinity.Level * 2;
+                }
+                var duration = TimeSpan.FromSeconds(durationBase + FocusLevel);
 
                 var eable = Caster.GetMobilesInRange(range);
 

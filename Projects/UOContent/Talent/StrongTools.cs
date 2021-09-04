@@ -11,7 +11,7 @@ namespace Server.Talent
     {
         public StrongTools() : base()
         {
-            TalentDependency = typeof(CraftFocus);
+            TalentDependency = typeof(WarCraftFocus);
             DisplayName = "Strong tools";
             Description = "Your tools are less likely to lose durability on use.";
             ImageID = 30099;

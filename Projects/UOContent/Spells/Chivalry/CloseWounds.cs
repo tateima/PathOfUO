@@ -65,6 +65,11 @@ namespace Server.Spells.Chivalry
                 // TODO: Should caps be applied?
                 var toHeal = Math.Clamp(ComputePowerValue(6) + Utility.RandomMinMax(0, 2), 7, 39);
 
+                if (CheckLightAffinity())
+                {
+                    LightAffinityPower(ref toHeal);
+                }
+
                 if (m.Hits + toHeal > m.HitsMax)
                 {
                     toHeal = m.HitsMax - m.Hits;

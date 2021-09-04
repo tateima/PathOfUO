@@ -1,9 +1,6 @@
 using Server.Mobiles;
+using Server.Items;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server.Talent
 {
@@ -11,11 +8,17 @@ namespace Server.Talent
     {
         public SwordSpecialist() : base()
         {
+            RequiredWeaponSkill = SkillName.Swords;
+            RequiredWeapon = new Type[] { typeof(BaseSword) };
             TalentDependency = typeof(SwordsmanshipFocus);
-            DisplayName = "Spar";
-            Description = "Gives your swords a chance to parry an attack.";
+            DisplayName = "Sword specialist";
+            IncreaseHitChance = true;
+            Description = "Increases damage and hit chance of sword weapons.";
             ImageID = 30197;
         }
-
+        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        {
+            target.Damage(Level, attacker);
+        }
     }
 }

@@ -1,9 +1,5 @@
 using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server.Talent
 {
@@ -16,6 +12,9 @@ namespace Server.Talent
             Description = "Decrease bleeding effects and poison damage.";
             ImageID = 30104;
         }
-
+        public virtual int ModifySpellMultiplier()
+        {
+            return Level * 2; // 2% per point
+        }
     }
 }

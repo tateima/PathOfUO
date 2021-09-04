@@ -49,6 +49,14 @@ namespace Server.Spells.Spellweaving
                         break;
                     }
 
+                    if (bc is ArcaneFiend && CheckDarkAffinity())
+                    {
+                        bc = (BaseCreature)DarkAffinity.ScaleMobileStats((Mobile)bc);
+                    } else if (bc is ArcaneFey && CheckLightAffinity())
+                    {
+                        bc = (BaseCreature)LightAffinity.ScaleMobileStats((Mobile)bc);
+                    }
+
                     SpellHelper.Summon(bc, Caster, Sound, duration, false, false);
                 }
 

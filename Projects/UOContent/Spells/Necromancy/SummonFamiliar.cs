@@ -4,6 +4,7 @@ using Server.Gumps;
 using Server.Mobiles;
 using Server.Network;
 using Server.Utilities;
+using Server.Talent;
 
 namespace Server.Spells.Necromancy
 {
@@ -94,11 +95,17 @@ namespace Server.Spells.Necromancy
 
         private readonly SummonFamiliarSpell m_Spell;
 
+        private readonly BaseTalent m_DarkAffinity;
+
         public SummonFamiliarGump(Mobile from, SummonFamiliarEntry[] entries, SummonFamiliarSpell spell) : base(200, 100)
         {
             m_From = from;
             m_Entries = entries;
             m_Spell = spell;
+            if (spell.CheckDarkAffinity())
+            {
+                m_DarkAffinity = spell.DarkAffinity;
+            }
 
             AddPage(0);
 
@@ -185,6 +192,10 @@ namespace Server.Spells.Necromancy
 
                         // TODO: Is this right?
                         bc.Skills.MagicResist.Base = m_From.Skills.MagicResist.Base;
+                        if (m_DarkAffinity != null)
+                        {
+                            bc = (BaseCreature)m_DarkAffinity.ScaleMobileStats((Mobile)bc);
+                        }
 
                         if (BaseCreature.Summon(bc, m_From, m_From.Location, -1, TimeSpan.FromDays(1.0)))
                         {

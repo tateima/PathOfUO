@@ -1,5 +1,8 @@
 using System.Collections.Generic;
 using Server.ContextMenus;
+using Server.Talent;
+using Server.Mobiles;
+using System;
 
 namespace Server.Items
 {
@@ -64,6 +67,21 @@ namespace Server.Items
                 if (Poison != null)
                 {
                     from.ApplyPoison(Poisoner, Poison);
+                } else if (from is PlayerMobile player) 
+                {
+                    // if they have optimised consumption heal them slightly if hurt
+                    BaseTalent optimisedConsumption = player.GetTalent(typeof(OptimisedConsumption));
+                    if (optimisedConsumption != null)
+                    {
+                        if (player.Hits < player.HitsMax)
+                        {
+                            player.Hits += optimisedConsumption.Level;
+                        }
+                        // if they are quite hungry give them a stat buff
+                        if (from.Hunger < 15) {
+                            from.AddStatMod(new StatMod(StatType.All, "optimisedConsumption", optimisedConsumption.Level, TimeSpan.FromMinutes(optimisedConsumption.Level * 2)));
+                        }
+                    }
                 }
 
                 Consume();

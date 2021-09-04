@@ -1,13 +1,33 @@
+using System;
 using Server.Items;
+using Server.Talent;
+using Server.Mobiles;
 
 namespace Server.Spells.Necromancy
 {
     public abstract class NecromancerSpell : Spell
     {
-        public NecromancerSpell(Mobile caster, Item scroll, SpellInfo info) : base(caster, scroll, info)
+        private BaseTalent m_DarkAffinity;
+        public BaseTalent DarkAffinity
         {
+            get { return m_DarkAffinity; }
+            set { m_DarkAffinity = value; }
         }
 
+        private BaseTalent m_SpellMind;
+        public BaseTalent SpellMind
+        {
+            get { return m_SpellMind; }
+            set { m_SpellMind = value; }
+        }
+        public NecromancerSpell(Mobile caster, Item scroll, SpellInfo info) : base(caster, scroll, info)
+        {
+            if (Caster is PlayerMobile player)
+            {
+                DarkAffinity = player.GetTalent(typeof(DarkAffinity));
+                SpellMind = player.GetTalent(typeof(SpellMind));
+            }
+        }
         public abstract double RequiredSkill { get; }
         public abstract int RequiredMana { get; }
 
@@ -42,6 +62,71 @@ namespace Server.Spells.Necromancy
         {
             min = RequiredSkill;
             max = Scroll != null ? min : RequiredSkill + 40.0;
+        }
+
+        public bool CheckSpellMind()
+        {
+            return SpellMind != null;
+        }
+
+        public void SpellMindDamage(ref int damage)
+        {
+            if (CheckSpellMind())
+            {
+                damage += SpellMind.Level;
+            }
+        }
+        public void SpellMindDamage(ref double damage)
+        {
+            if (CheckSpellMind())
+            {
+                damage += SpellMind.Level;
+            }
+        }
+
+        public void SpellMindScalar(ref double scalar)
+        {
+            if (CheckSpellMind())
+            {
+                scalar += SpellMind.ModifySpellScalar();
+            }
+        }
+        public bool CheckDarkAffinity()
+        {
+            return DarkAffinity != null;
+        }
+        public void DarkAffinityScalar(ref double scalar)
+        {
+            if (CheckDarkAffinity())
+            {
+                scalar += DarkAffinity.ModifySpellScalar();
+            }
+        }
+        public void DarkAffinityDamage(ref int damage)
+        {
+            if (CheckDarkAffinity())
+            {
+                // increase damage by fixed multiplier
+                damage += DarkAffinity.Level;
+            }
+        }
+
+        public void DarkAffinityDamage(ref double damage)
+        {
+            if (CheckDarkAffinity())
+            {
+                // increase damage by fixed multiplier
+                damage += DarkAffinity.Level;
+            }
+        }
+
+        public int DarkAffinityDuration()
+        {
+            if (CheckDarkAffinity())
+            {
+                return DarkAffinity.Level*3;
+            }
+            return 0;
         }
 
         public override bool ConsumeReagents() => base.ConsumeReagents() || ArcaneGem.ConsumeCharges(Caster, 1);

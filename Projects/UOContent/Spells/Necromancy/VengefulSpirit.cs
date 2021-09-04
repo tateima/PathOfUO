@@ -47,11 +47,14 @@ namespace Server.Spells.Necromancy
                  */
 
                 var duration = TimeSpan.FromSeconds(GetDamageSkill(Caster) * 80 / 120 + 10);
-                if (!HasReagents())
-                {
-                    duration *= 0.5;
-                }
+                duration *= ReagentsScale();
+
                 var rev = new Revenant(Caster, m, duration);
+
+                if (CheckDarkAffinity())
+                {
+                    rev = (Revenant)DarkAffinity.ScaleMobileStats(rev);
+                }
 
                 if (BaseCreature.Summon(
                     rev,

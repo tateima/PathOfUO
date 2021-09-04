@@ -45,9 +45,15 @@ namespace Server.Spells.Spellweaving
             }
             else if (SpellHelper.CheckTown(p, Caster) && CheckSequence())
             {
-                var duration = TimeSpan.FromSeconds(Caster.Skills.Spellweaving.Value / 24 + 25 + FocusLevel * 2);
+                double baseDuration = Caster.Skills.Spellweaving.Value / 24 + 25 + FocusLevel * 2;
 
                 var nf = new NatureFury();
+                if (CheckNatureAffinity())
+                {
+                    nf = (NatureFury)NatureAffinity.ScaleMobileStats(nf);
+                    baseDuration += (double)(NatureAffinity.Level * 2);
+                }
+                var duration = TimeSpan.FromSeconds(baseDuration);
                 BaseCreature.Summon(nf, false, Caster, p, 0x5CB, duration);
 
                 new InternalTimer(nf).Start();

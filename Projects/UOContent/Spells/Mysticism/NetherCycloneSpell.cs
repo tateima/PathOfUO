@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Server.Spells.Mysticism
@@ -82,6 +82,8 @@ namespace Server.Spells.Mysticism
                 }
 
                 var damage = GetNewAosDamage(51, 1, 5, pvp);
+                DarkAffinityPower(ref damage);
+
                 var reduction = (GetBaseSkill(Caster) + GetBoostSkill(Caster)) / 1200.0;
 
                 foreach (var m in targets)

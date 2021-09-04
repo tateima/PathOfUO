@@ -6,6 +6,7 @@ using Server.Items;
 using Server.Mobiles;
 using Server.Targeting;
 using Server.Utilities;
+using Server.Talent;
 
 namespace Server.Spells.Necromancy
 {
@@ -193,7 +194,7 @@ namespace Server.Spells.Necromancy
 
                                 Timer.StartTimer(
                                     TimeSpan.FromSeconds(2.0),
-                                    () => SummonDelay_Callback(Caster, c, p, map, group)
+                                    () => SummonDelay_Callback(Caster, c, p, map, group, DarkAffinity)
                                 );
                             }
                         }
@@ -297,7 +298,7 @@ namespace Server.Spells.Necromancy
             }
         }
 
-        private static void SummonDelay_Callback(Mobile caster, Corpse corpse, Point3D loc, Map map, CreatureGroup group)
+        private static void SummonDelay_Callback(Mobile caster, Corpse corpse, Point3D loc, Map map, CreatureGroup group, BaseTalent? darkAffinity)
         {
             if (corpse.Animated)
             {
@@ -372,6 +373,11 @@ namespace Server.Spells.Necromancy
                 Scale(dragon, 50); // lose 50% hp and strength
             }
 
+            if (darkAffinity != null)
+            {
+                summoned = darkAffinity.ScaleMobileStats(summoned);
+            }
+        
             summoned.Fame = 0;
             summoned.Karma = -1500;
 

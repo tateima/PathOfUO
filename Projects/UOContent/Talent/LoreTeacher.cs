@@ -1,9 +1,5 @@
 using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server.Talent
 {
@@ -11,9 +7,9 @@ namespace Server.Talent
     {
         public LoreTeacher() : base()
         {
-            TalentDependency = typeof(LoreSeeker);
+            TalentDependency = typeof(LoreDisciples);
             DisplayName = "Lore teacher";
-            Description = "Party members receive a experience increase.";
+            Description = "Increases skill levels for disciple followers.";
             ImageID = 39876;
         }
 

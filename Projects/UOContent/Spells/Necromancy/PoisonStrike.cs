@@ -61,11 +61,10 @@ namespace Server.Spells.Necromancy
                 Effects.PlaySound(m.Location, m.Map, 0x229);
 
                 var damage = Utility.RandomMinMax(Core.ML ? 32 : 36, 40) * ((300 + GetDamageSkill(Caster) * 9) / 1000);
+                damage *= ReagentsScale();
 
-                if (!HasReagents())
-                {
-                    damage *= 0.5;
-                }
+                DarkAffinityDamage(ref damage);
+                SpellMindDamage(ref damage);
 
                 var sdiBonus = (double)AosAttributes.GetValue(Caster, AosAttribute.SpellDamage) / 100;
                 var pvmDamage = damage * (1 + sdiBonus);

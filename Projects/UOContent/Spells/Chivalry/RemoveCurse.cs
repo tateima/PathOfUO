@@ -63,6 +63,9 @@ namespace Server.Spells.Chivalry
                     chance = 100;
                 }
 
+                // holy avenger increases curse removal chance
+                HolyPower(ref chance);
+
                 if (chance > Utility.Random(100))
                 {
                     m.PlaySound(0xF6);

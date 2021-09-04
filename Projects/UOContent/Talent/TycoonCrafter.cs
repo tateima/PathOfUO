@@ -1,9 +1,5 @@
 using Server.Mobiles;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Server.Talent
 {
@@ -13,9 +9,13 @@ namespace Server.Talent
         {
             TalentDependency = typeof(ResourcefulCrafter);
             DisplayName = "Tycoon";
-            Description = "Increase gold find from all sources.";
+            Description = "Increases value of crafted armor and weapon items sold to vendor.";
             ImageID = 40022;
         }
 
+        public override double ModifySpellScalar()
+        {
+            return (Level / 100) * 2; // 2% per point
+        }
     }
 }
