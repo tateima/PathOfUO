@@ -7,6 +7,7 @@ namespace Server.Mobiles
     public static class Heroic
     {
         // Buffs
+        public static double GoldBuff = 1.30;
         public static double HitsBuff = 2.5;
         public static double StrBuff = 1.025;
         public static double IntBuff = 1.10;
@@ -22,6 +23,33 @@ namespace Server.Mobiles
             {
                 return;
             }
+            if (bc.Backpack != null)
+            {
+                Item[] goldItems = bc.Backpack.FindItemsByType(typeof(Gold));
+                foreach(Item gold in goldItems)
+                {
+                    ((Gold)gold).Amount = (int)(((Gold)gold).Amount * GoldBuff);
+                }
+                if (bc.AI != AIType.AI_Animal)
+                {
+                    if (Utility.Random(100) <= 1)
+                    {
+                        switch (Utility.Random(1, 3))
+                        {
+                            case 1:
+                                bc.AddLoot(LootPack.Average);
+                                break;
+                            case 2:
+                                bc.AddLoot(LootPack.Rich);
+                                break;
+                            case 3:
+                                bc.AddLoot(LootPack.Meager);
+                                break;
+                        }
+                    }
+                }
+            }
+            
 
             if (bc.HitsMaxSeed >= 0)
             {

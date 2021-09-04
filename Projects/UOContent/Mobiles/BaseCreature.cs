@@ -1432,8 +1432,8 @@ namespace Server.Mobiles
 
         public override void OnBeforeSpawn(Point3D location, Map m)
         {
-            // 10% chance in Dungeons 0.25% chance everywhere else
-            int heroicChance = Region.IsPartOf<DungeonRegion>() ? 1000 : 25;
+            // 10% chance in Dungeons 1% chance everywhere else
+            int heroicChance = Region.IsPartOf<DungeonRegion>() ? 1000 : 100;
             IsHeroic = (Utility.Random(1, 10000) < heroicChance);
             
             if (Paragon.CheckConvert(this, location, m))
