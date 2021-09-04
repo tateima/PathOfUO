@@ -317,6 +317,7 @@ namespace Server.Mobiles
         private long m_NextRummageTime;
 
         private bool m_Paragon;
+        private bool m_Heroic;
 
         private int m_PhysicalResistance;
         private int m_PoisonResistance;
@@ -495,6 +496,27 @@ namespace Server.Mobiles
 
                 m_Paragon = value;
 
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsHeroic
+        {
+            get => m_Heroic;
+            set
+            {
+                if (m_Heroic == value)
+                {
+                    return;
+                }
+                if (value) {
+                    Heroic.Convert(this);
+                } else
+                {
+                    Heroic.UnConvert(this);
+                }
+                m_Heroic = value;
                 InvalidateProperties();
             }
         }
@@ -1253,6 +1275,10 @@ namespace Server.Mobiles
             {
                 suffix = suffix.Length == 0 ? "(Paragon)" : $"{suffix} (Paragon)";
             }
+            if (IsHeroic)
+            {
+                suffix = suffix.Length == 0 ? "(Heroic)" : $"{suffix} (Heroic)";
+            }
 
             return base.ApplyNameSuffix(suffix);
         }
@@ -1406,6 +1432,10 @@ namespace Server.Mobiles
 
         public override void OnBeforeSpawn(Point3D location, Map m)
         {
+            // 10% chance in Dungeons 0.25% chance everywhere else
+            int heroicChance = Region.IsPartOf<DungeonRegion>() ? 1000 : 25;
+            IsHeroic = (Utility.Random(1, 10000) < heroicChance);
+            
             if (Paragon.CheckConvert(this, location, m))
             {
                 IsParagon = true;
@@ -1709,8 +1739,9 @@ namespace Server.Mobiles
 
             writer.Write(20); // version
 
-            writer.Write((int)m_ExperienceValue);
-            writer.Write((int)m_MaxLevel);
+            writer.Write(m_Heroic);
+            writer.Write(m_ExperienceValue);
+            writer.Write(m_MaxLevel);
             writer.Write((int)m_CurrentAI);
             writer.Write((int)m_DefaultAI);
 
@@ -1850,6 +1881,7 @@ namespace Server.Mobiles
             var version = reader.ReadInt();
 
             if (version >= 20) {
+                m_Heroic = reader.ReadBool();
                 m_ExperienceValue = reader.ReadInt();
                 m_MaxLevel = reader.ReadInt();
             }

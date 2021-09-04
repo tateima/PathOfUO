@@ -198,11 +198,6 @@ namespace Server.Items
             {
                 if (owner is PlayerMobile owningPlayer && weapon.Parent is Mobile attacker)
                 {
-                    BaseTalent shieldFocus = owningPlayer.GetTalent(typeof(ShieldFocus));
-                    if (shieldFocus != null)
-                    {
-                        damage = AOS.Scale(damage, 100 - shieldFocus.Level);
-                    }
                     foreach (BaseTalent talent in owningPlayer.Talents.Where(w => w.CanApplyHitEffect(this)))
                     {
                         if (owner != attacker)

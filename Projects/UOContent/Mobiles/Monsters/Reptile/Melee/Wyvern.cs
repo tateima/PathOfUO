@@ -32,6 +32,9 @@ namespace Server.Mobiles
             SetSkill(SkillName.Tactics, 65.1, 90.0);
             SetSkill(SkillName.Wrestling, 65.1, 80.0);
 
+            Tamable = true;
+            MinTameSkill = 84.3;
+
             Fame = 4000;
             Karma = -4000;
 

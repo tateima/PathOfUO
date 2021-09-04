@@ -2637,6 +2637,10 @@ namespace Server.Mobiles
 
         public override void Resurrect()
         {
+            // roguelike, there is no ressurection;
+            SendMessage("You are dead, your deeds will not be forgotten.");
+            return;
+
             var wasAlive = Alive;
 
             base.Resurrect();
@@ -2823,6 +2827,12 @@ namespace Server.Mobiles
             if (m_NonAutoreinsuredItems > 0)
             {
                 SendLocalizedMessage(1061115);
+            }
+
+            // delete all players bank items, they wont need them
+            foreach (Item bankItem in BankBox.Items)
+            {
+                bankItem.Delete();
             }
 
             base.OnDeath(c);
@@ -3125,6 +3135,13 @@ namespace Server.Mobiles
             if (planarShift != null && planarShift.Activated)
             {
                 amount = AOS.Scale(amount, 100-planarShift.ModifySpellMultiplier());
+            }
+
+            BaseTalent shieldFocus = GetTalent(typeof(ShieldFocus));
+            var shield = FindItemOnLayer(Layer.TwoHanded) as BaseShield;
+            if (shieldFocus != null && shield != null)
+            {
+                amount = AOS.Scale(amount, 100 - shieldFocus.Level);
             }
 
             base.Damage(amount, from, informMount);
