@@ -11,6 +11,8 @@ namespace Server.Talent
             DisplayName = "Divine intellect";
             Description = "Increases intellect by 2 per level.";
             ImageID = 30034;
+            GumpHeight = 70;
+            AddEndY = 65;
         }
         public override void UpdateMobile(Mobile mobile)
         {

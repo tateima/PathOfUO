@@ -12,6 +12,8 @@ namespace Server.Talent
             DisplayName = "Escape death";
             Description = "Avoid a deathly blow. 5 minute cooldown.";
             ImageID = 39877;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
 
         public override void CheckBeforeDeathEffect(Mobile target)

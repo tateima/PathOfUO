@@ -63,11 +63,17 @@ namespace Server.Talent
             get { return m_OnCooldown; }
             set { m_OnCooldown = value; }
         }
-        private int m_AddY;
-        public int AddY
+        private int m_GumpHeight;
+        public int GumpHeight
         {
-            get { return m_AddY; }
-            set { m_AddY = value;  }
+            get { return m_GumpHeight; }
+            set { m_GumpHeight = value; }
+        }
+        private int m_AddEndY;
+        public int AddEndY
+        {
+            get { return m_AddEndY; }
+            set { m_AddEndY = value;  }
         }
         private bool m_IncreaseParryChance;
         public bool IncreaseParryChance
@@ -240,7 +246,8 @@ namespace Server.Talent
             m_DisplayName = "Basic Talent";
             m_Description = "Does something.";
             m_ImageID = 30145;
-            m_AddY = 110;
+            m_AddEndY = 110;
+            m_GumpHeight = 200;
         }
         
         public virtual bool CanApplyHitEffect(Item i)

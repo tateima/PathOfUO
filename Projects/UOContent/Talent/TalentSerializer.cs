@@ -25,14 +25,15 @@ namespace Server.Talent
             }
             else
             {
-                writer.WriteEncodedInt(t.Count);
+                writer.Write(t.Count);
                 foreach (BaseTalent talent in t)
                 {
                     Write(t.GetType(), BaseTalent.TalentTypes, writer);
-                    writer.WriteEncodedInt(talent.Level);
+                    writer.Write(talent.Level);
                 }
             }
         }
+
         public static void Write(Type type, Type[] referenceTable, IGenericWriter writer)
         {
             if (type == null)

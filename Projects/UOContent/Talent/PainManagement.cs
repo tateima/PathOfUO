@@ -11,6 +11,8 @@ namespace Server.Talent
             DisplayName = "Pain management";
             Description = "Decrease bleeding effects and poison damage.";
             ImageID = 30104;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
         public virtual int ModifySpellMultiplier()
         {

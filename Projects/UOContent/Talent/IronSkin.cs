@@ -11,6 +11,8 @@ namespace Server.Talent
             DisplayName = "Iron skin";
             Description = "Increases armor rating.";
             ImageID = 30214;
+            GumpHeight = 70;
+            AddEndY = 65;
         }
     }
 }

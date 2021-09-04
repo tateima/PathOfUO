@@ -10,7 +10,9 @@ namespace Server.Talent
             BlockedBy = new Type[] { };
             DisplayName = "Divine dexterity";
             Description = "Increases dexterity by 2 per level.";
-            ImageID = 30992;
+            ImageID = 30052;
+            GumpHeight = 70;
+            AddEndY = 65;
         }
 
         public override void UpdateMobile(Mobile mobile)

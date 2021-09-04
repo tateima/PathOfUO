@@ -12,6 +12,8 @@ namespace Server.Talent
             Description = "Increased chance of finding special loot on corpses.";
             ImageID = 30212;
             MaxLevel = 6;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
     }
 }

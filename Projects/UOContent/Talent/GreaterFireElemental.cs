@@ -17,7 +17,8 @@ namespace Server.Talent
             CanBeUsed = true;
             Description = "Summon a fire lord to assist you for 2 minutes. 5 minute cooldown. Hits will be used if no mana is available.";
             ImageID = 30225;
-            AddY = 130;
+            GumpHeight = 230;
+            AddEndY = 145;
         }
         public override void OnUse(Mobile summoner)
         {

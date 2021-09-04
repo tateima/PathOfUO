@@ -19,6 +19,8 @@ namespace Server.Talent
             DisplayName = "Dark affinity";
             Description = "Enhances damage and strength of dark arts and spells.";
             ImageID = 30042;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
 
         public override double ModifySpellScalar()

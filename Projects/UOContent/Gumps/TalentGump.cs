@@ -23,11 +23,11 @@ namespace Server.Gumps
             Draggable = true;
             Resizable = false;
             AddPage(0);
-            AddImageTiled(0, 0, 1100, 900, 0xA8E);
+            AddImageTiled(0, 0, 940, 900, 0xA8E);
             AddImageTiled(0, 0, 20, 900, 0x27A7);
-            AddImageTiled(0, 0, 1100, 20, 0x27A7);
-            AddImageTiled(1100, 0, 20, 920, 0x27A7);
-            AddImageTiled(0, 900, 1100, 20, 0x27A7);
+            AddImageTiled(0, 0, 940, 20, 0x27A7);
+            AddImageTiled(940, 0, 20, 920, 0x27A7);
+            AddImageTiled(0, 900, 940, 20, 0x27A7);
             AddLabel(20, 20, 0, "Talents");
             AddLabel(20, 60, 0, "Talent Points: " + ((PlayerMobile)from).TalentPoints.ToString());
             Type[] talentTypes = BaseTalent.TalentTypes;
@@ -41,19 +41,19 @@ namespace Server.Gumps
             
             for (int i = m_LastTalentIndex; i < talentTypes.Length; i++)
             {
+                var talent = TalentSerializer.Construct(talentTypes[i]) as BaseTalent;
                 if (y + 40 > 860)
                 {
                     y = 40;
                     x += 220;
                 }
-                if (x + 220 > 1080)
+                if (x + 220 > 920)
                 {
                     // need a new page
                     m_LastTalentIndex = i;
-                    AddButton(5, 760, 40017, 40017, 1000, GumpButtonType.Reply, 0);
+                    AddButton(909, 20, 40017, 40017, 1000, GumpButtonType.Reply, 0);
                     break;
                 }
-                var talent = TalentSerializer.Construct(talentTypes[i]) as BaseTalent;
                 var dependsOn = TalentSerializer.Construct(talent.TalentDependency) as BaseTalent;
                 Type[] blockedBy = talent.BlockedBy;
                 BaseTalent hasBlocker = null;
@@ -92,7 +92,7 @@ namespace Server.Gumps
                     }
                 };
 
-                AddHtml(x, y, 200, 40, $"<BASEFONT COLOR=#FFFFFF>{talent.DisplayName}: ({talentLevel}/{talent.MaxLevel})</FONT>");
+                AddHtml(x, y, 200, 40, $"<BASEFONT COLOR=#FFFFE5>{talent.DisplayName}: ({talentLevel}/{talent.MaxLevel})</FONT>");
                 AddImage(x + 160, y, talent.ImageID);
                 if (talent.HasSkillRequirement(from) && (talentLevel < talent.MaxLevel && ((PlayerMobile)from).TalentPoints > 0) && ((dependsOn != null && hasDependency != null) || (dependsOn == null)) && (blockedBy != null && hasBlocker == null))
                 {
@@ -101,8 +101,8 @@ namespace Server.Gumps
                 y += 40;
                 string requirements = (dependsOn != null) ? $"<BR>Requires {dependsOn.DisplayName}" : "";
                 blockedByStr = (blockedByStr.Length > 1) ? $"<BR>Blocks: {blockedByStr}" : "";
-                AddHtml(x, y, 200, 100, $"<BASEFONT COLOR=#FFFFFF>{talent.Description}{requirements}{blockedByStr}</FONT>");
-                y += 110;
+                AddHtml(x, y, 200, talent.GumpHeight, $"<BASEFONT COLOR=#FFFFE5>{talent.Description}{requirements}{blockedByStr}</FONT>");
+                y += talent.AddEndY;
             }
         }
         public override void OnResponse(NetState state, RelayInfo info)

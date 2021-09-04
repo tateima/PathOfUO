@@ -12,6 +12,8 @@ namespace Server.Talent
             CanBeUsed = true;
             Description = "Next hit paralyzes target for 1s per level. Level also reduces cooldown by 5s. 5m cooldown";
             ImageID = 30228;
+            GumpHeight = 75;
+            AddEndY = 105;
         }
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {

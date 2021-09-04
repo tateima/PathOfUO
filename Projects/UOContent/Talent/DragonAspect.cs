@@ -13,6 +13,8 @@ namespace Server.Talent
             DisplayName = "Dragon aspect";
             Description = "Has a chance on spell cast or hit to conjure a fire breath.";
             ImageID = 39900;
+            GumpHeight = 75;
+            AddEndY = 105;
         }
         public void CheckDragonEffect(Mobile attacker, Mobile target)
         {

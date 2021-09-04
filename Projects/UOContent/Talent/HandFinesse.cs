@@ -11,6 +11,8 @@ namespace Server.Talent
             DisplayName = "Hand finesse";
             Description = "Decrease time between attacks and reduce damage to weapons on hit.";
             ImageID = 30203;
+            GumpHeight = 75;
+            AddEndY = 105;
         }
     }
 }

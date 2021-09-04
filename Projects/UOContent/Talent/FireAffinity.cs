@@ -20,6 +20,8 @@ namespace Server.Talent
             CanBeUsed = true;
             Description = "Increases damage done by fire abilities/spells.";
             ImageID = 30212;
+            GumpHeight = 70;
+            AddEndY = 65;
         }
         public override int ModifySpellMultiplier()
         {

@@ -1737,9 +1737,11 @@ namespace Server.Mobiles
         {
             base.Serialize(writer);
 
-            writer.Write(20); // version
+            writer.Write(21); // version
 
+            // version 21
             writer.Write(m_Heroic);
+            // version 20
             writer.Write(m_ExperienceValue);
             writer.Write(m_MaxLevel);
             writer.Write((int)m_CurrentAI);
@@ -1880,8 +1882,16 @@ namespace Server.Mobiles
 
             var version = reader.ReadInt();
 
-            if (version >= 20) {
+            if (version >= 21)
+            {
                 m_Heroic = reader.ReadBool();
+            }
+            else
+            {
+                m_Heroic = false;
+            }
+
+            if (version >= 20) {
                 m_ExperienceValue = reader.ReadInt();
                 m_MaxLevel = reader.ReadInt();
             }

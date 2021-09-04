@@ -14,6 +14,8 @@ namespace Server.Talent
             DisplayName = "Guardian of light";
             Description = "Chance to be healed or cured when damaged, increases holy avenger AOE.";
             ImageID = 30032;
+            GumpHeight = 75;
+            AddEndY = 105;
         }
         public override void CheckDefenseEffect(Mobile defender, Mobile attacker, int damage)
         {

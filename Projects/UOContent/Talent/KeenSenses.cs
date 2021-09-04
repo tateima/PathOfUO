@@ -11,6 +11,8 @@ namespace Server.Talent
             DisplayName = "Keen senses";
             Description = "Chance of dodging incoming attacks.";
             ImageID = 30200;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
 
         public bool CheckDodge()

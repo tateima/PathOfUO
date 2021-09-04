@@ -16,6 +16,8 @@ namespace Server.Talent
             DisplayName = "Light affinity";
             Description = "Increases healing done by spells.";
             ImageID = 39861;
+            GumpHeight = 70;
+            AddEndY = 65;
         }
         public override double ModifySpellScalar()
         {

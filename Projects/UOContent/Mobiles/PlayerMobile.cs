@@ -281,7 +281,7 @@ namespace Server.Mobiles
             m_StatPoints = 0;
             m_TalentPoints = 0;
             Talents = new HashSet<BaseTalent>();
-            m_HardCore = false;
+            m_HardCore = true;
             m_Level = "One";
             AutoStabled = new List<Mobile>();
 
@@ -3211,26 +3211,29 @@ namespace Server.Mobiles
 
         public override void Deserialize(IGenericReader reader)
         {
+            //TalentSerializer.Serialize(Talents, writer);
+            //writer.Write(m_TalentPoints);
+            //writer.Write(m_StatPoints);
+            //writer.Write(m_SkillPoints);
+            //writer.Write(m_Experience);
+            //writer.Write(m_HardCore);
+            //writer.Write(m_Level);
+
+            Talents = new HashSet<BaseTalent>(); // set Talents to empty hashset by default
             base.Deserialize(reader);
             var version = reader.ReadInt();
-
             switch (version)
             {
                 case 31:
                     // reset followers to default
                     FollowersMax = 5;
-                    var talentCount = reader.ReadEncodedInt();
-                    if (talentCount > 0)
+                    var talentCount = reader.ReadInt();
+                    for (var i = 0; i < talentCount; ++i)
                     {
-                        Talents = new HashSet<BaseTalent>();
-
-                        for (var i = 0; i < talentCount; ++i)
-                        {
-                            var type = TalentSerializer.ReadType(BaseTalent.TalentTypes, reader);
-                            var bt = TalentSerializer.Construct(type) as BaseTalent;
-                            bt.Level = reader.ReadEncodedInt();
-                            Talents.Add(bt);
-                        }
+                        var type = TalentSerializer.ReadType(BaseTalent.TalentTypes, reader);
+                        var bt = TalentSerializer.Construct(type) as BaseTalent;
+                        bt.Level = reader.ReadInt();
+                        Talents.Add(bt);
                     }
                     m_TalentPoints = reader.ReadInt();
                     goto case 30;
@@ -3239,6 +3242,7 @@ namespace Server.Mobiles
                     m_SkillPoints = reader.ReadInt();
                     m_Experience = reader.ReadInt();
                     m_HardCore = reader.ReadBool();
+                    m_HardCore = true; // new default, all players are roguelike
                     m_Level = reader.ReadString();
                     goto case 29;
                 case 29:
@@ -3576,11 +3580,11 @@ namespace Server.Mobiles
 
             writer.Write(31); // version
             TalentSerializer.Serialize(Talents, writer);
-            writer.Write((int)m_TalentPoints);
-            writer.Write((int)m_StatPoints);
-            writer.Write((int)m_SkillPoints);
-            writer.Write((int)m_Experience);
-            writer.Write((bool)m_HardCore);
+            writer.Write(m_TalentPoints);
+            writer.Write(m_StatPoints);
+            writer.Write(m_SkillPoints);
+            writer.Write(m_Experience);
+            writer.Write(m_HardCore);
             writer.Write(m_Level);
 
             if (m_StuckMenuUses != null)

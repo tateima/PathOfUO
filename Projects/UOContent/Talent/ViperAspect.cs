@@ -15,6 +15,8 @@ namespace Server.Talent
             CanBeUsed = true;
             Description = "Increased poison resistance and adds a chance to poison your target on weapon or spell hit.";
             ImageID = 30149;
+            GumpHeight = 75;
+            AddEndY = 85;
         }
 
         public override void OnUse(Mobile mobile)

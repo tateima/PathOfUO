@@ -11,6 +11,8 @@ namespace Server.Talent
             DisplayName = "Summoner command";
             Description = "Increases power of minions and summoned creatures.";
             ImageID = 49987;
+            GumpHeight = 85;
+            AddEndY = 75;
         }
 
     }

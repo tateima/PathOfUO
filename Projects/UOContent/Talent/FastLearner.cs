@@ -11,6 +11,8 @@ namespace Server.Talent
             DisplayName = "Fast learner";
             Description = "Increases your experience gain from sources by 2% per level.";
             ImageID = 30223;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
 
     }

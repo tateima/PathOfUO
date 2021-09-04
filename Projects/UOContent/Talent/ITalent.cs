@@ -16,7 +16,7 @@ namespace Server.Talent
         public void UpdateMobile(Mobile m);
         public bool HasSkillRequirement(Mobile m);
         public int ImageID { get; set; }
-        public int AddY { get; set; }
+        public int AddEndY { get; set; }
         public int MaxLevel { get; set; }
     }
 }

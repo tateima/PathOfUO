@@ -11,6 +11,8 @@ namespace Server.Talent
             DisplayName = "Divine strength";
             Description = "Increases strength by 2 per level.";
             ImageID = 39870;
+            GumpHeight = 70;
+            AddEndY = 65;
         }
         public override void UpdateMobile(Mobile mobile)
         {
