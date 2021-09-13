@@ -15,7 +15,7 @@ namespace Server.Talent
             TalentDependency = typeof(ExperiencedHunter);
             DisplayName = "Undead hunter";
             Description = "Increases damage to undead and heals damage from them.";
-            ImageID = 30147;
+            ImageID = 143;
         }
 
         public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)

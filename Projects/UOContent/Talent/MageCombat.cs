@@ -11,8 +11,10 @@ namespace Server.Talent
             TalentDependency = typeof(FastLearner);
             DisplayName = "Mage combatant";
             Description = "Uses Evaluating Intelligence instead of Tactics for combat damage. Allows casting while holding weapons.";
-            ImageID = 39886;
+            ImageID = 348;
             MaxLevel = 1;
+            GumpHeight = 230;
+            AddEndY = 145;
         }
 
     }

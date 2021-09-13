@@ -11,7 +11,7 @@ namespace Server.Talent
             TalentDependency = typeof(DivineStrength);
             DisplayName = "Giant's Heritage";
             Description = "Increases max hit points and stamina per level. The more stamina you have the more damage you do.";
-            ImageID = 30036;
+            ImageID = 144;
         }
         public override int CalculateResetValue(int value)
         {

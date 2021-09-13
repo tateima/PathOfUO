@@ -11,17 +11,22 @@ namespace Server.Talent
         {
             DisplayName = "Lore giver";
             Description = "Expose weaknesses in enemies on hit. Need 70 or above in two lore skills.";
-            ImageID = 39903;
+            ImageID = 127;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
 
         public override bool HasSkillRequirement(Mobile mobile) {
-            SkillsGumpGroup group = SkillsGumpGroup.Groups.Where(group => group.Name == "Lore & Knowledge").First();
+            SkillsGumpGroup group = SkillsGumpGroup.Groups.Where(group => group.Name == "Lore & Knowledge").FirstOrDefault();
             int validCount = 0;
-            foreach (SkillName skill in group.Skills)
+            if (group != null)
             {
-                if (mobile.Skills[skill].Base >= 70)
+                foreach (SkillName skill in group.Skills)
                 {
-                    validCount++;
+                    if (mobile.Skills[skill].Base >= 70)
+                    {
+                        validCount++;
+                    }
                 }
             }
             return validCount >= 2;

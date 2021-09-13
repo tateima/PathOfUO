@@ -10,9 +10,11 @@ namespace Server.Talent
             RequiredWeaponSkill = SkillName.Swords;
             RequiredWeapon = new Type[] { typeof(BaseSword) };
             BlockedBy = new Type[] { typeof(ArcherFocus) };
-            DisplayName = "Swordsmanship focus";
+            DisplayName = "Swordsman focus";
             Description = "Chance of getting a critical strike with sword weapons.";
-            ImageID = 39862;
+            ImageID = 133;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {

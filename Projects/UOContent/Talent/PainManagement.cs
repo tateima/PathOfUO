@@ -10,7 +10,7 @@ namespace Server.Talent
             TalentDependency = typeof(BoneBreaker);
             DisplayName = "Pain management";
             Description = "Decrease bleeding effects and poison damage.";
-            ImageID = 30104;
+            ImageID = 186;
             GumpHeight = 85;
             AddEndY = 80;
         }

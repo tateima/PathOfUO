@@ -11,7 +11,9 @@ namespace Server.Talent
             RequiredWeaponSkill = SkillName.Macing;
             DisplayName = "Macefighting focus";
             Description = "Chance of getting a critical strike with macing weapons.";
-            ImageID = 30196;
+            ImageID = 172;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {

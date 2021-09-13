@@ -10,7 +10,7 @@ namespace Server.Talent
             TalentDependency = typeof(DivineIntellect);
             DisplayName = "Fast learner";
             Description = "Increases your experience gain from sources by 2% per level.";
-            ImageID = 30223;
+            ImageID = 328;
             GumpHeight = 85;
             AddEndY = 80;
         }

@@ -158,11 +158,34 @@ namespace Server
                 }
 
                 if (m_Mobile is PlayerMobile player)
-                {
+                {                    
+                    BaseTalent wyvernAspect = player.GetTalent(typeof(WyvernAspect));
+                    if (wyvernAspect != null && wyvernAspect.Activated)
+                    {
+                        int damagedMobiles = 0;
+                        foreach (Mobile mobile in player.GetMobilesInRange(3))
+                        {
+                            if (mobile == player || (mobile is PlayerMobile && mobile.Karma > 0) || !mobile.CanBeHarmful(player, false) ||
+                                    Core.AOS && !mobile.InLOS(player))
+                            {
+                                continue;
+                            } else if (damagedMobiles == wyvernAspect.Level)
+                            {
+                                break;
+                            }
+                            damagedMobiles++;
+                            AOS.Damage(mobile, m_Mobile, damage, 0, 0, 0, 100, 0);
+                        }
+                    }
                     BaseTalent painManagement = player.GetTalent(typeof(PainManagement));
                     if (painManagement != null)
                     {
                         damage = AOS.Scale(damage, 100 - painManagement.ModifySpellMultiplier());
+                    }
+                    BaseTalent venomBlood = player.GetTalent(typeof(VenomBlood));
+                    if (venomBlood != null && damage > m_Mobile.Hits)
+                    {
+                        damage = (m_Mobile.Hits > 10) ? 10 : 0;
                     }
                 }
 

@@ -17,7 +17,7 @@ namespace Server.Talent
             RequiredSpell = new Type[] { typeof(LightningSpell), typeof(ChainLightningSpell), typeof(EnergyBoltSpell), typeof(ParalyzeSpell), typeof(ParalyzeFieldSpell), typeof(EagleStrikeSpell), typeof(HailStormSpell), typeof(StoneFormSpell), typeof(ThunderstormSpell), typeof(EssenceOfWindSpell) };
             DisplayName = "Nature affinity";
             Description = "Increases damage done by special moves and nature spells. Wild animals come to your aid in battle.";
-            ImageID = 30210;
+            ImageID = 139;
         }
 
         public override double ModifySpellScalar()

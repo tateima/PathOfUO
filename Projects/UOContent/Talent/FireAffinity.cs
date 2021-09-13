@@ -19,7 +19,7 @@ namespace Server.Talent
             DisplayName = "Fire affinity";
             CanBeUsed = true;
             Description = "Increases damage done by fire abilities/spells.";
-            ImageID = 30212;
+            ImageID = 137;
             GumpHeight = 70;
             AddEndY = 65;
         }

@@ -13,7 +13,7 @@ namespace Server.Talent
             DisplayName = "Resonance";
             CanBeUsed = true; 
             Description = "Chance on barding success that target is damaged by sonic energy. AOE damage effect on use - 1m cooldown.";
-            ImageID = 30093;
+            ImageID = 180;
         }
         public override bool HasSkillRequirement(Mobile mobile)
         {

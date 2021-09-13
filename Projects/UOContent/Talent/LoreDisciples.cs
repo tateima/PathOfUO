@@ -16,7 +16,9 @@ namespace Server.Talent
             MobilePercentagePerPoint = 5;
             DisplayName = "Lore disciples";
             Description = "Summon random humanoids to fight alongside you for 2m (5m cooldown).";
-            ImageID = 24035;
+            ImageID = 158;
+            GumpHeight = 75;
+            AddEndY = 105;
         }
         public override void OnUse(Mobile summoner)
         {
@@ -96,15 +98,15 @@ namespace Server.Talent
                     Timer.StartTimer(TimeSpan.FromMinutes(5), ExpireTalentCooldown, out _talentTimerToken);
                     OnCooldown = true;
                     summoner.SendMessage("Whom do you wish them to attack?");
-                    summoner.Target = new InternalFirstTarget(summoner, disciples);
+                    summoner.Target = new InternalTarget(summoner, disciples);
                 }
             }
         }
-        private class InternalFirstTarget : Target
+        private class InternalTarget : Target
         {
             private readonly List<Mobile> m_Disciples;
             private readonly Mobile m_Summoner;
-            public InternalFirstTarget(Mobile summoner, List<Mobile> disciples) : base(
+            public InternalTarget(Mobile summoner, List<Mobile> disciples) : base(
                 8,
                 false,
                 TargetFlags.None

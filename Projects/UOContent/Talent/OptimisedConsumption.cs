@@ -11,9 +11,11 @@ namespace Server.Talent
         public OptimisedConsumption() : base()
         {
             TalentDependency = typeof(WarCraftFocus);
-            DisplayName = "Optimised consumption";
-            Description = "Increases effectiveness of consumed goods (including alcohol).";
-            ImageID = 39888;
+            DisplayName = "Consumable focus";
+            Description = "Increases effectiveness of consumed goods. Consuming alcohol also improves your fighting skills.";
+            ImageID = 125;
+            GumpHeight = 75;
+            AddEndY = 100;
         }
          
         public override void UpdateMobile(Mobile mobile)
@@ -21,12 +23,17 @@ namespace Server.Talent
             if (mobile.BAC > 0 && !Activated)
             {
                 Activated = true;
-                SkillsGumpGroup group = SkillsGumpGroup.Groups.Where(group => group.Name == "Combat Ratings").First();
-                SkillMod[] skillmods = Array.Empty<SkillMod>();
-                foreach (SkillName skill in group.Skills)
+                SkillsGumpGroup group = SkillsGumpGroup.Groups.Where(group => group.Name == "Combat Ratings").FirstOrDefault();
+                if (group != null)
                 {
-                    SkillMod mod = new DefaultSkillMod(skill, true, Level * 3);
-                    skillmods.Append(mod);
+                    SkillMod[] skillmods = Array.Empty<SkillMod>();
+                    foreach (SkillName skill in group.Skills)
+                    {
+                        SkillMod mod = new DefaultSkillMod(skill, true, Level * 3);
+                        skillmods.Append(mod);
+                    }
+                    Timer drunkTimer = new DrunkTimer(mobile, skillmods);
+                    drunkTimer.Start();
                 }
             }
             return;

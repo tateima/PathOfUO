@@ -6,6 +6,7 @@ using Server.Spells;
 using Server.Spells.Fifth;
 using Server.Spells.Ninjitsu;
 using Server.Spells.Seventh;
+using Server.Talent;
 
 namespace Server
 {

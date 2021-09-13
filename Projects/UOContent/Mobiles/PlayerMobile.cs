@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Server.Accounting;
 using Server.ContextMenus;
@@ -211,6 +212,10 @@ namespace Server.Mobiles
         private Dictionary<int, bool> m_AcquiredRecipes;
 
         private List<Mobile> m_AllFollowers;
+        private List<Mobile> m_AllDebtees;
+        private List<Mobile> m_Henchmen;
+        private List<Mobile> m_RestedHenchmen;
+
         private int m_BeardModID = -1, m_BeardModHue;
 
         // TODO: Pool BuffInfo objects
@@ -241,8 +246,12 @@ namespace Server.Mobiles
 
         private bool m_LastProtectedMessage;
 
-        private int m_Experience;
-        private int m_SkillPoints;
+        private int m_LevelExperience;
+        private int m_CraftExperience;
+        private int m_CraftSkillPoints;
+        private int m_AllottedCraftSkillPoints;
+        private int m_NonCraftExperience;
+        private int m_NonCraftSkillPoints;
         private int m_StatPoints;
         private int m_TalentPoints;
         private string m_Level;
@@ -276,11 +285,18 @@ namespace Server.Mobiles
 
         public PlayerMobile()
         {
-            m_Experience = 0;
-            m_SkillPoints = 0;
+            m_LevelExperience = 0;
+            m_CraftSkillPoints = 0;
+            m_AllottedCraftSkillPoints = 0;
+            m_CraftExperience = 0;
+            m_NonCraftSkillPoints = 0;
+            m_NonCraftExperience = 0;
             m_StatPoints = 0;
             m_TalentPoints = 0;
-            Talents = new HashSet<BaseTalent>();
+            m_Talents = new ConcurrentDictionary<Type, BaseTalent>();
+            m_Henchmen = new List<Mobile>();
+            m_RestedHenchmen = new List<Mobile>(); 
+            m_AllDebtees = new List<Mobile>();
             m_HardCore = true;
             m_Level = "One";
             AutoStabled = new List<Mobile>();
@@ -307,6 +323,7 @@ namespace Server.Mobiles
             VisibilityList = new List<Mobile>();
             m_AntiMacroTable = new Dictionary<Skill, Dictionary<object, CountAndTimeStamp>>();
         }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public int TalentPoints
         {
@@ -317,7 +334,6 @@ namespace Server.Mobiles
             set
             {
                 m_TalentPoints = value;
-                InvalidateProperties();
             }
         }
         [CommandProperty(AccessLevel.GameMaster)]
@@ -330,40 +346,90 @@ namespace Server.Mobiles
             set
             {
                 m_StatPoints = value;
-                InvalidateProperties();
             }
         }
+        
         [CommandProperty(AccessLevel.GameMaster)]
-        public int SkillPoints
+        public int AllottedCraftSkillPoints
         {
             get
             {
-                return m_SkillPoints;
+                return m_AllottedCraftSkillPoints;
             }
             set
             {
-                m_SkillPoints = value;
-                InvalidateProperties();
+                m_AllottedCraftSkillPoints = value;
             }
         }
         [CommandProperty(AccessLevel.GameMaster)]
-        public int Experience
+        public int CraftSkillPoints
         {
             get
             {
-                return m_Experience;
+                return m_CraftSkillPoints;
             }
             set
             {
-                m_Experience = value;
-                InvalidateProperties();
+                m_CraftSkillPoints = value;
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int NonCraftSkillPoints
+        {
+            get
+            {
+                return m_NonCraftSkillPoints;
+            }
+            set
+            {
+                m_NonCraftSkillPoints = value;
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int LevelExperience
+        {
+            get
+            {
+                return m_LevelExperience;
+            }
+            set
+            {
+                m_LevelExperience = value;
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int CraftExperience
+        {
+            get
+            {
+                return m_CraftExperience;
+            }
+            set
+            {
+                m_CraftExperience = value;
                 CheckExperience();
             }
         }
-
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int NonCraftExperience
+        {
+            get
+            {
+                return m_NonCraftExperience;
+            }
+            set
+            {
+                m_NonCraftExperience = value;
+                CheckExperience();
+            }
+        }
+        private int GetBaseExperience(string level)
+        {
+            return (int)Enum.Parse(typeof(Level), level);
+        }
         private Level EntitledLevel()
         {
-            return Enum.GetValues(typeof(Level)).Cast<Level>().Where(level => Experience >= (int)level).Max();
+            return Enum.GetValues(typeof(Level)).Cast<Level>().Where(level => m_LevelExperience + m_NonCraftExperience + m_NonCraftExperience >= (int)level).Max();
         }
         public void CheckExperience()
         {
@@ -371,13 +437,28 @@ namespace Server.Mobiles
             string newLevel = Enum.GetName(typeof(Level), entitledLevel);
             if (newLevel != m_Level)
             {
+                int currentLevelBaseExp = GetBaseExperience(m_Level);
+                // get the experience value between current level and next
+                int intermediaryExp = (int)entitledLevel - currentLevelBaseExp;
                 m_Level = newLevel;
-                m_SkillPoints += 14;
-                m_StatPoints += 5;
-                if (m_Experience >= 45000)
+                // get remaining experience to add later
+                int remainingExp = (m_LevelExperience + m_NonCraftExperience + m_CraftExperience) - (int)entitledLevel;
+                if (remainingExp< 0)
                 {
-                    m_TalentPoints += 1;
+                    remainingExp = 0;
                 }
+                // calculate % contributions, round down not up to figure out point allocation
+                double craftingContr = m_CraftExperience / intermediaryExp;
+                double nonCraftingContr = m_NonCraftExperience / intermediaryExp;
+
+                m_NonCraftSkillPoints += (int)Math.Round(nonCraftingContr);
+                m_CraftSkillPoints += (int)Math.Round(craftingContr);
+                m_StatPoints += 5;
+                m_TalentPoints += 1;
+
+                // reset craft and non craft experience for next level tracking
+                m_CraftExperience = (int)(remainingExp * craftingContr);
+                m_NonCraftExperience = (int)(remainingExp * nonCraftingContr);
                 SendMessage("You have gained a level!");
                 FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
                 PlaySound(0x202);
@@ -394,7 +475,6 @@ namespace Server.Mobiles
             set
             {
                 m_HardCore = value;
-                InvalidateProperties();
             }
         }
 
@@ -408,7 +488,6 @@ namespace Server.Mobiles
             set
             {
                 m_Level = value;
-                InvalidateProperties();
             }
         }
 
@@ -473,7 +552,18 @@ namespace Server.Mobiles
             }
         }
 
-        public HashSet<BaseTalent> Talents { get; set; }
+        private ConcurrentDictionary<Type, BaseTalent> m_Talents;
+        public ConcurrentDictionary<Type, BaseTalent> Talents
+        {
+            get
+            {
+                return m_Talents;
+            }
+            set
+            {
+                m_Talents = value;
+            }
+        }
         public List<Item> EquipSnapshot { get; private set; }
 
         public SkillName Learning { get; set; } = (SkillName)(-1);
@@ -584,6 +674,9 @@ namespace Server.Mobiles
 
         public bool NinjaWepCooldown { get; set; }
 
+        public List<Mobile> AllDebtees => m_AllDebtees ?? (m_AllDebtees = new List<Mobile>());
+        public List<Mobile> Henchmen => m_Henchmen ?? (m_Henchmen = new List<Mobile>());
+        public List<Mobile> RestedHenchmen => m_RestedHenchmen ?? (m_RestedHenchmen = new List<Mobile>());
         public List<Mobile> AllFollowers => m_AllFollowers ?? (m_AllFollowers = new List<Mobile>());
 
         public RankDefinition GuildRank
@@ -1051,14 +1144,14 @@ namespace Server.Mobiles
 
         public BaseTalent GetTalent(Type type)
         {
-            try
+            BaseTalent talent;
+            if (Talents.TryGetValue(type, out talent))
             {
-                return Talents.Where(w => w.GetType() == type && w.Level > 0).First();
-            } catch (InvalidOperationException exception)
+                return talent;
+            } else
             {
                 return null;
             }
-            
         }
 
         public static Direction GetDirection4(Point3D from, Point3D to)
@@ -1503,6 +1596,14 @@ namespace Server.Mobiles
             if (from is PlayerMobile mobile)
             {
                 mobile.ClaimAutoStabledPets();
+                foreach (KeyValuePair<Type, BaseTalent> entry in mobile.Talents)
+                {
+                    if (entry.Value.Level > 0)
+                    {
+                        entry.Value.UpdateMobile(mobile);
+                    }
+                }
+
             }
         }
 
@@ -2142,11 +2243,20 @@ namespace Server.Mobiles
                     {
                         list.Add(new CallbackEntry(6169, ToggleQuestItem)); // Toggle Quest Item
                     }
-                    foreach (BaseTalent talent in Talents.Where(w => w.CanBeUsed && !w.OnCooldown))
+                    bool onUseTalent = false;
+                    foreach (KeyValuePair<Type, BaseTalent> entry in Talents)
                     {
-                        list.Add(new UseTalentEntry(this, talent));
+                        if (entry.Value.CanBeUsed)
+                        {
+                            onUseTalent = true;
+                        }
+                    }
+                    if (onUseTalent)
+                    {
+                        list.Add(new TalentBarEntry(this));
                     }
                 }
+             
 
                 var house = BaseHouse.FindHouseAt(this);
 
@@ -2713,13 +2823,15 @@ namespace Server.Mobiles
 
             // check for talent death effects
             bool beforeDeathTalentSave = false;
-            foreach (BaseTalent talent in Talents.Where(w => w.HasBeforeDeathSave && !w.OnCooldown))
+            foreach(KeyValuePair<Type,BaseTalent> entry in Talents)
             {
-                talent.CheckBeforeDeathEffect(this);
-                beforeDeathTalentSave = true;
-                break;
+                if (entry.Value.HasBeforeDeathSave && !entry.Value.OnCooldown)
+                {
+                    entry.Value.CheckBeforeDeathEffect(this);
+                    beforeDeathTalentSave = true;
+                }
             }
-
+           
             return (beforeDeathTalentSave && base.OnBeforeDeath());
         }
 
@@ -3211,39 +3323,48 @@ namespace Server.Mobiles
 
         public override void Deserialize(IGenericReader reader)
         {
-            //TalentSerializer.Serialize(Talents, writer);
-            //writer.Write(m_TalentPoints);
-            //writer.Write(m_StatPoints);
-            //writer.Write(m_SkillPoints);
-            //writer.Write(m_Experience);
-            //writer.Write(m_HardCore);
-            //writer.Write(m_Level);
-
-            Talents = new HashSet<BaseTalent>(); // set Talents to empty hashset by default
+            Talents = new ConcurrentDictionary<Type, BaseTalent>(); // set Talents to empty dictionary by default
             base.Deserialize(reader);
             var version = reader.ReadInt();
             switch (version)
             {
+                case 32:
+                    m_RestedHenchmen = reader.ReadEntityList<Mobile>(); // henchmen feature
+                    m_Henchmen = reader.ReadEntityList<Mobile>(); // henchmen feature
+                    m_AllDebtees = reader.ReadEntityList<Mobile>(); // land lord feature
+                    goto case 31;
                 case 31:
                     // reset followers to default
                     FollowersMax = 5;
                     var talentCount = reader.ReadInt();
                     for (var i = 0; i < talentCount; ++i)
                     {
-                        var type = TalentSerializer.ReadType(BaseTalent.TalentTypes, reader);
-                        var bt = TalentSerializer.Construct(type) as BaseTalent;
-                        bt.Level = reader.ReadInt();
-                        Talents.Add(bt);
+                        var index = reader.ReadEncodedInt();
+                        Type type = BaseTalent.TalentTypes[index];
+                        var baseTalent = TalentConstructor.Construct(type) as BaseTalent;
+                        if (baseTalent != null)
+                        {
+                            baseTalent.Level = reader.ReadInt();
+                            Talents.AddOrUpdate(type, baseTalent, (t, bt) => baseTalent);
+                        }
+                        else
+                        {
+                            int dummyLevel = reader.ReadInt();
+                        }                        
                     }
                     m_TalentPoints = reader.ReadInt();
-                    goto case 30;
-                case 30:
                     m_StatPoints = reader.ReadInt();
-                    m_SkillPoints = reader.ReadInt();
-                    m_Experience = reader.ReadInt();
+                    m_AllottedCraftSkillPoints = reader.ReadInt();
+                    m_CraftSkillPoints = reader.ReadInt();
+                    m_NonCraftSkillPoints = reader.ReadInt();
+                    m_LevelExperience = reader.ReadInt();
+                    m_CraftExperience = reader.ReadInt();
+                    m_NonCraftExperience = reader.ReadInt();
                     m_HardCore = reader.ReadBool();
                     m_HardCore = true; // new default, all players are roguelike
                     m_Level = reader.ReadString();
+                    goto case 29;
+                case 30:
                     goto case 29;
                 case 29:
                     {
@@ -3578,12 +3699,28 @@ namespace Server.Mobiles
 
             base.Serialize(writer);
 
-            writer.Write(31); // version
-            TalentSerializer.Serialize(Talents, writer);
+            writer.Write(32); // version
+            writer.Write(m_RestedHenchmen);
+            writer.Write(m_Henchmen);
+            writer.Write(m_AllDebtees);
+            writer.Write(m_Talents.Count);
+            for (var i = 0; i < BaseTalent.TalentTypes.Length; ++i)
+            {
+                BaseTalent talent = GetTalent(BaseTalent.TalentTypes[i]);
+                if (talent != null)
+                {
+                    writer.WriteEncodedInt(i);
+                    writer.Write(talent.Level);
+                }
+            }
             writer.Write(m_TalentPoints);
             writer.Write(m_StatPoints);
-            writer.Write(m_SkillPoints);
-            writer.Write(m_Experience);
+            writer.Write(m_AllottedCraftSkillPoints);
+            writer.Write(m_CraftSkillPoints);
+            writer.Write(m_NonCraftSkillPoints);
+            writer.Write(m_LevelExperience);
+            writer.Write(m_CraftExperience);
+            writer.Write(m_NonCraftExperience);
             writer.Write(m_HardCore);
             writer.Write(m_Level);
 

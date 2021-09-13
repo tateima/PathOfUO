@@ -9,7 +9,7 @@ namespace Server.Talent
         {
             DisplayName = "Sonic affinity";
             Description = "Increases effectiveness of provocation, peacemaking and discordance.";
-            ImageID = 30234;
+            ImageID = 163;
             GumpHeight = 85;
             AddEndY = 80;
         }

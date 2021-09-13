@@ -11,11 +11,14 @@ namespace Server.Talent
             TalentDependency = typeof(ShieldFocus);
             DisplayName = "Shield bash";
             Description = "Stun target if hits for 2 second per level. 30 second cooldown.";
-            ImageID = 39889;
+            ImageID = 351;
+            GumpHeight = 75;
+            AddEndY = 105;
         }
         public override void CheckHitEffect(Mobile defender, Mobile attacker, int damage)
         {
-            if (Activated && defender.Weapon != null && defender.Weapon is BaseWeapon weapon)
+
+            if (Activated && defender.Weapon != null && defender.Weapon is BaseWeapon weapon && defender.FindItemOnLayer(Layer.TwoHanded) is BaseShield shield)
             {
                 if (weapon.CheckHit(attacker, defender))
                 {

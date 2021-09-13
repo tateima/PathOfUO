@@ -32,7 +32,7 @@ namespace Server.Spells.Spellweaving
             {
                 return;
             }
-
+          
             if (!Caster.CanSee(m))
             {
                 Caster.SendLocalizedMessage(500237); // Target can not be seen.
@@ -52,7 +52,13 @@ namespace Server.Spells.Spellweaving
                 Caster.FixedEffect(0x374A, 10, 20);
                 Caster.PlaySound(0x5C9);
 
-                if (m.Poisoned)
+                BaseTalent venomBlood = null;
+                if (m is PlayerMobile playerTarget)
+                {
+                    venomBlood = playerTarget.GetTalent(typeof(VenomBlood));
+                }
+
+                if (m.Poisoned && !(venomBlood != null && venomBlood.Activated))
                 {
                     m.CurePoison(m);
                 }

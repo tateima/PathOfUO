@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Server;
 using Server.ContextMenus;
 using Server.Network;
@@ -38,103 +39,140 @@ namespace Server.Gumps
             {
                 from.CloseGump<CharacterSheetGump>();
             }
-            if (skillGroup != null)
+            if (from is PlayerMobile player)
             {
-                m_SkillGroup = skillGroup;
-            }
-            Closable = true;
-            Disposable = true;
-            Draggable = true;
-            Resizable = false;
-            AddPage(0);
-            AddImage(40, 36, 500);
-            from.SendSound(0x55);
-            int y = 100;
-            // this.AddButton(525, 50, 1058, 1058, 1001, GumpButtonType.Reply, 0);
-            if (page > 1)
-            {
-                AddButton(40, 35, 501, 501, 1000, GumpButtonType.Reply, 0);
-            }
-
-            int x = 90;
-            if (page == 2 && m_SkillGroup != null)
-            {
-                AddLabel(110, 60, 0, m_SkillGroup.Name);
-                AddLabel(90, 80, 0, "Skill Points: " + ((PlayerMobile)from).SkillPoints.ToString());
-                y = 100;
-                for (int i = 0; i < m_SkillGroup.Skills.Length; ++i)
+                if (skillGroup != null)
                 {
-                    int buttonX = 220;
-                    if (i > 6)
+                    m_SkillGroup = skillGroup;
+                }
+                Closable = true;
+                Disposable = true;
+                Draggable = true;
+                Resizable = false;
+                AddPage(0);
+                AddImage(40, 36, 500);
+                from.SendSound(0x55);
+                int y = 100;
+                // this.AddButton(525, 50, 1058, 1058, 1001, GumpButtonType.Reply, 0);
+                if (page > 1)
+                {
+                    AddButton(40, 35, 501, 501, 1000, GumpButtonType.Reply, 0);
+                }
+
+                int x = 90;
+                if (page == 2 && m_SkillGroup != null)
+                {
+                    AddLabel(110, 60, 0, m_SkillGroup.Name);
+                    AddLabel(90, 80, 0, "Skill Points: " + player.CraftSkillPoints.ToString() + "C/" + player.NonCraftSkillPoints.ToString() + "NC");
+                    y = 100;
+                    for (int i = 0; i < m_SkillGroup.Skills.Length; ++i)
                     {
-                        // go to next page
-                        x = 270;
-                        buttonX = 390;
-                    }
-                    if (i == 7)
-                    {
-                        y = 60;
-                    }
-                    Skill skill = from.Skills[m_SkillGroup.Skills[i]];
-                    if (skill != null)
-                    {
-                        string currentSkillValue = ((PlayerMobile)from).Skills[m_SkillGroup.Skills[i]].Base.ToString();
-                        if (skill.Lock != SkillLock.Locked)
+                        int buttonX = 220;
+                        if (i > 6)
                         {
-                            AddLabel(x, y, 0, skill.Name + " " + currentSkillValue);
-                            if (((PlayerMobile)from).SkillPoints > 0)
+                            // go to next page
+                            x = 270;
+                            buttonX = 390;
+                        }
+                        if (i == 7)
+                        {
+                            y = 60;
+                        }
+                        Skill skill = from.Skills[m_SkillGroup.Skills[i]];
+                        if (skill != null)
+                        {
+                            string currentSkillValue = player.Skills[m_SkillGroup.Skills[i]].Base.ToString();
+                            if (skill.Lock != SkillLock.Locked)
                             {
-                                AddButton(buttonX, y + 2, 2223, 2223, 200 + i, GumpButtonType.Reply, 0);
+                                AddLabel(x, y, 0, skill.Name + " " + currentSkillValue);
+                                if (
+                                    (IsCraftingSkill(m_SkillGroup.Skills[i]) && player.CraftSkillPoints > 0)
+                                    ||
+                                    (!IsCraftingSkill(m_SkillGroup.Skills[i]) && player.NonCraftSkillPoints > 0)
+                                    )
+                                {
+                                    AddButton(buttonX, y + 2, 2223, 2223, 200 + i, GumpButtonType.Reply, 0);
+                                }
                             }
+                            else
+                            {
+                                AddLabel(x, y, 0, skill.Name + " " + currentSkillValue + " - Locked");
+                            }
+                            y += 20;
                         }
-                        else
-                        {
-                            AddLabel(x, y, 0, skill.Name + " " + currentSkillValue + " - Locked");
-                        }
+                    }
+                }
+                else
+                {
+                    if (player.HardCore)
+                    {
+                        AddLabel(90, 20, 0, "Character Sheet - (Hardcore)");
+                    }
+                    else
+                    {
+                        AddLabel(90, 20, 0, "Character Sheet");
+                    }
+                    AddLabel(90, 60, 0, "Level: " + (Array.IndexOf(Enum.GetNames(typeof(Level)), player.Level) + 1).ToString());
+                    AddLabel(90, 80, 0, "Experience Points:");
+                    int totalExperience = player.LevelExperience + player.CraftExperience + player.NonCraftExperience;
+                    AddLabel(90, 100, 0, totalExperience.ToString());
+                    AddLabel(90, 120, 0, "Talents");
+                    AddButton(190, 124, 2223, 2223, 300, GumpButtonType.Reply, 0);
+                    AddLabel(90, 140, 0, "Stat Points: " + player.StatPoints.ToString());
+                    AddLabel(90, 160, 0, "Strength: " + from.RawStr.ToString());
+                    if (player.StatPoints > 0)
+                    {
+                        AddButton(190, 162, 2223, 2223, 1, GumpButtonType.Reply, 0);
+                    }
+                    AddLabel(90, 180, 0, "Dexterity: " + from.RawDex.ToString());
+                    if (player.StatPoints > 0)
+                    {
+                        AddButton(190, 182, 2223, 2223, 2, GumpButtonType.Reply, 0);
+                    }
+                    AddLabel(90, 200, 0, "Intelligence: " + from.RawInt.ToString());
+                    if (player.StatPoints > 0)
+                    {
+                        AddButton(190, 202, 2223, 2223, 3, GumpButtonType.Reply, 0);
+                    }
+
+                    AddLabel(270, 60, 0, "Skill Points: " + player.CraftSkillPoints.ToString() + "C/" + player.NonCraftSkillPoints.ToString() + "NC");
+                    AddLabel(270, 80, 0, "Skill Groups");
+                    for (int i = 0; i < m_Groups.Length; ++i)
+                    {
+                        AddLabel(270, y, 0, m_Groups[i].Name);
+                        AddButton(390, y + 2, 2223, 2223, 100 + i, GumpButtonType.Reply, 0);
                         y += 20;
                     }
                 }
             }
             else
             {
-                if (((PlayerMobile)from).HardCore)
+                from.CloseGump<CharacterSheetGump>();
+            }
+        }
+
+        public bool IsCraftingSkill(SkillName skillToCheck)
+        {
+            bool isCraftingSkill = false;
+            SkillsGumpGroup craftingGroup = SkillsGumpGroup.Groups.Where(group => group.Name == "Crafting").FirstOrDefault();
+            SkillName[] harvestingGroup = new[]
+                        {
+                            SkillName.Camping,
+                            SkillName.Fishing,
+                            SkillName.Herding,
+                            SkillName.Lumberjacking,
+                            SkillName.Mining
+                        };
+            SkillName[] combinedSkills = craftingGroup.Skills.Concat(harvestingGroup).ToArray();
+            foreach (SkillName craftingSkillName in combinedSkills)
+            {
+                if (craftingSkillName == skillToCheck)
                 {
-                    AddLabel(90, 20, 0, "Character Sheet - (Hardcore)");
-                }
-                else
-                {
-                    AddLabel(90, 20, 0, "Character Sheet");
-                }
-                AddLabel(90, 60, 0, "Level: " + (Array.IndexOf(Enum.GetNames(typeof(Level)), ((PlayerMobile)from).Level) + 1).ToString());
-                AddLabel(90, 80, 0, "Experience Points:");
-                AddLabel(90, 100, 0, ((PlayerMobile)from).Experience.ToString());
-                AddLabel(90, 120, 0, "Talents");
-                AddButton(190, 122, 2223, 2223, 300, GumpButtonType.Reply, 0);
-                AddLabel(90, 140, 0, "Stat Points: " + ((PlayerMobile)from).StatPoints.ToString());
-                AddLabel(90, 160, 0, "Strength: " + from.RawStr.ToString());
-                if (((PlayerMobile)from).StatPoints > 0)
-                {
-                    AddButton(190, 155, 2151, 2153, 1, GumpButtonType.Reply, 0);
-                }
-                AddLabel(90, 180, 0, "Dexterity: " + from.RawDex.ToString());
-                if (((PlayerMobile)from).StatPoints > 0)
-                {
-                    AddButton(190, 175, 2151, 2153, 2, GumpButtonType.Reply, 0);
-                }
-                AddLabel(90, 200, 0, "Intelligence: " + from.RawInt.ToString());
-                if (((PlayerMobile)from).StatPoints > 0)
-                {
-                    AddButton(190, 195, 2151, 2153, 3, GumpButtonType.Reply, 0);
-                }
-                AddLabel(270, 60, 0, "Skill Points: " + ((PlayerMobile)from).SkillPoints.ToString());
-                AddLabel(270, 80, 0, "Skill Groups");
-                for (int i = 0; i < m_Groups.Length; ++i)
-                {
-                    AddLabel(270, y, 0, m_Groups[i].Name);
-                    AddButton(390, y + 2, 2223, 2223, 100 + i, GumpButtonType.Reply, 0);
-                    y += 20;
+                    isCraftingSkill = true;
+                    break;
                 }
             }
+            return isCraftingSkill;
         }
 
         public override void OnResponse(NetState state, RelayInfo info)
@@ -152,7 +190,7 @@ namespace Server.Gumps
                     } else if (info.ButtonID == 300)
                     {
                         player.CloseGump<CharacterSheetGump>();
-                        player.SendGump(new TalentGump(player, 1));
+                        player.SendGump(new TalentGump(player, 1, 0, new List<TalentGump.TalentGumpPage>()));
                        return;
                     }
 
@@ -178,6 +216,16 @@ namespace Server.Gumps
                     }
                     if (page == 2) // Skills
                     {
+                        SkillsGumpGroup craftingGroup = SkillsGumpGroup.Groups.Where(group => group.Name == "Crafting").FirstOrDefault();
+                        SkillName[] harvestingGroup = new[]
+                        {
+                            SkillName.Camping,
+                            SkillName.Fishing,
+                            SkillName.Herding,
+                            SkillName.Lumberjacking,
+                            SkillName.Mining
+                        };
+
                         if (info.ButtonID < 200)
                         {
                             m_SkillGroup = m_Groups[info.ButtonID - 100];
@@ -187,8 +235,16 @@ namespace Server.Gumps
                             Skill skill = player.Skills[m_SkillGroup.Skills[info.ButtonID - 200]];
                             if (skill != null)
                             {
+                                if (IsCraftingSkill(m_SkillGroup.Skills[info.ButtonID - 200]))
+                                {
+                                    player.CraftSkillPoints--;
+                                    player.AllottedCraftSkillPoints++;
+                                }
+                                else 
+                                {
+                                    player.NonCraftSkillPoints--;
+                                }
                                 player.Skills[m_SkillGroup.Skills[info.ButtonID - 200]].Base++;
-                                player.SkillPoints--;
                             }
                         }
                         else

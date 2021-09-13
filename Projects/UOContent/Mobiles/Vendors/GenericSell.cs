@@ -102,7 +102,21 @@ namespace Server.Mobiles
             return price;
         }
 
-        public int GetBuyPriceFor(Item item) => (int)(1.90 * GetSellPriceFor(item));
+        public int GetBuyPriceFor(Item item)
+        {
+            double talentScalar = 100.0;
+            if (item.RootParent is PlayerMobile seller)
+            {
+                BaseTalent smoothTalker = seller.GetTalent(typeof(SmoothTalker));
+                if (smoothTalker != null)
+                {
+                    talentScalar -= smoothTalker.ModifySpellScalar();
+                }
+            }
+            int buyPrice = (int)(1.90 * GetSellPriceFor(item));
+            buyPrice = AOS.Scale(buyPrice, (int)talentScalar);
+            return buyPrice;
+        }
 
         public Type[] Types
         {

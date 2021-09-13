@@ -17,23 +17,26 @@ namespace Server.Talent
             CanBeUsed = true;
             DisplayName = "Dominate creature";
             Description = "Chance on to control target for 1 minute per level. 5 minute cooldown.";
-            ImageID = 30049;
+            ImageID = 191;
         }
         public override bool HasSkillRequirement(Mobile mobile)
         {
-            SkillsGumpGroup group = SkillsGumpGroup.Groups.Where(group => group.Name == "Bardic").First();
+            SkillsGumpGroup group = SkillsGumpGroup.Groups.Where(group => group.Name == "Bardic").FirstOrDefault();
             bool bardicValid = false;
             bool musicValid = false;
-            foreach (SkillName skill in group.Skills)
+            if (group != null)
             {
-                if (skill == SkillName.Musicianship && mobile.Skills[skill].Base >= 90)
+                foreach (SkillName skill in group.Skills)
                 {
-                    musicValid = true;
-                }
-                // this needs all bardic skills to be atleast 70
-                else
-                {
-                    bardicValid = (mobile.Skills[skill].Base >= 70);
+                    if (skill == SkillName.Musicianship && mobile.Skills[skill].Base >= 90)
+                    {
+                        musicValid = true;
+                    }
+                    // this needs all bardic skills to be atleast 70
+                    else
+                    {
+                        bardicValid = (mobile.Skills[skill].Base >= 70);
+                    }
                 }
             }
             return (bardicValid && musicValid);

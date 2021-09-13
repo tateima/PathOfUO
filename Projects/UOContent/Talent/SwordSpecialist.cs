@@ -14,7 +14,9 @@ namespace Server.Talent
             DisplayName = "Sword specialist";
             IncreaseHitChance = true;
             Description = "Increases damage and hit chance of sword weapons.";
-            ImageID = 30197;
+            ImageID = 49;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {

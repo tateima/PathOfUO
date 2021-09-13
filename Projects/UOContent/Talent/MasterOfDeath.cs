@@ -17,11 +17,11 @@ namespace Server.Talent
             HasKillEffect = true;
             DisplayName = "Master of death";
             Description = "Chance to summon nearby corpses as undead allies killed by player.";
-            ImageID = 39863;
+            ImageID = 154;
         }
         public BaseCreature TransferMobileStats(Mobile target, BaseCreature destination)
         {
-            SkillsGumpGroup[] groups = (SkillsGumpGroup[])SkillsGumpGroup.Groups.Where(group => group.Name == "Magical" || group.Name == "Combat Ratings" || group.Name == "Lore & Knowledge");
+            SkillsGumpGroup[] groups = SkillsGumpGroup.Groups.Where(group => group.Name == "Magical" || group.Name == "Combat Ratings" || group.Name == "Lore & Knowledge").ToArray();
             foreach (SkillsGumpGroup group in groups)
             {
                 foreach(SkillName skill in group.Skills)

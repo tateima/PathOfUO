@@ -1,4 +1,6 @@
 using Server.Targeting;
+using Server.Talent;
+using Server.Mobiles;
 
 namespace Server.Items
 {
@@ -10,6 +12,21 @@ namespace Server.Items
             Stackable = true;
             Weight = 1.0;
             Amount = amount;
+            Amount += CheckEfficientSpinner((Mobile)Parent);
+        }
+
+        public static int CheckEfficientSpinner(Mobile from)
+        {
+            BaseTalent spinMaster = null;
+            if (from is PlayerMobile player)
+            {
+                spinMaster = player.GetTalent(typeof(EfficientSpinner));
+                if (spinMaster != null)
+                {
+                   return spinMaster.GetExtraResourceCheck();
+                }
+           }
+            return 0;
         }
 
         public bool Dye(Mobile from, DyeTub sender)
@@ -123,7 +140,7 @@ namespace Server.Items
     {
         [Constructible]
         public SpoolOfThread(int amount = 1) : base(0xFA0, amount)
-        {
+        { 
         }
     }
 }

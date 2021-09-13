@@ -9,7 +9,8 @@ namespace Server.Talent
         {
             DisplayName = "Experienced hunter";
             Description = "Increases damage to animals.";
-            ImageID = 39867;
+            ImageID = 164;
+            AddEndY = 45;
         }
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)

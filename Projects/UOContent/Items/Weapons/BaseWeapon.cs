@@ -1134,17 +1134,26 @@ namespace Server.Items
             {
                 PlayerMobile player = (PlayerMobile)attacker;
                 holyAvenger = player.GetTalent(typeof(HolyAvenger));
-                foreach (BaseTalent talent in player.Talents.Where(w => w.IncreaseHitChance && w.CanApplyHitEffect(this)))
+                foreach (KeyValuePair<Type, BaseTalent> entry in player.Talents)
                 {
-                    bonus += talent.GetHitChanceModifier();
+                    if (entry.Value.IncreaseHitChance && entry.Value.CanApplyHitEffect(this))
+                    {
+                        bonus += entry.Value.GetHitChanceModifier();
+                    }
                 }
             }
 
             if (defender is PlayerMobile)
             {
-                BaseTalent keenSenses = ((PlayerMobile)defender).GetTalent(typeof(KeenSenses));
-                if (keenSenses != null && ((KeenSenses)keenSenses).CheckDodge())
+                KeenSenses keenSenses = (KeenSenses)((PlayerMobile)defender).GetTalent(typeof(KeenSenses));
+                BarrierGuard barrierGuard = (BarrierGuard)((PlayerMobile)defender).GetTalent(typeof(BarrierGuard));
+                Phalanx phalanx = (Phalanx)((PlayerMobile)defender).GetTalent(typeof(Phalanx));
+                bool keenSenseCheck = (keenSenses != null && keenSenses.CheckDodge());
+                bool barrierGuardCheck = (barrierGuard != null && barrierGuard.CheckParry());
+                bool phalanxCheck = (phalanx != null && phalanx.CheckBlock(this));
+                if (keenSenseCheck || barrierGuardCheck || phalanxCheck)
                 {
+                    defender.FixedEffect(0x37B9, 10, 16);
                     return false;
                 }
             }
@@ -2282,16 +2291,22 @@ namespace Server.Items
 
             if (attacker is PlayerMobile)
             {
-                foreach (BaseTalent talent in ((PlayerMobile)attacker).Talents.Where(w => w.CanApplyHitEffect(this)))
+                foreach (KeyValuePair<Type, BaseTalent> entry in ((PlayerMobile)attacker).Talents)
                 {
-                    talent.CheckHitEffect(attacker, defender, damageGiven);
+                    if (entry.Value.CanApplyHitEffect(this))
+                    {
+                        entry.Value.CheckHitEffect(attacker, defender, damageGiven);
+                    }
                 }
             }
             if (defender is PlayerMobile)
             {
-                foreach (BaseTalent talent in ((PlayerMobile)defender).Talents.Where(w => w.HasDefenseEffect))
+                foreach (KeyValuePair<Type, BaseTalent> entry in ((PlayerMobile)defender).Talents)
                 {
-                    talent.CheckDefenseEffect(defender, attacker, damageGiven);
+                    if (entry.Value.HasDefenseEffect)
+                    {
+                        entry.Value.CheckDefenseEffect(defender, attacker, damageGiven);
+                    }
                 }
             }
         }
@@ -2497,15 +2512,21 @@ namespace Server.Items
             }
             if (attacker is PlayerMobile attackingPlayer)
             {
-                foreach (BaseTalent talent in attackingPlayer.Talents.Where(w => w.CanApplyHitEffect(this)))
+                foreach (KeyValuePair<Type, BaseTalent> entry in attackingPlayer.Talents)
                 {
-                    talent.CheckMissEffect(attacker, defender);
+                    if (entry.Value.CanApplyHitEffect(this))
+                    {
+                        entry.Value.CheckMissEffect(attacker, defender);
+                    }
                 }
             }
             if (defender is PlayerMobile defendingPlayer) {
-                foreach (BaseTalent talent in defendingPlayer.Talents.Where(w => w.CanApplyHitEffect(this)))
+                foreach (KeyValuePair<Type, BaseTalent> entry in defendingPlayer.Talents)
                 {
-                    talent.CheckDefenderMissEffect(attacker, defender);
+                    if (entry.Value.CanApplyHitEffect(this))
+                    {
+                        entry.Value.CheckDefenderMissEffect(attacker, defender);
+                    }
                 }
             }
         }

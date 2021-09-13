@@ -12,7 +12,9 @@ namespace Server.Talent
             RequiredWeapon = new Type[] { typeof(BaseRanged) };
             DisplayName = "Careful shooter";
             Description = "Lowers chance for arrow to be lost on miss.";
-            ImageID = 30118;
+            ImageID = 171;
+            GumpHeight = 85;
+            AddEndY = 75;
         }
     }
 }

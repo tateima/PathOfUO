@@ -10,7 +10,7 @@ namespace Server.Talent
             TalentDependency = typeof(GiantsHeritage);
             DisplayName = "Iron skin";
             Description = "Increases armor rating.";
-            ImageID = 30214;
+            ImageID = 119;
             GumpHeight = 70;
             AddEndY = 65;
         }

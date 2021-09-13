@@ -6,7 +6,7 @@ namespace Server.Talent
 {
     public class PlanarShift : BaseTalent, ITalent
     {
-        public TimerExecutionToken _ActivatedTimerToken;
+        public TimerExecutionToken _activatedTimerToken;
 
         public PlanarShift() : base()
         {
@@ -14,10 +14,10 @@ namespace Server.Talent
             DisplayName = "Planar shift";
             CanBeUsed = true;
             Description = "Reduces damage by 10% per level for 10 seconds. 3 minute cooldown.";
-            ImageID = 30029;
+            ImageID = 161;
         }
 
-        public virtual void OnUse(Mobile mobile)
+        public override void OnUse(Mobile mobile)
         {
             if (!Activated && !OnCooldown)
             {
@@ -31,7 +31,7 @@ namespace Server.Talent
                    );
                 mobile.PlaySound(0x0F7);
             }
-            Timer.StartTimer(TimeSpan.FromSeconds(10), ExpireActivated, out _ActivatedTimerToken);
+            Timer.StartTimer(TimeSpan.FromSeconds(10), ExpireActivated, out _activatedTimerToken);
             Timer.StartTimer(TimeSpan.FromMinutes(3), ExpireTalentCooldown, out _talentTimerToken);
         }
 

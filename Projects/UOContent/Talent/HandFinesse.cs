@@ -10,7 +10,7 @@ namespace Server.Talent
             TalentDependency = typeof(EscapeDeath);
             DisplayName = "Hand finesse";
             Description = "Decrease time between attacks and reduce damage to weapons on hit.";
-            ImageID = 30203;
+            ImageID = 130;
             GumpHeight = 75;
             AddEndY = 105;
         }

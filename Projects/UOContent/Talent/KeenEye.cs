@@ -10,7 +10,7 @@ namespace Server.Talent
             TalentDependency = typeof(DivineDexterity);
             DisplayName = "Keen eyes";
             Description = "Increased chance of finding special loot on corpses.";
-            ImageID = 30212;
+            ImageID = 123;
             MaxLevel = 6;
             GumpHeight = 85;
             AddEndY = 80;

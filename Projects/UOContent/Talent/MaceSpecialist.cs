@@ -14,7 +14,7 @@ namespace Server.Talent
             RequiredWeaponSkill = SkillName.Macing;
             DisplayName = "Mace specialist";
             Description = "Increases damage to one handed macefighting weapons.";
-            ImageID = 30226;
+            ImageID = 181;
         }
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)

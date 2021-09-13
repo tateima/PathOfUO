@@ -13,7 +13,9 @@ namespace Server.Talent
             IncreaseHitChance = true;
             DisplayName = "Crossbow specialist";
             Description = "Increases damage and hit chance of crossbow weapons.";
-            ImageID = 39899;
+            ImageID = 152;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {

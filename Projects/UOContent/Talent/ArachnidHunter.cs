@@ -12,7 +12,7 @@ namespace Server.Talent
             TalentDependency = typeof(ExperiencedHunter);
             DisplayName = "Arachnid hunter";
             Description = "Increases damage to arachnids and heals damage from them.";
-            ImageID = 30213;
+            ImageID = 149;
         }
         public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
         {

@@ -33,6 +33,7 @@ namespace Server.Mobiles
             SetSkill(SkillName.Wrestling, 65.1, 80.0);
 
             Tamable = true;
+            ControlSlots = 3;
             MinTameSkill = 84.3;
 
             Fame = 4000;

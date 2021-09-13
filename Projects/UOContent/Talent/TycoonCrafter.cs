@@ -8,9 +8,11 @@ namespace Server.Talent
         public TycoonCrafter() : base()
         {
             TalentDependency = typeof(ResourcefulCrafter);
-            DisplayName = "Tycoon";
+            DisplayName = "Tycoon Crafter";
             Description = "Increases value of crafted armor and weapon items sold to vendor.";
-            ImageID = 40022;
+            ImageID = 354;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
 
         public override double ModifySpellScalar()

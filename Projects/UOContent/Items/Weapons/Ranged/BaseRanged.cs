@@ -79,6 +79,15 @@ namespace Server.Items
                             OnMiss(attacker, defender);
                         }
                     }
+                    MultiShot multiShot = null;
+                    if (attacker is PlayerMobile attackingPlayer)
+                    {
+                        multiShot = (MultiShot)attackingPlayer.GetTalent(typeof(MultiShot));
+                    }
+                    if (multiShot != null && multiShot.Activated)
+                    {
+                        multiShot.DoShot(attacker, defender);
+                    }
                 }
 
                 attacker.RevealingAction();

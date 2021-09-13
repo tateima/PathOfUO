@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Server.ContextMenus;
 using Server.Gumps;
 using Server.Items;
+using Server.Talent;
 using Server.Network;
 using Server.Targeting;
 
@@ -319,8 +320,15 @@ namespace Server.Mobiles
                     DoClaim(from, pet);
 
                     from.Stabled.RemoveAt(i);
-
-                    (from as PlayerMobile)?.AutoStabled.Remove(pet);
+                    if (from is PlayerMobile claimingPlayer)
+                    {
+                        claimingPlayer.AutoStabled.Remove(pet);
+                        BaseTalent packLeader = claimingPlayer.GetTalent(typeof(PackLeader));
+                        if (packLeader != null)
+                        {
+                            packLeader.UpdateMobile(claimingPlayer);
+                        }
+                    }
 
                     --i;
 

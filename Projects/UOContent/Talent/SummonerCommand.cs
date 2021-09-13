@@ -10,7 +10,7 @@ namespace Server.Talent
             TalentDependency = typeof(DarkAffinity);
             DisplayName = "Summoner command";
             Description = "Increases power of minions and summoned creatures.";
-            ImageID = 49987;
+            ImageID = 136;
             GumpHeight = 85;
             AddEndY = 75;
         }

@@ -14,7 +14,8 @@ namespace Server.Talent
             TalentDependency = typeof(WarCraftFocus);
             DisplayName = "Strong tools";
             Description = "Your tools are less likely to lose durability on use.";
-            ImageID = 30099;
+            ImageID = 199;
+            AddEndY = 85;
         }
 
     }

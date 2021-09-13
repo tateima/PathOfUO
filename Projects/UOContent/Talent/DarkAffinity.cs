@@ -18,7 +18,7 @@ namespace Server.Talent
             RequiredSpell = new Type[] { typeof(NecromancerSpell), typeof(SpellPlagueSpell), typeof(WordOfDeathSpell) };
             DisplayName = "Dark affinity";
             Description = "Enhances damage and strength of dark arts and spells.";
-            ImageID = 30042;
+            ImageID = 129;
             GumpHeight = 85;
             AddEndY = 80;
         }

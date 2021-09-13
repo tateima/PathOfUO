@@ -1,3 +1,6 @@
+using Server.Talent;
+using System;
+
 namespace Server.Mobiles
 {
     public class VendorAI : BaseAI
@@ -120,6 +123,31 @@ namespace Server.Mobiles
 
             if (m_Mobile is BaseVendor vendor && from.InRange(m_Mobile, Core.AOS ? 1 : 4) && !e.Handled)
             {
+                // if someone is trying to collect tax and their serials match
+                if (e.Speech.ToLower().Contains("collect tax") && vendor.TaxCollectorSerial == from.Serial.ToInt32() && vendor.NextCollectionTime <= DateTime.Now)  
+                {
+                    TaxCollector taxCollector = (TaxCollector)((PlayerMobile)from).GetTalent(typeof(TaxCollector));
+                    if (taxCollector != null)
+                    {
+                        int random = Utility.Random(75); // up to 75 gold per level
+                        int taxAmount = taxCollector.Level * random;
+                        if (taxCollector.CanAffordLoss((PlayerMobile)from, taxAmount))
+                        {
+                            taxCollector.ProcessGoldGain((PlayerMobile)from, taxAmount, taxCollector.VendorCantPay());
+                            vendor.NextCollectionTime = DateTime.Now.AddHours(3); // every 3 hours
+                        } else
+                        {
+                            m_Mobile.Say("Thou cannot afford to collect taxes right now.");
+                        }
+                    }
+                } else if (vendor.TaxCollectorSerial != from.Serial.ToInt32() && vendor.TaxCollectorSerial > 0)
+                {
+                    m_Mobile.Say("I am funded by another adventurer.");
+                } else if (e.Speech.ToLower().Contains("collect tax"))
+                {
+                    m_Mobile.Say("Thou cannot collect taxes from me.");
+                }
+
                 if (e.HasKeyword(0x14D)) // *vendor sell*
                 {
                     e.Handled = true;

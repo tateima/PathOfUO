@@ -12,7 +12,9 @@ namespace Server.Talent
             IncreaseHitChance = true;
             DisplayName = "Fencing specialist";
             Description = "Increases damage and hit chance of one handed fencing weapons.";
-            ImageID = 30145;
+            ImageID = 346;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {

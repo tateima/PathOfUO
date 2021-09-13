@@ -18,7 +18,8 @@ namespace Server.Items
         Fireball,
         GreaterHealing,
         Lightning,
-        ManaDraining
+        ManaDraining,
+        Device
     }
 
     [Serializable(1, false)]
@@ -168,6 +169,9 @@ namespace Server.Items
                 case WandEffect.ManaDraining:
                     list.Add(1017339, _charges.ToString());
                     break; // mana drain charges: ~1_val~
+                case WandEffect.Device:
+                    list.Add(1060658, "{0}\t{1}", "device charges:", _charges);  // ~1_val~: ~2_val~
+                    break;
             }
         }
 

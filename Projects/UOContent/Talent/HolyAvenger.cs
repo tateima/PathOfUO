@@ -14,7 +14,7 @@ namespace Server.Talent
             HasDefenseEffect = true;
             DisplayName = "Holy avenger";
             Description = "Increased damage to holy spells, adds reflective and area of affect damage in combat.";
-            ImageID = 30016;
+            ImageID = 293;
         }
         public override bool HasSkillRequirement(Mobile mobile)
         {

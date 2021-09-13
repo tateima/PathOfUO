@@ -11,7 +11,7 @@ namespace Server.Talent
             TalentDependency = typeof(ManaShield);
             DisplayName = "Spell mind";
             Description = "Reduces damage loss from spells cast without reagents. Increases damage by spells with reagents.";
-            ImageID = 39882;
+            ImageID = 128;
         }
 
     }

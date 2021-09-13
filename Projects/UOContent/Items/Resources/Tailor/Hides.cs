@@ -1,3 +1,6 @@
+using Server.Talent;
+using Server.Mobiles;
+
 namespace Server.Items
 {
     [Serializable(2, false)]
@@ -13,10 +16,26 @@ namespace Server.Items
             Stackable = true;
             Weight = 5.0;
             Amount = amount;
+            Amount += CheckEfficientSkinner((Mobile)Parent);
             Hue = CraftResources.GetHue(resource);
 
             _resource = resource;
         }
+
+        public static int CheckEfficientSkinner(Mobile from)
+        {
+            BaseTalent skinMaster = null;
+            if (from is PlayerMobile player)
+            {
+                skinMaster = player.GetTalent(typeof(EfficientSkinner));
+                if (skinMaster != null)
+                {
+                    return skinMaster.GetExtraResourceCheck();
+                }
+            }
+            return 0;
+        }
+
 
         public override int LabelNumber
         {

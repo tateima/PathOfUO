@@ -1,6 +1,7 @@
 using Server.Engines.Craft;
 using Server.Mobiles;
 using Server.Targeting;
+using Server.Talent;
 
 namespace Server.Items
 {
@@ -249,6 +250,16 @@ namespace Server.Items
                         else
                         {
                             ingotAmount = toConsume;
+                        }
+
+                        BaseTalent ingotMaster = null;
+                        if (from is PlayerMobile player)
+                        {
+                            ingotMaster = player.GetTalent(typeof(EfficientSmelter));
+                            if (ingotMaster != null)
+                            {
+                                ingotAmount += ingotMaster.GetExtraResourceCheck();
+                            }
                         }
 
                         var ingot = m_Ore.GetIngot();

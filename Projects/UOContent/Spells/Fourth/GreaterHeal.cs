@@ -32,7 +32,11 @@ namespace Server.Spells.Fourth
             {
                 return;
             }
-
+            BaseTalent venomBlood = null;
+            if (m is PlayerMobile playerTarget)
+            {
+                venomBlood = playerTarget.GetTalent(typeof(VenomBlood));
+            }
             if (!Caster.CanSee(m))
             {
                 Caster.SendLocalizedMessage(500237); // Target can not be seen.
@@ -49,7 +53,7 @@ namespace Server.Spells.Fourth
             {
                 Caster.LocalOverheadMessage(MessageType.Regular, 0x3B2, 500951); // You cannot heal that.
             }
-            else if (m.Poisoned || MortalStrike.IsWounded(m))
+            else if ((m.Poisoned && !(venomBlood != null && venomBlood.Activated)) || MortalStrike.IsWounded(m))
             {
                 Caster.LocalOverheadMessage(MessageType.Regular, 0x22, Caster == m ? 1005000 : 1010398);
             }

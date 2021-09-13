@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using Server;
 using Server.Network;
 using Server.Mobiles;
 using Server.Talent;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 
 namespace Server.Gumps
 {
@@ -11,40 +13,50 @@ namespace Server.Gumps
     {
         private int m_LastTalentIndex = 0;
         private int m_LastPage = 1;
+        private List<TalentGumpPage> m_TalentGumpPages;
 
-        public TalentGump(Mobile from, int page) : base(0, 0)
+        public TalentGump(Mobile from, int page, int lastTalentIndex, List<TalentGumpPage> talentGumpPages) : base(0, 0)
         {
             if (from == null)
             {
                 from.CloseGump<TalentGump>();
             }
-            Closable = true;
+            Closable = false;
             Disposable = true;
             Draggable = true;
             Resizable = false;
+            m_LastPage = page;
+            m_TalentGumpPages = talentGumpPages;
             AddPage(0);
             AddImageTiled(0, 0, 940, 900, 0xA8E);
             AddImageTiled(0, 0, 20, 900, 0x27A7);
             AddImageTiled(0, 0, 940, 20, 0x27A7);
             AddImageTiled(940, 0, 20, 920, 0x27A7);
             AddImageTiled(0, 900, 940, 20, 0x27A7);
-            AddLabel(20, 20, 0, "Talents");
-            AddLabel(20, 60, 0, "Talent Points: " + ((PlayerMobile)from).TalentPoints.ToString());
+            // close button
+            AddButton(935, 0, 40015, 40015, 1002, GumpButtonType.Reply, 0);
             Type[] talentTypes = BaseTalent.TalentTypes;
-            HashSet<BaseTalent> playerTalents = ((PlayerMobile)from).Talents;
+            PlayerMobile player = (PlayerMobile)from;
+            AddLabel(80, 20, 2049, "Talent Points: " + player.TalentPoints.ToString());
             int x = 40;
-            int y = 40;
+            int y = 45;
             if (page > 1)
             {
-                AddButton(5, 5, 40017, 40016, 1001, GumpButtonType.Reply, 0);
+                AddButton(20, 20, 40016, 40016, 1001, GumpButtonType.Reply, 0);
             }
-            
-            for (int i = m_LastTalentIndex; i < talentTypes.Length; i++)
+            TalentGumpPage existingTalentGumpPage = m_TalentGumpPages.Where(g => g.TalentPage == page).FirstOrDefault();
+            if (existingTalentGumpPage == null)
             {
-                var talent = TalentSerializer.Construct(talentTypes[i]) as BaseTalent;
-                if (y + 40 > 860)
+                TalentGumpPage talentGumpPage = new TalentGumpPage(lastTalentIndex, page);
+                m_TalentGumpPages.Add(talentGumpPage);
+            }
+
+            for (int i = lastTalentIndex; i < talentTypes.Length; i++)
+            {
+                var talent = TalentConstructor.Construct(talentTypes[i]) as BaseTalent;
+                if (y + 45 > 860)
                 {
-                    y = 40;
+                    y = 45;
                     x += 220;
                 }
                 if (x + 220 > 920)
@@ -54,7 +66,6 @@ namespace Server.Gumps
                     AddButton(909, 20, 40017, 40017, 1000, GumpButtonType.Reply, 0);
                     break;
                 }
-                var dependsOn = TalentSerializer.Construct(talent.TalentDependency) as BaseTalent;
                 Type[] blockedBy = talent.BlockedBy;
                 BaseTalent hasBlocker = null;
                 string blockedByStr = "";
@@ -62,12 +73,9 @@ namespace Server.Gumps
                 {
                     foreach(Type blockerType in blockedBy)
                     {
-                        var blockerTalent = TalentSerializer.Construct(blockerType) as BaseTalent;
+                        var blockerTalent = TalentConstructor.Construct(blockerType) as BaseTalent;
                         if (blockerTalent != null)
                         {
-                            if (playerTalents != null && playerTalents.TryGetValue(blockerTalent, out hasBlocker)) {
-                                break;
-                            }
                             blockedByStr += blockerTalent.DisplayName;
                             if (blockerType != blockedBy[^1])
                             {
@@ -77,26 +85,33 @@ namespace Server.Gumps
                             {
                                 blockedByStr += ".";
                             }
+                            hasBlocker = player.GetTalent(blockerType);
+                            if (hasBlocker != null)
+                            {
+                                break;
+                            }
                         }
                     }
                 }
-                int talentLevel = 0;
-                BaseTalent used;
+                BaseTalent dependsOn = null;
                 BaseTalent hasDependency = null;
-                if (playerTalents != null && playerTalents.TryGetValue(talent, out used))
+                BaseTalent used = player.GetTalent(talent.GetType());
+                if (talent.TalentDependency != null)
                 {
-                    talentLevel = used.Level;
-                    if (dependsOn != null)
-                    {
-                        playerTalents.TryGetValue(dependsOn, out hasDependency);
-                    }
-                };
-
-                AddHtml(x, y, 200, 40, $"<BASEFONT COLOR=#FFFFE5>{talent.DisplayName}: ({talentLevel}/{talent.MaxLevel})</FONT>");
-                AddImage(x + 160, y, talent.ImageID);
-                if (talent.HasSkillRequirement(from) && (talentLevel < talent.MaxLevel && ((PlayerMobile)from).TalentPoints > 0) && ((dependsOn != null && hasDependency != null) || (dependsOn == null)) && (blockedBy != null && hasBlocker == null))
+                    dependsOn = TalentConstructor.Construct(talent.TalentDependency) as BaseTalent;
+                    hasDependency = player.GetTalent(dependsOn.GetType());
+                }
+                int talentLevel = (used != null && used.Level > 0) ? used.Level : 0;
+                AddHtml(x, y, 200, 45, $"<BASEFONT COLOR=#FFFFE5>{talent.DisplayName}: ({talentLevel}/{talent.MaxLevel})</FONT>");
+                AddImage(x + 160, y - 10, talent.ImageID);
+                if (talent.HasSkillRequirement(from)
+                    && (talentLevel < talent.MaxLevel && ((PlayerMobile)from).TalentPoints > 0)
+                    && ((dependsOn != null && hasDependency != null
+                        && (hasDependency.Level >= talent.TalentDependencyPoints || hasDependency.Level == hasDependency.MaxLevel))
+                    || (dependsOn == null))
+                    && (blockedBy != null && hasBlocker == null))
                 {
-                    AddButton(x, y + 10, 2223, 2223, 0 + i, GumpButtonType.Reply, 0);
+                    AddButton(x + 190, y, 2223, 2223, 0 + i, GumpButtonType.Reply, 0);
                 }
                 y += 40;
                 string requirements = (dependsOn != null) ? $"<BR>Requires {dependsOn.DisplayName}" : "";
@@ -111,33 +126,79 @@ namespace Server.Gumps
 
             if (player != null)
             {
+                int page = m_LastPage;
+                int lastTalentIndex = m_LastTalentIndex;
                 if (info.ButtonID == 1000)
                 {
-                    // next / previous page
-                    m_LastPage++;
+                    lastTalentIndex += 1;
+                    // next page
+                    page = (m_LastPage + 1);
+                    player.SendGump(new TalentGump(player, page, lastTalentIndex, m_TalentGumpPages));
+                    return;
                 }
-                else if (info.ButtonID == 1001 && m_LastPage > 1)
+                else if (info.ButtonID == 1001)
                 {
-                    m_LastPage--;
+                    page = (m_LastPage - 1);
                 }
-                else if (info.ButtonID > 0)
+                else if (info.ButtonID == 1002)
                 {
-                    var talent = TalentSerializer.Construct(BaseTalent.TalentTypes[info.ButtonID]) as BaseTalent;
-                    HashSet<BaseTalent> playerTalents = (player.Talents != null) ? player.Talents : new HashSet<BaseTalent>();
-                    BaseTalent used;
-                    if (playerTalents.TryGetValue(talent, out used))
-                    {
-                        talent.Level = used.Level;
-                        playerTalents.Remove(used);
-                    }
+                    player.CloseGump<TalentGump>();
+                    player.SendGump(new CharacterSheetGump(player, 1, null));
+                    return;
+                }
+                else if (info.ButtonID >= 0)
+                {
+                    var talent = TalentConstructor.Construct(BaseTalent.TalentTypes[info.ButtonID]) as BaseTalent;
+                    ConcurrentDictionary<Type,BaseTalent> playerTalents = (player.Talents != null) ? player.Talents : new ConcurrentDictionary<Type,BaseTalent>();
+                    BaseTalent used = player.GetTalent(BaseTalent.TalentTypes[info.ButtonID]);
+                    talent = (used != null) ? used : talent;
                     talent.Level++;
-                    playerTalents.Add(talent);
+                    playerTalents.AddOrUpdate(BaseTalent.TalentTypes[info.ButtonID], talent, (t, bt) => talent);
                     player.TalentPoints--;
+                    player.Talents = playerTalents;
                     talent.UpdateMobile(player);
                 }
-                   
-                player.SendGump(new CharacterSheetGump(player, m_LastPage));
+               
+                if (page < 0)
+                {
+                    page = 1;
+                }
+
+                TalentGumpPage talentGumpPage = m_TalentGumpPages.Where(g => g.TalentPage == page).First();
+                if (talentGumpPage != null)
+                {
+                    lastTalentIndex = talentGumpPage.TalentIndex;
+                }
+
+                if (lastTalentIndex < 0)
+                {
+                    lastTalentIndex = 0;
+                }
+
+                player.SendGump(new TalentGump(player, page, lastTalentIndex, m_TalentGumpPages));
             }
+        }
+        public class TalentGumpPage
+        {
+            private int m_TalentIndex;
+            public int TalentIndex
+            {
+                get { return m_TalentIndex; }
+                set { m_TalentIndex = value; }
+            }
+            private int m_TalentPage;
+            public int TalentPage
+            {
+                get { return m_TalentPage; }
+                set { m_TalentPage = value; }
+            }
+            public TalentGumpPage(int talentIndex, int talentPage)
+            {
+                TalentIndex = talentIndex;
+                TalentPage = talentPage;
+            }
+
+
         }
     }
 }

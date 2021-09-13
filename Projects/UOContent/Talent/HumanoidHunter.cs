@@ -11,7 +11,7 @@ namespace Server.Talent
             TalentDependency = typeof(ExperiencedHunter);
             DisplayName = "Humanoid hunter";
             Description = "Increases damage to humanoids and lowers damage from them.";
-            ImageID = 40158;
+            ImageID = 183;
         }
 
         public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)

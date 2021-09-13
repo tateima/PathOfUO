@@ -11,9 +11,9 @@ namespace Server.Talent
             DisplayName = "Bone breaker";
             CanBeUsed = true;
             Description = "Next hit paralyzes target for 1s per level. Level also reduces cooldown by 5s. 5m cooldown";
-            ImageID = 30228;
+            ImageID = 134;
             GumpHeight = 75;
-            AddEndY = 105;
+            AddEndY = 100;
         }
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {

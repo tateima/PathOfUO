@@ -11,7 +11,7 @@ namespace Server.Talent
             TalentDependency = typeof(ExperiencedHunter);
             DisplayName = "Elemental hunter";
             Description = "Increases damage to elementals and heals damage from them.";
-            ImageID = 30091;
+            ImageID = 175;
         }
         public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
         {

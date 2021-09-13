@@ -30,6 +30,32 @@ namespace Server.Mobiles
         private readonly List<IBuyItemInfo> _buyInfo = new();
         private readonly List<IShopSellInfo> _sellInfo = new();
 
+        private DateTime m_NextCollectionTime;
+        public DateTime NextCollectionTime
+        {
+            get
+            {
+                return m_NextCollectionTime;
+            }
+            set
+            {
+                m_NextCollectionTime = value;
+            }
+        }
+        private int m_TaxCollectorSerial = 0;
+
+        public int TaxCollectorSerial
+        {
+            get
+            {
+                return m_TaxCollectorSerial;
+            }
+            set
+            {
+                m_TaxCollectorSerial = value;
+            }
+        }
+
         private static bool EnableVendorBuyOPL;
 
         public static void Configure()
@@ -1116,10 +1142,12 @@ namespace Server.Mobiles
             if (smallBod != null)
             {
                 smallBod.GetRewards(out reward, out gold, out fame);
+                pm.CraftExperience += 150;
             }
             else
             {
                 largeBod.GetRewards(out reward, out gold, out fame);
+                pm.CraftExperience += 300;
             }
 
             from.SendSound(0x3D);
@@ -1288,7 +1316,9 @@ namespace Server.Mobiles
         {
             base.Serialize(writer);
 
-            writer.Write(1); // version
+            writer.Write(2); // version
+            writer.Write(m_NextCollectionTime);
+            writer.Write(m_TaxCollectorSerial);
 
             var sbInfos = SBInfos;
 
@@ -1337,6 +1367,10 @@ namespace Server.Mobiles
 
             switch (version)
             {
+                case 2:
+                    m_NextCollectionTime = reader.ReadDateTime();
+                    m_TaxCollectorSerial = reader.ReadInt();
+                    goto case 1;
                 case 1:
                     {
                         int index;

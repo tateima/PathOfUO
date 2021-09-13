@@ -15,7 +15,7 @@ namespace Server.Talent
             TalentDependency = typeof(RangerCommand);
             DisplayName = "Bonding master";
             Description = "Increase bond slot by one per level.";
-            ImageID = 30207;
+            ImageID = 153;
         }
         public override void UpdateMobile(Mobile mobile)
         {

@@ -363,6 +363,9 @@ namespace Server.Mobiles
                 }
                 else if (e.HasKeyword(0x6C) && WasNamed(e.Speech)) // *train
                 {
+                    // disable training
+                    m_Mobile.PublicOverheadMessage(MessageType.Regular, 0x3B2, true, "I am unable to train thee. Sorry.", false);
+                    return;
                     if (m_Mobile.Combatant != null)
                     {
                         // I am too busy fighting to deal with thee!
@@ -441,6 +444,9 @@ namespace Server.Mobiles
 
                     if (toTrain != (SkillName)(-1) && WasNamed(e.Speech))
                     {
+                        // disable training
+                        m_Mobile.PublicOverheadMessage(MessageType.Regular, 0x3B2, true, "I am unable to train thee. Sorry.", false);
+                        return;
                         if (m_Mobile.Combatant != null)
                         {
                             // I am too busy fighting to deal with thee!

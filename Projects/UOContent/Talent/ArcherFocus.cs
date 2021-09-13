@@ -12,7 +12,9 @@ namespace Server.Talent
             RequiredWeapon = new Type[] { typeof(BaseRanged) };
             DisplayName = "Archer focus";
             Description = "Chance of getting a critical strike with ranged weapons.";
-            ImageID = 39880;
+            ImageID = 114;
+            GumpHeight = 75;
+            AddEndY = 105;
         }
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)

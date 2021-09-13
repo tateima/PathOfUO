@@ -2,6 +2,8 @@ using System;
 using Server.Items;
 using Server.Targeting;
 using Server.Utilities;
+using Server.Talent;
+using Server.Mobiles;
 
 namespace Server.Engines.Harvest
 {
@@ -144,6 +146,11 @@ namespace Server.Engines.Harvest
             // double skillValue = from.Skills[def.Skill].Value;
 
             Type type = null;
+            BaseTalent resourceful = null;
+            if (from is PlayerMobile player)
+            {
+                resourceful = player.GetTalent(typeof(ResourcefulHarvester));
+            }
 
             if (skillBase >= resource.ReqSkill && from.CheckSkill(def.Skill, resource.MinSkill, resource.MaxSkill))
             {
@@ -192,6 +199,11 @@ namespace Server.Engines.Harvest
                             else
                             {
                                 item.Amount = amount;
+                            }
+                            if (Utility.RandomDouble() < resourceful.Level/20) // 0.5% per point
+                            {
+                                int resourcefulAmount = Utility.Random(amount);
+                                item.Amount += resourcefulAmount;
                             }
                         }
 

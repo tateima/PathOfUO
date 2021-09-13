@@ -182,9 +182,12 @@ namespace Server.Spells
             (m as BaseCreature)?.OnHarmfulSpell(Caster);
             if (Caster is PlayerMobile player)
             {
-                foreach (BaseTalent talent in player.Talents.Where(w => w.CanScaleSpellDamage(this)))
+                foreach (KeyValuePair<Type, BaseTalent> entry in player.Talents)
                 {
-                    talent.CheckSpellEffect(Caster, m);
+                    if (entry.Value.CanScaleSpellDamage(this))
+                    {
+                        entry.Value.CheckSpellEffect(Caster, m);
+                    }
                 }
             }
         }
@@ -219,9 +222,12 @@ namespace Server.Spells
             if (Caster is PlayerMobile)
             {
                 PlayerMobile player = (PlayerMobile)Caster;
-                foreach (BaseTalent talent in player.Talents.Where(w => w.CanScaleSpellDamage(this)))
+                foreach (KeyValuePair<Type, BaseTalent> entry in player.Talents)
                 {
-                    multiplier += talent.ModifySpellMultiplier();
+                    if (entry.Value.CanScaleSpellDamage(this))
+                    {
+                        multiplier += entry.Value.ModifySpellMultiplier();
+                    }
                 }
             }
             damage *= multiplier;
@@ -319,10 +325,13 @@ namespace Server.Spells
                 if (Caster is PlayerMobile)
                 {
                     PlayerMobile player = (PlayerMobile)Caster;
-                    foreach (BaseTalent talent in player.Talents.Where(w => w.CanScaleSpellDamage(this)))
+                    foreach (KeyValuePair<Type, BaseTalent> entry in player.Talents)
                     {
-                        // add 1% for each talent point
-                        scalar += talent.ModifySpellScalar();
+                        if (entry.Value.CanScaleSpellDamage(this))
+                        {
+                            // add 1% for each talent point
+                            scalar += entry.Value.ModifySpellScalar();
+                        }
                     }
                 }
                 var casterEI = Caster.Skills[DamageSkill].Value;
@@ -535,7 +544,7 @@ namespace Server.Spells
                 return false;
             }
 
-            if (Scroll is BaseWand && Caster.Spell?.IsCasting == true)
+            if ((Scroll is BaseWand || Scroll is BaseDevice) && Caster.Spell?.IsCasting == true)
             {
                 Caster.SendLocalizedMessage(502643); // You can not cast a spell while frozen.
             }

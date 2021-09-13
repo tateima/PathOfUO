@@ -85,7 +85,8 @@ namespace Server.Mobiles
         Daemon = 0x0010,
         Bear = 0x0020,
         Equine = 0x0040,
-        Bull = 0x0080
+        Bull = 0x0080,
+        Reptile = 0x0090
     }
 
     public enum ScaleType
@@ -212,6 +213,20 @@ namespace Server.Mobiles
 
         private static readonly bool EnableRummaging = true;
         public static readonly TimeSpan ShoutDelay = TimeSpan.FromMinutes(1);
+
+        private int m_CannibalPoints;
+
+        public int CannibalPoints
+        {
+            get
+            {
+                return m_CannibalPoints;
+            }
+            set
+            {
+                m_CannibalPoints = value;
+            }
+        }
 
         private static readonly Type[] m_Eggs =
         {
@@ -351,6 +366,7 @@ namespace Server.Mobiles
 
             m_Loyalty = MaxLoyalty; // Wonderfully Happy
 
+            m_CannibalPoints = 0;
             m_CurrentAI = ai;
             m_DefaultAI = ai;
 
@@ -1740,6 +1756,7 @@ namespace Server.Mobiles
             writer.Write(21); // version
 
             // version 21
+            writer.Write(CannibalPoints);
             writer.Write(m_Heroic);
             // version 20
             writer.Write(m_ExperienceValue);
@@ -1884,10 +1901,12 @@ namespace Server.Mobiles
 
             if (version >= 21)
             {
+                m_CannibalPoints = reader.ReadInt();
                 m_Heroic = reader.ReadBool();
             }
             else
             {
+                m_CannibalPoints = 0;
                 m_Heroic = false;
             }
 
@@ -3475,7 +3494,7 @@ namespace Server.Mobiles
                                 {
                                     m_ExperienceValue += AOS.Scale(m_ExperienceValue, (fastLearner.Level * 2));
                                 }
-                                player.Experience += m_ExperienceValue;
+                                player.NonCraftExperience += m_ExperienceValue;
                             }
                         }
                     }
@@ -3485,9 +3504,12 @@ namespace Server.Mobiles
 
                 if (LastKiller is PlayerMobile playerThatKilled)
                 {
-                    foreach (BaseTalent talent in playerThatKilled.Talents.Where(w => w.HasKillEffect))
+                    foreach (KeyValuePair<Type, BaseTalent> entry in playerThatKilled.Talents)
                     {
-                        talent.CheckKillEffect(this, LastKiller);
+                        if (entry.Value.HasKillEffect)
+                        {
+                            entry.Value.CheckKillEffect(this, LastKiller);
+                        }
                     }
                 }
 

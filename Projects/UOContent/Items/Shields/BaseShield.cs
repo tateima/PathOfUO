@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using System.Collections.Generic;
 using Server.Mobiles;
 using Server.Network;
 using Server.Talent;
@@ -198,11 +198,11 @@ namespace Server.Items
             {
                 if (owner is PlayerMobile owningPlayer && weapon.Parent is Mobile attacker)
                 {
-                    foreach (BaseTalent talent in owningPlayer.Talents.Where(w => w.CanApplyHitEffect(this)))
+                    foreach (KeyValuePair<Type, BaseTalent> entry in owningPlayer.Talents)
                     {
-                        if (owner != attacker)
+                        if (entry.Value.CanApplyHitEffect(this))
                         {
-                            talent.CheckHitEffect(owner, (Mobile)weapon.Parent, damage);
+                            entry.Value.CheckHitEffect(owner, (Mobile)weapon.Parent, damage);
                         }
                     }
                 }

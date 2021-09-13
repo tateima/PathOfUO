@@ -10,7 +10,7 @@ namespace Server.Talent
             TalentDependency = typeof(KeenEye);
             DisplayName = "Keen senses";
             Description = "Chance of dodging incoming attacks.";
-            ImageID = 30200;
+            ImageID = 117;
             GumpHeight = 85;
             AddEndY = 80;
         }

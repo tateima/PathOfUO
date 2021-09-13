@@ -13,7 +13,9 @@ namespace Server.Talent
             IncreaseHitChance = true;
             DisplayName = "Bow specialist";
             Description = "Increases damage and hit chance of bow weapons.";
-            ImageID = 30219;
+            ImageID = 131;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {

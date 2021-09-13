@@ -8,9 +8,11 @@ namespace Server.Talent
         public ResourcefulCrafter() : base()
         {
             TalentDependency = typeof(WarCraftFocus);
-            DisplayName = "Resourceful";
+            DisplayName = "Efficient crafting";
             Description = "Reduce material costs for crafting.";
-            ImageID = 30208;
+            ImageID = 37;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
 
     }

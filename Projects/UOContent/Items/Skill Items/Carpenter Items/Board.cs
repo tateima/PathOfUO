@@ -1,3 +1,6 @@
+using Server.Talent;
+using Server.Mobiles;
+
 namespace Server.Items
 {
     [Flippable(0x1BD7, 0x1BDA)]
@@ -16,12 +19,27 @@ namespace Server.Items
         {
         }
 
+        public static int CheckEfficientCarver(Mobile from)
+        {
+            BaseTalent carver = null;
+            if (from is PlayerMobile player)
+            {
+                carver = player.GetTalent(typeof(EfficientCarver));
+                if (carver != null)
+                {
+                    return carver.GetExtraResourceCheck();
+                }
+            }
+            return 0;
+        }
+
         [Constructible]
         public Board(CraftResource resource, int amount = 1)
             : base(0x1BD7)
         {
             Stackable = true;
             Amount = amount;
+            Amount += CheckEfficientCarver((Mobile)Parent);
 
             m_Resource = resource;
             Hue = CraftResources.GetHue(resource);

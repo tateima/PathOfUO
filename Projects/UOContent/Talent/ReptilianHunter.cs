@@ -11,7 +11,7 @@ namespace Server.Talent
             TalentDependency = typeof(ExperiencedHunter);
             DisplayName = "Reptilian hunter";
             Description = "Increases damage to reptiles and heals damage from them.";
-            ImageID = 49994;
+            ImageID = 187;
         }
 
         public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)

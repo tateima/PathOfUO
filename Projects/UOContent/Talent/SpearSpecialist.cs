@@ -13,7 +13,9 @@ namespace Server.Talent
             TalentDependency = typeof(FencingFocus);
             DisplayName = "Spear specialist";
             Description = "Increases damage and hit chance of spear weapons.";
-            ImageID = 30230;
+            ImageID = 197;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {

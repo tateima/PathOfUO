@@ -28,7 +28,6 @@ namespace Server.Talent
             set { m_HasKillEffect = value; }
         }
 
-
         private bool m_HasDefenseEffect;
         public bool HasDefenseEffect
         {
@@ -62,6 +61,13 @@ namespace Server.Talent
         {
             get { return m_OnCooldown; }
             set { m_OnCooldown = value; }
+        }
+
+        private int m_TalentDependencyPoints;
+        public int TalentDependencyPoints
+        {
+            get { return m_TalentDependencyPoints; }
+            set { m_TalentDependencyPoints = value; }
         }
         private int m_GumpHeight;
         public int GumpHeight
@@ -158,6 +164,8 @@ namespace Server.Talent
         public static readonly Type[] TalentTypes =
         {
             typeof(ViperAspect),
+            typeof(VenomBlood),
+            typeof(WyvernAspect),
             typeof(FireAffinity),
             typeof(DragonAspect),
             typeof(GreaterFireElemental),
@@ -170,6 +178,11 @@ namespace Server.Talent
             typeof(SonicAffinity),
             typeof(Resonance),
             typeof(DominateCreature),
+            typeof(NatureAffinity),
+            typeof(RangerCommand),
+            typeof(BondingMaster),
+            typeof(PackLeader),
+            typeof(Cannibalism),
             typeof(DivineStrength),
             typeof(GiantsHeritage),
             typeof(IronSkin),
@@ -184,33 +197,73 @@ namespace Server.Talent
             typeof(FastLearner),
             typeof(ManaShield),
             typeof(PlanarShift),
+            typeof(SpellStrike),
             typeof(SpellMind),
+            typeof(DryThunderstorm),
             typeof(SwordsmanshipFocus),
-            typeof(PolearmSpecialist),
             typeof(SwordSpecialist),
+            typeof(BarrierGuard),
+            typeof(PolearmSpecialist),
+            typeof(Cleave),
             typeof(AxeSpecialist),
             typeof(FencingFocus),
             typeof(SpearSpecialist),
+            typeof(Javelin),
             typeof(FencingSpecialist),
+            typeof(BackStab),
             typeof(Riposte),
             typeof(MacefightingFocus),
             typeof(MageCombatant),
             typeof(MaceSpecialist),
+            typeof(Concussion),
             typeof(TwoHandedMaceSpecialist),
+            typeof(GroundSlam),
             typeof(ShieldFocus),
             typeof(ShieldBash),
+            typeof(Phalanx),
+            typeof(SpellWard),
             typeof(ArcherFocus),
+            typeof(ChemicalWarfare),
+            typeof(Disengage),
             typeof(CrossbowSpecialist),
+            typeof(IceBolt),
             typeof(BowSpecialist),
+            typeof(MultiShot),
             typeof(CarefulShooter),
             typeof(LoreSeeker),
             typeof(LoreTeacher),
             typeof(LoreDisciples),
+            typeof(ExperiencedHunter),
+            typeof(AbyssalHunter),
+            typeof(ArachnidHunter),
+            typeof(ElementalHunter),
+            typeof(HumanoidHunter),
+            typeof(ReptilianHunter),
+            typeof(UndeadHunter),
             typeof(WarCraftFocus),
             typeof(ResourcefulCrafter),
             typeof(OptimisedConsumption),
             typeof(TycoonCrafter),
-            typeof(StrongTools)
+            typeof(StrongTools),
+            typeof(ResourcefulHarvester),
+            typeof(EfficientCarver),
+            typeof(EfficientSkinner),
+            typeof(EfficientSmelter),
+            typeof(EfficientSpinner),
+            typeof(EfficientCarver),
+            typeof(SlaveDriver),
+            typeof(SmoothTalker),
+            typeof(TaxCollector),
+            typeof(Gambler),
+            typeof(HireHenchman),
+            typeof(MerchantPorter),
+            typeof(Polymeter),
+            typeof(WhizzyGig),
+            typeof(ThingAMaBob),
+            typeof(Telewarper),
+            typeof(Inventive),
+            typeof(BugFixer),
+            typeof(Automaton),
         };
 
         public int Level
@@ -236,11 +289,13 @@ namespace Server.Talent
             m_HasKillEffect = false;
             m_HasBeforeDeathSave = false;
             m_MobilePercentagePerPoint = 3;
+            m_BlockTalents = new Type[] { };
             m_RequiredWeapon = new Type[] { typeof(BaseWeapon) };
             m_RequiredWeaponSkill = SkillName.Alchemy;
             m_RequiredSpell = Array.Empty<Type>();
             m_IncreaseHitChance = false;
             m_IncreaseParryChance = false;
+            m_TalentDependencyPoints = 3;
             m_Level = 0;
             m_MaxLevel = 5;
             m_DisplayName = "Basic Talent";
@@ -249,10 +304,10 @@ namespace Server.Talent
             m_AddEndY = 110;
             m_GumpHeight = 200;
         }
-        
+
         public virtual bool CanApplyHitEffect(Item i)
         {
-            Type valid = RequiredWeapon.Where(w => w == i.GetType()).First();
+            Type valid = RequiredWeapon.Where(w => w == i.GetType()).FirstOrDefault();
 
             bool validSkill = false;
             if (i is BaseWeapon bw)
@@ -291,7 +346,7 @@ namespace Server.Talent
 
         public virtual bool CanScaleSpellDamage(Spell spell)
         {
-            Type valid = RequiredSpell.Where(w => w == spell.GetType()).First();
+            Type valid = RequiredSpell.Where(w => w == spell.GetType()).FirstOrDefault();
             return valid != null;
         }
 
@@ -351,10 +406,13 @@ namespace Server.Talent
 
         public virtual Mobile ScaleMobileSkills(Mobile m, string skillGroupName)
         {
-            SkillsGumpGroup group = SkillsGumpGroup.Groups.Where(group => group.Name == skillGroupName).First();
-            foreach (SkillName skill in group.Skills)
+            SkillsGumpGroup group = SkillsGumpGroup.Groups.Where(group => group.Name == skillGroupName).FirstOrDefault();
+            if (group != null)
             {
-                m.Skills[skill].Base += (Level * MobilePercentagePerPoint);
+                foreach (SkillName skill in group.Skills)
+                {
+                    m.Skills[skill].Base += (Level * MobilePercentagePerPoint);
+                }
             }
             return m;
         }
@@ -411,6 +469,48 @@ namespace Server.Talent
             }
             return contains;
         }
+        public virtual int GetExtraResourceCheck()
+        {
+            if (Utility.RandomDouble() < Level / 20)
+            { // 0.5% per point
+                return Level;
+            }
+            return 0;
+        }
+        public int GoldAmount(int amount)
+        {
+            return (int)(amount * Utility.RandomDouble());
+        }
 
+        public virtual bool CanAffordLoss(PlayerMobile player, int amount)
+        {
+            Container bank = player.FindBankNoCreate();
+            bool validBankGold = Banker.GetBalance(player) >= amount;
+            bool validGold = player.Backpack?.GetAmount(typeof(Gold)) >= amount;
+            return (validGold || validBankGold);
+        }
+
+        public virtual void ProcessGoldGain(PlayerMobile player, int amount, bool loss)
+        {
+            int modifiedAmount = (int)(amount * Utility.RandomDouble());
+            if (player.Backpack != null)
+            {
+                Container bank = player.FindBankNoCreate();
+                if (loss && (player.Backpack?.ConsumeTotal(typeof(Gold), modifiedAmount) == true || Banker.Withdraw(player, modifiedAmount)))
+                {
+                    return;
+                } else if (!loss) {
+                    if (modifiedAmount > 1000)
+                    {
+                        player.AddToBackpack(new BankCheck(modifiedAmount));
+                    }
+                    else if (modifiedAmount > 0)
+                    {
+                        player.AddToBackpack(new Gold(modifiedAmount));
+                    }
+                }
+            }
+            return;
+        }
     }
 }

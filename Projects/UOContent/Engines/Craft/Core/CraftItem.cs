@@ -1091,6 +1091,35 @@ namespace Server.Engines.Craft
             };
         }
 
+        public bool CanGainExperience(Mobile from, Type typeRes, CraftSystem craftSystem, out bool allRequiredSkills)
+        {
+            allRequiredSkills = false;
+            bool canGainExperience = true;
+            double craftLevel = ((PlayerMobile)from).AllottedCraftSkillPoints / 14;
+            for (var i = 0; i < Skills.Count; i++)
+            {
+                var craftSkill = Skills[i];
+                var minSkill = craftSkill.MinSkill;
+                var maxSkill = craftSkill.MaxSkill;
+                var valSkill = from.Skills[craftSkill.SkillToMake].Value;
+                if (valSkill > maxSkill || minSkill > valSkill)
+                {
+                    canGainExperience = false;
+                    break;
+                }
+                // 14 skill points per level, so infer "craft level" by player craft point allocation
+                canGainExperience = (craftLevel < maxSkill / 14);
+            }
+
+            // 0.5% chance to allow it regardless of craft level 
+            if (Utility.Random(1000) < 5)
+            {
+                canGainExperience = true;
+            }
+
+            return canGainExperience;
+        }
+
         public void CompleteCraft(
             int quality, bool makersMark, Mobile from, CraftSystem craftSystem, Type typeRes,
             BaseTool tool, CustomCraft customCraft
@@ -1252,6 +1281,19 @@ namespace Server.Engines.Craft
                             ((BaseArmor)item).BaseArmorRating += warcraftFocus.Level;
                             ((BaseArmor)item).Durability += warcraftFocus.Level;
                         }
+                    }
+
+
+                    if (CanGainExperience(from, typeRes, craftSystem, out allRequiredSkills))
+                    {
+                        var chance = GetSuccessChance(from, typeRes, craftSystem, false, out allRequiredSkills);
+                        if (chance > 100)
+                        {
+                            chance = 100;
+                        }
+                        // the lower the chance the greater the experience reward    
+                        ((PlayerMobile)from).CraftExperience += (int)((100 - chance) * 1.05);
+                        ((PlayerMobile)from).CheckExperience();
                     }
 
                     from.AddToBackpack(item);

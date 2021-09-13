@@ -11,7 +11,7 @@ namespace Server.Talent
             HasBeforeDeathSave = true;
             DisplayName = "Escape death";
             Description = "Avoid a deathly blow. 5 minute cooldown.";
-            ImageID = 39877;
+            ImageID = 150;
             GumpHeight = 85;
             AddEndY = 80;
         }

@@ -11,7 +11,7 @@ namespace Server.Talent
             TalentDependency = typeof(ExperiencedHunter);
             DisplayName = "Abyssal hunter";
             Description = "Increases damage to abyssals and heals damage from them.";
-            ImageID = 30232;
+            ImageID = 297;
         }
 
         public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)

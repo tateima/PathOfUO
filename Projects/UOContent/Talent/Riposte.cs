@@ -11,7 +11,9 @@ namespace Server.Talent
             TalentDependency = typeof(FencingFocus);
             DisplayName = "Riposte";
             Description = "Chance to deal damage to them if enemy misses.";
-            ImageID = 30221;
+            ImageID = 339;
+            GumpHeight = 85;
+            AddEndY = 80;
         }
         public virtual void CheckDefenderMissEffect(Mobile attacker, Mobile defender)
         {

@@ -10,13 +10,14 @@ namespace Server.Talent
             BlockedBy = new Type[] { };
             DisplayName = "Divine dexterity";
             Description = "Increases dexterity by 2 per level.";
-            ImageID = 30052;
+            ImageID = 147;
             GumpHeight = 70;
             AddEndY = 65;
         }
 
         public override void UpdateMobile(Mobile mobile)
         {
+            mobile.RemoveStatMod("DivineDex");
             mobile.AddStatMod(new StatMod(StatType.Dex, "DivineDex", Level*2, TimeSpan.Zero));
         }
 

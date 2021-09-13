@@ -15,7 +15,7 @@ namespace Server.Talent
             RequiredSpell = new Type[] { typeof(GreaterHealSpell), typeof(HealSpell), typeof(BlessSpell), typeof(GiftOfRenewalSpell) };
             DisplayName = "Light affinity";
             Description = "Increases healing done by spells.";
-            ImageID = 39861;
+            ImageID = 116;
             GumpHeight = 70;
             AddEndY = 65;
         }

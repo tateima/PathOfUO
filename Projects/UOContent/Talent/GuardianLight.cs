@@ -13,7 +13,7 @@ namespace Server.Talent
             HasDefenseEffect = true;
             DisplayName = "Guardian of light";
             Description = "Chance to be healed or cured when damaged, increases holy avenger AOE.";
-            ImageID = 30032;
+            ImageID = 34;
             GumpHeight = 75;
             AddEndY = 105;
         }
