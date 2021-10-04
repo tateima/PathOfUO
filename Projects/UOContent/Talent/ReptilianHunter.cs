@@ -12,6 +12,7 @@ namespace Server.Talent
             DisplayName = "Reptilian hunter";
             Description = "Increases damage to reptiles and heals damage from them.";
             ImageID = 187;
+            AddEndY = 95;
         }
 
         public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)

@@ -200,7 +200,7 @@ namespace Server.Engines.Harvest
                             {
                                 item.Amount = amount;
                             }
-                            if (Utility.RandomDouble() < resourceful.Level/20) // 0.5% per point
+                            if (resourceful != null && Utility.RandomDouble() < resourceful.Level/20) // 0.5% per point
                             {
                                 int resourcefulAmount = Utility.Random(amount);
                                 item.Amount += resourcefulAmount;

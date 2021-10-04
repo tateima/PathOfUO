@@ -34,8 +34,9 @@ namespace Server.Talent
             TalentDependency = typeof(PlanarShift);
             DisplayName = "Spell Strike";
             CanBeUsed = true;
-            Description = "Casts 1-10 random magery spell on target on hit. Spell circle increases with level. 2 minute cooldown.";
+            Description = "Casts 1-10 random magery spell on target on hit. Spell circle increases with level. 2 minute cooldown. Requires 20-100 magery.";
             ImageID = 373;
+            AddEndY = 115;
         }
         public override bool HasSkillRequirement(Mobile mobile)
         {

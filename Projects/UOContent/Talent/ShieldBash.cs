@@ -13,7 +13,7 @@ namespace Server.Talent
             Description = "Stun target if hits for 2 second per level. 30 second cooldown.";
             ImageID = 351;
             GumpHeight = 75;
-            AddEndY = 105;
+            AddEndY = 90;
         }
         public override void CheckHitEffect(Mobile defender, Mobile attacker, int damage)
         {

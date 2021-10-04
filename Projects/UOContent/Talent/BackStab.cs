@@ -15,7 +15,7 @@ namespace Server.Talent
             Description = "When activated, the next miss from opponent causes you to go behind them and hit for extra damage.";
             ImageID = 118;
             GumpHeight = 75;
-            AddEndY = 100;
+            AddEndY = 95;
         }
 
         public override void OnUse(Mobile mobile)

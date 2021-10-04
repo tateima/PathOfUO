@@ -14,7 +14,7 @@ namespace Server.Talent
             Description = "Increases damage to two handed macefighting weapons.";
             ImageID = 196;
             GumpHeight = 75;
-            AddEndY = 105;
+            AddEndY = 85;
         }
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)

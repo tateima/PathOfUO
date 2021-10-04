@@ -18,7 +18,7 @@ namespace Server.Talent
             DisplayName = "Automaton";
             MobilePercentagePerPoint = 10;
             CanBeUsed = true;
-            Description = "Construct an automaton to assist you for 2 minutes. 5 minute cooldown.";
+            Description = "Construct an automaton to assist you for 2 minutes. Requires 80 crafting skill points. 5 minute cooldown.";
             ImageID = 352;
             GumpHeight = 230;
             AddEndY = 145;

@@ -13,7 +13,7 @@ namespace Server.Talent
             ImageID = 359;
             MaxLevel = 6;
             GumpHeight = 85;
-            AddEndY = 80;
+            AddEndY = 85;
             MaxLevel = 10;
         }
     }

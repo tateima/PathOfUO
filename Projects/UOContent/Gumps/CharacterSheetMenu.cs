@@ -24,7 +24,7 @@ namespace Server.Gumps
         public override void OnClick()
         {
             _From.CloseGump<CharacterSheetGump>();
-            _From.SendGump(new CharacterSheetGump(_From, 1));
+            _From.SendGump(new CharacterSheetGump(_From, 1, null, true));
         }
     }
 
@@ -32,7 +32,10 @@ namespace Server.Gumps
     {
         private readonly SkillsGumpGroup[] m_Groups;
         private SkillsGumpGroup m_SkillGroup;
-        public CharacterSheetGump(Mobile from, int page, SkillsGumpGroup skillGroup = null) : base(0, 0)
+        private int m_Page;
+        private Mobile m_Mobile;
+        public TimerExecutionToken _characterSheetExecutionToken;
+        public CharacterSheetGump(Mobile from, int page, SkillsGumpGroup skillGroup = null, bool playSound = false) : base(0, 0)
         {
             m_Groups = SkillsGumpGroup.Groups;
             if (from == null)
@@ -51,7 +54,12 @@ namespace Server.Gumps
                 Resizable = false;
                 AddPage(0);
                 AddImage(40, 36, 500);
-                from.SendSound(0x55);
+                if (playSound)
+                {
+                    from.SendSound(0x55);
+                }
+                m_Mobile = from;
+                m_Page = page;
                 int y = 100;
                 // this.AddButton(525, 50, 1058, 1058, 1001, GumpButtonType.Reply, 0);
                 if (page > 1)
@@ -106,33 +114,33 @@ namespace Server.Gumps
                 {
                     if (player.HardCore)
                     {
-                        AddLabel(90, 20, 0, "Character Sheet - (Hardcore)");
+                        AddLabel(80, 60, 0, "Character Sheet (Hardcore)");
                     }
                     else
                     {
-                        AddLabel(90, 20, 0, "Character Sheet");
+                        AddLabel(80, 60, 0, "Character Sheet");
                     }
-                    AddLabel(90, 60, 0, "Level: " + (Array.IndexOf(Enum.GetNames(typeof(Level)), player.Level) + 1).ToString());
-                    AddLabel(90, 80, 0, "Experience Points:");
+                    AddLabel(90, 80, 0, "Level: " + (Array.IndexOf(Enum.GetNames(typeof(Level)), player.Level) + 1).ToString());
+                    AddLabel(90, 100, 0, "Experience Points:");
                     int totalExperience = player.LevelExperience + player.CraftExperience + player.NonCraftExperience;
-                    AddLabel(90, 100, 0, totalExperience.ToString());
-                    AddLabel(90, 120, 0, "Talents");
-                    AddButton(190, 124, 2223, 2223, 300, GumpButtonType.Reply, 0);
-                    AddLabel(90, 140, 0, "Stat Points: " + player.StatPoints.ToString());
-                    AddLabel(90, 160, 0, "Strength: " + from.RawStr.ToString());
+                    AddLabel(90, 120, 0, totalExperience.ToString());
+                    AddLabel(90, 140, 0, "Talents");
+                    AddButton(190, 144, 2223, 2223, 300, GumpButtonType.Reply, 0);
+                    AddLabel(90, 160, 0, "Stat Points: " + player.StatPoints.ToString());
+                    AddLabel(90, 180, 0, "Strength: " + from.RawStr.ToString());
                     if (player.StatPoints > 0)
                     {
-                        AddButton(190, 162, 2223, 2223, 1, GumpButtonType.Reply, 0);
+                        AddButton(190, 182, 2223, 2223, 1, GumpButtonType.Reply, 0);
                     }
-                    AddLabel(90, 180, 0, "Dexterity: " + from.RawDex.ToString());
+                    AddLabel(90, 200, 0, "Dexterity: " + from.RawDex.ToString());
                     if (player.StatPoints > 0)
                     {
-                        AddButton(190, 182, 2223, 2223, 2, GumpButtonType.Reply, 0);
+                        AddButton(190, 200, 2223, 2223, 2, GumpButtonType.Reply, 0);
                     }
-                    AddLabel(90, 200, 0, "Intelligence: " + from.RawInt.ToString());
+                    AddLabel(90, 220, 0, "Intelligence: " + from.RawInt.ToString());
                     if (player.StatPoints > 0)
                     {
-                        AddButton(190, 202, 2223, 2223, 3, GumpButtonType.Reply, 0);
+                        AddButton(190, 222, 2223, 2223, 3, GumpButtonType.Reply, 0);
                     }
 
                     AddLabel(270, 60, 0, "Skill Points: " + player.CraftSkillPoints.ToString() + "C/" + player.NonCraftSkillPoints.ToString() + "NC");

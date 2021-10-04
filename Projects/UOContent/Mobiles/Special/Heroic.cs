@@ -32,7 +32,7 @@ namespace Server.Mobiles
                 }
                 if (bc.AI != AIType.AI_Animal)
                 {
-                    if (Utility.Random(100) <= 1)
+                    if (Utility.Random(100) <= 5)
                     {
                         switch (Utility.Random(1, 3))
                         {

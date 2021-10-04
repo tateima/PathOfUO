@@ -15,6 +15,7 @@ namespace Server.Talent
             CanBeUsed = true;
             Description = "Reduces damage by 10% per level for 10 seconds. 3 minute cooldown.";
             ImageID = 161;
+            AddEndY = 95;
         }
 
         public override void OnUse(Mobile mobile)

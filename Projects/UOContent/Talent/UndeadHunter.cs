@@ -16,6 +16,7 @@ namespace Server.Talent
             DisplayName = "Undead hunter";
             Description = "Increases damage to undead and heals damage from them.";
             ImageID = 143;
+            AddEndY = 95;
         }
 
         public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)

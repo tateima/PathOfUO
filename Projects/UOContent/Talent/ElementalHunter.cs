@@ -12,6 +12,7 @@ namespace Server.Talent
             DisplayName = "Elemental hunter";
             Description = "Increases damage to elementals and heals damage from them.";
             ImageID = 175;
+            AddEndY = 95;
         }
         public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
         {

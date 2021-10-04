@@ -1819,7 +1819,7 @@ namespace Server.Items
                 percentageBonus += talisman.Killer.DamageBonus(defender);
             }
 
-            if (holyAvenger != null && holyAvenger.IsMobileType(OppositionGroup.UndeadGroup, defender.GetType()) || holyAvenger.IsMobileType(OppositionGroup.AbyssalGroup, defender.GetType()))
+            if (holyAvenger != null && (holyAvenger.IsMobileType(OppositionGroup.UndeadGroup, defender.GetType()) || holyAvenger.IsMobileType(OppositionGroup.AbyssalGroup, defender.GetType())))
             {
                 percentageBonus += holyAvenger.Level * 2;
             }

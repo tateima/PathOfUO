@@ -27,7 +27,7 @@ namespace Server.Talent
             Description = "Blocks 2-8 projectiles from hitting target. 2min second cooldown.";
             ImageID = 375;
             GumpHeight = 75;
-            AddEndY = 75;
+            AddEndY = 85;
         }
 
         public bool CheckBlock(BaseWeapon weapon)

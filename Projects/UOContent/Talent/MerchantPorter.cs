@@ -32,7 +32,7 @@ namespace Server.Talent
             Description = "Teleport an npc vendor to player position for 1 minute. 10 minute cooldown, decreases by 1 minutes per level.";
             ImageID = 349;
             GumpHeight = 230;
-            AddEndY = 145;
+            AddEndY = 105;
         }
 
         public override void OnUse(Mobile mobile)

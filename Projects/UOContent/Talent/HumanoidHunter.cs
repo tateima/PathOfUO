@@ -12,6 +12,7 @@ namespace Server.Talent
             DisplayName = "Humanoid hunter";
             Description = "Increases damage to humanoids and lowers damage from them.";
             ImageID = 183;
+            AddEndY = 95;
         }
 
         public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)

@@ -1448,8 +1448,8 @@ namespace Server.Mobiles
 
         public override void OnBeforeSpawn(Point3D location, Map m)
         {
-            // 10% chance in Dungeons 1% chance everywhere else
-            int heroicChance = Region.IsPartOf<DungeonRegion>() ? 1000 : 100;
+            // 5% chance in Dungeons 1% chance everywhere else
+            int heroicChance = Region.IsPartOf<DungeonRegion>() ? 500 : 100;
             IsHeroic = (Utility.Random(1, 10000) < heroicChance);
             
             if (Paragon.CheckConvert(this, location, m))
@@ -2587,7 +2587,7 @@ namespace Server.Mobiles
 
             AddCustomContextEntries(from, list);
 
-            if (CanTeach && from.Alive)
+            /**if (CanTeach && from.Alive)
             {
                 var ourSkills = Skills;
                 var theirSkills = from.Skills;
@@ -2609,7 +2609,7 @@ namespace Server.Mobiles
                         list.Add(new TeachEntry((SkillName)i, this, from, toTeach > theirSkill.BaseFixedPoint));
                     }
                 }
-            }
+            }**/
         }
 
         public override bool HandlesOnSpeech(Mobile from) =>

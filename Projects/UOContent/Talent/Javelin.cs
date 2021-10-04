@@ -17,7 +17,7 @@ namespace Server.Talent
             Description = "Throw copy of equipped spear at target. 45s min cooldown.";
             ImageID = 370;
             GumpHeight = 75;
-            AddEndY = 55;
+            AddEndY = 65;
             MaxLevel = 10;
         }
 

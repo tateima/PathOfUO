@@ -12,8 +12,9 @@ namespace Server.Talent
             TalentDependency = typeof(SonicAffinity);
             DisplayName = "Resonance";
             CanBeUsed = true; 
-            Description = "Chance on barding success that target is damaged by sonic energy. AOE damage effect on use - 1m cooldown.";
+            Description = "Chance on barding success that target is damaged by sonic energy. AOE damage effect on use - 1m cooldown. Requires 60+ music.";
             ImageID = 180;
+            AddEndY = 125;
         }
         public override bool HasSkillRequirement(Mobile mobile)
         {

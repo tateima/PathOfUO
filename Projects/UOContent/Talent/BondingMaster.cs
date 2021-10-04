@@ -16,6 +16,7 @@ namespace Server.Talent
             DisplayName = "Bonding master";
             Description = "Increase bond slot by one per level.";
             ImageID = 153;
+            AddEndY = 85;
         }
         public override void UpdateMobile(Mobile mobile)
         {

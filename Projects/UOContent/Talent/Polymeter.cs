@@ -17,7 +17,7 @@ namespace Server.Talent
             Description = "Create device that polymorphs creatures into rabbits. Can glitch and make them stronger.";
             ImageID = 156;
             GumpHeight = 230;
-            AddEndY = 145;
+            AddEndY = 105;
             MaxLevel = 1;
         }
 

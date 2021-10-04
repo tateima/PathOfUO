@@ -15,7 +15,7 @@ namespace Server.Talent
             Description = "Increases damage and hit chance of bow weapons.";
             ImageID = 131;
             GumpHeight = 85;
-            AddEndY = 80;
+            AddEndY = 75;
         }
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {

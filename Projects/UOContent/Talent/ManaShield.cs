@@ -16,6 +16,7 @@ namespace Server.Talent
             MaxLevel = 1;
             Description = "Absorbs damage with mana. Does not work in Wraith Form.";
             ImageID = 155;
+            AddEndY = 95;
         }
 
         public override void CheckDefenseEffect(Mobile defender, Mobile attacker, int damage)

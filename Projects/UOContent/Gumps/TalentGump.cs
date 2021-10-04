@@ -71,7 +71,7 @@ namespace Server.Gumps
                 string blockedByStr = "";
                 if (blockedBy != null && !talent.IgnoreTalentBlock(from))
                 {
-                    foreach(Type blockerType in blockedBy)
+                    foreach (Type blockerType in blockedBy)
                     {
                         var blockerTalent = TalentConstructor.Construct(blockerType) as BaseTalent;
                         if (blockerTalent != null)
@@ -103,7 +103,17 @@ namespace Server.Gumps
                 }
                 int talentLevel = (used != null && used.Level > 0) ? used.Level : 0;
                 AddHtml(x, y, 200, 45, $"<BASEFONT COLOR=#FFFFE5>{talent.DisplayName}: ({talentLevel}/{talent.MaxLevel})</FONT>");
-                AddImage(x + 160, y - 10, talent.ImageID);
+                int hue = 0;
+                if (talentLevel == 0 && (dependsOn != null && hasDependency == null) || (blockedBy != null && hasBlocker != null) || !talent.HasSkillRequirement(from)
+                    || (hasDependency != null && hasDependency.Level < talent.TalentDependencyPoints && hasDependency.Level != hasDependency.MaxLevel))
+                {
+                    hue = 0x3E8;
+                }
+                if (talentLevel == talent.MaxLevel)
+                {
+                    hue = 0x26;
+                }
+                AddImage(x + 160, y - 10, talent.ImageID, hue);
                 if (talent.HasSkillRequirement(from)
                     && (talentLevel < talent.MaxLevel && ((PlayerMobile)from).TalentPoints > 0)
                     && ((dependsOn != null && hasDependency != null

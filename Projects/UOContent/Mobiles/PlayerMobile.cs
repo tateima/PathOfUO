@@ -427,6 +427,11 @@ namespace Server.Mobiles
         {
             return (int)Enum.Parse(typeof(Level), level);
         }
+
+        private Level NextLevel()
+        {
+            return Enum.GetValues(typeof(Level)).Cast<Level>().Where(level => m_LevelExperience + m_NonCraftExperience + m_NonCraftExperience < (int)level).FirstOrDefault();
+        }
         private Level EntitledLevel()
         {
             return Enum.GetValues(typeof(Level)).Cast<Level>().Where(level => m_LevelExperience + m_NonCraftExperience + m_NonCraftExperience >= (int)level).Max();
@@ -2946,6 +2951,16 @@ namespace Server.Mobiles
             {
                 bankItem.Delete();
             }
+            var house = BaseHouse.FindHouseAt(this);
+
+            if (house != null)
+            {
+                foreach (Item houseItem in house.Items)
+                {
+                    houseItem.Delete();
+                }
+                house.Delete();
+            }
 
             base.OnDeath(c);
 
@@ -3952,6 +3967,20 @@ namespace Server.Mobiles
         public override void GetProperties(ObjectPropertyList list)
         {
             base.GetProperties(list);
+
+            list.Add(
+                1060847,
+                "Level:\t{0}",
+                Level
+            ); // ~1_val~ ~2_val~
+            string xp = (LevelExperience + CraftExperience + NonCraftExperience).ToString();
+            int nextLevel = (int)NextLevel();
+            list.Add(
+                1060847,
+                "{0}/{1}\tXP",
+                xp,
+                nextLevel.ToString()
+            ); // ~1_val~ ~2_val~
 
             if (Map == Faction.Facet)
             {

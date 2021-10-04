@@ -13,10 +13,10 @@ namespace Server.Talent
             RequiredWeapon = new Type[] { typeof(BaseRanged) };
             RequiredWeaponSkill = SkillName.Archery;
             DisplayName = "Chemical war";
-            Description = "Propels potions along with arrows or bolts from backpack.";
+            Description = "Propels potions along with arrows or bolts from backpack. Requires 70+ Alchemy.";
             ImageID = 379;
             GumpHeight = 85;
-            AddEndY = 65;
+            AddEndY = 75;
             MaxLevel = 1;
         }
         public override bool HasSkillRequirement(Mobile mobile)

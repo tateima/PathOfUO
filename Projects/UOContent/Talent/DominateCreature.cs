@@ -5,6 +5,7 @@ using Server.Mobiles;
 using Server.Items;
 using Server.Targeting;
 using Server.Gumps;
+using Server.Network;
 
 
 namespace Server.Talent
@@ -16,8 +17,9 @@ namespace Server.Talent
             TalentDependency = typeof(Resonance);
             CanBeUsed = true;
             DisplayName = "Dominate creature";
-            Description = "Chance on to control target for 1 minute per level. 5 minute cooldown.";
+            Description = "Chance on to control target for 1 minute per level. 5 minute cooldown. Requires 90 music, all bardic skills 70+.";
             ImageID = 191;
+            AddEndY = 135;
         }
         public override bool HasSkillRequirement(Mobile mobile)
         {
@@ -139,10 +141,13 @@ namespace Server.Talent
                             }
                             else
                             {
+                                from.PrivateOverheadMessage(MessageType.Regular, 0x3B2, 502799, from.NetState); // It seems to accept you as master.
                                 from.SendMessage("You play your music and your target submits to your will for a brief time");
                                 m_Instrument.PlayInstrumentWell(from);
                                 m_Instrument.ConsumeUse(from);
                                 m_Creature.Owners.Add(from);
+                                m_Creature.SetControlMaster(from);
+                                m_Creature.Summoned = true;
                                 Timer.StartTimer(TimeSpan.FromSeconds(m_level * 60), ExpireDomination, out _dominateTimerToken);
                             }
                         }
@@ -156,6 +161,8 @@ namespace Server.Talent
             private void ExpireDomination()
             {
                 m_Creature.Owners.Clear();
+                m_Creature.SetControlMaster(null);
+                m_Creature.Summoned = false;
             }
         }
     }

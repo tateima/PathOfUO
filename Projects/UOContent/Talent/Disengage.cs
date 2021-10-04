@@ -14,7 +14,7 @@ namespace Server.Talent
             Description = "Leaps backwards from enemies between 2-8 yards. 2 minute cooldown.";
             ImageID = 380;
             GumpHeight = 85;
-            AddEndY = 65;
+            AddEndY = 75;
         }
         public override void OnUse(Mobile mobile)
         {

@@ -12,7 +12,7 @@ namespace Server.Talent
             Description = "Reduces chances of device failure.";
             ImageID = 353;
             GumpHeight = 70;
-            AddEndY = 65;
+            AddEndY = 75;
         }
     }
 }

@@ -13,7 +13,7 @@ namespace Server.Talent
             TalentDependency = typeof(GuardianLight);
             HasDefenseEffect = true;
             DisplayName = "Holy avenger";
-            Description = "Increased damage to holy spells, adds reflective and area of affect damage in combat.";
+            Description = "Increased damage to holy spells, adds reflective and area of affect damage in combat. Requires 75+ chivalry.";
             ImageID = 293;
         }
         public override bool HasSkillRequirement(Mobile mobile)

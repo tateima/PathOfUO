@@ -14,7 +14,7 @@ namespace Server.Talent
             Description = "Chance of getting a critical strike with ranged weapons.";
             ImageID = 114;
             GumpHeight = 75;
-            AddEndY = 105;
+            AddEndY = 100;
         }
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)

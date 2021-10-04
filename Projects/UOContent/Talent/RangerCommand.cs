@@ -12,6 +12,7 @@ namespace Server.Talent
             DisplayName = "Ranger command";
             Description = "Decreases stat and skill loss of tamed creatures by 1% per level.";
             ImageID = 188;
+            AddEndY = 95;
         }
         public override double ModifySpellScalar()
         {

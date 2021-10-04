@@ -799,8 +799,8 @@ namespace Server.Misc
                         break;
                     }
             }
-
-            return useHaven ? m_NewHavenInfo : args.City;
+            return args.City;
+            //return useHaven ? m_NewHavenInfo : args.City;
         }
 
         private static void FixStats(ref int str, ref int dex, ref int intel, int max)

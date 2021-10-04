@@ -17,7 +17,7 @@ namespace Server.Talent
             Description = "Attack one other nearby enemy for 50% + level * 2 damage. If no enemies, apply 25% damage to same target (30s cooldown).";
             ImageID = 368;
             GumpHeight = 75;
-            AddEndY = 145;
+            AddEndY = 105;
         }
         public override void OnUse(Mobile mobile)
         {

@@ -324,12 +324,14 @@ namespace Server
                 var group = m_Types[i];
 
                 var contains = false;
-
-                for (var j = 0; !contains && j < group.Length; ++j)
+                if (group != null)
                 {
-                    contains = group[j].IsAssignableFrom(type);
+                    for (var j = 0; !contains && j < group.Length; ++j)
+                    {
+                        contains = group[j].IsAssignableFrom(type);
+                    }
                 }
-
+               
                 if (contains)
                 {
                     return i;

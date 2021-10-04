@@ -16,7 +16,7 @@ namespace Server.Talent
             Description = "Next hit drains 50% + level*2 mana for 20 seconds. 1 min cooldown.";
             ImageID = 167;
             GumpHeight = 75;
-            AddEndY = 100;
+            AddEndY = 95;
         }
         public override void OnUse(Mobile mobile)
         {

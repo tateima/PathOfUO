@@ -1286,13 +1286,13 @@ namespace Server.Engines.Craft
 
                     if (CanGainExperience(from, typeRes, craftSystem, out allRequiredSkills))
                     {
-                        var chance = GetSuccessChance(from, typeRes, craftSystem, false, out allRequiredSkills);
+                        var chance = GetSuccessChance(from, typeRes, craftSystem, false, out allRequiredSkills)*100;
                         if (chance > 100)
                         {
                             chance = 100;
                         }
-                        // the lower the chance the greater the experience reward    
-                        ((PlayerMobile)from).CraftExperience += (int)((100 - chance) * 1.05);
+                        // the lower the chance the greater the experience reward
+                        ((PlayerMobile)from).CraftExperience += (int)((100 - chance) * Utility.RandomDouble());
                         ((PlayerMobile)from).CheckExperience();
                     }
 
