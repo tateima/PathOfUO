@@ -1076,7 +1076,6 @@ namespace Server.Mobiles
             }
         }
 
-
         public void ClearQuestArrow() => m_QuestArrow = null;
 
         public override void ToggleFlying()
@@ -1222,7 +1221,7 @@ namespace Server.Mobiles
             var type = item.GetType();
 
             if (type.IsDefined(typeof(FurnitureAttribute), true) ||
-                type.IsDefined(typeof(DynamicFlipingAttribute), true))
+                type.IsDefined(typeof(DynamicFlippingAttribute), true))
             {
                 var objs = type.GetCustomAttributes(typeof(FlippableAttribute), true);
 
@@ -2080,14 +2079,12 @@ namespace Server.Mobiles
 
             var speed = ComputeMovementSpeed(d);
 
-            bool res;
-
             if (!Alive)
             {
                 MovementImpl.IgnoreMovableImpassables = true;
             }
 
-            res = base.Move(d);
+            var res = base.Move(d);
 
             MovementImpl.IgnoreMovableImpassables = false;
 

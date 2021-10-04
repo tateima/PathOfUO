@@ -28,10 +28,11 @@ namespace Server
         private const int _tickRatePowerOf2 = 3;
         private const int _tickRate = 1 << _tickRatePowerOf2; // 8ms
 
-        private static long _lastTickTurned = -1;
-
         private static readonly Timer[][] _rings = new Timer[_ringLayers][];
         private static readonly int[] _ringIndexes = new int[_ringLayers];
+
+        private static long _lastTickTurned = -1;
+        private static bool _timerWheelExecuting;
 
         public static void Init(long tickCount)
         {
@@ -44,46 +45,63 @@ namespace Server
             }
         }
 
-        public static int Slice(long tickCount)
+        public static void Slice(long tickCount)
         {
             var deltaSinceTurn = tickCount - _lastTickTurned;
-            var events = 0;
             while (deltaSinceTurn >= _tickRate)
             {
                 deltaSinceTurn -= _tickRate;
                 _lastTickTurned += _tickRate;
-                events += Turn() ? 1 : 0;
+                Turn();
             }
-
-            return events;
         }
 
-        private static bool Turn()
+        private static void Turn()
         {
-            bool events = false;
+            _timerWheelExecuting = true;
+            var turnNextWheel = false;
+
+            var _executingRings = new Timer[_ringLayers];
+
+            // Detach the chain from the timer wheel. This allows adding timers to the same slot during execution.
+            for (var i = 0; i < _ringLayers; i++)
+            {
+                if (i == 0 || turnNextWheel)
+                {
+                    var ringIndex = ++_ringIndexes[i];
+                    turnNextWheel = ringIndex >= _ringSize;
+
+                    if (turnNextWheel)
+                    {
+                        ringIndex = _ringIndexes[i] = 0;
+                    }
+
+                    _executingRings[i] = _rings[i][ringIndex];
+                    _rings[i][ringIndex] = null;
+                }
+                else
+                {
+                    _executingRings[i] = null;
+                }
+            }
 
             for (var i = 0; i < _ringLayers; i++)
             {
-                // Increment the ring index, then get the timer.
-                var ringIndex = ++_ringIndexes[i];
-                bool turnNextWheel = ringIndex >= _ringSize;
-
-                if (turnNextWheel)
+                var timer = _executingRings[i];
+                if (timer == null)
                 {
-                    ringIndex = _ringIndexes[i] = 0;
+                    continue;
                 }
 
-                var timer = _rings[i][ringIndex];
-                if (timer != null)
+                do
                 {
-                    events = true;
+                    var next = timer._nextTimer;
 
-                    do
+                    timer.Detach();
+
+                    // Check to see if it's running just in case it was stopped by another timer
+                    if (timer.Running)
                     {
-                        var next = _rings[i][ringIndex] = timer._nextTimer;
-
-                        timer.Detach();
-
                         if (i > 0 && timer._remaining > 0)
                         {
                             // Promote
@@ -93,18 +111,18 @@ namespace Server
                         {
                             Execute(timer);
                         }
+                    }
 
-                        timer = next;
-                    } while (timer != null);
-                }
+                    if (!timer.Running)
+                    {
+                        timer.OnDetach();
+                    }
 
-                if (!turnNextWheel)
-                {
-                    break;
-                }
+                    timer = next;
+                } while (timer != null);
             }
 
-            return events;
+            _timerWheelExecuting = false;
         }
 
         private static void Execute(Timer timer)
@@ -137,7 +155,7 @@ namespace Server
         private static void AddTimer(Timer timer, long delay)
         {
 #if DEBUG_TIMERS
-            var originalDelay = delay
+            var originalDelay = delay;
 #endif
             delay = Math.Max(0, delay);
 

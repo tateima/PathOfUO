@@ -160,12 +160,12 @@ namespace Server.Items
                 _addon.Map = Map;
             }
         }
-
+/*
         public override void GetProperties(ObjectPropertyList list) => _addon?.GetProperties(list);
 
         public override void GetContextMenuEntries(Mobile from, List<ContextMenuEntry> list) =>
             _addon?.GetContextMenuEntries(from, list);
-
+*/
         public override void OnAfterDelete()
         {
             base.OnAfterDelete();
@@ -190,7 +190,7 @@ namespace Server.Items
 
         public static void ApplyLightTo(Item item)
         {
-            if ((item.ItemData.Flags & TileFlag.LightSource) == 0)
+            if (!item.ItemData.LightSource)
             {
                 return; // not a light source
             }
