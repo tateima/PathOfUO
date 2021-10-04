@@ -1271,6 +1271,7 @@ namespace Server.Engines.Craft
                     BaseTalent warcraftFocus = ((PlayerMobile)from).GetTalent(typeof(WarCraftFocus));
                     if (warcraftFocus != null)
                     {
+                        item.Name = "Warforged " + item.Name;
                         if (item is BaseWeapon)
                         {
                             ((BaseWeapon)item).MaxDamage += warcraftFocus.Level;

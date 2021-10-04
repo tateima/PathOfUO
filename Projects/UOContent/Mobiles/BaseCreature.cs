@@ -3477,7 +3477,7 @@ namespace Server.Mobiles
                     m_MaxLevel = Fame / 500;
                     if (m_MaxLevel < 1)
                     {
-                        m_MaxLevel = 1;
+                        m_MaxLevel = 2;
                     }
                     for (var i = 0; i < titles.Count; ++i)
                     {

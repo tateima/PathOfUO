@@ -72,8 +72,8 @@ namespace Server.Engines.Harvest
 
             if (m_Current == m_Maximum)
             {
-                var min = Definition.MinRespawn.TotalMinutes;
-                var max = Definition.MaxRespawn.TotalMinutes;
+                var min = Definition.MinRespawn.TotalMinutes * 2;
+                var max = Definition.MaxRespawn.TotalMinutes * 2;
                 var rnd = Utility.RandomDouble();
 
                 m_Current = m_Maximum - amount;

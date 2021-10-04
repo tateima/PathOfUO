@@ -1,4 +1,5 @@
 using System;
+using Server.Gumps;
 
 namespace Server.Misc
 {
@@ -8,6 +9,8 @@ namespace Server.Misc
     public class WelcomeTimer : Timer
     {
         private static string[] m_Messages;
+
+        private bool m_ShowedPathChoice;
 
         private readonly int m_Count;
 
@@ -47,14 +50,19 @@ namespace Server.Misc
         {
             m_Mobile = m;
             m_Count = count;
+            m_ShowedPathChoice = false;
         }
 
         protected override void OnTick()
         {
             if (m_State < m_Count)
             {
+                if (!m_ShowedPathChoice)
+                {
+                    m_Mobile.SendGump(new ChoosePathGump(m_Mobile));
+                    m_ShowedPathChoice = true;
+                }
                 m_Mobile.SendMessage(0x35, m_Messages[m_State++]);
-                return;
             }
 
             Stop();

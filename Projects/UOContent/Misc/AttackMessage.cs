@@ -1,5 +1,6 @@
 using System;
 using Server.Network;
+using Server.Mobiles;
 
 namespace Server.Misc
 {
@@ -21,7 +22,7 @@ namespace Server.Misc
             var aggressor = e.Aggressor;
             var aggressed = e.Aggressed;
 
-            if (!aggressor.Player || !aggressed.Player)
+            if (!aggressor.Player || !aggressed.Player || (aggressor.Player && aggressed.Player && !aggressor.CanBeHarmful(aggressed, false, false)))
             {
                 return;
             }

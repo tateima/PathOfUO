@@ -448,7 +448,7 @@ namespace Server.Mobiles
                 m_Level = newLevel;
                 // get remaining experience to add later
                 int remainingExp = (m_LevelExperience + m_NonCraftExperience + m_CraftExperience) - (int)entitledLevel;
-                if (remainingExp< 0)
+                if (remainingExp < 0)
                 {
                     remainingExp = 0;
                 }
@@ -2004,6 +2004,11 @@ namespace Server.Mobiles
                 return false;
             }
 
+            if (target is PlayerMobile player && ShortTermMurders == 0)
+            {
+                return (Notoriety.Compute(this, target) != Notoriety.Innocent);
+            }
+
             return base.CanBeHarmful(target, message, ignoreOurBlessedness);
         }
 
@@ -2406,7 +2411,6 @@ namespace Server.Mobiles
                     return;
                 }
             }
-
             base.OnDoubleClick(from);
         }
 
@@ -3875,29 +3879,31 @@ namespace Server.Mobiles
 
         public void CheckKillDecay()
         {
-            if (m_ShortTermElapse < GameTime)
-            {
-                m_ShortTermElapse += TimeSpan.FromHours(8);
-                if (ShortTermMurders > 0)
-                {
-                    --ShortTermMurders;
-                }
-            }
+            return;
+            //if (m_ShortTermElapse < GameTime)
+            //{
+              //  m_ShortTermElapse += TimeSpan.FromHours(8);
+                //if (ShortTermMurders > 0)
+                //{
+                  //  --ShortTermMurders;
+                //}
+            //}
 
-            if (m_LongTermElapse < GameTime)
-            {
-                m_LongTermElapse += TimeSpan.FromHours(40);
-                if (Kills > 0)
-                {
-                    --Kills;
-                }
-            }
+            //if (m_LongTermElapse < GameTime)
+            //{
+              //  m_LongTermElapse += TimeSpan.FromHours(40);
+                //if (Kills > 0)
+                //{
+                  //  --Kills;
+                //}
+            //}
         }
 
         public void ResetKillTime()
         {
-            m_ShortTermElapse = GameTime + TimeSpan.FromHours(8);
-            m_LongTermElapse = GameTime + TimeSpan.FromHours(40);
+            return;
+            //m_ShortTermElapse = GameTime + TimeSpan.FromHours(8);
+            //m_LongTermElapse = GameTime + TimeSpan.FromHours(40);
         }
 
         public override bool CanSee(Mobile m)
