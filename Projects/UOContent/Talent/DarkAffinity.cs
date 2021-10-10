@@ -10,6 +10,7 @@ namespace Server.Talent
     {
         private Mobile m_Mobile;
         private ResistanceMod m_ResistanceMod;
+        private TimerExecutionToken _buffTimerToken;
         public DarkAffinity() : base()
         {
             m_ResistanceMod = new ResistanceMod(ResistanceType.Poison, +Level * 3);
@@ -44,12 +45,12 @@ namespace Server.Talent
                     mobile.FixedParticles(0x374A, 10, 15, 5013, EffectLayer.Waist);
                     mobile.PlaySound(0x1F1);
                 }
-                Timer.StartTimer(TimeSpan.FromSeconds(60), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(60 + Utility.Random(20)), ExpireBuff, out _buffTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(180 - Level * 5), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
-        public override void ExpireTalentCooldown()
+        public void ExpireBuff()
         {
-            base.ExpireTalentCooldown();
             if (m_Mobile != null)
             {
                 m_Mobile.RemoveResistanceMod(m_ResistanceMod);

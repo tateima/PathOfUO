@@ -7,6 +7,7 @@ namespace Server.Talent
     public class ViperAspect : BaseTalent, ITalent
     {
         private Mobile m_Mobile;
+        private TimerExecutionToken _buffTimerToken;
         public ViperAspect() : base()
         {
             ResMod = new ResistanceMod(ResistanceType.Poison, Level * 5);
@@ -32,12 +33,12 @@ namespace Server.Talent
                     m_Mobile.PlaySound(0x205);
 
                 }
-                Timer.StartTimer(TimeSpan.FromSeconds(60), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(60 + Utility.Random(20)), ExpireBuff, out _buffTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(180 - Level * 5), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
-        public override void ExpireTalentCooldown()
+        public void ExpireBuff()
         {
-            base.ExpireTalentCooldown();
             if (m_Mobile != null)
             {
                 if (Core.AOS)

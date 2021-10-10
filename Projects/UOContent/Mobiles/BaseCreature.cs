@@ -3494,6 +3494,11 @@ namespace Server.Mobiles
                                 {
                                     m_ExperienceValue += AOS.Scale(m_ExperienceValue, (fastLearner.Level * 2));
                                 }
+                                if (player.Ranger())
+                                {
+                                    m_ExperienceValue = m_ExperienceValue / 2; // 50% ranger 50% normal gain
+                                    player.RangerExperience += m_ExperienceValue;
+                                } 
                                 player.NonCraftExperience += m_ExperienceValue;
                             }
                         }
@@ -3511,7 +3516,7 @@ namespace Server.Mobiles
                             entry.Value.CheckKillEffect(this, LastKiller);
                         }
                     }
-                }
+                } 
 
                 if (DeleteCorpseOnDeath)
                 {

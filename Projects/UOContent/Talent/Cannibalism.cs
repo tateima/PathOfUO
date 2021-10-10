@@ -18,6 +18,7 @@ namespace Server.Talent
         }
         public override void OnUse(Mobile mobile)
         {
+            mobile.SendMessage("Which pet do you wish to improve?");
             mobile.Target = new InternalFirstTarget(mobile, Level);
         }
 
@@ -37,9 +38,10 @@ namespace Server.Talent
             {
                 from.RevealingAction();
 
-                if (targeted is BaseCreature creature && creature.ControlMaster != null && creature.ControlMaster == from && creature.Controlled && creature.CannibalPoints < 5)
+                if (targeted is BaseCreature creature && creature.ControlMaster != null && creature.ControlMaster == from && creature.Controlled && creature.CannibalPoints < 3)
                 {
-                   from.Target = new InternalSecondTarget((Mobile)targeted, m_level);
+                    from.SendMessage("Wish pet do you wish to sacrifice?");
+                    from.Target = new InternalSecondTarget((Mobile)targeted, m_level);
                 }
                 else
                 {
@@ -65,12 +67,10 @@ namespace Server.Talent
             protected override void OnTarget(Mobile from, object targeted)
             {
                 from.RevealingAction();
-                if (targeted is BaseCreature creature && creature.ControlMaster != null && creature.ControlMaster == from && creature.Controlled && creature.GetType() == m_CannibalCreature.GetType())
+                if (targeted is BaseCreature creature && creature.ControlMaster != null && creature.ControlMaster == from && creature.Controlled && creature.GetType() == m_CannibalCreature.GetType() &&  creature.CannibalPoints == 0)
                 {
-                    int modifier = (m_CannibalCreature.CannibalPoints > 0) ? m_Level - m_CannibalCreature.CannibalPoints : m_Level;
-                    m_CannibalCreature.CannibalPoints = m_Level;
-                    m_CannibalCreature = TransferMobileStats((Mobile)targeted, m_CannibalCreature, modifier);
-                    m_CannibalCreature.CannibalPoints += modifier;
+                    m_CannibalCreature = TransferMobileStats((Mobile)targeted, m_CannibalCreature);
+                    m_CannibalCreature.CannibalPoints += 1;
                     ((Mobile)targeted).Kill();
                 }
                 else
@@ -79,11 +79,14 @@ namespace Server.Talent
                 }
             }
 
-            public BaseCreature TransferMobileStats(Mobile target, BaseCreature destination, int modifier)
-            { 
-                destination.RawDex += AOS.Scale(target.RawDex, modifier * 10);
-                destination.RawInt += AOS.Scale(target.RawInt, modifier * 10);
-                destination.RawStr += AOS.Scale(target.RawStr, modifier * 10);
+            public BaseCreature TransferMobileStats(Mobile target, BaseCreature destination)
+            {
+                destination.RawDex += AOS.Scale(target.RawDex, m_Level * 2);
+                destination.RawInt += AOS.Scale(target.RawInt, m_Level * 2);
+                destination.RawStr += AOS.Scale(target.RawStr, m_Level * 2);
+                destination.SetHits(destination.HitsMax + AOS.Scale(target.HitsMax, m_Level * 2));
+                destination.SetMana(destination.ManaMax + AOS.Scale(target.ManaMax, m_Level * 2));
+                destination.SetStam(destination.StamMax + AOS.Scale(target.StamMax, m_Level * 2));
                 return destination;
             }
         }

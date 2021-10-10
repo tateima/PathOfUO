@@ -246,12 +246,16 @@ namespace Server.Mobiles
 
         private bool m_LastProtectedMessage;
 
+        private TimerExecutionToken _hungerTimerToken;
+
         private int m_LevelExperience;
         private int m_CraftExperience;
         private int m_CraftSkillPoints;
         private int m_AllottedCraftSkillPoints;
+        private int m_RangerExperience;
         private int m_NonCraftExperience;
         private int m_NonCraftSkillPoints;
+        private int m_RangerSkillPoints;
         private int m_StatPoints;
         private int m_TalentPoints;
         private string m_Level;
@@ -290,6 +294,7 @@ namespace Server.Mobiles
             m_AllottedCraftSkillPoints = 0;
             m_CraftExperience = 0;
             m_NonCraftSkillPoints = 0;
+            m_RangerExperience = 0;
             m_NonCraftExperience = 0;
             m_StatPoints = 0;
             m_TalentPoints = 0;
@@ -386,6 +391,18 @@ namespace Server.Mobiles
             }
         }
         [CommandProperty(AccessLevel.GameMaster)]
+        public int RangerSkillPoints
+        {
+            get
+            {
+                return m_RangerSkillPoints;
+            }
+            set
+            {
+                m_RangerSkillPoints = value;
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
         public int LevelExperience
         {
             get
@@ -423,6 +440,20 @@ namespace Server.Mobiles
                 CheckExperience();
             }
         }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int RangerExperience
+        {
+            get
+            {
+                return m_RangerExperience;
+            }
+            set
+            {
+                m_RangerExperience = value;
+                CheckExperience();
+            }
+        }
         private int GetBaseExperience(string level)
         {
             return (int)Enum.Parse(typeof(Level), level);
@@ -430,12 +461,13 @@ namespace Server.Mobiles
 
         private Level NextLevel()
         {
-            return Enum.GetValues(typeof(Level)).Cast<Level>().Where(level => m_LevelExperience + m_NonCraftExperience + m_NonCraftExperience < (int)level).FirstOrDefault();
+            return Enum.GetValues(typeof(Level)).Cast<Level>().Where(level => m_LevelExperience + m_NonCraftExperience + m_NonCraftExperience + m_RangerExperience < (int)level).FirstOrDefault();
         }
         private Level EntitledLevel()
         {
-            return Enum.GetValues(typeof(Level)).Cast<Level>().Where(level => m_LevelExperience + m_NonCraftExperience + m_NonCraftExperience >= (int)level).Max();
+            return Enum.GetValues(typeof(Level)).Cast<Level>().Where(level => m_LevelExperience + m_NonCraftExperience + m_NonCraftExperience + m_RangerExperience >= (int)level).Max();
         }
+
         public void CheckExperience()
         {
             Level entitledLevel = EntitledLevel();
@@ -447,7 +479,7 @@ namespace Server.Mobiles
                 int intermediaryExp = (int)entitledLevel - currentLevelBaseExp;
                 m_Level = newLevel;
                 // get remaining experience to add later
-                int remainingExp = (m_LevelExperience + m_NonCraftExperience + m_CraftExperience) - (int)entitledLevel;
+                int remainingExp = (m_LevelExperience + m_NonCraftExperience + m_CraftExperience + m_RangerExperience) - (int)entitledLevel;
                 if (remainingExp < 0)
                 {
                     remainingExp = 0;
@@ -455,18 +487,23 @@ namespace Server.Mobiles
                 // calculate % contributions, round down not up to figure out point allocation
                 double craftingContr = m_CraftExperience / intermediaryExp;
                 double nonCraftingContr = m_NonCraftExperience / intermediaryExp;
+                double rangerContr = m_RangerExperience / intermediaryExp;
 
                 m_NonCraftSkillPoints += (int)Math.Round(nonCraftingContr);
                 m_CraftSkillPoints += (int)Math.Round(craftingContr);
+                m_RangerSkillPoints += (int)Math.Round(rangerContr);
                 m_StatPoints += 5;
                 m_TalentPoints += 1;
 
                 // reset craft and non craft experience for next level tracking
                 m_CraftExperience = (int)(remainingExp * craftingContr);
                 m_NonCraftExperience = (int)(remainingExp * nonCraftingContr);
+                m_RangerSkillPoints = (int)(remainingExp * rangerContr);
+
                 SendMessage("You have gained a level!");
                 FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
                 PlaySound(0x202);
+                m_LevelExperience = GetBaseExperience(m_Level);
             }
         }
 
@@ -525,13 +562,6 @@ namespace Server.Mobiles
                 AddArmorRating(ref rating, LegsArmor);
                 AddArmorRating(ref rating, ChestArmor);
                 AddArmorRating(ref rating, ShieldArmor);
-
-                BaseTalent ironSkin = GetTalent(typeof(IronSkin));
-                if (ironSkin != null)
-                {
-                    // 5 armor per level in ironskin
-                    rating += (double)(ironSkin.Level * 5);
-                }
                 return VirtualArmor + VirtualArmorMod + rating;
             }
         }
@@ -1031,6 +1061,20 @@ namespace Server.Mobiles
         public DateTime LastHonorUse { get; set; }
 
         public bool HonorActive { get; set; }
+        public bool Ranger()
+        {
+            bool rangerCreature = false;
+            foreach (Mobile m in m_AllFollowers)
+            {
+                rangerCreature = (m is BaseCreature creature && creature.Tamable && creature.MinTameSkill > 50.0);
+                if (rangerCreature)
+                {
+                    break;
+                }
+            }
+            return rangerCreature;
+        }
+
 
         public HonorContext SentHonorContext { get; set; }
 
@@ -1600,6 +1644,7 @@ namespace Server.Mobiles
             if (from is PlayerMobile mobile)
             {
                 mobile.ClaimAutoStabledPets();
+                mobile.HungerHarmCheck();
                 foreach (KeyValuePair<Type, BaseTalent> entry in mobile.Talents)
                 {
                     if (entry.Value.Level > 0)
@@ -1608,7 +1653,25 @@ namespace Server.Mobiles
                     }
                 }
 
+            }            
+        }
+
+        public void HungerHarmCheck()
+        {
+            int damage = 20 - (int)(Skills.Cooking.Value / 10); // cooking helps save hunger death!
+            if (Hunger < 10)
+            {
+                Damage(damage - Hunger, this);
+                Stam -= (damage - Hunger);
+                Say(0x21, "I need food or else I will die!");
             }
+            if (Thirst < 10)
+            {
+                Damage(damage - Thirst, this);
+                Mana -= (damage - Thirst);
+                Say(0x21, "I need water or else I will die!");
+            }
+            Timer.StartTimer(TimeSpan.FromMinutes(5), HungerHarmCheck, out _hungerTimerToken);
         }
 
         public void ValidateEquipment()
@@ -2827,18 +2890,16 @@ namespace Server.Mobiles
 
             RecoverAmmo();
 
-            // check for talent death effects
-            bool beforeDeathTalentSave = false;
+           
             foreach(KeyValuePair<Type,BaseTalent> entry in Talents)
             {
                 if (entry.Value.HasBeforeDeathSave && !entry.Value.OnCooldown)
                 {
                     entry.Value.CheckBeforeDeathEffect(this);
-                    beforeDeathTalentSave = true;
+                    return false;
                 }
-            }
-           
-            return (beforeDeathTalentSave && base.OnBeforeDeath());
+            }           
+            return base.OnBeforeDeath();
         }
 
         private bool CheckInsuranceOnDeath(Item item)
@@ -3344,6 +3405,10 @@ namespace Server.Mobiles
             var version = reader.ReadInt();
             switch (version)
             {
+                case 33:
+                    m_RangerExperience = reader.ReadInt();
+                    m_RangerSkillPoints = reader.ReadInt();
+                    goto case 32;
                 case 32:
                     m_RestedHenchmen = reader.ReadEntityList<Mobile>(); // henchmen feature
                     m_Henchmen = reader.ReadEntityList<Mobile>(); // henchmen feature
@@ -3715,7 +3780,9 @@ namespace Server.Mobiles
 
             base.Serialize(writer);
 
-            writer.Write(32); // version
+            writer.Write(33); // version
+            writer.Write(m_RangerExperience);
+            writer.Write(m_RangerSkillPoints);
             writer.Write(m_RestedHenchmen);
             writer.Write(m_Henchmen);
             writer.Write(m_AllDebtees);

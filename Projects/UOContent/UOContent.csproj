@@ -7,6 +7,11 @@
         <PublishDir>..\..\Distribution\Assemblies</PublishDir>
         <OutDir>..\..\Distribution\Assemblies</OutDir>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      <Optimize>false</Optimize>
+      <DebugType>full</DebugType>
+      <DebugSymbols>true</DebugSymbols>
+    </PropertyGroup>
     <Target Name="CleanPub" AfterTargets="Clean">
         <Message Text="Removing distribution assemblies..." />
         <Delete Files="..\..\Distribution\Assemblies\Argon2.Bindings.dll" ContinueOnError="true" />

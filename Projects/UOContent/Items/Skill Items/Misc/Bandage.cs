@@ -5,6 +5,7 @@ using Server.Factions;
 using Server.Gumps;
 using Server.Mobiles;
 using Server.Targeting;
+using Server.Talent;
 
 namespace Server.Items
 {
@@ -228,6 +229,12 @@ namespace Server.Items
 
             var petPatient = Patient as BaseCreature;
 
+            BaseTalent venomBlood = null;
+            if (Healer is PlayerMobile playerHealer)
+            {
+                venomBlood = playerHealer.GetTalent(typeof(VenomBlood));
+            }
+
             if (!Healer.Alive)
             {
                 healerNumber = 500962; // You were unable to finish your work before you died.
@@ -338,7 +345,7 @@ namespace Server.Items
                     patientNumber = -1;
                 }
             }
-            else if (Patient.Poisoned)
+            else if (Patient.Poisoned && !(venomBlood != null))
             {
                 Healer.SendLocalizedMessage(500969); // You finish applying the bandages.
 

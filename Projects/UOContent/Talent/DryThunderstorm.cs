@@ -33,15 +33,15 @@ namespace Server.Talent
         }
         public override void OnUse(Mobile mobile)
         {
-            if (mobile.Mana < 40)
+            if (mobile.Mana < 60)
             {
-                mobile.SendMessage("You require 40 mana to conjure a storm.");
+                mobile.SendMessage("You require 60 mana to conjure a storm.");
             }
             else if (!Activated && !OnCooldown)
             {
                 m_Mobile = mobile;
                 Activated = true;
-                mobile.Mana -= 40;
+                mobile.Mana -= 60;
                 RemainingBolts = (Level * 5) + Utility.Random(1, Level);
                 Timer.StartTimer(TimeSpan.FromSeconds(Utility.Random(7,10)), CheckStorm, out _talentTimerToken);
                 mobile.PlaySound(0x5CE);
@@ -51,8 +51,7 @@ namespace Server.Talent
         {
             if (RemainingBolts > 0)
             {
-                List<Mobile> mobiles = (List<Mobile>)m_Mobile.GetMobilesInRange(8);
-                foreach (Mobile mobile in mobiles)
+                foreach (Mobile mobile in m_Mobile.GetMobilesInRange(8))
                 {
                     if (mobile == m_Mobile || (mobile is PlayerMobile && mobile.Karma > 0) || !mobile.CanBeHarmful(m_Mobile, false) ||
                             Core.AOS && !mobile.InLOS(m_Mobile))
@@ -78,6 +77,7 @@ namespace Server.Talent
                     }
                     mobile.BoltEffect(0);
                     SpellHelper.Damage(lightning, mobile, damage);
+                    m_Mobile.DoHarmful(mobile);
                     RemainingBolts--;
                     break;
                 }

@@ -175,6 +175,8 @@ namespace Server
                             }
                             damagedMobiles++;
                             AOS.Damage(mobile, m_Mobile, damage, 0, 0, 0, 100, 0);
+                            mobile.FixedParticles(0x374A, 10, 15, 5021, EffectLayer.Waist); // poison spell effect
+                            mobile.SendSound(0x1CA); // slime sound
                         }
                     }
                     BaseTalent painManagement = player.GetTalent(typeof(PainManagement));

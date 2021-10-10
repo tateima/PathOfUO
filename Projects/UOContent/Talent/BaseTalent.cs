@@ -307,7 +307,8 @@ namespace Server.Talent
 
         public virtual bool CanApplyHitEffect(Item i)
         {
-            Type valid = RequiredWeapon.Where(w => w == i.GetType()).FirstOrDefault();
+            bool debug = i.GetType().IsSubclassOf(typeof(BaseWeapon));
+            Type valid = RequiredWeapon.Where(w => w == i.GetType() || i.GetType().IsSubclassOf(w)).FirstOrDefault();
 
             bool validSkill = false;
             if (i is BaseWeapon bw)
@@ -346,7 +347,7 @@ namespace Server.Talent
 
         public virtual bool CanScaleSpellDamage(Spell spell)
         {
-            Type valid = RequiredSpell.Where(w => w == spell.GetType()).FirstOrDefault();
+            Type valid = RequiredSpell.Where(w => w == spell.GetType() || spell.GetType().IsSubclassOf(w)).FirstOrDefault();
             return valid != null;
         }
 

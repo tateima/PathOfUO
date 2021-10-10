@@ -40,7 +40,7 @@ namespace Server.Talent
         }
         public override void CheckKillEffect(Mobile victim, Mobile killer)
         {
-            if (Utility.Random(100) < Level)
+            if (Utility.Random(100) < Level * 2) // max 10%
             {
                 BaseCreature undead = null;
                 switch (Utility.Random(1, 16))

@@ -52,7 +52,7 @@ namespace Server.Spells.First
             {
                 Caster.LocalOverheadMessage(MessageType.Regular, 0x3B2, 500951); // You cannot heal that.
             }
-            else if ((m.Poisoned && !(venomBlood != null && venomBlood.Activated)) || MortalStrike.IsWounded(m))
+            else if ((m.Poisoned && !(venomBlood != null)) || MortalStrike.IsWounded(m))
             {
                 Caster.LocalOverheadMessage(MessageType.Regular, 0x22, Caster == m ? 1005000 : 1010398);
             }

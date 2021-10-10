@@ -214,11 +214,7 @@ namespace Server.Spells
         public virtual int GetNewAosDamage(int bonus, uint dice, uint sides, bool playerVsPlayer, double scalar)
         {
             var damage = Utility.Dice(dice, sides, bonus);
-            var multiplier = 100;
-            if (!HasReagents())
-            {
-                multiplier = (int)ReagentsScale()*100;
-            }
+            var multiplier = (int)(100 * ReagentsScale());
             if (Caster is PlayerMobile)
             {
                 PlayerMobile player = (PlayerMobile)Caster;
@@ -278,7 +274,7 @@ namespace Server.Spells
             {
                 foreach (Type type in Info.Reagents)
                 {
-                    hasReagents = (Caster.Backpack.FindItemsByType(type, true) != null);
+                    hasReagents = Caster.Backpack.FindItemsByType(type, true).Length > 0;
                     if (!hasReagents)
                     {
                         hasReagents = false;
@@ -290,16 +286,17 @@ namespace Server.Spells
         }
         public virtual double ReagentsScale()
         {
+            double scale = (HasReagents()) ? 1.0 : 0.7;
             if (Caster is PlayerMobile player)
             {
-                // 90% with max spellmind and no reagents, 125% with max spellmind and reagents
+                // 95% with max spellmind and no reagents, 125% with max spellmind and reagents
                 BaseTalent spellMind = player.GetTalent(typeof(SpellMind));
                 if (spellMind != null)
                 {
-                   return (HasReagents()) ? 1.0 + (spellMind.Level / 20) : 0.4 + (spellMind.Level / 10);
+                   scale += (double)spellMind.Level / 20;
                 }
             }
-            return 1.0;
+            return scale;
         }
 
         public virtual double GetInscribeSkill(Mobile m) => m.Skills.Inscribe.Value;
@@ -314,14 +311,10 @@ namespace Server.Spells
 
         public virtual double GetDamageScalar(Mobile target)
         {
-            var scalar = 1.0;
+            var scalar = ReagentsScale();
 
             if (!Core.AOS) // EvalInt stuff for AoS is handled elsewhere
             {
-                if (!HasReagents())
-                {
-                    scalar = ReagentsScale();
-                }
                 if (Caster is PlayerMobile)
                 {
                     PlayerMobile player = (PlayerMobile)Caster;

@@ -71,7 +71,7 @@ namespace Server.Gumps
                 if (page == 2 && m_SkillGroup != null)
                 {
                     AddLabel(110, 60, 0, m_SkillGroup.Name);
-                    AddLabel(90, 80, 0, "Skill Points: " + player.CraftSkillPoints.ToString() + "C/" + player.NonCraftSkillPoints.ToString() + "NC");
+                    AddLabel(90, 80, 0, "Skill Points: " + player.CraftSkillPoints.ToString() + "C/" + player.NonCraftSkillPoints.ToString() + "NC/" + player.RangerSkillPoints.ToString() + "R");
                     y = 100;
                     for (int i = 0; i < m_SkillGroup.Skills.Length; ++i)
                     {
@@ -89,14 +89,16 @@ namespace Server.Gumps
                         Skill skill = from.Skills[m_SkillGroup.Skills[i]];
                         if (skill != null)
                         {
-                            string currentSkillValue = player.Skills[m_SkillGroup.Skills[i]].Base.ToString();
-                            if (skill.Lock != SkillLock.Locked)
+                            double currentSkillValue = player.Skills[m_SkillGroup.Skills[i]].Base;
+                            if (skill.Lock != SkillLock.Locked && currentSkillValue < 120.0)
                             {
-                                AddLabel(x, y, 0, skill.Name + " " + currentSkillValue);
+                                AddLabel(x, y, 0, skill.Name + " " + currentSkillValue.ToString());
                                 if (
                                     (IsCraftingSkill(m_SkillGroup.Skills[i]) && player.CraftSkillPoints > 0)
                                     ||
-                                    (!IsCraftingSkill(m_SkillGroup.Skills[i]) && player.NonCraftSkillPoints > 0)
+                                    (!IsCraftingSkill(m_SkillGroup.Skills[i]) && !IsRangerSkill(m_SkillGroup.Skills[i]) && player.NonCraftSkillPoints > 0)
+                                    ||
+                                    (IsRangerSkill(m_SkillGroup.Skills[i]) && player.RangerSkillPoints > 0)
                                     )
                                 {
                                     AddButton(buttonX, y + 2, 2223, 2223, 200 + i, GumpButtonType.Reply, 0);
@@ -122,7 +124,7 @@ namespace Server.Gumps
                     }
                     AddLabel(90, 80, 0, "Level: " + (Array.IndexOf(Enum.GetNames(typeof(Level)), player.Level) + 1).ToString());
                     AddLabel(90, 100, 0, "Experience Points:");
-                    int totalExperience = player.LevelExperience + player.CraftExperience + player.NonCraftExperience;
+                    int totalExperience = player.LevelExperience + player.CraftExperience + player.NonCraftExperience + player.RangerExperience;
                     AddLabel(90, 120, 0, totalExperience.ToString());
                     AddLabel(90, 140, 0, "Talents");
                     AddButton(190, 144, 2223, 2223, 300, GumpButtonType.Reply, 0);
@@ -143,7 +145,7 @@ namespace Server.Gumps
                         AddButton(190, 222, 2223, 2223, 3, GumpButtonType.Reply, 0);
                     }
 
-                    AddLabel(270, 60, 0, "Skill Points: " + player.CraftSkillPoints.ToString() + "C/" + player.NonCraftSkillPoints.ToString() + "NC");
+                    AddLabel(270, 60, 0, "Skill Points: " + player.CraftSkillPoints.ToString() + "C/" + player.NonCraftSkillPoints.ToString() + "NC/" + player.RangerSkillPoints.ToString() + "R");
                     AddLabel(270, 80, 0, "Skill Groups");
                     for (int i = 0; i < m_Groups.Length; ++i)
                     {
@@ -157,6 +159,26 @@ namespace Server.Gumps
             {
                 from.CloseGump<CharacterSheetGump>();
             }
+        }
+
+        public bool IsRangerSkill(SkillName skillToCheck)
+        {
+            bool isRangerSkill = false;
+            SkillName[] rangerGroup = new[]
+                        {
+                            SkillName.Veterinary,
+                            SkillName.AnimalLore,
+                            SkillName.AnimalTaming
+                        };
+            foreach (SkillName rangerSkillName in rangerGroup)
+            {
+                if (rangerSkillName == skillToCheck)
+                {
+                    isRangerSkill = true;
+                    break;
+                }
+            }
+            return isRangerSkill;
         }
 
         public bool IsCraftingSkill(SkillName skillToCheck)
@@ -247,6 +269,9 @@ namespace Server.Gumps
                                 {
                                     player.CraftSkillPoints--;
                                     player.AllottedCraftSkillPoints++;
+                                } else if (IsRangerSkill(m_SkillGroup.Skills[info.ButtonID - 200]))
+                                {
+                                    player.RangerSkillPoints--;
                                 }
                                 else 
                                 {

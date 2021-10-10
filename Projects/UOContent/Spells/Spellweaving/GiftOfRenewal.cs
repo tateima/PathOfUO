@@ -58,7 +58,7 @@ namespace Server.Spells.Spellweaving
                     venomBlood = playerTarget.GetTalent(typeof(VenomBlood));
                 }
 
-                if (m.Poisoned && !(venomBlood != null && venomBlood.Activated))
+                if (m.Poisoned && !(venomBlood != null))
                 {
                     m.CurePoison(m);
                 }

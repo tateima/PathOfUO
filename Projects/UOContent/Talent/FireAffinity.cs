@@ -12,6 +12,8 @@ namespace Server.Talent
     public class FireAffinity : BaseTalent, ITalent
     {
         private Mobile m_Mobile;
+        private TimerExecutionToken _buffTimerToken;
+
         public FireAffinity() : base()
         {
             ResMod = new ResistanceMod(ResistanceType.Fire, Level * 5);
@@ -45,12 +47,12 @@ namespace Server.Talent
                     m_Mobile.FixedParticles(0x3709, 10, 30, 5052, EffectLayer.LeftFoot);
                     m_Mobile.PlaySound(0x208);
                 }
-                Timer.StartTimer(TimeSpan.FromSeconds(60), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(60 + Utility.Random(20)), ExpireBuff, out _buffTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(180 - Level * 5), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
-        public override void ExpireTalentCooldown()
+        public void ExpireBuff()
         {
-            base.ExpireTalentCooldown();
             if (m_Mobile != null)
             {
                 if (Core.AOS)

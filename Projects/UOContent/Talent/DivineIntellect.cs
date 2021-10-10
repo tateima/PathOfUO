@@ -17,7 +17,7 @@ namespace Server.Talent
         public override void UpdateMobile(Mobile mobile)
         {
             mobile.RemoveStatMod("DivineInt");
-            mobile.AddStatMod(new StatMod(StatType.Int, "DivineInt", Level*2, TimeSpan.Zero));
+            mobile.AddStatMod(new StatMod(StatType.All, "DivineInt", Level*2, TimeSpan.Zero));
         }
     }
 }
