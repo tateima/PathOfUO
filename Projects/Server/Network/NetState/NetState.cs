@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Network;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Server.Accounting;
@@ -158,6 +159,8 @@ namespace Server.Network
             get => _packetEncoder;
             set => _packetEncoder = value;
         }
+
+        public int CurrentPacket { get; internal set; }
 
         public bool SentFirstPacket { get; set; }
 
