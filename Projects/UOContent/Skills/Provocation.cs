@@ -52,11 +52,15 @@ namespace Server.SkillHandlers
                             1062488
                         ); // The instrument you are trying to play is no longer in your backpack!
                     }
+                    else if (creature.BardEndTime > Core.Now)
+                    {
+                        from.SendMessage("You may not provoke this target yet.");
+                    }
                     else if (creature.Controlled)
                     {
                         from.SendLocalizedMessage(501590); // They are too loyal to their master to be provoked.
                     }
-                    else if (creature.IsParagon && BaseInstrument.GetBaseDifficulty(creature, true) >= 160.0)
+                    else if ((creature.IsParagon || creature.IsHeroic) || BaseInstrument.GetBaseDifficulty(creature, true) >= 145.0)
                     {
                         from.SendLocalizedMessage(1049446); // You have no chance of provoking those creatures.
                     }
@@ -103,6 +107,10 @@ namespace Server.SkillHandlers
                         from.SendLocalizedMessage(
                             1062488
                         ); // The instrument you are trying to play is no longer in your backpack!
+                    }
+                    else if (creature.BardEndTime > Core.Now)
+                    {
+                        from.SendMessage("You may not provoke this target yet.");
                     }
                     else if (m_Creature.Unprovokable)
                     {

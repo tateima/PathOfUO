@@ -13,7 +13,6 @@ namespace Server.Talent
         private TimerExecutionToken _buffTimerToken;
         public DarkAffinity() : base()
         {
-            m_ResistanceMod = new ResistanceMod(ResistanceType.Poison, +Level * 3);
             CanBeUsed = true;
             BlockedBy = new Type[] { typeof(LightAffinity) };
             RequiredSpell = new Type[] { typeof(NecromancerSpell), typeof(SpellPlagueSpell), typeof(WordOfDeathSpell) };
@@ -32,6 +31,7 @@ namespace Server.Talent
         {
             if (!OnCooldown)
             {
+                m_ResistanceMod = new ResistanceMod(ResistanceType.Cold, Level * 5);
                 m_Mobile = mobile;
                 OnCooldown = true;
                 m_Mobile.AddResistanceMod(m_ResistanceMod);

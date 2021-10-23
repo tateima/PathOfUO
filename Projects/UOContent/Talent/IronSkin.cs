@@ -10,7 +10,6 @@ namespace Server.Talent
 
         public IronSkin() : base()
         {
-            ResMod = new ResistanceMod(ResistanceType.Physical, Level * 5);
             TalentDependency = typeof(GiantsHeritage);
             DisplayName = "Iron skin";
             CanBeUsed = true;
@@ -23,6 +22,7 @@ namespace Server.Talent
         {
             if (!OnCooldown)
             {
+                ResMod = new ResistanceMod(ResistanceType.Physical, Level * 5);
                 m_Mobile = mobile;
                 OnCooldown = true;
                 if (Core.AOS)

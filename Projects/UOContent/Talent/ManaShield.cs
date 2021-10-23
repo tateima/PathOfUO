@@ -25,7 +25,7 @@ namespace Server.Talent
             {
                 TransformContext context = TransformationSpellHelper.GetContext(attacker);
                 // dont apply the effect if Wraith Form 
-                if (context?.Type != typeof(WraithFormSpell) && defender.Mana > 0)
+                if (context?.Type != typeof(WraithFormSpell) && defender.Mana > 10)
                 {
                     // restore hits first
                     defender.Hits += damage;
@@ -39,21 +39,27 @@ namespace Server.Talent
                         defender.Hits -= hitReDamage;
                     }
                     defender.Mana -= manaDmgDiff;
+                    if (defender.Mana < 10)
+                    {
+                        Activated = false;
+                    }
                 }
             }   
         }
 
         public override void OnUse(Mobile mobile)
         {
-            if (mobile.Mana < 1) { 
+            if (mobile.Mana < 10) { 
                mobile.SendMessage("You cannot use a mana shield at this time.");
             }
-             else if (!Activated)
+             else if (!OnCooldown)
             {
                 Activated = true;
+                OnCooldown = true;
                 mobile.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
                 mobile.PlaySound(0x1E8);
-            } 
+                Timer.StartTimer(TimeSpan.FromSeconds(180 - Level * 5), ExpireTalentCooldown, out _talentTimerToken);
+            }
         }
 
     }

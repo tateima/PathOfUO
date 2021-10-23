@@ -10,7 +10,6 @@ namespace Server.Talent
         private TimerExecutionToken _buffTimerToken;
         public ViperAspect() : base()
         {
-            ResMod = new ResistanceMod(ResistanceType.Poison, Level * 5);
             BlockedBy = new Type[] { typeof(DragonAspect) };
             DisplayName = "Viper aspect";
             CanBeUsed = true;
@@ -24,6 +23,7 @@ namespace Server.Talent
         {
             if (!OnCooldown)
             {
+                ResMod = new ResistanceMod(ResistanceType.Poison, Level * 5);
                 m_Mobile = mobile;
                 OnCooldown = true;
                 if (Core.AOS)

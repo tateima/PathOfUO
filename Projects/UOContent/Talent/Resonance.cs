@@ -51,6 +51,7 @@ namespace Server.Talent
                 {
                     from.Mana -= 20;
                     OnCooldown = true;
+                    bool success = false;
                     foreach (var other in from.GetMobilesInRange(Level + 3))
                     {
                         if (other == from || (other is PlayerMobile && other.Karma > 0) || !other.CanBeHarmful(from, false) ||
@@ -66,13 +67,11 @@ namespace Server.Talent
                         }
                         if (!BaseInstrument.CheckMusicianship(from))
                         {
-                            from.NextSkillTime = Core.TickCount + 5000;
                             from.SendLocalizedMessage(500612); // You play poorly, and there is no effect.
-                            instrument.PlayInstrumentBadly(from);
-                            instrument.ConsumeUse(from);
                         }
                         else
                         {
+                            success = true;
                             int baseDamage = Level;
                             if (sonicAffinity != null)
                             {
@@ -88,9 +87,17 @@ namespace Server.Talent
                             {
                                 other.Damage(baseDamage, from);
                             }
+                            other.FixedParticles(0x376A, 9, 32, 5007, EffectLayer.Waist);
                         }
-
                     }
+                    if (success)
+                    {
+                        instrument.PlayInstrumentWell(from);
+                    } else
+                    {
+                        instrument.PlayInstrumentBadly(from);
+                    }
+                    instrument.ConsumeUse(from);                    
                     Timer.StartTimer(TimeSpan.FromSeconds(60), ExpireTalentCooldown, out _talentTimerToken);
                 }
                 else

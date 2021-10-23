@@ -36,6 +36,7 @@ namespace Server.Mobiles
         public static int Hue = 0x501; // Paragon hue
 
         // Buffs
+        public static double GoldBuff = 2.5;
         public static double HitsBuff = 5.0;
         public static double StrBuff = 1.05;
         public static double IntBuff = 1.20;
@@ -55,57 +56,7 @@ namespace Server.Mobiles
 
             bc.Hue = Hue;
 
-            if (bc.HitsMaxSeed >= 0)
-            {
-                bc.HitsMaxSeed = (int)(bc.HitsMaxSeed * HitsBuff);
-            }
-
-            bc.RawStr = (int)(bc.RawStr * StrBuff);
-            bc.RawInt = (int)(bc.RawInt * IntBuff);
-            bc.RawDex = (int)(bc.RawDex * DexBuff);
-
-            bc.Hits = bc.HitsMax;
-            bc.Mana = bc.ManaMax;
-            bc.Stam = bc.StamMax;
-
-            for (var i = 0; i < bc.Skills.Length; i++)
-            {
-                var skill = bc.Skills[i];
-
-                if (skill.Base > 0.0)
-                {
-                    skill.Base *= SkillsBuff;
-                }
-            }
-
-            bc.PassiveSpeed /= SpeedBuff;
-            bc.ActiveSpeed /= SpeedBuff;
-            bc.CurrentSpeed = bc.PassiveSpeed;
-
-            bc.DamageMin += DamageBuff;
-            bc.DamageMax += DamageBuff;
-
-            if (bc.Fame > 0)
-            {
-                bc.Fame = (int)(bc.Fame * FameBuff);
-            }
-
-            if (bc.Fame > 32000)
-            {
-                bc.Fame = 32000;
-            }
-
-            // TODO: Mana regeneration rate = Sqrt( buffedFame ) / 4
-
-            if (bc.Karma != 0)
-            {
-                bc.Karma = (int)(bc.Karma * KarmaBuff);
-
-                if (bc.Karma.Abs() > 32000)
-                {
-                    bc.Karma = 32000 * Math.Sign(bc.Karma);
-                }
-            }
+            MonsterBuff.Convert(bc, GoldBuff, HitsBuff, StrBuff, IntBuff, DexBuff, SkillsBuff, SpeedBuff, FameBuff, KarmaBuff, DamageBuff);
 
             new ParagonStamRegen(bc).Start();
         }
@@ -119,45 +70,7 @@ namespace Server.Mobiles
 
             bc.Hue = 0;
 
-            if (bc.HitsMaxSeed >= 0)
-            {
-                bc.HitsMaxSeed = (int)(bc.HitsMaxSeed / HitsBuff);
-            }
-
-            bc.RawStr = (int)(bc.RawStr / StrBuff);
-            bc.RawInt = (int)(bc.RawInt / IntBuff);
-            bc.RawDex = (int)(bc.RawDex / DexBuff);
-
-            bc.Hits = bc.HitsMax;
-            bc.Mana = bc.ManaMax;
-            bc.Stam = bc.StamMax;
-
-            for (var i = 0; i < bc.Skills.Length; i++)
-            {
-                var skill = bc.Skills[i];
-
-                if (skill.Base > 0.0)
-                {
-                    skill.Base /= SkillsBuff;
-                }
-            }
-
-            bc.PassiveSpeed *= SpeedBuff;
-            bc.ActiveSpeed *= SpeedBuff;
-            bc.CurrentSpeed = bc.PassiveSpeed;
-
-            bc.DamageMin -= DamageBuff;
-            bc.DamageMax -= DamageBuff;
-
-            if (bc.Fame > 0)
-            {
-                bc.Fame = (int)(bc.Fame / FameBuff);
-            }
-
-            if (bc.Karma != 0)
-            {
-                bc.Karma = (int)(bc.Karma / KarmaBuff);
-            }
+            MonsterBuff.UnConvert(bc, GoldBuff, HitsBuff, StrBuff, IntBuff, DexBuff, SkillsBuff, SpeedBuff, FameBuff, KarmaBuff, DamageBuff);
         }
 
         public static bool CheckConvert(BaseCreature bc) => CheckConvert(bc, bc.Location, bc.Map);

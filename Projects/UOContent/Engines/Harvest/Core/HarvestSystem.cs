@@ -235,7 +235,10 @@ namespace Server.Engines.Harvest
                                 item.Delete();
                             }
                         }
-
+                        if (Utility.Random(100) < 5)
+                        {
+                            from.Hunger--; // make them more hungry
+                        }
                         if (tool is IUsesRemaining toolWithUses)
                         {
                             toolWithUses.ShowUsesRemaining = true;

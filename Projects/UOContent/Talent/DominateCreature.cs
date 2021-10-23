@@ -66,7 +66,7 @@ namespace Server.Talent
                     from.SendMessage("Whom do you wish to control");
                     from.Target = new InternalFirstTarget(from, instrument, Level);
                     OnCooldown = true;
-                    Timer.StartTimer(TimeSpan.FromSeconds(300 - (Level * 60)), ExpireTalentCooldown, out _talentTimerToken);
+                    Timer.StartTimer(TimeSpan.FromSeconds(300 - (Level * 30)), ExpireTalentCooldown, out _talentTimerToken);
                 }
                 else
                 {
@@ -103,11 +103,15 @@ namespace Server.Talent
                             1062488
                         ); // The instrument you are trying to play is no longer in your backpack!
                     }
+                    else if (creature.BardEndTime > Core.Now)
+                    {
+                        from.SendMessage("You may not dominate this target yet.");
+                    }
                     else if (creature.Controlled)
                     {
                         from.SendMessage("They are too loyal to their master to be dominated.");
                     }
-                    else if (creature.IsParagon && BaseInstrument.GetBaseDifficulty(creature, true) >= 160.0)
+                    else if ((creature.IsParagon || creature.IsHeroic) || BaseInstrument.GetBaseDifficulty(creature, true) >= 117) // dragons are 117 and cannot be tamed so dont allow bards to either
                     {
                         from.SendMessage(" You have no chance of dominating those creatures.");
                     }
@@ -148,7 +152,8 @@ namespace Server.Talent
                                 m_Creature.Owners.Add(from);
                                 m_Creature.SetControlMaster(from);
                                 m_Creature.Summoned = true;
-                                Timer.StartTimer(TimeSpan.FromSeconds(m_level * 60), ExpireDomination, out _dominateTimerToken);
+                                m_Creature.BardEndTime = Core.Now + TimeSpan.FromSeconds(m_level * 10);
+                                Timer.StartTimer(TimeSpan.FromSeconds(m_level * 10), ExpireDomination, out _dominateTimerToken);
                             }
                         }
                     }

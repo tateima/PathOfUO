@@ -16,7 +16,6 @@ namespace Server.Talent
 
         public FireAffinity() : base()
         {
-            ResMod = new ResistanceMod(ResistanceType.Fire, Level * 5);
             RequiredSpell = new Type[] { typeof(FireballSpell), typeof(FireFieldSpell), typeof(FlameStrikeSpell), typeof(MeteorSwarmSpell), typeof(MagicArrowSpell), typeof(ExplosionSpell), typeof(ImmolatingWeaponSpell) };
             DisplayName = "Fire affinity";
             CanBeUsed = true;
@@ -39,6 +38,7 @@ namespace Server.Talent
         {            
             if (!OnCooldown)
             {
+                ResMod = new ResistanceMod(ResistanceType.Fire, Level * 5);
                 m_Mobile = mobile;
                 OnCooldown = true;
                 if (Core.AOS)

@@ -306,6 +306,8 @@ namespace Server.Mobiles
 
         private bool m_HasGeneratedLoot; // have we generated our loot yet?
         private TimerExecutionToken _healTimerToken;
+        private TimerExecutionToken _provocationTimer;
+        private TimerExecutionToken _peacemakingTimer;
 
         private Point3D m_Home; // The home position of the creature, used by some AI
 
@@ -333,6 +335,14 @@ namespace Server.Mobiles
 
         private bool m_Paragon;
         private bool m_Heroic;
+        private bool m_Veteran;
+        private bool m_Boss;
+        private bool m_Minion;
+        private List<Mobile> m_Minions;
+        private bool m_MagicResistant;
+        private bool m_Reflective;
+        private bool m_Regenerative;
+        private bool m_Illusionist;
 
         private int m_PhysicalResistance;
         private int m_PoisonResistance;
@@ -363,12 +373,12 @@ namespace Server.Mobiles
             {
                 iRangePerception = DefaultRangePerception;
             }
-
             m_Loyalty = MaxLoyalty; // Wonderfully Happy
 
             m_CannibalPoints = 0;
             m_CurrentAI = ai;
             m_DefaultAI = ai;
+            m_Minions = new List<Mobile>();
 
             RangePerception = iRangePerception;
             RangeFight = iRangeFight;
@@ -517,6 +527,152 @@ namespace Server.Mobiles
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsVeteran
+        {
+            get => m_Veteran;
+            set
+            {
+                if (m_Veteran == value)
+                {
+                    return;
+                }
+                m_Veteran = value;
+                if (value)
+                {
+                    Veteran.Convert(this);
+                }
+                else
+                {
+                    Veteran.UnConvert(this);
+                }
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsIllusionist
+        {
+            get => m_Illusionist;
+            set
+            {
+                if (m_Illusionist == value)
+                {
+                    return;
+                }
+                m_Illusionist = value;
+                if (value)
+                {
+                    MonsterBuff.AddIllusionist(this);
+                }
+                else
+                {
+                    MonsterBuff.RemoveIllusionist(this);
+                }
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsRegenerative
+        {
+            get => m_Regenerative;
+            set
+            {
+                if (m_Regenerative == value)
+                {
+                    return;
+                }
+                m_Regenerative = value;
+                if (value)
+                {
+                    MonsterBuff.AddRegenerative(this);
+                }
+                else
+                {
+                    MonsterBuff.RemoveRegenerative(this);
+                }
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsReflective
+        {
+            get => m_Reflective;
+            set
+            {
+                if (m_Reflective == value)
+                {
+                    return;
+                }
+                m_Reflective = value;
+                if (value)
+                {
+                    MonsterBuff.AddReflective(this);
+                }
+                else
+                {
+                    MonsterBuff.RemoveReflective(this);
+                }
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsMagicResistant
+        {
+            get => m_MagicResistant;
+            set
+            {
+                if (m_MagicResistant == value)
+                {
+                    return;
+                }
+                m_MagicResistant = value;
+                if (value)
+                {
+                    MonsterBuff.AddMagicResistant(this);
+                }
+                else
+                {
+                    MonsterBuff.RemoveMagicResistant(this);
+                }
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsMinion
+        {
+            get => m_Minion;
+            set
+            {
+                m_Minion = value;
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsBoss
+        {
+            get => m_Boss;
+            set
+            {
+                if (m_Boss == value)
+                {
+                    return;
+                }
+                m_Boss = value;
+                if (value)
+                {
+                    MonsterBuff.Bossify(this);
+                }
+                else
+                {
+                    MonsterBuff.UnBossify(this);
+                }
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
         public bool IsHeroic
         {
             get => m_Heroic;
@@ -526,13 +682,13 @@ namespace Server.Mobiles
                 {
                     return;
                 }
+                m_Heroic = value;
                 if (value) {
                     Heroic.Convert(this);
                 } else
                 {
                     Heroic.UnConvert(this);
                 }
-                m_Heroic = value;
                 InvalidateProperties();
             }
         }
@@ -1208,6 +1364,14 @@ namespace Server.Mobiles
 
         public HonorContext ReceivedHonorContext { get; set; }
 
+        public List<Mobile> Minions
+        {
+            get => m_Minions;
+            set
+            {
+                m_Minions = value;
+            }
+        }
         public List<MLQuest> MLQuests
         {
             get
@@ -1294,6 +1458,32 @@ namespace Server.Mobiles
             if (IsHeroic)
             {
                 suffix = suffix.Length == 0 ? "(Heroic)" : $"{suffix} (Heroic)";
+            } else if (IsVeteran)
+            {
+                suffix = suffix.Length == 0 ? "(Veteran)" : $"{suffix} (Veteran)";
+            }
+            if (IsBoss)
+            {
+                suffix = suffix.Length == 0 ? "(Boss)" : $"{suffix} (Boss)";
+            } else if (IsMinion)
+            {
+                suffix = suffix.Length == 0 ? "(Minion)" : $"{suffix} (Minion)";
+            }
+            if (IsMagicResistant)
+            {
+                suffix = suffix.Length == 0 ? "(Magic Resistant)" : $"{suffix} (Magic Resistant)";
+            }
+            if (IsReflective)
+            {
+                suffix = suffix.Length == 0 ? "(Reflective)" : $"{suffix} (Reflective)";
+            }
+            if (IsRegenerative)
+            {
+                suffix = suffix.Length == 0 ? "(Regenerative)" : $"{suffix} (Regenerative)";
+            }
+            if (IsIllusionist)
+            {
+                suffix = suffix.Length == 0 ? "(Illusionist)" : $"{suffix} (Illusionist)";
             }
 
             return base.ApplyNameSuffix(suffix);
@@ -1425,6 +1615,12 @@ namespace Server.Mobiles
 
             base.Damage(amount, from, informMount);
 
+            if (IsReflective)
+            {
+                from.Damage(amount, this);
+                from.FixedParticles(0x376A, 9, 32, 5008, EffectLayer.Waist);
+            }
+
             if (SubdueBeforeTame && !Controlled && oldHits > HitsMax / 10 && Hits <= HitsMax / 10)
             {
                 PublicOverheadMessage(
@@ -1449,9 +1645,31 @@ namespace Server.Mobiles
         public override void OnBeforeSpawn(Point3D location, Map m)
         {
             // 5% chance in Dungeons 1% chance everywhere else
-            int heroicChance = Region.IsPartOf<DungeonRegion>() ? 500 : 100;
-            IsHeroic = (Utility.Random(1, 10000) < heroicChance);
-            
+            int chance = Region.IsPartOf<DungeonRegion>() ? 500 : 100;
+
+            IsHeroic = (Utility.Random(1, 10000) < chance);
+
+            if (!IsHeroic)
+            {
+                chance = Region.IsPartOf<DungeonRegion>() ? 2000 : 1000;
+                IsVeteran = (Utility.Random(1, 10000) < chance);
+            }
+
+            chance = 350;
+            IsIllusionist = (Utility.Random(1, 10000) < chance);
+
+            if (DynamicExperienceValue() <= 1350)
+            {
+                chance = 350;
+                IsBoss = (Utility.Random(1, 10000) < chance);
+            }
+            chance = 500;
+            IsMagicResistant = (Utility.Random(1, 10000) < chance);
+
+            chance = 1000;
+            IsReflective = (Utility.Random(1, 10000) < chance);
+            IsRegenerative = (Utility.Random(1, 10000) < chance);
+
             if (Paragon.CheckConvert(this, location, m))
             {
                 IsParagon = true;
@@ -1555,6 +1773,11 @@ namespace Server.Mobiles
             else if (from is PlayerMobile mobile)
             {
                 Timer.StartTimer(TimeSpan.FromSeconds(10), mobile.RecoverAmmo);
+            }
+
+            if (IsIllusionist && Utility.Random(100) < 7)
+            {
+                MonsterBuff.AddIllusion(this, from);
             }
 
             base.OnDamage(amount, from, willKill);
@@ -1753,8 +1976,18 @@ namespace Server.Mobiles
         {
             base.Serialize(writer);
 
-            writer.Write(21); // version
+            writer.Write(23); // version
 
+            // version 23
+            writer.Write(m_Illusionist);
+            // version 22
+            writer.Write(m_Veteran);
+            writer.Write(m_Boss);
+            writer.Write(m_Minion);
+            writer.Write(m_MagicResistant);
+            writer.Write(m_Regenerative);
+            writer.Write(m_Reflective);
+            writer.Write(m_Minions);
             // version 21
             writer.Write(CannibalPoints);
             writer.Write(m_Heroic);
@@ -1898,7 +2131,32 @@ namespace Server.Mobiles
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
-
+            if (version >= 23)
+            {
+                m_Illusionist = reader.ReadBool();
+            } else
+            {
+                m_Illusionist = false;
+            }
+            if (version >= 22)
+            {
+                m_Veteran = reader.ReadBool();
+                m_Boss = reader.ReadBool(); 
+                m_Minion = reader.ReadBool();
+                m_MagicResistant = reader.ReadBool();
+                m_Regenerative = reader.ReadBool();
+                m_Reflective = reader.ReadBool();
+                m_Minions = reader.ReadEntityList<Mobile>();
+            } else
+            {
+                m_Veteran = false;
+                m_Boss = false;
+                m_Minion = false;
+                m_MagicResistant = false;
+                m_Regenerative = false;
+                m_Reflective = false;
+                m_Minions = new List<Mobile>();
+            }
             if (version >= 21)
             {
                 m_CannibalPoints = reader.ReadInt();
@@ -3299,6 +3557,128 @@ namespace Server.Mobiles
             }
         }
 
+        public int ExperienceScale(int xp)
+        {
+            double xpScale = 0;            
+            int tier = 1;
+            while (xp > 0)
+            {
+                double tierXp = xp;
+                if (xp > 500)
+                {
+                    tierXp = 500;
+                }
+                switch(tier)
+                {
+                    case 1:
+                        xpScale += tierXp / 15;
+                        break;
+                    case 2:
+                        xpScale += tierXp / 7;
+                        break;
+                    case 3:
+                        xpScale += tierXp / 3;
+                        break;
+                    case 4:
+                        xpScale += tierXp / 2;
+                        break;
+                    case 5:
+                        xpScale += tierXp;
+                        break;
+                    case 6:
+                        xpScale += tierXp / 0.75;
+                        break;
+                    case 7:
+                        xpScale += tierXp / 0.5;
+                        break;
+                    default:
+                        xpScale += tierXp / 0.5;
+                        break;
+                }
+                xp -= 500;
+                tier++;
+            }
+            
+            return (int)xpScale;
+        }
+
+
+        public double DynamicExperienceValue()
+        {
+            var xp = (RawStr * 1.6) + RawDex + RawInt;
+
+            xp += (m_PhysicalResistance + m_FireResistance + m_ColdResistance + m_PoisonResistance + m_EnergyResistance) * 1.6;
+
+            //xp += SkillsTotal / 10.0;
+
+            xp += m_DamageMax * 2.4;
+
+            xp += VirtualArmor * 1.8;
+
+            if (BaseInstrument.IsMageryCreature(this))
+            {
+                xp += 100;
+            }
+
+            if (BaseInstrument.IsFireBreathingCreature(this))
+            {
+                xp += 100;
+            }
+
+            if (BaseInstrument.IsPoisonImmune(this))
+            {
+                xp += 100;
+            }
+
+            if (this is VampireBat || this is VampireBatFamiliar)
+            {
+                xp += 100;
+            }
+
+            xp += BaseInstrument.GetPoisonLevel(this) * 20;
+
+            if (IsParagon == true)
+            {
+                xp += 400.0;
+            }
+
+            if (IsHeroic == true)
+            {
+                xp += 200.0;
+            }
+
+            if (IsVeteran == true)
+            {
+                xp += 125.0;
+            }
+
+            if (IsReflective == true)
+            {
+                xp += 100.0;
+            }
+
+            if (IsRegenerative == true)
+            {
+                xp += 100.0;
+            }
+
+            if (IsMagicResistant == true)
+            {
+                xp += 100.0;
+            }
+
+            if (IsBoss == true)
+            {
+                xp += 150.0;
+            }
+            if (IsMinion == true)
+            {
+                xp += 25;
+            }
+
+            return xp;
+        }
+
         public override void OnDeath(Container c)
         {
             MeerMage.StopEffect(this, false);
@@ -3473,8 +3853,14 @@ namespace Server.Mobiles
                             }
                         }
                     }
-                    m_ExperienceValue = (int)BaseInstrument.GetBaseDifficulty(this, false);
-                    m_MaxLevel = Fame / 500;
+                    int baseXp = (int)DynamicExperienceValue() + (m_ExperienceValue / 10);
+                    int scaleXp = ExperienceScale(baseXp);
+                    if (m_ExperienceValue == 0)
+                    {
+                        scaleXp = 0;
+                    } 
+
+                    m_MaxLevel = (int)Math.Floor((double)(baseXp / 52));
                     if (m_MaxLevel < 1)
                     {
                         m_MaxLevel = 2;
@@ -3487,19 +3873,19 @@ namespace Server.Mobiles
                         {
                             PlayerMobile player = (PlayerMobile)titles[i];
                             int levelIndex = Array.IndexOf(Enum.GetNames(typeof(Level)), player.Level) + 1;
-                            if (levelIndex <= m_MaxLevel)
+                            if (levelIndex <= m_MaxLevel && scaleXp > 0)
                             {
                                 BaseTalent fastLearner = player.GetTalent(typeof(FastLearner));
                                 if (fastLearner != null)
                                 {
-                                    m_ExperienceValue += AOS.Scale(m_ExperienceValue, (fastLearner.Level * 2));
+                                    scaleXp += AOS.Scale(scaleXp, (fastLearner.Level * 2));
                                 }
                                 if (player.Ranger())
                                 {
-                                    m_ExperienceValue = m_ExperienceValue / 2; // 50% ranger 50% normal gain
-                                    player.RangerExperience += m_ExperienceValue;
+                                    scaleXp = scaleXp / 2; // 50% ranger 50% normal gain
+                                    player.RangerExperience += scaleXp;
                                 } 
-                                player.NonCraftExperience += m_ExperienceValue;
+                                player.NonCraftExperience += scaleXp;
                             }
                         }
                     }
@@ -3821,6 +4207,7 @@ namespace Server.Mobiles
         {
             BardPacified = true;
             BardEndTime = endtime;
+            Timer.StartTimer(TimeSpan.FromSeconds(30), Unpacify, out _peacemakingTimer);
         }
 
         public override Mobile GetDamageMaster(Mobile damagee)
@@ -3843,10 +4230,25 @@ namespace Server.Mobiles
             return base.GetDamageMaster(damagee);
         }
 
+        public void Unprovoke()
+        {
+            if (BardMaster != null && BardMaster.Alive)
+            {
+                if (Combatant is BaseCreature combatant)
+                {
+                    combatant.BardTarget = BardMaster;
+                    combatant.BardProvoked = false;
+                    combatant.Combatant = BardMaster;
+                }
+                BardTarget = BardMaster;
+                BardProvoked = false;
+                Combatant = BardMaster;
+            }
+        }
         public void Provoke(Mobile master, Mobile target, bool bSuccess)
         {
             BardProvoked = true;
-
+            double seconds = 40.0;
             if (!Core.ML)
             {
                 PublicOverheadMessage(MessageType.Emote, EmoteHue, false, "*looks furious*");
@@ -3859,11 +4261,11 @@ namespace Server.Mobiles
                 BardMaster = master;
                 BardTarget = target;
                 Combatant = target;
-                BardEndTime = Core.Now + TimeSpan.FromSeconds(30.0);
+                BardEndTime = Core.Now + TimeSpan.FromSeconds(seconds);
 
                 if (target is BaseCreature t)
                 {
-                    if (t.Unprovokable || t.IsParagon && BaseInstrument.GetBaseDifficulty(t, true) >= 160.0)
+                    if (t.Unprovokable || t.IsParagon || t.IsHeroic || BaseInstrument.GetBaseDifficulty(t, true) >= 160.0)
                     {
                         return;
                     }
@@ -3873,7 +4275,9 @@ namespace Server.Mobiles
                     t.BardMaster = master;
                     t.BardTarget = this;
                     t.Combatant = this;
-                    t.BardEndTime = Core.Now + TimeSpan.FromSeconds(30.0);
+                    t.BardEndTime = Core.Now + TimeSpan.FromSeconds(seconds);
+
+                    Timer.StartTimer(TimeSpan.FromSeconds(seconds - 10), Unprovoke, out _provocationTimer);
                 }
             }
             else
@@ -4950,6 +5354,7 @@ namespace Server.Mobiles
 
         public void SetSkill(SkillName name, double val)
         {
+            m_ExperienceValue += (int)val;
             Skills[name].BaseFixedPoint = (int)(val * 10);
 
             if (Skills[name].Base > Skills[name].Cap)
@@ -4967,6 +5372,8 @@ namespace Server.Mobiles
         {
             var minFixed = (int)(min * 10);
             var maxFixed = (int)(max * 10);
+
+            m_ExperienceValue += (int)max;
 
             Skills[name].BaseFixedPoint = Utility.RandomMinMax(minFixed, maxFixed);
 

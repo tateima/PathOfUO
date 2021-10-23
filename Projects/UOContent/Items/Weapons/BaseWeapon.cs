@@ -1286,7 +1286,7 @@ namespace Server.Items
                 BaseTalent holyAvenger = player.GetTalent(typeof(HolyAvenger));
                 if (handFinesse != null)
                 {
-                    handFinesseBonus = (handFinesse.Level * 2);
+                    handFinesseBonus = (handFinesse.Level * 3);
                 }
                 if (holyAvenger != null)
                 {

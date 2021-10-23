@@ -43,7 +43,7 @@ using RankDefinition = Server.Guilds.RankDefinition;
 
 namespace Server.Mobiles
 {
-    public enum Level
+    public enum Level : int
     {
         One = 0,
         Two = 1000,
@@ -461,37 +461,39 @@ namespace Server.Mobiles
 
         private Level NextLevel()
         {
-            return Enum.GetValues(typeof(Level)).Cast<Level>().Where(level => m_LevelExperience + m_NonCraftExperience + m_NonCraftExperience + m_RangerExperience < (int)level).FirstOrDefault();
+            return Enum.GetValues(typeof(Level)).Cast<Level>().Where(level => m_LevelExperience + m_NonCraftExperience + m_CraftExperience + m_RangerExperience < (int)level).FirstOrDefault();
         }
         private Level EntitledLevel()
         {
-            return Enum.GetValues(typeof(Level)).Cast<Level>().Where(level => m_LevelExperience + m_NonCraftExperience + m_NonCraftExperience + m_RangerExperience >= (int)level).Max();
+            return Enum.GetValues(typeof(Level)).Cast<Level>().Where(level => m_LevelExperience + m_NonCraftExperience + m_CraftExperience + m_RangerExperience >= (int)level).Max();
         }
 
         public void CheckExperience()
         {
             Level entitledLevel = EntitledLevel();
             string newLevel = Enum.GetName(typeof(Level), entitledLevel);
-            if (newLevel != m_Level)
+            if (!string.Equals(newLevel, m_Level, StringComparison.InvariantCultureIgnoreCase))
             {
                 int currentLevelBaseExp = GetBaseExperience(m_Level);
                 // get the experience value between current level and next
                 int intermediaryExp = (int)entitledLevel - currentLevelBaseExp;
                 m_Level = newLevel;
+                int totalExperienceEarned = m_NonCraftExperience + m_CraftExperience + m_RangerExperience;
+                // calculate % contributions, round down not up to figure out point allocation
+                double craftingContr = m_CraftExperience / totalExperienceEarned;
+                double nonCraftingContr = m_NonCraftExperience / totalExperienceEarned;
+                double rangerContr = m_RangerExperience / totalExperienceEarned;
+
                 // get remaining experience to add later
-                int remainingExp = (m_LevelExperience + m_NonCraftExperience + m_CraftExperience + m_RangerExperience) - (int)entitledLevel;
+                int remainingExp = (m_LevelExperience + totalExperienceEarned) - (int)entitledLevel;
                 if (remainingExp < 0)
                 {
                     remainingExp = 0;
                 }
-                // calculate % contributions, round down not up to figure out point allocation
-                double craftingContr = m_CraftExperience / intermediaryExp;
-                double nonCraftingContr = m_NonCraftExperience / intermediaryExp;
-                double rangerContr = m_RangerExperience / intermediaryExp;
 
-                m_NonCraftSkillPoints += (int)Math.Round(nonCraftingContr);
-                m_CraftSkillPoints += (int)Math.Round(craftingContr);
-                m_RangerSkillPoints += (int)Math.Round(rangerContr);
+                m_NonCraftSkillPoints += (int)Math.Round(nonCraftingContr*14, MidpointRounding.AwayFromZero);
+                m_CraftSkillPoints += (int)Math.Round(craftingContr*14, MidpointRounding.AwayFromZero);
+                m_RangerSkillPoints += (int)Math.Round(rangerContr*14, MidpointRounding.AwayFromZero);
                 m_StatPoints += 5;
                 m_TalentPoints += 1;
 
@@ -908,13 +910,6 @@ namespace Server.Mobiles
                     strBase = RawStr;
                 }
                 int hitsMax = strBase / 2 + 50 + strOffs;
-                BaseTalent giantsHeritage = GetTalent(typeof(GiantsHeritage));
-                if (giantsHeritage != null)
-                {
-                    hitsMax = giantsHeritage.CalculateResetValue(hitsMax);
-                    hitsMax = giantsHeritage.CalculateNewValue(hitsMax);
-                }
-
                 return hitsMax;
             }
         }
@@ -925,13 +920,6 @@ namespace Server.Mobiles
             get
             {
                 int stamina = base.StamMax + AosAttributes.GetValue(this, AosAttribute.BonusStam);
-                BaseTalent giantsHeritage = GetTalent(typeof(GiantsHeritage));
-                if (giantsHeritage != null)
-                {
-                    stamina = giantsHeritage.CalculateResetValue(stamina);
-                    // 15 hits per level
-                    stamina += giantsHeritage.Level * 15;
-                }
                 return stamina;
             }
         }
@@ -1658,18 +1646,29 @@ namespace Server.Mobiles
 
         public void HungerHarmCheck()
         {
-            int damage = 20 - (int)(Skills.Cooking.Value / 10); // cooking helps save hunger death!
+            int damage = 30 - (int)(Skills.Cooking.Value / 10); // cooking helps save hunger death!
             if (Hunger < 10)
             {
                 Damage(damage - Hunger, this);
                 Stam -= (damage - Hunger);
-                Say(0x21, "I need food or else I will die!");
+                SendMessage(0x21, "Thou need food or else thy will die!");
             }
             if (Thirst < 10)
             {
                 Damage(damage - Thirst, this);
                 Mana -= (damage - Thirst);
-                Say(0x21, "I need water or else I will die!");
+                SendMessage(0x21, "Thou need water or else thy will die!");
+            }
+            if (Hunger < 10 || Thirst < 10)
+            {
+                if (Female)
+                {
+                    SendSound(0x14B);
+                }
+                else
+                {
+                    SendSound(0x157);
+                }
             }
             Timer.StartTimer(TimeSpan.FromMinutes(5), HungerHarmCheck, out _hungerTimerToken);
         }
@@ -2898,7 +2897,8 @@ namespace Server.Mobiles
                     entry.Value.CheckBeforeDeathEffect(this);
                     return false;
                 }
-            }           
+            }
+            return false;
             return base.OnBeforeDeath();
         }
 
@@ -3007,24 +3007,6 @@ namespace Server.Mobiles
             {
                 SendLocalizedMessage(1061115);
             }
-
-            // delete all players bank items, they wont need them
-            foreach (Item bankItem in BankBox.Items)
-            {
-                bankItem.Delete();
-            }
-            var house = BaseHouse.FindHouseAt(this);
-
-            if (house != null)
-            {
-                foreach (Item houseItem in house.Items)
-                {
-                    houseItem.Delete();
-                }
-                house.Delete();
-            }
-
-            base.OnDeath(c);
 
             EquipSnapshot = null;
 
@@ -3162,6 +3144,28 @@ namespace Server.Mobiles
                     RemoveBuff(list[i]);
                 }
             }
+            // delete all players bank items, they wont need them
+            foreach (Item bankItem in BankBox.Items)
+            {
+                bankItem.Delete();
+            }
+            var house = BaseHouse.FindHouseAt(this);
+
+            if (house != null)
+            {
+                foreach (Item houseItem in house.Items)
+                {
+                    houseItem.Delete();
+                }
+                house.Delete();
+            }
+
+            base.OnDeath(c);
+
+            Point3D point = new Point3D(1602, 1591, 20); // teleport back to Britain
+            MoveToWorld(point, Map.Trammel);
+            string broadcastMessage = $"{Name} has died at the hands of {LastKiller.Name}. At level {m_Level}, their deeds will be remembered.";
+            World.Broadcast(0x22, true, broadcastMessage);
         }
 
         public override bool MutateSpeech(List<Mobile> hears, ref string text, ref object context)

@@ -186,6 +186,10 @@ namespace Server.SkillHandlers
                     {
                         from.SendLocalizedMessage(1049535); // A song of discord would have no effect on that.
                     }
+                    else if (targ is BaseCreature creature && creature.BardEndTime > Core.Now)
+                    {
+                        from.SendMessage("You may not discord this target yet.");
+                    }
                     else if (m_Table.ContainsKey(targ)) // Already discorded
                     {
                         from.SendLocalizedMessage(1049537); // Your target is already in discord.

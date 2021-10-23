@@ -31,7 +31,6 @@ namespace Server.Talent
                     OnCooldown = true;
                     m_Mobile.RemoveStatMod("GiantsHeritage");
                     m_Mobile.AddStatMod(new StatMod(StatType.Str, "GiantsHeritage", Level * 2, TimeSpan.Zero));
-                    m_Mobile.Stam += CalculateMultiplier();
                     m_Mobile.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
                     m_Mobile.PlaySound(0x1AB);
                     Timer.StartTimer(TimeSpan.FromSeconds(60 + Utility.Random(20)), ExpireBuff, out _buffTimerToken);
@@ -42,12 +41,11 @@ namespace Server.Talent
 
         public void ExpireBuff()
         {
-            m_Mobile.RemoveStatMod("GiantsHeritage");
-        }
-
-        public int CalculateMultiplier()
-        {
-            return Level * 10;
+            if (m_Mobile != null)
+            {
+                m_Mobile.RemoveStatMod("GiantsHeritage");
+            }
+            Activated = false;
         }
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
@@ -57,8 +55,9 @@ namespace Server.Talent
                 int extraDamage = (int)(attacker.Stam * SpecialDamageScalar);
                 target.Damage(extraDamage, attacker);
                 attacker.Stam -= 10 + Utility.Random(10);
-                if (attacker.Stam < 1)
+                if (attacker.Stam < 10)
                 {
+                    m_Mobile = attacker;
                     ExpireBuff();
                 }
             }  

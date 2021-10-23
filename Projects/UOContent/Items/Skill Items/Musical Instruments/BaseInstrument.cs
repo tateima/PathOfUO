@@ -264,7 +264,7 @@ namespace Server.Items
 
             val += targ.SkillsTotal / 10.0;
 
-            if (val > 700)
+            if (val > 700 && cap)
             {
                 val = 700 + (int)((val - 700) * (3.0 / 11));
             }
@@ -293,7 +293,10 @@ namespace Server.Items
 
             val += GetPoisonLevel(bc) * 20;
 
-            val /= 10;
+            if (cap)
+            {
+                val /= 10;
+            }
 
             if (bc?.IsParagon == true)
             {
@@ -303,6 +306,28 @@ namespace Server.Items
             if (bc?.IsHeroic == true)
             {
                 val += 20.0;
+            }
+
+            if (bc?.IsVeteran == true)
+            {
+                val += 15.0;
+            }
+
+            if (bc?.IsBoss == true)
+            {
+                val += 15.0;
+            }
+            if (bc?.IsReflective == true)
+            {
+                val += 10.0;
+            }
+            if (bc?.IsRegenerative == true)
+            {
+                val += 10.0;
+            }
+            if (bc?.IsMagicResistant == true)
+            {
+                val += 10.0;
             }
 
             if (Core.SE && val > 160.0 && cap)

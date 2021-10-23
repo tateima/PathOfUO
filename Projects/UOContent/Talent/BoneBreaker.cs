@@ -22,8 +22,8 @@ namespace Server.Talent
                 Activated = false;
                 OnCooldown = true;
                 attacker.SendSound(0x125);
-                target.Paralyze(TimeSpan.FromSeconds(Level));
-                Timer.StartTimer(TimeSpan.FromSeconds(300-(Level*5)), ExpireTalentCooldown, out _talentTimerToken);
+                target.Paralyze(TimeSpan.FromSeconds(Level * 2));
+                Timer.StartTimer(TimeSpan.FromSeconds(60-(Level*5)), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
     }
