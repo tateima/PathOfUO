@@ -12,6 +12,7 @@ namespace Server.Talent
             BlockedBy = new Type[] { typeof(MageCombatant) };
             TalentDependency = typeof(FastLearner);
             CanBeUsed = true;
+            HasDefenseEffect = true;
             DisplayName = "Mana shield";
             MaxLevel = 1;
             Description = "Absorbs damage with mana. Does not work in Wraith Form.";

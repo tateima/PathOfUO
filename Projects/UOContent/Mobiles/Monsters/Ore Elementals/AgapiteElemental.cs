@@ -4,6 +4,9 @@ namespace Server.Mobiles
 {
     public class AgapiteElemental : BaseCreature
     {
+        public AgapiteElemental() : this(2)
+        {
+        }
         [Constructible]
         public AgapiteElemental(int oreAmount = 2) : base(AIType.AI_Melee, FightMode.Closest, 10, 1, 0.2, 0.4)
         {

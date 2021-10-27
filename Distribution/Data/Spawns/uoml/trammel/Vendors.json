@@ -4744,6 +4744,186 @@
   },
   {
     "type": "Spawner",
+    "guid": "9a513bd0-41d7-4021-b7b7-54db4b4d5985",
+    "name": "Spawner (125)",
+    "location": [ 1456, 854, 0 ],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 5,
+    "entries": [
+      {
+        "name": "Oracle",
+        "maxCount": 1,
+        "probability": 100
+      }
+    ]
+  },
+  {
+    "type": "Spawner",
+    "guid": "9a513bd0-41d7-4021-b7b7-54db4b4d5986",
+    "name": "Spawner (125)",
+    "location": [ 1856, 872, -1 ],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 5,
+    "entries": [
+      {
+        "name": "Oracle",
+        "maxCount": 1,
+        "probability": 100
+      }
+    ]
+  },
+  {
+    "type": "Spawner",
+    "guid": "9a513bd0-41d7-4021-b7b7-54db4b4d5987",
+    "name": "Spawner (125)",
+    "location": [ 4217, 564, 36 ],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 5,
+    "entries": [
+      {
+        "name": "Oracle",
+        "maxCount": 1,
+        "probability": 100
+      }
+    ]
+  },
+  {
+    "type": "Spawner",
+    "guid": "9a513bd0-41d7-4021-b7b7-54db4b4d5988",
+    "name": "Spawner (125)",
+    "location": [ 1730, 3528, 3 ],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 5,
+    "entries": [
+      {
+        "name": "Oracle",
+        "maxCount": 1,
+        "probability": 100
+      }
+    ]
+  },
+  {
+    "type": "Spawner",
+    "guid": "9a513bd0-41d7-4021-b7b7-54db4b4d5989",
+    "name": "Spawner (125)",
+    "location": [ 4276, 3699, 0 ],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 5,
+    "entries": [
+      {
+        "name": "Oracle",
+        "maxCount": 1,
+        "probability": 100
+      }
+    ]
+  },
+  {
+    "type": "Spawner",
+    "guid": "9a513bd0-41d7-4021-b7b7-54db4b4d5990",
+    "name": "Spawner (125)",
+    "location": [ 1301, 639, 16 ],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 5,
+    "entries": [
+      {
+        "name": "Oracle",
+        "maxCount": 1,
+        "probability": 100
+      }
+    ]
+  },
+  {
+    "type": "Spawner",
+    "guid": "9a513bd0-41d7-4021-b7b7-54db4b4d5991",
+    "name": "Spawner (125)",
+    "location": [ 3355, 299, 9 ],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 5,
+    "entries": [
+      {
+        "name": "Oracle",
+        "maxCount": 1,
+        "probability": 100
+      }
+    ]
+  },
+  {
+    "type": "Spawner",
+    "guid": "9a513bd0-41d7-4021-b7b7-54db4b4d5992",
+    "name": "Spawner (125)",
+    "location": [ 1589, 2485, 5 ],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 5,
+    "entries": [
+      {
+        "name": "Oracle",
+        "maxCount": 1,
+        "probability": 100
+      }
+    ]
+  },
+  {
+    "type": "Spawner",
+    "guid": "9a513bd0-41d7-4021-b7b7-54db4b4d5993",
+    "name": "Spawner (125)",
+    "location": [ 2496,3932, 0 ],
+    "map": "Trammel",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 0,
+    "walkingRange": 5,
+    "entries": [
+      {
+        "name": "Oracle",
+        "maxCount": 1,
+        "probability": 100
+      }
+    ]
+  },
+  {
+    "type": "Spawner",
     "guid": "49c6d37a-7560-4977-bcbe-045801c60af8",
     "name": "Spawner (2125)",
     "location": [624, 1145, 0],

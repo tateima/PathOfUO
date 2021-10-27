@@ -45,7 +45,7 @@ namespace Server.Talent.Devices
                     {
                         modifier = bugFixer.Level;
                     }
-                    if (Utility.Random(100) < 6 - modifier)
+                    if (Utility.Random(100) <= 6 - modifier)
                     {
                         // glitch
                         Cast(new ExplosionSpell(from, this));

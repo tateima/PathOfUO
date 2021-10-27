@@ -41,6 +41,7 @@ namespace Server.Gumps
                     m_UseableTalents.Add(entry.Value);
                 }
             }
+            m_UseableTalents.Sort((x, y) => string.Compare(x.DisplayName, y.DisplayName));
             int barWidth = (m_UseableTalents.Count * 55);
             if (barWidth > 1100)
             {
@@ -142,6 +143,7 @@ namespace Server.Gumps
                 else if (info.ButtonID == 1002)
                 {
                     player.CloseGump<TalentBarGump>();
+                    _talentBarExecutionToken.Cancel();
                     return;
                 }
                 else if (info.ButtonID >= 0)

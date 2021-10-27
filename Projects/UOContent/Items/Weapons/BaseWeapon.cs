@@ -58,6 +58,11 @@ namespace Server.Items
         private int m_MaxHits;
         private int m_MaxRange;
         private int m_MinDamage, m_MaxDamage;
+        private bool m_Burning;
+        private bool m_Electrified;
+        private bool m_Toxic;
+        private bool m_Frozen;
+        private int m_ShardPower;
         private Poison m_Poison;
         private int m_PoisonCharges;
         private WeaponQuality m_Quality;
@@ -75,7 +80,11 @@ namespace Server.Items
         public BaseWeapon(int itemID) : base(itemID)
         {
             Layer = (Layer)ItemData.Quality;
-
+            m_ShardPower = 0;
+            m_Electrified = false;
+            m_Frozen = false;
+            m_Burning = false;
+            m_Toxic = false;
             m_Quality = WeaponQuality.Regular;
             m_StrReq = -1;
             m_DexReq = -1;
@@ -199,6 +208,59 @@ namespace Server.Items
 
         [CommandProperty(AccessLevel.GameMaster)]
         public bool Consecrated { get; set; }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int ShardPower
+        {
+            get => m_ShardPower;
+            set
+            {
+                if (m_ShardPower < 10)
+                {
+                    m_ShardPower = value;
+                }
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool Frozen
+        {
+            get => m_Frozen;
+            set
+            {
+                m_Frozen = value;
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool Burning
+        {
+            get => m_Burning;
+            set
+            {
+                m_Burning = value;
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool Toxic
+        {
+            get => m_Toxic;
+            set
+            {
+                m_Toxic = value;
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool Electrified
+        {
+            get => m_Electrified;
+            set
+            {
+                m_Electrified = value;
+                InvalidateProperties();
+            }
+        }
 
         [CommandProperty(AccessLevel.GameMaster)]
         public bool Identified
@@ -1280,8 +1342,10 @@ namespace Server.Items
             double delayInSeconds;
             int handFinesseBonus = 0;
             int holyAvengerBonus = 0;
+            bool slowed = false;
             if (m is PlayerMobile player)
             {
+                slowed = player.Slowed;
                 BaseTalent handFinesse = player.GetTalent(typeof(HandFinesse));
                 BaseTalent holyAvenger = player.GetTalent(typeof(HolyAvenger));
                 if (handFinesse != null)
@@ -1370,7 +1434,14 @@ namespace Server.Items
 
                     ticks = Math.Floor(80000.0 / ((m.Stam + 100) * speed) - 2);
                 }
-
+                if (slowed)
+                {
+                    ticks -= Utility.Random(1, 2);
+                    if (ticks < 1)
+                    {
+                        ticks = 1;
+                    }
+                }
                 // Swing speed currently capped at one swing every 1.25 seconds (5 ticks).
                 if (ticks < 5)
                 {
@@ -1409,6 +1480,10 @@ namespace Server.Items
 
                 delayInSeconds = Math.Floor(40000.0 / v) * 0.5;
 
+                if (slowed)
+                {
+                    delayInSeconds += .25 * Utility.Random(1, 2);
+                }
                 // Maximum swing rate capped at one swing per second
                 // OSI dev said that it has and is supposed to be 1.25
                 if (delayInSeconds < 1.25)
@@ -1421,6 +1496,10 @@ namespace Server.Items
                 // add hand finesse to speed divided by 2 (a total max of 5 points)
                 speed += (handFinesseBonus / 2);
                 var v = (m.Stam + 100) * (int)speed;
+                if (slowed)
+                {
+                    v -= Utility.Random(1, 2);
+                }
 
                 if (v <= 0)
                 {
@@ -2228,6 +2307,66 @@ namespace Server.Items
 
             if (attacker is PlayerMobile)
             {
+                if (ShardPower > 0)
+                {
+                    int elementalDamage = Utility.Random(ShardPower);
+                    int fireDam = 0;
+                    int coldDam = 0;
+                    int poisonDam = 0;
+                    int energyDam = 0;
+                    if (defender is BaseCreature defendingCreature)
+                    {
+                        if (MonsterBuff.DoubleElementalDamage(defendingCreature, this))
+                        {
+                            elementalDamage *= 2;
+                        }
+                    }
+                    if (Frozen || Toxic)
+                    {
+                        damage /= 2;
+                    }
+                    if (damage < 1)
+                    {
+                        damage = 1;
+                    }
+
+                    if (Burning)
+                    {
+                        fireDam = 100;
+                    }
+                    else if (Frozen)
+                    {
+                        if (MonsterBuff.CheckElementalEffect(ShardPower))
+                        {
+                            MonsterBuff.CheckFreezeHue(defender, defender.Hue);
+                        }
+                        coldDam = 100;
+                    }
+                    else if (Toxic)
+                    {
+                        if (MonsterBuff.CheckElementalEffect(ShardPower))
+                        {
+                            Poison poison = MonsterBuff.GetPoison();
+                            defender.ApplyPoison(attacker, poison);
+                        }
+                        poisonDam = 100;
+                    }
+                    else if (Electrified)
+                    {
+                        elementalDamage = Utility.Random(ShardPower + 5);
+                        energyDam = 100;
+                    }
+
+                    if (Core.AOS)
+                    {
+                        AOS.Damage(defender, elementalDamage, 0, fireDam, coldDam, poisonDam, energyDam);
+                    }
+                    else
+                    {
+                        defender.Damage(elementalDamage, attacker);
+                    }
+                }
+
                 foreach (KeyValuePair<Type, BaseTalent> entry in ((PlayerMobile)attacker).Talents)
                 {
                     if (entry.Value.CanApplyHitEffect(this))
@@ -2990,6 +3129,15 @@ namespace Server.Items
                 return true;
             }
 
+            if (from is PlayerMobile player)
+            {
+                BaseTalent mageCombatant = player.GetTalent(typeof(MageCombatant));
+                if (mageCombatant != null)
+                {
+                    return true;
+                }
+            }
+
             return Attributes.SpellChanneling != 0;
         }
 
@@ -3011,6 +3159,48 @@ namespace Server.Items
         {
             base.GetProperties(list);
 
+            if (m_ShardPower > 0)
+            {
+                list.Add(
+                   1060847,
+                   "Shard Power: {0}",
+                   m_ShardPower.ToString()
+                );
+            }
+
+            if (m_Burning)
+            {
+                list.Add(
+                   1060847,
+                   "Burning\t{0}",
+                   ""
+               );
+            }
+            else if (m_Frozen)
+            {
+                list.Add(
+                   1060847,
+                   "Frozen\t{0}",
+                   ""
+               );
+            }
+            else if (m_Electrified)
+            {
+                list.Add(
+                   1060847,
+                   "Electrified\t{0}",
+                   ""
+               );
+            }
+            else if (m_Toxic)
+            {
+                list.Add(
+                   1060847,
+                   "Toxic\t{0}",
+                   ""
+               );
+            }
+            
             if (m_Crafter != null)
             {
                 list.Add(1050043, m_Crafter.Name); // crafted by ~1_NAME~
@@ -3725,7 +3915,13 @@ namespace Server.Items
         {
             base.Serialize(writer);
 
-            writer.Write(9); // version
+            writer.Write(10); // version
+
+            writer.Write(m_ShardPower);
+            writer.Write(m_Frozen);
+            writer.Write(m_Burning);
+            writer.Write(m_Toxic);
+            writer.Write(m_Electrified);
 
             var flags = SaveFlag.None;
 
@@ -3919,6 +4115,13 @@ namespace Server.Items
 
             switch (version)
             {
+                case 10:
+                    m_ShardPower = reader.ReadInt();
+                    m_Frozen = reader.ReadBool();
+                    m_Burning = reader.ReadBool();
+                    m_Toxic = reader.ReadBool();
+                    m_Electrified = reader.ReadBool();
+                    goto case 9;
                 case 9:
                 case 8:
                 case 7:

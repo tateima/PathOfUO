@@ -260,6 +260,8 @@ namespace Server.Mobiles
         private int m_TalentPoints;
         private string m_Level;
         private bool m_HardCore;
+        private bool m_Slowed;
+        private int m_TalentResets;
 
         private DateTime m_LastYoungHeal = DateTime.MinValue;
 
@@ -298,6 +300,8 @@ namespace Server.Mobiles
             m_NonCraftExperience = 0;
             m_StatPoints = 0;
             m_TalentPoints = 0;
+            m_TalentResets = 0;
+            m_Slowed = false;
             m_Talents = new ConcurrentDictionary<Type, BaseTalent>();
             m_Henchmen = new List<Mobile>();
             m_RestedHenchmen = new List<Mobile>(); 
@@ -506,6 +510,36 @@ namespace Server.Mobiles
                 FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
                 PlaySound(0x202);
                 m_LevelExperience = GetBaseExperience(m_Level);
+            }
+            InvalidateProperties();
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int TalentResets
+        {
+            get
+            {
+                return m_TalentResets;
+            }
+            set
+            {
+                m_TalentResets = value;
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool Slowed
+        {
+            get
+            {
+                return m_Slowed;
+            }
+            set
+            {
+                m_Slowed = value;
+                if (value)
+                {
+                    m_NextMovementTime = CalcMoves.RunFootDelay;
+                }
             }
         }
 
@@ -1052,12 +1086,15 @@ namespace Server.Mobiles
         public bool Ranger()
         {
             bool rangerCreature = false;
-            foreach (Mobile m in m_AllFollowers)
+            if (m_AllFollowers != null)
             {
-                rangerCreature = (m is BaseCreature creature && creature.Tamable && creature.MinTameSkill > 50.0);
-                if (rangerCreature)
+                foreach (Mobile m in m_AllFollowers)
                 {
-                    break;
+                    rangerCreature = (m is BaseCreature creature && creature.Tamable && creature.MinTameSkill > 50.0);
+                    if (rangerCreature)
+                    {
+                        break;
+                    }
                 }
             }
             return rangerCreature;
@@ -1108,6 +1145,15 @@ namespace Server.Mobiles
             }
         }
 
+        public void Slow(int duration)
+        {
+            Slowed = true;
+            Timer.StartTimer(TimeSpan.FromSeconds(duration), UnSlow);
+        }
+        public void UnSlow()
+        {
+            Slowed = false;
+        }
         public void ClearQuestArrow() => m_QuestArrow = null;
 
         public override void ToggleFlying()
@@ -2151,7 +2197,7 @@ namespace Server.Mobiles
                 }
             }
 
-            var speed = ComputeMovementSpeed(d);
+            var speed = (Slowed) ? CalcMoves.RunFootDelay : ComputeMovementSpeed(d);
 
             if (!Alive)
             {
@@ -2271,6 +2317,19 @@ namespace Server.Mobiles
             {
                 RecheckTownProtection();
             }
+        }
+
+        public void ResetTalents()
+        {
+            foreach (KeyValuePair<Type, BaseTalent> entry in Talents)
+            {
+                if (entry.Value.Level > 0)
+                {
+                    TalentPoints += entry.Value.Level;
+                }
+            }
+            m_Talents = new ConcurrentDictionary<Type, BaseTalent>();
+            TalentResets++;
         }
 
         public override void GetContextMenuEntries(Mobile from, List<ContextMenuEntry> list)
@@ -3152,17 +3211,20 @@ namespace Server.Mobiles
                 }
             }
             // delete all players bank items, they wont need them
-            foreach (Item bankItem in BankBox.Items)
+            if (BankBox != null && BankBox.Items != null)
             {
-                bankItem.Delete();
+                foreach (Item item in BankBox.Items.ToArray())
+                {
+                    item.Delete();
+                }
             }
             var house = BaseHouse.FindHouseAt(this);
 
-            if (house != null)
+            if (house != null && house.Items != null)
             {
-                foreach (Item houseItem in house.Items)
+                foreach (Item item in house.Items.ToArray())
                 {
-                    houseItem.Delete();
+                    item.Delete();
                 }
                 house.Delete();
             }
@@ -3280,6 +3342,19 @@ namespace Server.Mobiles
 
         public override void Damage(int amount, Mobile from = null, bool informMount = true)
         {
+            BaseTalent planarShift = GetTalent(typeof(PlanarShift));
+            if (planarShift != null && planarShift.Activated)
+            {
+                amount = AOS.Scale(amount, 100 - planarShift.ModifySpellMultiplier());
+            }
+
+            BaseTalent shieldFocus = GetTalent(typeof(ShieldFocus));
+            var shield = FindItemOnLayer(Layer.TwoHanded) as BaseShield;
+            if (shieldFocus != null && shield != null)
+            {
+                amount = AOS.Scale(amount, 100 - shieldFocus.Level);
+            }
+
             if (EvilOmenSpell.TryEndEffect(this))
             {
                 double modifier = 1.25;
@@ -3329,19 +3404,6 @@ namespace Server.Mobiles
                         amount = (int)(amount * (1 - (double)talisman.Protection.Amount / 100));
                     }
                 }
-            }
-
-            BaseTalent planarShift = GetTalent(typeof(PlanarShift));
-            if (planarShift != null && planarShift.Activated)
-            {
-                amount = AOS.Scale(amount, 100-planarShift.ModifySpellMultiplier());
-            }
-
-            BaseTalent shieldFocus = GetTalent(typeof(ShieldFocus));
-            var shield = FindItemOnLayer(Layer.TwoHanded) as BaseShield;
-            if (shieldFocus != null && shield != null)
-            {
-                amount = AOS.Scale(amount, 100 - shieldFocus.Level);
             }
 
             base.Damage(amount, from, informMount);
@@ -3416,6 +3478,12 @@ namespace Server.Mobiles
             var version = reader.ReadInt();
             switch (version)
             {
+                case 35:
+                    m_TalentResets = reader.ReadInt();
+                    goto case 34;
+                case 34:
+                    Slowed = reader.ReadBool();
+                    goto case 33;
                 case 33:
                     m_RangerExperience = reader.ReadInt();
                     m_RangerSkillPoints = reader.ReadInt();
@@ -3790,7 +3858,9 @@ namespace Server.Mobiles
 
             base.Serialize(writer);
 
-            writer.Write(33); // version
+            writer.Write(35); // version
+            writer.Write(m_TalentResets);
+            writer.Write(m_Slowed);
             writer.Write(m_RangerExperience);
             writer.Write(m_RangerSkillPoints);
             writer.Write(m_RestedHenchmen);
@@ -4788,12 +4858,10 @@ namespace Server.Mobiles
             {
                 return CalcMoves.WalkFootDelay;
             }
-
             var running = (dir & Direction.Running) != 0;
-
             var onHorse = Mount != null;
 
-            if (onHorse || AnimalForm.GetContext(this)?.SpeedBoost == true)
+            if (onHorse || (AnimalForm.GetContext(this)?.SpeedBoost == true && !Slowed))
             {
                 return running ? CalcMoves.RunMountDelay : CalcMoves.WalkMountDelay;
             }

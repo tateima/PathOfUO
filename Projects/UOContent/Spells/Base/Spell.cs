@@ -61,7 +61,22 @@ namespace Server.Spells
         public virtual SkillName DamageSkill => SkillName.EvalInt;
 
         public virtual bool RevealOnCast => true;
-        public virtual bool ClearHandsOnCast => true;
+        public virtual bool ClearHandsOnCast
+        {
+            get
+            {
+                bool clearHands = true;
+                if (Caster is PlayerMobile player)
+                {
+                    BaseTalent mageCombatant = player.GetTalent(typeof(MageCombatant));
+                    if (mageCombatant != null)
+                    {
+                        clearHands = false;
+                    }
+                }
+                return clearHands;
+            }
+        }
         public virtual bool ShowHandMovement => true;
 
         public virtual bool DelayedDamage => false;
@@ -604,17 +619,7 @@ namespace Server.Spells
                         }
                     }
 
-                    bool skipHandClear = false;
-                    if (Caster is PlayerMobile player)
-                    {
-                        BaseTalent mageCombatant = player.GetTalent(typeof(MageCombatant));
-                        if (mageCombatant != null)
-                        {
-                            skipHandClear = true;
-                        }
-                    }
-
-                    if (ClearHandsOnCast && !skipHandClear)
+                    if (ClearHandsOnCast)
                     {
                         Caster.ClearHands();
                     }
@@ -829,7 +834,7 @@ namespace Server.Spells
                     wand.ConsumeCharge(Caster);
                     Caster.RevealingAction();
                 }
-
+                
                 if (Scroll is BaseWand)
                 {
                     var m = Scroll.Movable;

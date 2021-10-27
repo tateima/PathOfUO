@@ -10,10 +10,10 @@ namespace Server.Mobiles
         public static double GoldBuff = 1.30;
         public static double HitsBuff = 2.5;
         public static double StrBuff = 1.025;
-        public static double IntBuff = 1.10;
-        public static double DexBuff = 1.10;
-        public static double SkillsBuff = 1.10;
-        public static double SpeedBuff = 1.10;
+        public static double IntBuff = 1.20;
+        public static double DexBuff = 1.20;
+        public static double SkillsBuff = 1.20;
+        public static double SpeedBuff = 1.20;
         public static double FameBuff = 1.20;
         public static double KarmaBuff = 1.20;
         public static int DamageBuff = 4;

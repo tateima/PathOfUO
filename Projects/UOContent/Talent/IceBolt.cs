@@ -51,6 +51,7 @@ namespace Server.Talent
                 if (target is PlayerMobile player)
                 {
                     IceDamage(attacker, target, damage, 2);
+                    player.Slow(Level);
                 }
                 if (target is PlayerMobile || target is BaseCreature)
                 {

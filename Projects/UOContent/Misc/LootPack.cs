@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Server.Items;
 using Server.Mobiles;
 using Server.Utilities;
@@ -149,6 +150,21 @@ namespace Server
 
         public static bool CheckLuck(int chance) => chance > Utility.Random(10000);
 
+        public LootPackEntry RandomEntry()
+        {
+            return m_Entries[Utility.Random(m_Entries.Length)];
+        }
+        public void ForceGenerate(Mobile from, Container cont, LootPackEntry entry, int amount)
+        {
+            var item = entry.ForceConstruct(from);
+             if (item != null)
+                {
+                    if (!item.Stackable || !cont.TryDropItem(from, item, false))
+                    {
+                        cont.DropItem(item);
+                    }
+                }
+        }
         public void Generate(Mobile from, Container cont, bool spawning, int luckChance)
         {
             if (cont == null)
@@ -704,6 +720,13 @@ namespace Server
             }
 
             return null;
+        }
+
+        public Item ForceConstruct(Mobile from)
+        {
+            LootPackItem lootPackItem = Items[Utility.Random(Items.Length)];
+            lootPackItem.Chance = 100;
+            return Mutate(from, 0, lootPackItem.Construct(IsInTokuno(from), IsMondain(from)));
         }
 
         private int GetRandomOldBonus()

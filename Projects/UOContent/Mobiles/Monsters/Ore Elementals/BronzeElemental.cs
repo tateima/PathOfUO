@@ -4,6 +4,10 @@ namespace Server.Mobiles
 {
     public class BronzeElemental : BaseCreature
     {
+        public BronzeElemental() : this(2)
+        {
+
+        }
         [Constructible]
         public BronzeElemental(int oreAmount = 2) : base(AIType.AI_Melee, FightMode.Closest, 10, 1, 0.2, 0.4)
         {

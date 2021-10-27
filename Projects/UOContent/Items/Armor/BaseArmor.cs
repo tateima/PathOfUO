@@ -5,6 +5,8 @@ using Server.Ethics;
 using Server.Factions;
 using Server.Network;
 using Server.Utilities;
+using Server.Mobiles;
+using Server.Talent;
 using AMA = Server.Items.ArmorMeditationAllowance;
 using AMT = Server.Items.ArmorMaterialType;
 
@@ -1418,6 +1420,15 @@ namespace Server.Items
             if (base.AllowEquippedCast(from))
             {
                 return true;
+            }
+
+            if (from is PlayerMobile player)
+            {
+                BaseTalent mageCombatant = player.GetTalent(typeof(MageCombatant));
+                if (mageCombatant != null)
+                {
+                    return true;
+                }
             }
 
             return Attributes.SpellChanneling != 0;

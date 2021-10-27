@@ -4,6 +4,10 @@ namespace Server.Mobiles
 {
     public class VeriteElemental : BaseCreature
     {
+        public VeriteElemental() : this(2)
+        {
+
+        }
         [Constructible]
         public VeriteElemental(int oreAmount = 2) : base(AIType.AI_Melee, FightMode.Closest, 10, 1, 0.2, 0.4)
         {

@@ -42,20 +42,23 @@ namespace Server.Talent
         {
             switch(Level)
             {
-                case 1:
+                case 0:
                     return mobile.Skills.Magery.Value >= 20.0;
                     break;
-                case 2:
+                case 1:
                     return mobile.Skills.Magery.Value >= 40.0;
                     break;
-                case 3:
+                case 2:
                     return mobile.Skills.Magery.Value >= 60.0;
                     break;
-                case 4:
+                case 3:
                     return mobile.Skills.Magery.Value >= 80.0;
                     break;
-                case 5:
+                case 4:
                     return mobile.Skills.Magery.Value >= 100.0;
+                    break;
+                case 5:
+                    return true;
                     break;
             }
             return false;
@@ -65,6 +68,7 @@ namespace Server.Talent
             if (RemainingSpells > 0 && HasSkillRequirement(attacker) && Activated)
             {
                 LightningWand wand = new LightningWand();
+                wand.Parent = attacker;
                 Spell spell = null;
                 switch (Level)
                 {
@@ -167,6 +171,7 @@ namespace Server.Talent
                 {
                     spell.Cast();
                     RemainingSpells--;
+                    wand.Delete();
                 }
             } else
             {

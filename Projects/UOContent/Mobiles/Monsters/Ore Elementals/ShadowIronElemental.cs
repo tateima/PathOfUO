@@ -4,6 +4,10 @@ namespace Server.Mobiles
 {
     public class ShadowIronElemental : BaseCreature
     {
+        public ShadowIronElemental() : this(2)
+        {
+
+        }
         [Constructible]
         public ShadowIronElemental(int oreAmount = 2) : base(AIType.AI_Melee, FightMode.Closest, 10, 1, 0.2, 0.4)
         {

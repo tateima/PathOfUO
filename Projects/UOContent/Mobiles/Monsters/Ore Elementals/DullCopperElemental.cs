@@ -4,6 +4,10 @@ namespace Server.Mobiles
 {
     public class DullCopperElemental : BaseCreature
     {
+        public DullCopperElemental() : this(2)
+        {
+
+        }
         [Constructible]
         public DullCopperElemental(int oreAmount = 2) : base(AIType.AI_Melee, FightMode.Closest, 10, 1, 0.2, 0.4)
         {

@@ -4,6 +4,10 @@ namespace Server.Mobiles
 {
     public class ValoriteElemental : BaseCreature
     {
+        public ValoriteElemental() : this(2)
+        {
+
+        }
         [Constructible]
         public ValoriteElemental(int oreAmount = 2) : base(AIType.AI_Melee, FightMode.Closest, 10, 1, 0.2, 0.4)
         {

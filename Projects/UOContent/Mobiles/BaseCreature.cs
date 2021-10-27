@@ -308,6 +308,7 @@ namespace Server.Mobiles
         private TimerExecutionToken _healTimerToken;
         private TimerExecutionToken _provocationTimer;
         private TimerExecutionToken _peacemakingTimer;
+        private TimerExecutionToken _minionTimer;
 
         private Point3D m_Home; // The home position of the creature, used by some AI
 
@@ -339,10 +340,18 @@ namespace Server.Mobiles
         private bool m_Boss;
         private bool m_Minion;
         private List<Mobile> m_Minions;
+        private int m_NumberOfMinions;
         private bool m_MagicResistant;
         private bool m_Reflective;
         private bool m_Regenerative;
         private bool m_Illusionist;
+        private bool m_Ethereal;
+        private bool m_Corruptor;
+        private bool m_Corrupted;
+        private bool m_Electrified;
+        private bool m_Burning;
+        private bool m_Frozen;
+        private bool m_Toxic;
 
         private int m_PhysicalResistance;
         private int m_PoisonResistance;
@@ -379,6 +388,7 @@ namespace Server.Mobiles
             m_CurrentAI = ai;
             m_DefaultAI = ai;
             m_Minions = new List<Mobile>();
+            m_NumberOfMinions = 0;
 
             RangePerception = iRangePerception;
             RangeFight = iRangeFight;
@@ -548,7 +558,162 @@ namespace Server.Mobiles
                 InvalidateProperties();
             }
         }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsCorrupted
+        {
+            get => m_Corrupted;
+            set
+            {
+                if (m_Corrupted == value)
+                {
+                    return;
+                }
+                m_Corrupted = value;
+                if (value)
+                {
+                    MonsterBuff.AddCorrupted(this);
+                }
+                else
+                {
+                    MonsterBuff.RemoveCorrupted(this);
+                }
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsFrozen
+        {
+            get => m_Frozen;
+            set
+            {
+                if (m_Frozen == value)
+                {
+                    return;
+                }
+                m_Frozen = value;
+                if (value)
+                {
+                    MonsterBuff.AddElementalProperties(this);
+                }
+                else
+                {
+                    MonsterBuff.RemoveElementalProperties(this);
+                }
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsBurning
+        {
+            get => m_Burning;
+            set
+            {
+                if (m_Burning == value)
+                {
+                    return;
+                }
+                m_Burning = value;
+                if (value)
+                {
+                    MonsterBuff.AddElementalProperties(this);
+                }
+                else
+                {
+                    MonsterBuff.RemoveElementalProperties(this);
+                }
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsElectrified
+        {
+            get => m_Electrified;
+            set
+            {
+                if (m_Electrified == value)
+                {
+                    return;
+                }
+                m_Electrified = value;
+                if (value)
+                {
+                    MonsterBuff.AddElementalProperties(this);
+                }
+                else
+                {
+                    MonsterBuff.RemoveElementalProperties(this);
+                }
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsToxic
+        {
+            get => m_Toxic;
+            set
+            {
+                if (m_Toxic == value)
+                {
+                    return;
+                }
+                m_Toxic = value;
+                if (value)
+                {
+                    MonsterBuff.AddElementalProperties(this);
+                }
+                else
+                {
+                    MonsterBuff.RemoveElementalProperties(this);
+                }
+                InvalidateProperties();
+            }
+        }
 
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsCorruptor
+        {
+            get => m_Corruptor;
+            set
+            {
+                if (m_Corruptor == value)
+                {
+                    return;
+                }
+                m_Corruptor = value;
+                if (value)
+                {
+                    MonsterBuff.AddCorruptor(this);
+                }
+                else
+                {
+                    MonsterBuff.RemoveCorruptor(this);
+                }
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsEthereal
+        {
+            get => m_Ethereal;
+            set
+            {
+                if (m_Ethereal == value)
+                {
+                    return;
+                }
+                m_Ethereal = value;
+                if (value)
+                {
+                    MonsterBuff.AddEthereal(this);
+                }
+                else
+                {
+                    MonsterBuff.RemoveEthereal(this);
+                }
+                InvalidateProperties();
+            }
+        }
         [CommandProperty(AccessLevel.GameMaster)]
         public bool IsIllusionist
         {
@@ -662,13 +827,66 @@ namespace Server.Mobiles
                 m_Boss = value;
                 if (value)
                 {
-                    MonsterBuff.Bossify(this);
+                    var constructor = GetType().GetConstructor(Type.EmptyTypes);
+                    if (constructor != null) // dont try and spawn boss types that have optional parameters (i.e mounts or monsters spawned by other monsters)
+                    {
+                        MonsterBuff.Bossify(this);
+                    } else
+                    {
+                        m_Boss = false;
+                    }
                 }
                 else
                 {
                     MonsterBuff.UnBossify(this);
                 }
                 InvalidateProperties();
+            }
+        }
+
+        public void InitBossTimer()
+        {
+            Timer.StartTimer(TimeSpan.FromSeconds(3), CheckMinions, out _minionTimer);
+        }
+
+
+        public void CheckMinions()
+        {
+            if (Alive && !Deleted)
+            {
+                if (Minions != null && Minions.Count > 0)
+                {
+                    if (Combatant != null)
+                    {
+                        List<Mobile> mobilesInRange = new List<Mobile>(GetMobilesInRange(12));
+                        foreach (Mobile minion in Minions)
+                        {
+                            if (!minion.Alive)
+                            {
+                                Minions.Remove(minion);
+                                continue;
+                            }
+                            Mobile nearby = mobilesInRange.FirstOrDefault(m => m.Serial == minion.Serial);
+                            if (nearby != null)
+                            {
+                                if (nearby.Combatant != Combatant)
+                                {
+                                    nearby.Attack(Combatant);
+                                    nearby.Combatant = Combatant;
+                                }
+                            }
+                            else
+                            {
+                                Point3D point = new Point3D(Location.X, Location.Y, Location.Z);
+                                minion.MoveToWorld(point, Map);
+                            }
+                        }
+                        InitBossTimer();
+                    } else
+                    {
+                        MonsterBuff.DespawnMinions(this);
+                    } 
+                }
             }
         }
 
@@ -1364,6 +1582,14 @@ namespace Server.Mobiles
 
         public HonorContext ReceivedHonorContext { get; set; }
 
+       public int NumberOfMinions
+        {
+            get => m_NumberOfMinions;
+            set
+            {
+                m_NumberOfMinions = value;
+            }
+        }
         public List<Mobile> Minions
         {
             get => m_Minions;
@@ -1461,29 +1687,6 @@ namespace Server.Mobiles
             } else if (IsVeteran)
             {
                 suffix = suffix.Length == 0 ? "(Veteran)" : $"{suffix} (Veteran)";
-            }
-            if (IsBoss)
-            {
-                suffix = suffix.Length == 0 ? "(Boss)" : $"{suffix} (Boss)";
-            } else if (IsMinion)
-            {
-                suffix = suffix.Length == 0 ? "(Minion)" : $"{suffix} (Minion)";
-            }
-            if (IsMagicResistant)
-            {
-                suffix = suffix.Length == 0 ? "(Magic Resistant)" : $"{suffix} (Magic Resistant)";
-            }
-            if (IsReflective)
-            {
-                suffix = suffix.Length == 0 ? "(Reflective)" : $"{suffix} (Reflective)";
-            }
-            if (IsRegenerative)
-            {
-                suffix = suffix.Length == 0 ? "(Regenerative)" : $"{suffix} (Regenerative)";
-            }
-            if (IsIllusionist)
-            {
-                suffix = suffix.Length == 0 ? "(Illusionist)" : $"{suffix} (Illusionist)";
             }
 
             return base.ApplyNameSuffix(suffix);
@@ -1586,6 +1789,40 @@ namespace Server.Mobiles
         public override void Damage(int amount, Mobile from = null, bool informMount = true)
         {
             var oldHits = Hits;
+            if (IsEthereal && Utility.Random(100) < 30)
+            {
+                amount = 0;
+                PublicOverheadMessage(
+                  MessageType.Regular,
+                  0x3B2,
+                  false,
+                  "*The creature absorbs your attack *"
+              );
+            }
+            bool corruptionOffset = false;
+            if (IsCorruptor && amount > 0)
+            {
+                foreach (Mobile mobile in GetMobilesInRange(MonsterBuff.CorruptionRange))
+                {
+                    if (mobile is BaseCreature creature && creature.IsCorrupted)
+                    {
+                        corruptionOffset = true;
+                        mobile.Damage(amount, from);
+                        mobile.Combatant = from;
+                        amount = 0;
+                        break;
+                    }
+                }
+                if (corruptionOffset)
+                {
+                    PublicOverheadMessage(
+                     MessageType.Regular,
+                     0x3B2,
+                     false,
+                     "* The creature redirects the attack to a nearby corrupted target *"
+                    );
+                }
+            }
 
             if (Core.AOS && !Summoned && Controlled && Utility.RandomDouble() < 0.2)
             {
@@ -1617,7 +1854,7 @@ namespace Server.Mobiles
 
             if (IsReflective)
             {
-                from.Damage(amount, this);
+                from.Damage(AOS.Scale(amount, 50), this);
                 from.FixedParticles(0x376A, 9, 32, 5008, EffectLayer.Waist);
             }
 
@@ -1643,36 +1880,61 @@ namespace Server.Mobiles
         }
 
         public override void OnBeforeSpawn(Point3D location, Map m)
+
         {
-            // 5% chance in Dungeons 1% chance everywhere else
-            int chance = Region.IsPartOf<DungeonRegion>() ? 500 : 100;
-
-            IsHeroic = (Utility.Random(1, 10000) < chance);
-
-            if (!IsHeroic)
+            Type type = GetType();
+            if (type != typeof(BaseVendor) && type != typeof(BaseGuard) && type != typeof(BaseFamiliar) && !Region.IsPartOf<TownRegion>())
             {
-                chance = Region.IsPartOf<DungeonRegion>() ? 2000 : 1000;
-                IsVeteran = (Utility.Random(1, 10000) < chance);
-            }
+                // 5% chance in Dungeons 1% chance everywhere else
+                int chance = Region.IsPartOf<DungeonRegion>() ? 500 : 100;
 
-            chance = 350;
-            IsIllusionist = (Utility.Random(1, 10000) < chance);
+                IsHeroic = (Utility.Random(1, 10000) < chance);
 
-            if (DynamicExperienceValue() <= 1350)
-            {
-                chance = 350;
-                IsBoss = (Utility.Random(1, 10000) < chance);
-            }
-            chance = 500;
-            IsMagicResistant = (Utility.Random(1, 10000) < chance);
+                if (!IsHeroic)
+                {
+                    chance = Region.IsPartOf<DungeonRegion>() ? 2000 : 1000;
+                    IsVeteran = (Utility.Random(1, 10000) < chance);
+                }
 
-            chance = 1000;
-            IsReflective = (Utility.Random(1, 10000) < chance);
-            IsRegenerative = (Utility.Random(1, 10000) < chance);
+                if (DynamicExperienceValue() >= 475) // skeleton strength and up
+                {
+                    chance = 350;
+                    IsIllusionist = (Utility.Random(1, 10000) < chance);
+                    IsCorruptor = (Utility.Random(1, 10000) < chance);
+                    IsEthereal = (Utility.Random(1, 10000) < chance);
 
-            if (Paragon.CheckConvert(this, location, m))
-            {
-                IsParagon = true;
+                    if (DynamicExperienceValue() <= 1700)
+                    {
+                        chance = 350;
+                        IsBoss = (Utility.Random(1, 10000) < chance);
+                    }
+                    chance = 500;
+                    IsMagicResistant = (Utility.Random(1, 10000) < chance);
+                    switch (Utility.Random(4))
+                    {
+                        case 1:
+                            IsFrozen = (Utility.Random(1, 10000) < chance);
+                            break;
+                        case 2:
+                            IsBurning = (Utility.Random(1, 10000) < chance);
+                            break;
+                        case 3:
+                            IsElectrified = (Utility.Random(1, 10000) < chance);
+                            break;
+                        case 4:
+                            IsToxic = (Utility.Random(1, 10000) < chance);
+                            break;
+                    }
+
+                    chance = 1000;
+                    IsReflective = (Utility.Random(1, 10000) < chance);
+                    IsRegenerative = (Utility.Random(1, 10000) < chance);
+
+                    if (Paragon.CheckConvert(this, location, m))
+                    {
+                        IsParagon = true;
+                    }
+                }
             }
 
             base.OnBeforeSpawn(location, m);
@@ -1775,7 +2037,7 @@ namespace Server.Mobiles
                 Timer.StartTimer(TimeSpan.FromSeconds(10), mobile.RecoverAmmo);
             }
 
-            if (IsIllusionist && Utility.Random(100) < 7)
+            if (IsIllusionist && Utility.Random(100) < 15)
             {
                 MonsterBuff.AddIllusion(this, from);
             }
@@ -1976,10 +2238,19 @@ namespace Server.Mobiles
         {
             base.Serialize(writer);
 
-            writer.Write(23); // version
-
+            writer.Write(25); // version
+            // version 25
+            writer.Write(m_NumberOfMinions); // generate spawner bottle neck fix
+            // version 24
+            writer.Write(m_Frozen);
+            writer.Write(m_Burning);
+            writer.Write(m_Toxic);
+            writer.Write(m_Electrified);
             // version 23
             writer.Write(m_Illusionist);
+            writer.Write(m_Corruptor);
+            writer.Write(m_Corrupted);
+            writer.Write(m_Ethereal);
             // version 22
             writer.Write(m_Veteran);
             writer.Write(m_Boss);
@@ -2131,17 +2402,44 @@ namespace Server.Mobiles
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+            if (version >= 25)
+            {
+                m_NumberOfMinions = reader.ReadInt();
+            } else
+            {
+                m_NumberOfMinions = 0;
+            }
+            if (version >= 24)
+            {
+                m_Frozen = reader.ReadBool();
+                m_Burning = reader.ReadBool();
+                m_Toxic = reader.ReadBool();
+                m_Electrified = reader.ReadBool();
+                MonsterBuff.CheckTimers(this);
+            } else
+            {
+                m_Frozen = false;
+                m_Burning = false;
+                m_Toxic = false;
+                m_Electrified = false;
+            }
             if (version >= 23)
             {
                 m_Illusionist = reader.ReadBool();
+                m_Corruptor = reader.ReadBool();
+                m_Corrupted = reader.ReadBool();
+                m_Ethereal = reader.ReadBool();
             } else
             {
                 m_Illusionist = false;
+                m_Corruptor = false;
+                m_Corrupted = false;
+                m_Ethereal = false;
             }
             if (version >= 22)
             {
                 m_Veteran = reader.ReadBool();
-                m_Boss = reader.ReadBool(); 
+                m_Boss = reader.ReadBool();
                 m_Minion = reader.ReadBool();
                 m_MagicResistant = reader.ReadBool();
                 m_Regenerative = reader.ReadBool();
@@ -2649,6 +2947,9 @@ namespace Server.Mobiles
             {
                 Dispel(creature);
             }
+
+            MonsterBuff.CheckElementalAttack(this, defender);
+
         }
 
         public override void OnAfterDelete()
@@ -3068,6 +3369,7 @@ namespace Server.Mobiles
             {
                 Flying = false;
             }
+            StartBoss();
         }
 
         protected override void OnMapChange(Map oldMap)
@@ -3154,6 +3456,27 @@ namespace Server.Mobiles
             }
         }
 
+        public void StartBoss()
+        {
+            if (IsBoss)
+            {
+                if (m_NumberOfMinions <= 0)
+                {
+                    m_NumberOfMinions = Utility.Random(4, 6);
+                }
+                if (Minions.Count == 0)
+                {
+                    MonsterBuff.SpawnMinions(this);
+                }
+                InitBossTimer();
+            }
+        }
+
+        public override void Attack(Mobile m)
+        {
+            StartBoss();
+            base.Attack(m);
+        }
         public void AddSpellAttack(Type type)
         {
             m_SpellAttack.Add(type);
@@ -3232,6 +3555,108 @@ namespace Server.Mobiles
         public override void AddNameProperties(ObjectPropertyList list)
         {
             base.AddNameProperties(list);
+
+            if (IsBoss)
+            {
+                list.Add(
+                   1060847,
+                   "Boss\t{0}",
+                   ""
+               ); // ~1_val~ ~2_val~
+            }
+            else if (IsMinion)
+            {
+                list.Add(
+                   1060847,
+                   "Minion\t{0}",
+                   ""
+               );
+            }
+            if (IsMagicResistant)
+            {
+                list.Add(
+                   1060847,
+                   "Magic Resistant\t{0}",
+                   ""
+               );
+            }
+            if (IsReflective)
+            {
+                list.Add(
+                   1060847,
+                   "Reflective\t{0}",
+                   ""
+               );
+            }
+            if (IsRegenerative)
+            {
+                list.Add(
+                   1060847,
+                   "Regenerative\t{0}",
+                   ""
+               );
+            }
+            if (IsIllusionist)
+            {
+                list.Add(
+                   1060847,
+                   "Illusionist\t{0}",
+                   ""
+               );
+            }
+            if (IsCorruptor)
+            {
+                list.Add(
+                   1060847,
+                   "Corruptor\t{0}",
+                   ""
+               );
+            }
+            else if (IsCorrupted)
+            {
+                list.Add(
+                   1060847,
+                   "Corrupted\t{0}",
+                   ""
+               );
+            }
+            if (IsEthereal)
+            {
+                list.Add(
+                   1060847,
+                   "Ethereal\t{0}",
+                   ""
+               );
+            }
+            if (IsBurning)
+            {
+                list.Add(
+                   1060847,
+                   "Burning\t{0}",
+                   ""
+               );
+            } else if (IsFrozen)
+            {
+                list.Add(
+                   1060847,
+                   "Frozen\t{0}",
+                   ""
+               );
+            } else if (IsElectrified)
+            {
+                list.Add(
+                   1060847,
+                   "Electrified\t{0}",
+                   ""
+               );
+            } else if (IsToxic)
+            {
+                list.Add(
+                   1060847,
+                   "Toxic\t{0}",
+                   ""
+               );
+            }
 
             if (MLQuestSystem.Enabled && CanGiveMLQuest)
             {
@@ -3343,6 +3768,30 @@ namespace Server.Mobiles
                             PackItem(new Vanilla());
                             break;
                     }
+                }
+            }
+
+            if (Utility.Random(5000 - (int)DynamicExperienceValue()) < 1 && MonsterBuff.CanDropShards(this))
+            {
+                if (IsFrozen)
+                {
+                    FrozenShard shard = new FrozenShard();
+                    PackItem(shard);
+                }
+                else if (IsBurning)
+                {
+                    BurningShard shard = new BurningShard();
+                    PackItem(shard);
+                }
+                else if (IsElectrified)
+                {
+                    ElectrifiedShard shard = new ElectrifiedShard();
+                    PackItem(shard);
+                }
+                else if (IsToxic)
+                {
+                    ToxicShard shard = new ToxicShard();
+                    PackItem(shard);
                 }
             }
 
@@ -3598,7 +4047,67 @@ namespace Server.Mobiles
                 xp -= 500;
                 tier++;
             }
-            
+
+            if (IsParagon == true)
+            {
+                xpScale += 400;
+            }
+
+            if (IsHeroic == true)
+            {
+                xpScale += 200;
+            }
+
+            if (IsVeteran == true)
+            {
+                xpScale += 125;
+            }
+
+            if (IsReflective == true)
+            {
+                xpScale += 100;
+            }
+
+            if (IsRegenerative == true)
+            {
+                xpScale += 100;
+            }
+
+            if (IsMagicResistant == true)
+            {
+                xpScale += 100;
+            }
+
+            if (IsCorruptor == true)
+            {
+                xpScale += 100;
+            }
+
+            if (IsEthereal == true)
+            {
+                xpScale += 100;
+            }
+
+            if (IsIllusionist == true)
+            {
+                xpScale += 100;
+            }
+
+            if (IsBoss == true)
+            {
+                xpScale += 150;
+            }
+
+            if (IsMinion == true)
+            {
+                xpScale += 25;
+            }
+
+            if (IsBurning || IsFrozen || IsElectrified || IsToxic)
+            {
+                xpScale += 100;
+            }
+
             return (int)xpScale;
         }
 
@@ -3637,43 +4146,9 @@ namespace Server.Mobiles
 
             xp += BaseInstrument.GetPoisonLevel(this) * 20;
 
-            if (IsParagon == true)
+            if (xp > 5000)
             {
-                xp += 400.0;
-            }
-
-            if (IsHeroic == true)
-            {
-                xp += 200.0;
-            }
-
-            if (IsVeteran == true)
-            {
-                xp += 125.0;
-            }
-
-            if (IsReflective == true)
-            {
-                xp += 100.0;
-            }
-
-            if (IsRegenerative == true)
-            {
-                xp += 100.0;
-            }
-
-            if (IsMagicResistant == true)
-            {
-                xp += 100.0;
-            }
-
-            if (IsBoss == true)
-            {
-                xp += 150.0;
-            }
-            if (IsMinion == true)
-            {
-                xp += 25;
+                xp = 5000;
             }
 
             return xp;
@@ -3682,7 +4157,6 @@ namespace Server.Mobiles
         public override void OnDeath(Container c)
         {
             MeerMage.StopEffect(this, false);
-
             if (IsBonded)
             {
                 Effects.PlaySound(this, GetDeathSound());
@@ -3704,7 +4178,7 @@ namespace Server.Mobiles
                 SendIncomingPacket();
                 SendIncomingPacket();
 
-                // TODO: This can be done in Parallel if there are lots of them.
+                // TODO: This can be done in Parallel if there are lots of thDynamicExperienceValueem.
                 var aggressors = Aggressors;
 
                 for (var i = 0; i < aggressors.Count; ++i)
@@ -3902,7 +4376,9 @@ namespace Server.Mobiles
                             entry.Value.CheckKillEffect(this, LastKiller);
                         }
                     }
-                } 
+                }
+
+                MonsterBuff.CheckElementalAoe(this);
 
                 if (DeleteCorpseOnDeath)
                 {
@@ -5528,13 +6004,13 @@ namespace Server.Mobiles
                         switch (Utility.Random(1, 3))
                         {
                             case 1:
-                                AddLoot(LootPack.Rich);
+                                ForceRandomLoot(LootPack.Rich);
                                 break;
                             case 2:
-                                AddLoot(LootPack.FilthyRich);
+                                ForceRandomLoot(LootPack.FilthyRich);
                                 break;
                             case 3:
-                                AddLoot(LootPack.UltraRich);
+                                ForceRandomLoot(LootPack.UltraRich);
                                 break;
                         }
                     }
@@ -5543,13 +6019,13 @@ namespace Server.Mobiles
                         switch (Utility.Random(1, 3))
                         {
                             case 1:
-                                AddLoot(LootPack.Poor);
+                                ForceRandomLoot(LootPack.Poor);
                                 break;
                             case 2:
-                                AddLoot(LootPack.Meager);
+                                ForceRandomLoot(LootPack.Meager);
                                 break;
                             case 3:
-                                AddLoot(LootPack.Average);
+                                ForceRandomLoot(LootPack.Average);
                                 break;
                         }
                     }
@@ -5587,6 +6063,17 @@ namespace Server.Mobiles
 
         public virtual void GenerateLoot()
         {
+        }
+
+        public virtual void ForceRandomLoot(LootPack pack, int amount = 1, int itemAmount = 1)
+        {
+            var backpack = Backpack ?? new Backpack { Movable = false };
+            AddItem(backpack);
+
+            for (var i = 0; i < amount; ++i)
+            {
+                pack.ForceGenerate(this, backpack, pack.RandomEntry(), itemAmount);
+            }
         }
 
         public virtual void AddLoot(LootPack pack, int amount)

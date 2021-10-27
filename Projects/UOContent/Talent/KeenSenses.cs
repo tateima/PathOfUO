@@ -17,7 +17,7 @@ namespace Server.Talent
 
         public bool CheckDodge()
         {
-            return (Utility.Random(100) < Level);
+            return (Utility.Random(100) < Level * 2);
         }
 
     }
