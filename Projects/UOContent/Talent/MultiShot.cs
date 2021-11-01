@@ -16,7 +16,7 @@ namespace Server.Talent
             Description = "Shoot between 1-5 arrows to nearby enemies. 2 minute cooldown.";
             ImageID = 377;
             GumpHeight = 85;
-            AddEndY = 65;
+            AddEndY = 85;
         }
         public void DoShot(Mobile attacker, Mobile target)
         {

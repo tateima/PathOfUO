@@ -54,12 +54,11 @@ namespace Server.Talent
                     bool success = false;
                     foreach (var other in from.GetMobilesInRange(Level + 3))
                     {
-                        if (other == from || (other is PlayerMobile && other.Karma > 0) || !other.CanBeHarmful(from, false) ||
+                        if (other == from || !other.CanBeHarmful(from, false) ||
                             Core.AOS && !other.InLOS(from))
                         {
                             continue;
                         }
-                        from.RevealingAction();
                         var diff = instrument.GetDifficultyFor(other) - 10.0;
                         if (from.Skills.Musicianship.Value > 100.0)
                         {
@@ -90,6 +89,7 @@ namespace Server.Talent
                             other.FixedParticles(0x376A, 9, 32, 5007, EffectLayer.Waist);
                         }
                     }
+                    from.RevealingAction();
                     if (success)
                     {
                         instrument.PlayInstrumentWell(from);

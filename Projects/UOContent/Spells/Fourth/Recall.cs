@@ -3,6 +3,7 @@ using Server.Items;
 using Server.Misc;
 using Server.Mobiles;
 using Server.Spells.Necromancy;
+using Server.Network;
 
 namespace Server.Spells.Fourth
 {
@@ -18,9 +19,17 @@ namespace Server.Spells.Fourth
             Reagent.MandrakeRoot
         );
 
-        private readonly Runebook m_Book;
+        private Runebook m_Book;
 
-        private readonly RunebookEntry m_Entry;
+        private RunebookEntry m_Entry;
+
+        // for scroll support
+        public RecallSpell(Mobile caster, Item scroll = null) : base(
+            caster,
+            scroll,
+            m_Info
+        ) {
+        } 
 
         public RecallSpell(Mobile caster, RunebookEntry entry = null, Runebook book = null, Item scroll = null) : base(
             caster,
@@ -37,7 +46,10 @@ namespace Server.Spells.Fourth
 
         public void Effect(Point3D loc, Map map, bool checkMulti)
         {
-            if (Sigil.ExistsOn(Caster))
+            if (!PlanarTravel.CanPlanarTravel(Caster)) {
+                Caster.LocalOverheadMessage(MessageType.Regular, 0x22, false, PlanarTravel.NO_TRAVEL_MESSAGE);
+            } 
+            else if (Sigil.ExistsOn(Caster))
             {
                 Caster.SendLocalizedMessage(1061632); // You can't do that while carrying the sigil.
             }
@@ -91,6 +103,8 @@ namespace Server.Spells.Fourth
                 {
                     --m_Book.CurCharges;
                 }
+
+                PlanarTravel.NextPlanarTravel(Caster);
 
                 Caster.PlaySound(0x1FC);
                 Caster.MoveToWorld(loc, map);

@@ -10,11 +10,15 @@ namespace Server.Items
         {
             get { return 0.1; }
         }
-
+        [Constructible]
+        public ToxicShard() : this(1)
+        {
+        }
         public override int LabelNumber { get { return 1061198; } } // toxic shard
         [Constructible]
-        public ToxicShard() : base()
+        public ToxicShard(int amount) : base()
         {
+            Amount = amount;
             Light = LightType.Circle150;
             Hue = MonsterBuff.ToxicHue;
         }
@@ -44,16 +48,26 @@ namespace Server.Items
         public override void AddElementalProperties(Mobile from, BaseArmor armor)
         {
             bool use = false;
-            if (Core.AOS && armor.GetResourceAttrs().ArmorPoisonResist < 100)
-            {
-                armor.GetResourceAttrs().ArmorPoisonResist++;
-                use = true;
+            if (armor.ShardPower < 15) {
+                if (Core.AOS && armor.GetResourceAttrs().ArmorPoisonResist < 100)
+                {
+                    armor.GetResourceAttrs().ArmorPoisonResist++;
+                    use = true;
+                }
+                if (armor.Hue != MonsterBuff.ToxicHue)
+                {
+                    armor.Hue = MonsterBuff.ToxicHue;
+                    use = true;
+                }
             }
-            if (armor.Hue != MonsterBuff.ToxicHue)
+            else 
             {
-                armor.Hue = MonsterBuff.ToxicHue;
-                use = true;
+                from.SendLocalizedMessage(1061200, "frozen"); //You cannot imbue the properties of this shard with this item
             }
+            if (use) {
+                armor.ShardPower++;
+            } 
+            
             base.CheckDelete(use);
         }
         public override void AddElementalProperties(Mobile from, BaseWeapon weapon)

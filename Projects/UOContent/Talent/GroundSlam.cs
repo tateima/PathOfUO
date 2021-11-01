@@ -42,7 +42,7 @@ namespace Server.Talent
                 List<Mobile> mobiles = (List<Mobile>)attacker.GetMobilesInRange(3);
                 foreach (Mobile mobile in mobiles)
                 {
-                    if (mobile == attacker || (mobile is PlayerMobile && mobile.Karma > 0) || !mobile.CanBeHarmful(attacker, false) ||
+                    if (mobile == attacker || !mobile.CanBeHarmful(attacker, false) ||
                             Core.AOS && !mobile.InLOS(attacker))
                     {
                         continue;
@@ -57,8 +57,12 @@ namespace Server.Talent
                         Direction.South => new Point3D(mobileLocation.X, mobileLocation.Y + Level, mobileLocation.Y),
                         _ => new Point3D(mobileLocation.X, mobileLocation.Y - Level, mobileLocation.Y)
                     };
+                    int attempts = 10;
                     while (!mobile.InLOS(newMobileLocation))
                     {
+                        if (attempts > 10) {
+                            newMobileLocation = mobileLocation;
+                        }
                         newMobileLocation = mobileDirection switch
                         {
                             Direction.East => new Point3D(mobileLocation.X - 1, mobileLocation.Y, mobileLocation.Y),
@@ -66,6 +70,7 @@ namespace Server.Talent
                             Direction.South => new Point3D(mobileLocation.X, mobileLocation.Y - 1, mobileLocation.Y),
                             _ => new Point3D(mobileLocation.X, mobileLocation.Y + 1, mobileLocation.Y)
                         };
+                        attempts++;
                     }
                     mobile.MoveToWorld(newMobileLocation, mobile.Map);
                     mobile.Damage(Level, attacker);
@@ -73,6 +78,8 @@ namespace Server.Talent
                     {
                         ((BaseCreature)mobile).ActiveSpeed = ((BaseCreature)mobile).ActiveSpeed / 2;
                         m_SlowedMobiles.Add(mobile);
+                    } else if (mobile is PlayerMobile player) {
+                        player.Slow(Utility.Random(10));
                     }
                 }
                 Timer.StartTimer(TimeSpan.FromSeconds(10), ExpireSlowedMobiles, out _slowedMobileTimerToken);

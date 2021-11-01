@@ -18,6 +18,12 @@ namespace Server.Spells
 
         protected override void OnTarget(Mobile from, object o)
         {
+            if (Blindness.BlindMobile(from)) {
+                Mobile newTarget = Blindness.GetBlindTarget(from, 8);
+                if (newTarget != null) {
+                      m_Spell.Target(newTarget);
+                }
+            }
             m_Spell.Target(o as Mobile);
         }
 

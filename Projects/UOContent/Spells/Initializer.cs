@@ -61,7 +61,7 @@ namespace Server.Spells
             Register(31, typeof(RecallSpell));
 
             // Fifth circle
-            Register(32, typeof(BladeSpiritsSpell));
+            //Register(32, typeof(BladeSpiritsSpell));
             Register(33, typeof(DispelFieldSpell));
             Register(34, typeof(IncognitoSpell));
             Register(35, typeof(MagicReflectSpell));
@@ -92,7 +92,7 @@ namespace Server.Spells
 
             // Eighth circle
             Register(56, typeof(EarthquakeSpell));
-            Register(57, typeof(EnergyVortexSpell));
+            //Register(57, typeof(EnergyVortexSpell));
             Register(58, typeof(ResurrectionSpell));
             Register(59, typeof(AirElementalSpell));
             Register(60, typeof(SummonDaemonSpell));

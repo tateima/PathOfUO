@@ -192,16 +192,16 @@ namespace Server.Items
         public virtual SkillName AccuracySkill => SkillName.Tactics;
 
         [CommandProperty(AccessLevel.GameMaster, canModify: true)]
-        public AosAttributes Attributes { get; private set; }
+        public AosAttributes Attributes { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster, canModify: true)]
-        public AosWeaponAttributes WeaponAttributes { get; private set; }
+        public AosWeaponAttributes WeaponAttributes { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster, canModify: true)]
-        public AosSkillBonuses SkillBonuses { get; private set; }
+        public AosSkillBonuses SkillBonuses { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster, canModify: true)]
-        public AosElementAttributes AosElementDamages { get; private set; }
+        public AosElementAttributes AosElementDamages { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster)]
         public bool Cursed { get; set; }
@@ -800,6 +800,14 @@ namespace Server.Items
                 canSwing = false;
             }
 
+            if (Blindness.BlindMobile(attacker)) {
+                int distance = (this is BaseRanged) ? 8 : 1;
+                Mobile newTarget = Blindness.GetBlindTarget(attacker, distance);
+                if (newTarget != null) {
+                    defender = newTarget;
+                }
+            }
+
             if (canSwing && attacker.HarmfulCheck(defender))
             {
                 attacker.DisruptiveAction();
@@ -1157,7 +1165,11 @@ namespace Server.Items
         {
             var atkWeapon = attacker.Weapon as BaseWeapon;
             var defWeapon = defender.Weapon as BaseWeapon;
-
+            bool blinded = Blindness.BlindMobile(attacker);
+            bool feared = Fear.FearedMobile(attacker);
+            if (feared) {
+                return false;
+            }
             var atkSkill = attacker.Skills[atkWeapon?.Skill ?? SkillName.Wrestling];
             // Skill defSkill = defender.Skills[defWeapon.Skill];
 
@@ -1326,7 +1338,9 @@ namespace Server.Items
             {
                 chance = 0.02;
             }
-
+            if (blinded) {
+                chance /= 4; // 75% less chance of hitting when blinded
+            }
             return attacker.CheckSkill(atkSkill.SkillName, chance);
         }
 
@@ -1525,7 +1539,10 @@ namespace Server.Items
             var bushidoNonRacial = defender.Skills.Bushido.NonRacialValue;
             var bushido = defender.Skills.Bushido.Value;
             var weapon = defender.Weapon as BaseWeapon;
-
+            var feared = Fear.FearedMobile(defender);
+            if (feared) {
+                return false;
+            }
             double chance;
 
             if (shield != null)
@@ -1588,6 +1605,10 @@ namespace Server.Items
                 chance = chance * (20 + defender.Dex) / 100;
             }
 
+            if (Blindness.BlindMobile(defender)) {
+                return false;
+            }
+
             if (chance > aosChance)
             {
                 return defender.CheckSkill(SkillName.Parry, chance);
@@ -1596,6 +1617,39 @@ namespace Server.Items
             return
                 aosChance > Utility
                     .RandomDouble(); // Only skillcheck if wielding a shield & there's no effect from Bushido
+        }
+
+        public int AbsorbDamageByTalent(Mobile defender, int damage) {
+            if (defender is PlayerMobile player) {
+                BaseTalent leatherWarmaster = player.GetTalent(typeof(LeatherWarmaster));
+                if (leatherWarmaster != null && BaseArmor.FullLeather(defender)) {
+                    damage -= leatherWarmaster.Level;
+                }
+                BaseTalent boneWarmaster = player.GetTalent(typeof(BoneWarmaster));
+                if (boneWarmaster != null && BaseArmor.FullBone(defender)) {
+                    damage -= boneWarmaster.Level;
+                }
+                BaseTalent clothWarMaster = player.GetTalent(typeof(ClothWarmaster));
+                if (clothWarMaster != null && BaseArmor.FullCloth(defender)) {
+                    damage -= clothWarMaster.Level;
+                }
+                BaseTalent plateWarmaster = player.GetTalent(typeof(PlateWarmaster));
+                if (plateWarmaster != null && BaseArmor.FullPlate(defender)) {
+                    damage -= plateWarmaster.Level;
+                }
+                BaseTalent chainWarmaster = player.GetTalent(typeof(ChainWarmaster));
+                if (chainWarmaster != null && (BaseArmor.FullChain(defender) || BaseArmor.FullRing(defender))) {
+                    damage -= chainWarmaster.Level;
+                }
+                BaseTalent dragonWarmaster = player.GetTalent(typeof(DragonWarmaster));
+                if (dragonWarmaster != null && BaseArmor.FullDragon(defender)) {
+                    damage -= dragonWarmaster.Level;
+                }
+            }
+            if (damage < 0) {
+                damage = 0;
+            }
+            return damage;
         }
 
         public virtual int AbsorbDamageAOS(Mobile attacker, Mobile defender, int damage)
@@ -1661,7 +1715,7 @@ namespace Server.Items
                     armor.OnHit(this, damage); // call OnHit to lose durability
                 }
             }
-
+            damage = AbsorbDamageByTalent(defender, damage);
             return damage;
         }
 
@@ -1712,7 +1766,7 @@ namespace Server.Items
 
                 damage -= Utility.Random(from, to - from + 1);
             }
-
+            damage = AbsorbDamageByTalent(defender, damage);
             return damage;
         }
 
@@ -2931,7 +2985,6 @@ namespace Server.Items
             {
                 damage = (int)(damage / 2.0);
             }
-
             return damage;
         }
 

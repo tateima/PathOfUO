@@ -19,7 +19,7 @@ namespace Server.Talent
             DisplayName = "Dominate creature";
             Description = "Chance on to control target for 1 minute per level. 5 minute cooldown. Requires 90 music, all bardic skills 70+.";
             ImageID = 191;
-            AddEndY = 135;
+            AddEndY = 110;
         }
         public override bool HasSkillRequirement(Mobile mobile)
         {

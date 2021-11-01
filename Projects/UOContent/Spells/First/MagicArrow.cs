@@ -61,10 +61,9 @@ namespace Server.Spells.First
                     }
                     damage *= GetDamageScalar(m);
                 }
-
-                source.MovingParticles(m, 0x36E4, 5, 0, false, false, 3006, 0, 0);
-                source.PlaySound(0x1E5);
-
+                int fire = 100;
+                int cold = 0;
+                int hue = 0;
                 if (Caster is PlayerMobile player)
                 {
                     BaseTalent fireAffinity = player.GetTalent(typeof(FireAffinity));
@@ -72,9 +71,14 @@ namespace Server.Spells.First
                     {
                         damage += fireAffinity.ModifySpellMultiplier();
                     }
+                    BaseTalent frostFire = player.GetTalent(typeof(FrostFire));
+                    if (frostFire != null && fire > 0) {
+                        ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, m, ref hue);
+                    }
                 }
-
-                SpellHelper.Damage(this, m, damage, 0, 100, 0, 0, 0);
+                source.MovingParticles(m, 0x36D4, 5, 0, false, false, hue, 0, 3006, 0, 0, 0);
+                source.PlaySound(0x1E5);
+                SpellHelper.Damage(this, m, damage, 0, fire, cold, 0, 0);
             }
 
             FinishSequence();

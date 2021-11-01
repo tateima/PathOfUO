@@ -26,8 +26,6 @@ namespace Server.Mobiles
 
                 Add(new GenericBuyInfo("1041072", typeof(MagicWizardsHat), 11, 10, 0x1718, Utility.RandomDyedHue()));
 
-                Add(new GenericBuyInfo(typeof(RecallRune), 15, 10, 0x1F14, 0));
-
                 Add(new GenericBuyInfo(typeof(RefreshPotion), 15, 10, 0xF0B, 0));
                 Add(new GenericBuyInfo(typeof(AgilityPotion), 15, 10, 0xF08, 0));
                 Add(new GenericBuyInfo(typeof(NightSightPotion), 15, 10, 0xF06, 0));
@@ -99,8 +97,6 @@ namespace Server.Mobiles
                     Add(typeof(NoxCrystal), 3);
                     Add(typeof(GraveDust), 1);
                 }
-
-                Add(typeof(RecallRune), 13);
                 Add(typeof(Spellbook), 25);
 
                 var types = Loot.RegularScrollTypes;

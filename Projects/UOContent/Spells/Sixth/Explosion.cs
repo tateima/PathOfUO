@@ -1,5 +1,7 @@
 using System;
 using Server.Targeting;
+using Server.Mobiles;
+using Server.Talent;
 
 namespace Server.Spells.Sixth
 {
@@ -98,10 +100,26 @@ namespace Server.Spells.Sixth
                         damage *= m_Spell.GetDamageScalar(m_Target);
                     }
 
-                    m_Target.FixedParticles(0x36BD, 20, 10, 5044, EffectLayer.Head);
+                    int fire = 100;
+                    int cold = 0;
+                    int hue = 0;
+                    
+                    if (m_Attacker is PlayerMobile playerCaster) {
+                        BaseTalent fireAffinity = playerCaster.GetTalent(typeof(FireAffinity));
+                        if (fireAffinity != null)
+                        {
+                            damage += fireAffinity.ModifySpellMultiplier();
+                        }
+                        BaseTalent frostFire = playerCaster.GetTalent(typeof(FrostFire));
+                        if (frostFire != null && fire > 0) {
+                            ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, m_Target, ref hue);
+                        }
+                    }
+
+                    m_Target.FixedParticles(0x36BD, 20, 10, 5044, hue, 0, EffectLayer.Head, 0);
                     m_Target.PlaySound(0x307);
 
-                    SpellHelper.Damage(m_Spell, m_Target, damage, 0, 100, 0, 0, 0);
+                    SpellHelper.Damage(m_Spell, m_Target, damage, 0, fire, cold, 0, 0);
 
                     m_Spell?.RemoveDelayedDamageContext(m_Attacker);
                 }

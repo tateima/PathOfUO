@@ -16,7 +16,7 @@ namespace Server.Talent
             Description = "Propels potions along with arrows or bolts from backpack. Requires 70+ Alchemy.";
             ImageID = 379;
             GumpHeight = 85;
-            AddEndY = 75;
+            AddEndY = 95;
             MaxLevel = 1;
         }
         public override bool HasSkillRequirement(Mobile mobile)

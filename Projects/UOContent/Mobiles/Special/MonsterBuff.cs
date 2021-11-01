@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Server.Items;
+using Server.Talent;
 using Server.Utilities;
 using Server.Network;
 
@@ -517,7 +518,7 @@ namespace Server.Mobiles
             int energyDam = 0;
             if (owner.IsElectrified)
             {
-                damage = Utility.Random(5, 10);
+                damage = Utility.Random(3, 5);
                 energyDam = 100;
                 sound = 0x5C3;
                 Effects.SendLocationParticles(
@@ -530,11 +531,14 @@ namespace Server.Mobiles
                    9917,
                    0
                );
-
+               if (CheckElementalEffect())
+                {
+                    Blindness.BlindTarget(mobile, Utility.Random(5, 7), "* Blinded by electrical shock *");
+                } 
             }
             else if (owner.IsBurning)
             {
-                damage = Utility.Random(5, 10);
+                damage = Utility.Random(5, 12);
                 fireDam = 100;
                 Effects.SendLocationEffect(mobile, 0x398F, 16, 10, 0);
                 sound = 0x5CF;
@@ -554,7 +558,18 @@ namespace Server.Mobiles
             else if (owner.IsFrozen)
             {
                 damage = Utility.Random(3, 5);
-                if (CheckElementalEffect())
+                BaseTalent warmth = null;
+                PlayerMobile player = null;
+                int frozenAvoidanceChance = 0;
+                if (mobile is PlayerMobile) {
+                    player = (PlayerMobile)mobile;
+                    warmth = player.GetTalent(typeof(Warmth));
+                    if (warmth != null) {
+                        frozenAvoidanceChance = warmth.ModifySpellMultiplier();
+                    }
+                }
+                
+                if (CheckElementalEffect() && !(Utility.Random(100) < frozenAvoidanceChance))
                 {
                     mobile.Freeze(TimeSpan.FromSeconds(Utility.Random(5, 7)));
                     mobile.PublicOverheadMessage(
@@ -564,7 +579,7 @@ namespace Server.Mobiles
                     "* Frozen by intense cold *"
                     );
                     CheckFreezeHue(mobile, mobile.HueMod);
-                } else if (mobile is PlayerMobile player)
+                } else if (player != null)
                 {
                     player.Slow(6);
                     mobile.PublicOverheadMessage(
@@ -699,6 +714,11 @@ namespace Server.Mobiles
                                 continue;
                             }
                             creature.IsCorrupted = true;
+                        } else if (mobile is PlayerMobile player) {
+                            Fearless fearless = player.GetTalent(typeof(Fearless)) as Fearless;
+                            if (CheckElementalEffect(5) && fearless is null || (fearless != null && !fearless.CheckFearSave(player))) {
+                                player.Fear(Utility.Random(10));
+                            }
                         }
                     }
                     Delay = Interval = CorruptionRate;

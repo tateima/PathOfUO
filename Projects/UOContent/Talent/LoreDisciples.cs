@@ -18,7 +18,7 @@ namespace Server.Talent
             Description = "Summon random humanoids to fight alongside you for 2m (5m cooldown).";
             ImageID = 158;
             GumpHeight = 75;
-            AddEndY = 105;
+            AddEndY = 90;
         }
         public override void OnUse(Mobile summoner)
         {

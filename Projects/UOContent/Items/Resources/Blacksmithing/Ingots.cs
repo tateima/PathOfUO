@@ -7,7 +7,6 @@ namespace Server.Items
         [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
         [SerializableField(0)]
         private CraftResource _resource;
-
         public BaseIngot(CraftResource resource, int amount = 1) : base(0x1BF2)
         {
             Stackable = true;

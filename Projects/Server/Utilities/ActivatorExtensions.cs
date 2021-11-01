@@ -80,7 +80,6 @@ namespace Server.Utilities
                             validated = false;
                             break;
                         }
-
                         if (arg != null && !param.ParameterType.IsAssignableFrom(arg))
                         {
                             validated = false;

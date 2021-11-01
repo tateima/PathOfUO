@@ -14,6 +14,9 @@ namespace Server.Talent
             GumpHeight = 85;
             AddEndY = 75;
         }
-
+        public override bool HasSkillRequirement(Mobile mobile)
+        {
+            return mobile.Skills[SkillName.Necromancy].Base >= 70;
+        }
     }
 }

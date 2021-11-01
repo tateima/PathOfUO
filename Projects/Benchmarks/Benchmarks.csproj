@@ -9,7 +9,9 @@
         <SkipLocalsInitiAttribute>true</SkipLocalsInitiAttribute>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="Argon2.Bindings" Version="1.9.1" />
         <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
+        <PackageReference Include="MimeKit" Version="2.15.1" />
         <ProjectReference Include="..\Server\Server.csproj" />
         <ProjectReference Include="..\UOContent\UOContent.csproj" />
     </ItemGroup>

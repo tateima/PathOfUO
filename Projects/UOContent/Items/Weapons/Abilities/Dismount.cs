@@ -32,6 +32,18 @@ namespace Server.Items
             return true;
         }
 
+        public static void DismountPlayer(Mobile attacker, PlayerMobile mobile, int duration) {
+            if (AnimalForm.UnderTransformation(mobile))
+            {
+                mobile.SendLocalizedMessage(1114066, attacker.Name); // ~1_NAME~ knocked you out of animal form!
+            }
+            else if (mobile.Mounted)
+            {
+                mobile.SendLocalizedMessage(1040023); // You have been knocked off of your mount!
+            }
+            mobile.SetMountBlock(BlockMountType.Dazed, TimeSpan.FromSeconds(duration), true);
+        }
+
         public override void OnHit(Mobile attacker, Mobile defender, int damage)
         {
             if (!Validate(attacker) || !CheckMana(attacker, true))
@@ -81,16 +93,7 @@ namespace Server.Items
 
             if (defender is PlayerMobile mobile)
             {
-                if (AnimalForm.UnderTransformation(mobile))
-                {
-                    mobile.SendLocalizedMessage(1114066, attacker.Name); // ~1_NAME~ knocked you out of animal form!
-                }
-                else if (mobile.Mounted)
-                {
-                    mobile.SendLocalizedMessage(1040023); // You have been knocked off of your mount!
-                }
-
-                mobile.SetMountBlock(BlockMountType.Dazed, TimeSpan.FromSeconds(10), true);
+               DismountPlayer(attacker, mobile, 10);
             }
             else
             {

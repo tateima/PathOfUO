@@ -261,7 +261,11 @@ namespace Server.Mobiles
         private string m_Level;
         private bool m_HardCore;
         private bool m_Slowed;
+        private bool m_Blinded;
         private int m_TalentResets;
+        private int m_SkillResets;
+        private bool m_Feared;
+        private DateTime m_NextPlanarTravel;
 
         private DateTime m_LastYoungHeal = DateTime.MinValue;
 
@@ -301,7 +305,11 @@ namespace Server.Mobiles
             m_StatPoints = 0;
             m_TalentPoints = 0;
             m_TalentResets = 0;
+            m_SkillResets = 0;
             m_Slowed = false;
+            m_Blinded = false;
+            m_Feared = false;
+            m_NextPlanarTravel = Core.Now;
             m_Talents = new ConcurrentDictionary<Type, BaseTalent>();
             m_Henchmen = new List<Mobile>();
             m_RestedHenchmen = new List<Mobile>(); 
@@ -331,6 +339,20 @@ namespace Server.Mobiles
         {
             VisibilityList = new List<Mobile>();
             m_AntiMacroTable = new Dictionary<Skill, Dictionary<object, CountAndTimeStamp>>();
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public DateTime NextPlanarTravel
+        {
+            get
+            {
+                return m_NextPlanarTravel;
+            }
+            set
+            {
+                m_NextPlanarTravel = value;
+                InvalidateProperties();
+            }
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
@@ -514,6 +536,18 @@ namespace Server.Mobiles
             InvalidateProperties();
         }
         [CommandProperty(AccessLevel.GameMaster)]
+        public int SkillResets
+        {
+            get
+            {
+                return m_SkillResets;
+            }
+            set
+            {
+                m_SkillResets = value;
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
         public int TalentResets
         {
             get
@@ -525,7 +559,37 @@ namespace Server.Mobiles
                 m_TalentResets = value;
             }
         }
-
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool Blinded
+        {
+            get
+            {
+                return m_Blinded;
+            }
+            set
+            {
+                m_Blinded = value;
+                if (value)
+                {
+                    m_NextMovementTime = CalcMoves.RunFootDelay;
+                }
+            }
+        }
+    
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool Feared
+        {
+            get
+            {
+                return m_Feared;
+            }
+            set
+            {
+                m_Feared = value;
+                Slowed = value;
+            }
+        }
+        
         [CommandProperty(AccessLevel.GameMaster)]
         public bool Slowed
         {
@@ -1144,7 +1208,38 @@ namespace Server.Mobiles
                 }
             }
         }
-
+        public void Blind(int duration, string message = "* Blinded *")
+        {
+            Blinded = true;
+            PublicOverheadMessage(
+                MessageType.Regular,
+                0x3B2,
+                false,
+                message
+                );
+            BaseTalent trueSighted = GetTalent(typeof(TrueSighted));
+            if (trueSighted != null) {
+                duration -= AOS.Scale(duration, trueSighted.ModifySpellMultiplier());
+            }
+            Timer.StartTimer(TimeSpan.FromSeconds(duration), UnBlind);
+        }
+        public void Fear(int duration , string message = "* Feared *")
+        {
+            Feared = true;
+            SendSound(0x182);
+            PublicOverheadMessage(
+                MessageType.Regular,
+                0x3B2,
+                false,
+                message
+                );
+            Timer.StartTimer(TimeSpan.FromSeconds(duration), UnFear);
+        }
+        public void UnFear()
+        {
+            Feared = false;
+            Slowed = false;
+        }
         public void Slow(int duration)
         {
             Slowed = true;
@@ -1153,6 +1248,10 @@ namespace Server.Mobiles
         public void UnSlow()
         {
             Slowed = false;
+        }
+        public void UnBlind()
+        {
+            Blinded = false;
         }
         public void ClearQuestArrow() => m_QuestArrow = null;
 
@@ -1699,7 +1798,7 @@ namespace Server.Mobiles
 
         public void HungerHarmCheck()
         {
-            int damage = 30 - (int)(Skills.Cooking.Value / 10); // cooking helps save hunger death!
+            int damage = Utility.RandomMinMax(11, 30 - (int)(Skills.Cooking.Value / 10)); // cooking helps save hunger death!
             if (Hunger < 10)
             {
                 Damage(damage - Hunger, this);
@@ -2319,6 +2418,31 @@ namespace Server.Mobiles
             }
         }
 
+        public void ResetSkills()
+        {
+            SkillName[] skillNames = (SkillName[])Enum.GetValues(typeof(SkillName));
+            int craftPoints = 0;
+            int nonCraftPoints = 0;
+            int rangerPoints = 0;
+            foreach(SkillName skill in skillNames) {
+                if (Skills[skill].Base > 0.0) {
+                    int pointValue = (int)Math.Floor(Skills[skill].Base);
+                    if (CharacterSheetGump.IsCraftingSkill(skill)) {
+                        craftPoints += pointValue;
+                    } else if (CharacterSheetGump.IsRangerSkill(skill)) {
+                        rangerPoints += pointValue;
+                    } else {
+                        nonCraftPoints += pointValue;
+                    }
+                    Skills[skill].Base = 0.0;
+                } 
+            }
+            NonCraftSkillPoints += nonCraftPoints;
+            CraftSkillPoints += craftPoints;
+            RangerSkillPoints += rangerPoints;
+            SkillResets++;
+        }
+
         public void ResetTalents()
         {
             foreach (KeyValuePair<Type, BaseTalent> entry in Talents)
@@ -2876,6 +3000,15 @@ namespace Server.Mobiles
                 Timer.StartTimer(TimeSpan.FromSeconds(10), mobile.RecoverAmmo);
             }
 
+            BaseTalent mountedCombat = GetTalent(typeof(MountedCombat));
+            int dismountChance = 15;
+            if (mountedCombat != null) {
+                dismountChance -= mountedCombat.Level;
+            }
+            if (Mounted && Utility.Random(100) < dismountChance) {
+                Dismount.DismountPlayer(from, this, 30);
+            }
+
             base.OnDamage(amount, from, willKill);
         }
 
@@ -2898,6 +3031,17 @@ namespace Server.Mobiles
                     deathRobe.Delete();
                 }
             }
+        }
+        public override bool EquipItem(Item item)
+        {
+            foreach(KeyValuePair<Type,BaseTalent> entry in Talents)
+            {
+                if (entry.Value.UpdateOnEquip && !entry.Value.OnCooldown)
+                {
+                    entry.Value.UpdateMobile(this);
+                }
+            }
+            return base.EquipItem(item);
         }
 
         public override void OnWarmodeChanged()
@@ -3478,7 +3622,23 @@ namespace Server.Mobiles
             var version = reader.ReadInt();
             switch (version)
             {
-                case 35:
+                case 38:
+                    m_SkillResets = reader.ReadInt();
+                    goto case 37;
+                case 37:
+                    m_NextPlanarTravel = reader.ReadDateTime();
+                    m_Feared = reader.ReadBool();
+                    if (m_Feared) {
+                        Timer.StartTimer(TimeSpan.FromSeconds(Utility.Random(10)), UnFear);
+                    }
+                    goto case 36;
+                case 36:
+                    m_Blinded = reader.ReadBool();
+                    if (m_Blinded) {
+                        Timer.StartTimer(TimeSpan.FromSeconds(Utility.Random(10)), UnBlind);
+                    }
+                    goto case 35;
+                case 35:            
                     m_TalentResets = reader.ReadInt();
                     goto case 34;
                 case 34:
@@ -3809,7 +3969,6 @@ namespace Server.Mobiles
             {
                 m_IgnoreMobiles = true;
             }
-
             var list = Stabled;
 
             for (var i = 0; i < list.Count; ++i)
@@ -3858,7 +4017,11 @@ namespace Server.Mobiles
 
             base.Serialize(writer);
 
-            writer.Write(35); // version
+            writer.Write(38); // version
+            writer.Write(m_SkillResets);
+            writer.Write(m_NextPlanarTravel);
+            writer.Write(m_Feared);
+            writer.Write(m_Blinded);
             writer.Write(m_TalentResets);
             writer.Write(m_Slowed);
             writer.Write(m_RangerExperience);
@@ -4132,6 +4295,12 @@ namespace Server.Mobiles
                 nextLevel.ToString()
             ); // ~1_val~ ~2_val~
 
+             if (Core.Now < m_NextPlanarTravel) {
+                list.Add(1060847,
+                "Suffering planar exhaustion: {0}",
+                string.Format("{0}", WaitTeleporter.FormatTime(m_NextPlanarTravel - Core.Now))
+                );
+            }
             if (Map == Faction.Facet)
             {
                 var pl = PlayerState.Find(this);

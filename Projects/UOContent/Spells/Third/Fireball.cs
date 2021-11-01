@@ -1,4 +1,6 @@
 using Server.Targeting;
+using Server.Mobiles;
+using Server.Talent;
 
 namespace Server.Spells.Third
 {
@@ -58,11 +60,26 @@ namespace Server.Spells.Third
 
                     damage *= GetDamageScalar(m);
                 }
+                int fire = 100;
+                int cold = 0;
+                int hue = 0;
+                
+                if (Caster is PlayerMobile playerCaster) {
+                    BaseTalent fireAffinity = playerCaster.GetTalent(typeof(FireAffinity));
+                    if (fireAffinity != null)
+                    {
+                        damage += fireAffinity.ModifySpellMultiplier();
+                    }
+                    BaseTalent frostFire = playerCaster.GetTalent(typeof(FrostFire));
+                    if (frostFire != null && fire > 0) {
+                        ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, m, ref hue);
+                    }
+                }
 
-                source.MovingParticles(m, 0x36D4, 7, 0, false, true, 9502, 4019, 0x160);
+                source.MovingParticles(m, 0x36D4,7, 0, false, true, hue, 0, 9502, 4019, 0x160, 0);
                 source.PlaySound(Core.AOS ? 0x15E : 0x44B);
 
-                SpellHelper.Damage(this, m, damage, 0, 100, 0, 0, 0);
+                SpellHelper.Damage(this, m, damage, 0, fire, cold, 0, 0);
             }
 
             FinishSequence();

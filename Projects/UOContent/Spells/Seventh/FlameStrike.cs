@@ -1,4 +1,6 @@
 using Server.Targeting;
+using Server.Talent;
+using Server.Mobiles;
 
 namespace Server.Spells.Seventh
 {
@@ -58,7 +60,23 @@ namespace Server.Spells.Seventh
                     damage *= GetDamageScalar(m);
                 }
 
-                m.FixedParticles(0x3709, 10, 30, 5052, EffectLayer.LeftFoot);
+                int fire = 100;
+                int cold = 0;
+                int hue = 0;
+                
+                if (Caster is PlayerMobile playerCaster) {
+                    BaseTalent fireAffinity = playerCaster.GetTalent(typeof(FireAffinity));
+                    if (fireAffinity != null)
+                    {
+                        damage += fireAffinity.ModifySpellMultiplier();
+                    }
+                    BaseTalent frostFire = playerCaster.GetTalent(typeof(FrostFire));
+                    if (frostFire != null && fire > 0) {
+                        ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, m, ref hue);
+                    }
+                }
+
+                m.FixedParticles(0x3709, 10, 3, 5052, hue, 0, EffectLayer.LeftFoot, 0);
                 m.PlaySound(0x208);
 
                 SpellHelper.Damage(this, m, damage, 0, 100, 0, 0, 0);

@@ -95,9 +95,12 @@ namespace Server.Misc
 
                 m.AddItem(pack);
             }
-
+            m.PackItem(new RecallScroll());
+            for (var i = 0; i < 2; i++) {
+                m.PackItem(new RecallRune());
+            }
             m.PackItem(new RedBook("a book", m.Name, 20, true));
-            m.PackItem(new Gold(1000)); // Starting gold can be customized here
+            m.PackItem(new Gold(100)); // Starting gold can be customized here
             m.PackItem(new Dagger());
             m.PackItem(new Candle());
         }

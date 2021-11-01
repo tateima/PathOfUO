@@ -14,8 +14,14 @@ namespace Server.Items
         public override int LabelNumber { get { return 1061199; } } // electrified shard
 
         [Constructible]
-        public ElectrifiedShard() : base()
+        public ElectrifiedShard() : this(1)
         {
+        }
+
+        [Constructible]
+        public ElectrifiedShard(int amount) : base()
+        {
+            Amount = amount;
             Light = LightType.Circle150;
             Hue = MonsterBuff.ElectrifiedHue;
         }
@@ -46,15 +52,25 @@ namespace Server.Items
         public override void AddElementalProperties(Mobile from, BaseArmor armor)
         {
             bool use = false;
-            if (Core.AOS && armor.GetResourceAttrs().ArmorEnergyResist < 100)
+            if (armor.ShardPower < 15) {
+                if (Core.AOS && armor.GetResourceAttrs().ArmorEnergyResist < 100)
+                {
+                    armor.GetResourceAttrs().ArmorEnergyResist++;
+                    use = true;
+                }
+                if (armor.Hue != MonsterBuff.ElectrifiedHue)
+                {
+                    armor.Hue = MonsterBuff.ElectrifiedHue;
+                    use = true;
+                }
+            } 
+            else 
             {
-                armor.GetResourceAttrs().ArmorEnergyResist++;
-                use = true;
+                from.SendLocalizedMessage(1061200, "electrical"); //You cannot imbue the properties of this shard with this item
             }
-            if (armor.Hue != MonsterBuff.ElectrifiedHue)
-            {
-                armor.Hue = MonsterBuff.ElectrifiedHue;
-                use = true;
+
+            if (use) {
+                armor.ShardPower++;
             }
             base.CheckDelete(use);
         }

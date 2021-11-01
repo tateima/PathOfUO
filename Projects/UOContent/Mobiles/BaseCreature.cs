@@ -279,6 +279,8 @@ namespace Server.Mobiles
         private readonly List<Type> m_SpellDefense; // List of defensive spell/power
 
         private bool _summoned;
+        private bool m_Blinded;
+        private bool m_Feared;
 
         private bool m_bTamable;
         private int m_ColdResistance;
@@ -389,6 +391,8 @@ namespace Server.Mobiles
             m_DefaultAI = ai;
             m_Minions = new List<Mobile>();
             m_NumberOfMinions = 0;
+            m_Blinded = false;
+            m_Feared = false;
 
             RangePerception = iRangePerception;
             RangeFight = iRangeFight;
@@ -465,6 +469,35 @@ namespace Server.Mobiles
 
         [CommandProperty(AccessLevel.GameMaster)]
         public bool SeeksHome { get; set; }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool Feared
+        {
+            get
+            {
+                return m_Feared;
+            }
+            set
+            {
+                m_Feared = value;
+                if (value) {
+                    ActiveSpeed /= 2;
+                }
+            }
+        }
+        
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool Blinded
+        {
+            get
+            {
+                return m_Blinded;
+            }
+            set
+            {
+                m_Blinded = value;
+            }
+        }
 
         [CommandProperty(AccessLevel.GameMaster)]
         public string CorpseNameOverride { get; set; }
@@ -842,6 +875,39 @@ namespace Server.Mobiles
                 }
                 InvalidateProperties();
             }
+        }
+
+        public void Fear(int duration , string message = "* Feared *")
+        {
+            Feared = true;
+            PublicOverheadMessage(
+                MessageType.Regular,
+                0x3B2,
+                false,
+                message
+                );
+            Timer.StartTimer(TimeSpan.FromSeconds(duration), UnFear);
+        }
+
+        public void UnFear()
+        {
+            Feared = false;
+        }
+
+        public void Blind(int duration, string message = "* Blinded *")
+        {
+            Blinded = true;
+            PublicOverheadMessage(
+                MessageType.Regular,
+                0x3B2,
+                false,
+                message
+                );
+            Timer.StartTimer(TimeSpan.FromSeconds(duration), UnBlind);
+        }
+        public void UnBlind()
+        {
+            Blinded = false;
         }
 
         public void InitBossTimer()
@@ -2238,7 +2304,11 @@ namespace Server.Mobiles
         {
             base.Serialize(writer);
 
-            writer.Write(25); // version
+            writer.Write(27); // version
+            // version 27
+            writer.Write(m_Feared);
+            // version 26
+            writer.Write(m_Blinded);
             // version 25
             writer.Write(m_NumberOfMinions); // generate spawner bottle neck fix
             // version 24
@@ -2402,6 +2472,19 @@ namespace Server.Mobiles
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+            if (version >= 27) {
+                m_Feared = reader.ReadBool();
+                if (m_Feared) {
+                    Timer.StartTimer(TimeSpan.FromSeconds(Utility.Random(10)), UnFear);
+                }
+            }
+            if (version >= 26) 
+            {
+                m_Blinded = reader.ReadBool();
+                if (m_Blinded) {
+                    Timer.StartTimer(TimeSpan.FromSeconds(Utility.Random(10)), UnBlind);
+                }
+            }
             if (version >= 25)
             {
                 m_NumberOfMinions = reader.ReadInt();
@@ -4724,7 +4807,7 @@ namespace Server.Mobiles
         public void Provoke(Mobile master, Mobile target, bool bSuccess)
         {
             BardProvoked = true;
-            double seconds = 40.0;
+            double seconds = (double)Utility.RandomMinMax(15, 40);
             if (!Core.ML)
             {
                 PublicOverheadMessage(MessageType.Emote, EmoteHue, false, "*looks furious*");

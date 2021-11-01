@@ -19,6 +19,10 @@ namespace Server.Talent
             Description = "Chance to summon nearby corpses as undead allies killed by player.";
             ImageID = 154;
         }
+        public override bool HasSkillRequirement(Mobile mobile)
+        {
+            return mobile.Skills[SkillName.Necromancy].Base >= 85;
+        }
         public BaseCreature TransferMobileStats(Mobile target, BaseCreature destination)
         {
             SkillsGumpGroup[] groups = SkillsGumpGroup.Groups.Where(group => group.Name == "Magical" || group.Name == "Combat Ratings" || group.Name == "Lore & Knowledge").ToArray();

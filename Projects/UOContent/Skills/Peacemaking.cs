@@ -176,6 +176,20 @@ namespace Server.SkillHandlers
                             var diff = m_Instrument.GetDifficultyFor(targ) - 10.0;
                             var music = from.Skills.Musicianship.Value;
 
+                            if (from is PlayerMobile player)
+                            {
+                                BaseTalent resonance = player.GetTalent(typeof(Resonance));
+                                if (resonance != null)
+                                {
+                                    resonance.CheckHitEffect(player, bc, 0);
+                                }
+                                BaseTalent sonicAffinity = player.GetTalent(typeof(SonicAffinity));
+                                if (sonicAffinity != null)
+                                {
+                                    diff -= sonicAffinity.ModifySpellScalar();
+                                }
+                            }
+
                             if (music > 100.0)
                             {
                                 diff -= (music - 100.0) * 0.5;
@@ -209,19 +223,6 @@ namespace Server.SkillHandlers
                                     else if (seconds < 10)
                                     {
                                         seconds = 10;
-                                    }
-                                    if (from is PlayerMobile player)
-                                    {
-                                        BaseTalent resonance = player.GetTalent(typeof(Resonance));
-                                        if (resonance != null)
-                                        {
-                                            resonance.CheckHitEffect(player, bc, 0);
-                                        }
-                                        BaseTalent sonicAffinity = player.GetTalent(typeof(SonicAffinity));
-                                        if (sonicAffinity != null)
-                                        {
-                                            seconds += sonicAffinity.ModifySpellMultiplier();
-                                        }
                                     }
                                     bc.Pacify(from, Core.Now + TimeSpan.FromSeconds(seconds));
                                 }

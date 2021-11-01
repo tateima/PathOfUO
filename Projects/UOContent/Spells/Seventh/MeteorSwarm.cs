@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Server.Targeting;
+using Server.Mobiles;
+using Server.Talent;
 
 namespace Server.Spells.Seventh
 {
@@ -82,6 +84,18 @@ namespace Server.Spells.Seventh
                 double damage = Core.AOS
                     ? GetNewAosDamage(51, 1, 5, playerVsPlayer)
                     : Utility.Random(27, 22);
+                int fire = 100;
+                int cold = 0;
+                int hue = 0;
+                BaseTalent frostFire = null;
+                if (Caster is PlayerMobile playerCaster) {
+                    BaseTalent fireAffinity = playerCaster.GetTalent(typeof(FireAffinity));
+                    if (fireAffinity != null)
+                    {
+                        damage += (double)fireAffinity.ModifySpellMultiplier();
+                    }
+                    frostFire = playerCaster.GetTalent(typeof(FrostFire));
+                }
 
                 if (targets.Count > 0)
                 {
@@ -111,9 +125,11 @@ namespace Server.Spells.Seventh
 
                         toDeal *= GetDamageScalar(m);
                         Caster.DoHarmful(m);
-                        SpellHelper.Damage(this, m, toDeal, 0, 100, 0, 0, 0);
-
-                        Caster.MovingParticles(m, 0x36D4, 7, 0, false, true, 9501, 1, 0, 0x100);
+                        if (frostFire != null && fire > 0) {
+                            ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, m, ref hue);
+                        }
+                        SpellHelper.Damage(this, m, toDeal, 0, fire, cold, 0, 0);
+                        Caster.MovingParticles(m, 0x36D4, 7, 0, false, true, hue, 0, 9501, 1, 0, 0x100);
                     }
                 }
             }

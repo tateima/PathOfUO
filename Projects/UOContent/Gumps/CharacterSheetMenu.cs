@@ -161,7 +161,7 @@ namespace Server.Gumps
             }
         }
 
-        public bool IsRangerSkill(SkillName skillToCheck)
+        public static bool IsRangerSkill(SkillName skillToCheck)
         {
             bool isRangerSkill = false;
             SkillName[] rangerGroup = new[]
@@ -181,7 +181,7 @@ namespace Server.Gumps
             return isRangerSkill;
         }
 
-        public bool IsCraftingSkill(SkillName skillToCheck)
+        public static bool IsCraftingSkill(SkillName skillToCheck)
         {
             bool isCraftingSkill = false;
             SkillsGumpGroup craftingGroup = SkillsGumpGroup.Groups.Where(group => group.Name == "Crafting").FirstOrDefault();

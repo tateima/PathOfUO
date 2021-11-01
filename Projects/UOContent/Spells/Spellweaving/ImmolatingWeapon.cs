@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Server.Items;
+using Server.Mobiles;
+using Server.Talent;
 
 namespace Server.Spells.Spellweaving
 {
@@ -86,7 +88,17 @@ namespace Server.Spells.Spellweaving
 
         private static void FinishEffect(Mobile target, ImmolatingWeaponTimer timer)
         {
-            AOS.Damage(target, timer._caster, timer._damage, 0, 100, 0, 0, 0);
+            int fire = 100;
+            int cold = 0;
+            int hue = 0;
+            int damage = timer._damage;
+            if (timer._caster is PlayerMobile playerCaster) {
+                BaseTalent frostFire = playerCaster.GetTalent(typeof(FrostFire));
+                if (frostFire != null && fire > 0) {
+                    ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, target, ref hue);
+                }
+            }
+            AOS.Damage(target, timer._caster, timer._damage, 0, fire, cold, 0, 0);
         }
 
         public static void StopImmolating(BaseWeapon weapon)

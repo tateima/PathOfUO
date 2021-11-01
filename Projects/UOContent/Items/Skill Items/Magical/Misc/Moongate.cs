@@ -81,13 +81,17 @@ namespace Server.Items
 
         public virtual void OnGateUsed(Mobile m)
         {
+            PlanarTravel.NextPlanarTravel(m);
         }
 
         public virtual void UseGate(Mobile m)
         {
             var flags = m.NetState?.Flags ?? ClientFlags.None;
 
-            if (Sigil.ExistsOn(m))
+            if (!PlanarTravel.CanPlanarTravel(m)) {
+                m.LocalOverheadMessage(MessageType.Regular, 0x22, false, PlanarTravel.NO_TRAVEL_MESSAGE);
+            }
+            else if (Sigil.ExistsOn(m))
             {
                 m.SendLocalizedMessage(1061632); // You can't do that while carrying the sigil.
             }

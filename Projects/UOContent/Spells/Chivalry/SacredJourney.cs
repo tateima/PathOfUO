@@ -3,6 +3,7 @@ using Server.Factions;
 using Server.Items;
 using Server.Misc;
 using Server.Mobiles;
+using Server.Network;
 
 namespace Server.Spells.Chivalry
 {
@@ -37,7 +38,10 @@ namespace Server.Spells.Chivalry
 
         public void Effect(Point3D loc, Map map, bool checkMulti)
         {
-            if (Sigil.ExistsOn(Caster))
+            if (!PlanarTravel.CanPlanarTravel(Caster)) {
+                Caster.LocalOverheadMessage(MessageType.Regular, 0x22, false, PlanarTravel.NO_TRAVEL_MESSAGE);
+            } 
+            else if (Sigil.ExistsOn(Caster))
             {
                 Caster.SendLocalizedMessage(1061632); // You can't do that while carrying the sigil.
             }
@@ -99,6 +103,8 @@ namespace Server.Spells.Chivalry
                     0,
                     5033
                 );
+
+                PlanarTravel.NextPlanarTravel(Caster);
 
                 Caster.PlaySound(0x1FC);
                 Caster.MoveToWorld(loc, map);

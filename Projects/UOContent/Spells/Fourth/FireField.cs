@@ -79,6 +79,9 @@ namespace Server.Spells.Fourth
             private int m_Damage;
             private DateTime m_End;
             private Timer m_Timer;
+            private int m_Fire;
+            private int m_Cold;
+            private int m_Hue;
 
             public FireFieldItem(
                 int itemID, Point3D loc, Mobile caster, Map map, TimeSpan duration, int val,
@@ -94,7 +97,9 @@ namespace Server.Spells.Fourth
                 MoveToWorld(loc, map);
 
                 m_Caster = caster;
-
+                m_Fire = 100;
+                m_Cold = 0;
+                m_Hue = 0;
                 if (caster is PlayerMobile player)
                 {
                     BaseTalent fireAffinity = player.GetTalent(typeof(FireAffinity));
@@ -102,12 +107,15 @@ namespace Server.Spells.Fourth
                     {
                         damage += fireAffinity.ModifySpellMultiplier();
                     }
+                    BaseTalent frostFire = player.GetTalent(typeof(FrostFire));
+                    if (frostFire != null) {
+                        ((FrostFire)frostFire).ModifyFireSpell(ref m_Fire, ref m_Cold, null, ref m_Hue);
+                    }
                 }
                 m_Damage = damage;
 
                 m_End = Core.Now + duration;
-
-                m_Timer = new InternalTimer(this, TimeSpan.FromSeconds(val.Abs() * 0.2), caster.InLOS(this), canFit);
+                m_Timer = new InternalTimer(this, TimeSpan.FromSeconds(val.Abs() * 0.2), caster.InLOS(this), canFit, m_Hue, m_Fire, m_Cold);
                 m_Timer.Start();
             }
 
@@ -128,8 +136,10 @@ namespace Server.Spells.Fourth
             {
                 base.Serialize(writer);
 
-                writer.Write(2); // version
-
+                writer.Write(3); // version
+                writer.Write(m_Hue);
+                writer.Write(m_Fire);
+                writer.Write(m_Cold);
                 writer.Write(m_Damage);
                 writer.Write(m_Caster);
                 writer.WriteDeltaTime(m_End);
@@ -140,11 +150,21 @@ namespace Server.Spells.Fourth
                 base.Deserialize(reader);
 
                 var version = reader.ReadInt();
+                m_Hue = 0;
+                m_Fire = 100;
+                m_Cold = 0;
 
                 switch (version)
                 {
-                    case 2:
+                    case 3:
                         {
+                            m_Hue = reader.ReadInt();
+                            m_Fire = reader.ReadInt();
+                            m_Cold = reader.ReadInt();
+                            goto case 2;
+                        }
+                    case 2:
+                        { 
                             m_Damage = reader.ReadInt();
                             goto case 1;
                         }
@@ -158,7 +178,7 @@ namespace Server.Spells.Fourth
                         {
                             m_End = reader.ReadDeltaTime();
 
-                            m_Timer = new InternalTimer(this, TimeSpan.Zero, true, true);
+                            m_Timer = new InternalTimer(this, TimeSpan.Zero, true, true, m_Hue, m_Fire, m_Cold);
                             m_Timer.Start();
 
                             break;
@@ -191,8 +211,17 @@ namespace Server.Spells.Fourth
 
                         m.SendLocalizedMessage(501783); // You feel yourself resisting magical energy.
                     }
-
-                    AOS.Damage(m, m_Caster, damage, 0, 100, 0, 0, 0);
+                    if (m_Cold > 0)
+                    {
+                        if (m is BaseCreature creature)
+                        {
+                            creature.ActiveSpeed /= 2;
+                        } else if (m is PlayerMobile player)
+                        {
+                            player.Slow(Utility.Random(6));
+                        }
+                    }
+                    AOS.Damage(m, m_Caster, damage, 0, m_Fire, m_Cold, 0, 0);
                     m.PlaySound(0x208);
 
                     (m as BaseCreature)?.OnHarmfulSpell(m_Caster);
@@ -207,11 +236,18 @@ namespace Server.Spells.Fourth
                 private readonly bool m_InLOS;
                 private readonly FireFieldItem m_Item;
 
-                public InternalTimer(FireFieldItem item, TimeSpan delay, bool inLOS, bool canFit) : base(delay, TimeSpan.FromSeconds(1.0))
+                private readonly int m_Hue;
+                private readonly int m_Fire;
+                private readonly int m_Cold;
+
+                public InternalTimer(FireFieldItem item, TimeSpan delay, bool inLOS, bool canFit, int hue, int fire, int cold) : base(delay, TimeSpan.FromSeconds(1.0))
                 {
                     m_Item = item;
                     m_InLOS = inLOS;
                     m_CanFit = canFit;
+                    m_Hue = hue;
+                    m_Fire = fire;
+                    m_Cold = cold;
                 }
 
                 protected override void OnTick()
@@ -240,7 +276,10 @@ namespace Server.Spells.Fourth
                                 0x376A,
                                 9,
                                 10,
-                                5029
+                                m_Hue,
+                                0,
+                                5029,
+                                0
                             );
                         }
                     }
@@ -293,7 +332,7 @@ namespace Server.Spells.Fourth
                                 m.SendLocalizedMessage(501783); // You feel yourself resisting magical energy.
                             }
 
-                            AOS.Damage(m, caster, damage, 0, 100, 0, 0, 0);
+                            AOS.Damage(m, caster, damage, 0, m_Fire, m_Cold, 0, 0);
                             m.PlaySound(0x208);
 
                             (m as BaseCreature)?.OnHarmfulSpell(caster);

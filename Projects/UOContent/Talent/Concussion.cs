@@ -38,7 +38,7 @@ namespace Server.Talent
                 OnCooldown = true;
                 target.FixedParticles(0x3779, 10, 15, 5004, EffectLayer.Head);
                 target.PlaySound(0x1E4);
-                target.AddStatMod(new StatMod(StatType.Int, "ConcussionTalent", AOS.Scale(target.RawInt, 50 + (Level * 2)), TimeSpan.FromSeconds(20)));
+                target.AddStatMod(new StatMod(StatType.Int, "ConcussionTalent", -AOS.Scale(target.RawInt, 50 + (Level * 2)), TimeSpan.FromSeconds(20)));
                 Timer.StartTimer(TimeSpan.FromSeconds(60), ExpireTalentCooldown, out _talentTimerToken);
             }
         }

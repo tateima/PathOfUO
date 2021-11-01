@@ -8,11 +8,13 @@ using Server.Mobiles;
 using Server.Network;
 using Server.Spells.Bushido;
 using Server.Spells.Fourth;
+using Server.Spells.Fifth;
 using Server.Spells.Necromancy;
 using Server.Spells.Ninjitsu;
 using Server.Spells.Second;
 using Server.Spells.Seventh;
 using Server.Spells.Sixth;
+using Server.Spells.Eighth;
 using Server.Spells.Spellweaving;
 using Server.Targeting;
 using Server.Talent;
@@ -109,7 +111,7 @@ namespace Server.Spells
             if (Caster.Player && IsCasting)
             {
                 var hasProtection = ProtectionSpell.Registry.TryGetValue(Caster, out var d);
-                if (!hasProtection || d < 1000 && d < Utility.Random(1000))
+                if (!AvoidSpellDisruption() && (!hasProtection || d < 1000 && d < Utility.Random(1000)))
                 {
                     Disturb(DisturbType.Hurt, false, true);
                 }
@@ -551,7 +553,9 @@ namespace Server.Spells
             {
                 return false;
             }
-
+            if ((Caster as PlayerMobile)?.Feared == true) {
+                Caster.SendMessage("You cannot cast while feared.");
+            }
             if ((Scroll is BaseWand || Scroll is BaseDevice) && Caster.Spell?.IsCasting == true)
             {
                 Caster.SendLocalizedMessage(502643); // You can not cast a spell while frozen.
@@ -785,6 +789,20 @@ namespace Server.Spells
             return Utility.Max(CastDelayBase + fcDelay, CastDelayMinimum);
         }
 
+        public bool AvoidSpellDisruption()
+        {
+            int chance = 0;
+            if (Caster is PlayerMobile player)
+            {
+                BaseTalent warMagicFocus = player.GetTalent(typeof(WarMagicFocus));
+                if (warMagicFocus != null)
+                {
+                    chance += warMagicFocus.ModifySpellMultiplier();
+
+                }
+            }
+            return Utility.Random(100) < chance;
+        }
         public virtual int ComputeKarmaAward() => 0;
 
         public virtual bool CheckSequence()
@@ -799,13 +817,10 @@ namespace Server.Spells
                          (baseWand.Charges <= 0 || baseWand.Parent != Caster)))
             {
                 DoFizzle();
-            } else if (RequiresReagents)
+            } else if (RequiresReagents && !ConsumeReagents())
             {
-                if (!ConsumeReagents())
-                {
-                    Caster.LocalOverheadMessage(MessageType.Regular, 0x22, 502630); // More reagents are needed for this spell.
-                    return false;
-                }
+                Caster.LocalOverheadMessage(MessageType.Regular, 0x22, 502630); // More reagents are needed for this spell.
+                return false;
             }
             else if (Caster.Mana < mana)
             {

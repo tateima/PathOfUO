@@ -13,6 +13,7 @@ namespace Server.Talent
             DisplayName = "Arachnid hunter";
             Description = "Increases damage to arachnids and heals damage from them.";
             ImageID = 149;
+            AddEndY = 100;
         }
         public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
         {

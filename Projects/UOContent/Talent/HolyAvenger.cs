@@ -15,6 +15,7 @@ namespace Server.Talent
             DisplayName = "Holy avenger";
             Description = "Increased damage to holy spells, adds reflective and area of affect damage in combat. Requires 75+ chivalry.";
             ImageID = 293;
+            AddEndY = 120;
         }
         public override bool HasSkillRequirement(Mobile mobile)
         {

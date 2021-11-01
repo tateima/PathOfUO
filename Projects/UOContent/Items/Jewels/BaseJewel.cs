@@ -23,6 +23,7 @@ namespace Server.Items
         private int m_HitPoints;
         private int m_MaxHitPoints;
         private CraftResource m_Resource;
+        private Mobile m_Crafter;
 
         public BaseJewel(int itemID, Layer layer) : base(itemID)
         {
@@ -77,13 +78,24 @@ namespace Server.Items
         }
 
         [CommandProperty(AccessLevel.GameMaster, canModify: true)]
-        public AosAttributes Attributes { get; private set; }
+        public AosAttributes Attributes { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster, canModify: true)]
-        public AosElementAttributes Resistances { get; private set; }
+        public AosElementAttributes Resistances { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster, canModify: true)]
-        public AosSkillBonuses SkillBonuses { get; private set; }
+        public AosSkillBonuses SkillBonuses { get; set; }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public Mobile Crafter
+        {
+            get => m_Crafter;
+            set
+            {
+                m_Crafter = value;
+                InvalidateProperties();
+            }
+        }
 
         [CommandProperty(AccessLevel.GameMaster)]
         public CraftResource Resource
@@ -137,6 +149,11 @@ namespace Server.Items
             CraftItem craftItem, int resHue
         )
         {
+            if (makersMark)
+            {
+                Crafter = from;
+            }
+
             var resourceType = typeRes ?? craftItem.Resources[0].ItemType;
 
             Resource = CraftResources.GetFromType(resourceType);
@@ -400,8 +417,9 @@ namespace Server.Items
         {
             base.Serialize(writer);
 
-            writer.Write(3); // version
-
+            writer.Write(4); // version
+            
+            writer.Write(m_Crafter);
             writer.WriteEncodedInt(m_MaxHitPoints);
             writer.WriteEncodedInt(m_HitPoints);
 
@@ -421,6 +439,11 @@ namespace Server.Items
 
             switch (version)
             {
+                case 4:
+                    {
+                        m_Crafter = reader.ReadEntity<Mobile>();
+                        goto case 3;
+                    }
                 case 3:
                     {
                         m_MaxHitPoints = reader.ReadEncodedInt();

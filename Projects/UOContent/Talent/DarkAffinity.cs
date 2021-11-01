@@ -23,6 +23,12 @@ namespace Server.Talent
             AddEndY = 80;
         }
 
+        
+        public override bool HasSkillRequirement(Mobile mobile)
+        {
+            return mobile.Skills[SkillName.Necromancy].Base >= 50;
+        }
+
         public override double ModifySpellScalar()
         {
             return (Level / 100);

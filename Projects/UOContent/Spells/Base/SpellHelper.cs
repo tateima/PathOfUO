@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Server.Engines.CannedEvil;
 using Server.Engines.ConPVP;
 using Server.Engines.PartySystem;
@@ -1012,7 +1013,6 @@ namespace Server.Spells
                 c.OnDamagedBySpell(from);
             }
         }
-
         public static void Damage(
             Spell spell, Mobile target, double damage, int phys, int fire, int cold, int pois,
             int nrgy, int chaos = 0, DFAlgorithm dfa = DFAlgorithm.Standard

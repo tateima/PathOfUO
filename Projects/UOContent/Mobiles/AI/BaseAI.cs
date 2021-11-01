@@ -102,7 +102,19 @@ namespace Server.Mobiles
         private long m_NextDetectHidden;
         private long m_NextStopGuard;
 
-        protected PathFollower m_Path;
+        private PathFollower m_Path;
+
+        public PathFollower Path {
+            get {
+                return m_Path;
+            } set {
+                m_Path = value;
+                if (m_Path != null) {
+                    m_Path.CheckPath();
+                }
+            }
+        }
+        
         public Timer m_Timer;
 
         public BaseAI(BaseCreature m)

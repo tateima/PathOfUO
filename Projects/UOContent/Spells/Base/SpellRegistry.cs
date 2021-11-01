@@ -141,9 +141,10 @@ namespace Server.Spells
                 {
                     return t.CreateInstance<Spell>(m_Params);
                 }
-                catch
+                catch(Exception exception)
                 {
                     // ignored
+                    string message = exception.Message;
                 }
             }
 

@@ -11,7 +11,7 @@ namespace Server.Talent
             Description = "Increases effectiveness of provocation, peacemaking and discordance.";
             ImageID = 163;
             GumpHeight = 85;
-            AddEndY = 80;
+            AddEndY = 70;
         }
 
         public override int ModifySpellMultiplier()

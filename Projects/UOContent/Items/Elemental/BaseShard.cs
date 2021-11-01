@@ -1,6 +1,7 @@
 using System;
 using Server;
 using Server.Mobiles;
+using Server.Talent;
 using Server.Targeting;
 
 namespace Server.Items
@@ -46,7 +47,15 @@ namespace Server.Items
         {
             if (IsChildOf(from.Backpack))
             {
-                from.Target = new ShardTarget(from, this);
+                if (from is PlayerMobile player) {
+                    BaseTalent meld = player.GetTalent(typeof(Meld));
+                    if (meld != null) {
+                        from.SendMessage("What would you like to meld this elemental shard with?");
+                        from.Target = new ShardTarget(from, this);
+                    } else {
+                        from.SendMessage("You do not have the necessary talent to meld this elemental shard.");
+                    }
+                }
             }
             else
             {
@@ -98,15 +107,23 @@ namespace Server.Items
                             {
                                 m_BaseShard.AddElementalProperties(from, weapon);
                                 weapon.InvalidateProperties();
-                            } else
+                            } 
+                            else
                             {
                                 from.SendLocalizedMessage(1061201); //You cannot imbue the properties of this shard with this item
                             }
                             
                         } else if (item is BaseArmor armor)
                         {
-                            m_BaseShard.AddElementalProperties(from, armor);
-                            armor.InvalidateProperties();
+                            if (armor.ShardPower < 15) {
+                                m_BaseShard.AddElementalProperties(from, armor);
+                                armor.InvalidateProperties();
+                            } 
+                            else 
+                            {
+                                from.SendLocalizedMessage(1061201); //You cannot imbue the properties of this shard with this item
+                            }
+                            
                         }
                     }
                     else

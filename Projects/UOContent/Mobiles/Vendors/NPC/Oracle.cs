@@ -32,6 +32,44 @@ namespace Server.Mobiles
 
         public override bool HandlesOnSpeech(Mobile from) => true;
 
+        public void TryReset(ref SpeechEventArgs e, PlayerMobile player, string type, bool skipConsume = false) {
+            e.Handled = true;
+            Container bank = player.FindBankNoCreate();
+            int requiredGold = player.SkillResets * 20000;
+            int remaining = 5;
+            if (string.Equals("talent", type)) {
+                requiredGold = player.TalentResets * 10000;
+                remaining -= player.TalentResets;
+            } else {
+                remaining -= player.SkillResets;
+            }
+            if (remaining > 0) {
+                if (skipConsume) {
+                    requiredGold = 0;
+                }
+                if (player.Backpack?.ConsumeTotal(typeof(Gold), requiredGold) == true || Banker.Withdraw(player, requiredGold))
+                {
+                    if (type == "talent") {
+                        player.ResetTalents();
+                        player.TalentResets++;
+                    } else if (type == "skill") {
+                        player.ResetSkills();
+                        player.SkillResets++;
+                    }
+                    remaining--;   
+                    player.FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
+                    PlaySound(0x202);
+                    SayTo(player, string.Format("I have reset thy {0}s, you have {1} resets remaining", type, remaining.ToString()));
+                }
+                else
+                {
+                    SayTo(player, string.Format("Thou needs {0} gold to reset thy {1}s.", requiredGold.ToString(), type)); 
+                }
+            } else {
+                  SayTo(player, "You have reached the allowed limit of five {0} resets", type);
+            }
+            
+        }
         public override void OnSpeech(SpeechEventArgs e)
         {
             if (Deleted || !e.Mobile.CheckAlive())
@@ -44,40 +82,11 @@ namespace Server.Mobiles
                 string speech = e.Speech.ToLower();
                 PlayerMobile player = (PlayerMobile)e.Mobile;
 
-                if (!e.Handled && speech == "reset talents")
-                {
-                    e.Handled = true;
-                    bool canReset = false;
-                    if (player.TalentResets == 0)
-                    {
-                        canReset = true;
-                        SayTo(player, "I shall do this free of charge as it is your first reset");
-                    } else if (player.TalentResets < 5)
-                    {
-                        // 10k gold for each reset
-                        int requiredGold = player.TalentResets * 10000;
-                        Container bank = player.FindBankNoCreate();
-                        if (player.Backpack?.ConsumeTotal(typeof(Gold), requiredGold) == true || Banker.Withdraw(player, requiredGold))
-                        {
-                            canReset = true;
-                        }
-                        else
-                        {
-                            SayTo(player, 1042556); // Thou dost not have enough gold, not even in thy bank account.
-                        }
-                    } else
-                    {
-                        SayTo(player, "You have reached the allowed limit of five talent resets");
-                    }
-
-                    if (canReset)
-                    {
-                        player.ResetTalents();
-                        SendMessage("Your talents have been reset");
-                        player.FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
-                        PlaySound(0x202);
-                        int remaining = 5 - player.TalentResets;
-                        SayTo(player, "I have reset thy talents, you have " + remaining.ToString() + " resets left");
+                if (!e.Handled) {
+                    if (speech == "reset talents") {
+                        TryReset(ref e, player, "talent", player.TalentResets == 0);
+                    } else if (speech == "reset skills") {
+                        TryReset(ref e, player, "skill");
                     }
                 }
                 else

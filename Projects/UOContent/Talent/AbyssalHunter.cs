@@ -12,6 +12,7 @@ namespace Server.Talent
             DisplayName = "Abyssal hunter";
             Description = "Increases damage to abyssals and heals damage from them.";
             ImageID = 297;
+            AddEndY = 90;
         }
 
         public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)

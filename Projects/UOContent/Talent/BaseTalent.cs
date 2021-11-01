@@ -14,6 +14,13 @@ namespace Server.Talent
 
         public TimerExecutionToken _talentTimerToken;
 
+        private bool m_UpdateOnEquip;
+        public bool UpdateOnEquip
+        {
+            get { return m_UpdateOnEquip; }
+            set { m_UpdateOnEquip = value; }
+        }
+
         private bool m_HasBeforeDeathSave;
         public bool HasBeforeDeathSave
         {
@@ -166,17 +173,22 @@ namespace Server.Talent
             typeof(ViperAspect),
             typeof(VenomBlood),
             typeof(WyvernAspect),
+            typeof(GreaterPoisonElemental),
             typeof(FireAffinity),
             typeof(DragonAspect),
+            typeof(Warmth),
             typeof(GreaterFireElemental),
             typeof(DarkAffinity),
             typeof(SummonerCommand),
+            typeof(SpectralScream),
             typeof(MasterOfDeath),
             typeof(LightAffinity),
             typeof(GuardianLight),
             typeof(HolyAvenger),
+            typeof(HolyBolt),
             typeof(SonicAffinity),
             typeof(Resonance),
+            typeof(MassConfusion),
             typeof(DominateCreature),
             typeof(NatureAffinity),
             typeof(RangerCommand),
@@ -190,6 +202,7 @@ namespace Server.Talent
             typeof(PainManagement),
             typeof(DivineDexterity),
             typeof(KeenEye),
+            typeof(TrueSighted),
             typeof(KeenSenses),
             typeof(EscapeDeath),
             typeof(HandFinesse),
@@ -197,7 +210,7 @@ namespace Server.Talent
             typeof(FastLearner),
             typeof(ManaShield),
             typeof(PlanarShift),
-            typeof(SpellStrike),
+            typeof(WarMagicFocus),
             typeof(SpellMind),
             typeof(DryThunderstorm),
             typeof(SwordsmanshipFocus),
@@ -212,17 +225,26 @@ namespace Server.Talent
             typeof(FencingSpecialist),
             typeof(BackStab),
             typeof(Riposte),
+            typeof(Fearless),
             typeof(MacefightingFocus),
             typeof(MageCombatant),
             typeof(MaceSpecialist),
+            typeof(MountedCombat),
             typeof(Concussion),
             typeof(TwoHandedMaceSpecialist),
             typeof(GroundSlam),
             typeof(ShieldFocus),
             typeof(ShieldBash),
             typeof(Phalanx),
+            typeof(ClothWarmaster),
+            typeof(LeatherWarmaster),
+            typeof(BoneWarmaster),
+            typeof(ChainWarmaster),
+            typeof(PlateWarmaster),
+            typeof(DragonWarmaster),
             typeof(SpellWard),
             typeof(ArcherFocus),
+            typeof(BlindingShot),
             typeof(ChemicalWarfare),
             typeof(Disengage),
             typeof(CrossbowSpecialist),
@@ -264,6 +286,11 @@ namespace Server.Talent
             typeof(Inventive),
             typeof(BugFixer),
             typeof(Automaton),
+            typeof(Disenchant),
+            typeof(Enchant),
+            typeof(Meld),
+            typeof(UnMeld),
+            typeof(AstralBorn)
         };
 
         public int Level
@@ -287,6 +314,7 @@ namespace Server.Talent
             m_HasDefenseEffect = false;
             m_HasDeathEffect = false;
             m_HasKillEffect = false;
+            m_UpdateOnEquip = false;
             m_HasBeforeDeathSave = false;
             m_MobilePercentagePerPoint = 3;
             m_BlockTalents = new Type[] { };

@@ -47,11 +47,15 @@ namespace Server.Talent
 
                     if (Core.AOS)
                     {
-                        SpellHelper.Summon((BaseCreature)ScaleMobile(new SummonedFireElemental()), summoner, 0x217, TimeSpan.FromMinutes(2), false, false);
+                        BaseCreature creature = (BaseCreature)ScaleMobile(new SummonedFireElemental());
+                        creature.Name = "a greater fire lord";
+                        SpellHelper.Summon(creature, summoner, 0x217, TimeSpan.FromMinutes(2), false, false);
                     }
                     else
                     {
-                        SpellHelper.Summon((BaseCreature)ScaleMobile(new FireElemental()), summoner, 0x217, TimeSpan.FromMinutes(2), false, false);
+                        BaseCreature creature = (BaseCreature)ScaleMobile(new FireElemental());
+                        creature.Name = "a greater fire lord";
+                        SpellHelper.Summon(creature, summoner, 0x217, TimeSpan.FromMinutes(2), false, false);
                     }
                     Timer.StartTimer(TimeSpan.FromMinutes(5), ExpireTalentCooldown, out _talentTimerToken);
                     OnCooldown = true;
