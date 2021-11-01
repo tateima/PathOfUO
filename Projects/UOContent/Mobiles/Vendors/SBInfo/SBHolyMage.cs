@@ -24,7 +24,7 @@ namespace Server.Mobiles
                 Add(new GenericBuyInfo(typeof(LesserHealPotion), 15, 20, 0xF0C, 0));
                 Add(new GenericBuyInfo(typeof(StrengthPotion), 15, 20, 0xF09, 0));
                 Add(new GenericBuyInfo(typeof(LesserCurePotion), 15, 20, 0xF07, 0));
-
+                Add(new GenericBuyInfo(typeof(RecallRune), 15, 10, 0x1f14, 0));
                 Add(new GenericBuyInfo(typeof(BlackPearl), 5, 20, 0xF7A, 0));
                 Add(new GenericBuyInfo(typeof(Bloodmoss), 5, 20, 0xF7B, 0));
                 Add(new GenericBuyInfo(typeof(Garlic), 3, 20, 0xF84, 0));
@@ -68,7 +68,7 @@ namespace Server.Mobiles
                 Add(typeof(SulfurousAsh), 2);
                 Add(typeof(Spellbook), 9);
                 Add(typeof(BlankScroll), 3);
-
+                Add(typeof(RecallRune), 8);
                 Add(typeof(NightSightPotion), 7);
                 Add(typeof(AgilityPotion), 7);
                 Add(typeof(StrengthPotion), 7);

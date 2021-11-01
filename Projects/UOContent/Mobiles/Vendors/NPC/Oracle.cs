@@ -51,10 +51,8 @@ namespace Server.Mobiles
                 {
                     if (type == "talent") {
                         player.ResetTalents();
-                        player.TalentResets++;
                     } else if (type == "skill") {
                         player.ResetSkills();
-                        player.SkillResets++;
                     }
                     remaining--;   
                     player.FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);

@@ -34,6 +34,7 @@ namespace Server.Mobiles
                 Add(new GenericBuyInfo(typeof(LesserPoisonPotion), 15, 10, 0xF0A, 0));
                 Add(new GenericBuyInfo(typeof(LesserCurePotion), 15, 10, 0xF07, 0));
                 Add(new GenericBuyInfo(typeof(LesserExplosionPotion), 21, 10, 0xF0D, 0));
+                Add(new GenericBuyInfo(typeof(RecallRune), 15, 10, 0x1f14, 0));
 
                 Add(new GenericBuyInfo(typeof(BlackPearl), 5, 20, 0xF7A, 0));
                 Add(new GenericBuyInfo(typeof(Bloodmoss), 5, 20, 0xF7B, 0));
@@ -88,6 +89,7 @@ namespace Server.Mobiles
                 Add(typeof(Nightshade), 2);
                 Add(typeof(SpidersSilk), 2);
                 Add(typeof(SulfurousAsh), 2);
+                Add(typeof(RecallRune), 8);
 
                 if (Core.AOS)
                 {
