@@ -10,7 +10,7 @@ namespace Server.Spells.Necromancy
 {
     public class SummonFamiliarSpell : NecromancerSpell
     {
-        private static readonly SpellInfo m_Info = new(
+        private static readonly SpellInfo _info = new(
             "Summon Familiar",
             "Kal Xen Bal",
             203,

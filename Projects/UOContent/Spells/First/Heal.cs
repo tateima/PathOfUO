@@ -9,7 +9,7 @@ namespace Server.Spells.First
 {
     public class HealSpell : MagerySpell, ISpellTargetingMobile
     {
-        private static readonly SpellInfo m_Info = new(
+        private static readonly SpellInfo _info = new(
             "Heal",
             "In Mani",
             224,
@@ -19,7 +19,7 @@ namespace Server.Spells.First
             Reagent.SpidersSilk
         );
 
-        public HealSpell(Mobile caster, Item scroll = null) : base(caster, scroll, m_Info)
+        public HealSpell(Mobile caster, Item scroll = null) : base(caster, scroll, _info)
         {
         }
 

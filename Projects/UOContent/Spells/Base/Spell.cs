@@ -467,20 +467,19 @@ namespace Server.Spells
                 return;
             }
 
+            if (!firstCircle && !Core.AOS && (this as MagerySpell)?.Circle == SpellCircle.First)
+            {
+                return;
+            }
+
+            State = SpellState.None;
+            Caster.Spell = null;
+
             if (State == SpellState.Casting)
             {
-                if (!firstCircle && !Core.AOS && this is MagerySpell && ((MagerySpell)this).Circle == SpellCircle.First)
-                {
-                    return;
-                }
-
-                State = SpellState.None;
-                Caster.Spell = null;
-
                 OnDisturb(type, true);
 
                 m_CastTimer?.Stop();
-
                 m_AnimTimer?.Stop();
 
                 if (Core.AOS && Caster.Player && type == DisturbType.Hurt)
@@ -492,14 +491,6 @@ namespace Server.Spells
             }
             else if (State == SpellState.Sequencing)
             {
-                if (!firstCircle && !Core.AOS && this is MagerySpell && ((MagerySpell)this).Circle == SpellCircle.First)
-                {
-                    return;
-                }
-
-                State = SpellState.None;
-                Caster.Spell = null;
-
                 OnDisturb(type, false);
 
                 Target.Cancel(Caster);

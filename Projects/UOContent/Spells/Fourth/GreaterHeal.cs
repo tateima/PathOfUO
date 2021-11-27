@@ -9,7 +9,7 @@ namespace Server.Spells.Fourth
 {
     public class GreaterHealSpell : MagerySpell, ISpellTargetingMobile
     {
-        private static readonly SpellInfo m_Info = new(
+        private static readonly SpellInfo _info = new(
             "Greater Heal",
             "In Vas Mani",
             204,
@@ -20,7 +20,7 @@ namespace Server.Spells.Fourth
             Reagent.SpidersSilk
         );
 
-        public GreaterHealSpell(Mobile caster, Item scroll = null) : base(caster, scroll, m_Info)
+        public GreaterHealSpell(Mobile caster, Item scroll = null) : base(caster, scroll, _info)
         {
         }
 
