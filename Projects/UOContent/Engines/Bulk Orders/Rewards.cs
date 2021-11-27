@@ -1,6 +1,5 @@
 using System;
 using Server.Items;
-
 namespace Server.Engines.BulkOrders
 {
     public delegate Item ConstructCallback(int type);
@@ -69,7 +68,16 @@ namespace Server.Engines.BulkOrders
 
         public int Points { get; }
 
-        public RewardItem[] Items { get; }
+        public RewardItem[] Items { get; set; }
+
+        public void AddItem(RewardItem item) {
+            if (item != null) {
+                RewardItem[] items = Items;
+                Array.Resize(ref items, items.Length + 1);
+                items[items.Length - 1] = item;
+                Items = items;
+            }
+        }
 
         public RewardItem AcquireItem()
         {
@@ -191,6 +199,144 @@ namespace Server.Engines.BulkOrders
             }
 
             return 0;
+        }
+    }
+
+    public sealed class CookingRewardCalculator: RewardCalculator
+    {
+        private static readonly ConstructCallback Dough = CreateDough;
+        private static readonly ConstructCallback SweetDough = CreateSweetDough;
+        private static readonly ConstructCallback JarHoney = CreateJarHoney;
+        private static readonly ConstructCallback BowlFlour = CreateBowlFlour;
+        private static readonly ConstructCallback WoodenBowl = CreateWoodenBowl;
+        private static readonly ConstructCallback SackFlour = CreateSackFlour;
+        private static readonly ConstructCallback Eggshells = CreateEggshells;
+        private static readonly ConstructCallback WheatSheaf = CreateWheatSheaf;
+        private static readonly ConstructCallback IcyHeart = CreateIcyHeart;
+        private static readonly ConstructCallback Gingseng = CreateGingseng;
+        private static readonly ConstructCallback MandrakeRoot = CreateMandrakeRoot;
+        private static readonly ConstructCallback BatWing = CreateBatWing;
+        private static readonly ConstructCallback DaemonBlood = CreateDaemonBlood;
+        private static readonly ConstructCallback SpidersSilk = CreateSpidersSilk;
+        private static readonly ConstructCallback EnchanterDust = CreateEnchanterDust;
+        private static readonly ConstructCallback RawFishSteak = CreateRawFishSteak;
+        private static readonly ConstructCallback CocoaPulp = CreateCocoaPulp;
+        private static readonly ConstructCallback WoodenBowlOfPeas = CreateWoodenBowlOfPeas;
+        private static readonly ConstructCallback GreenTeaBasket = CreateGreenTeaBasket;
+        private static readonly ConstructCallback TribalBerry = CreateTribalBerry;
+        private static readonly ConstructCallback SackOfSugar = CreateSackOfSugar;
+        private static readonly ConstructCallback Vanilla = CreateVanilla;
+
+        public static readonly CookingRewardCalculator Instance = new();
+        private static readonly int[][][] m_GoldTable =
+        {
+            new[] // 1-part (regular)
+            {
+                new[] { 150, 250, 500 }
+            }
+        };
+        private static Item CreateDough(int type) => new Dough();
+        private static Item CreateSweetDough(int type) => new SweetDough();
+        private static Item CreateJarHoney(int type) => new JarHoney();
+        private static Item CreateBowlFlour(int type) => new BowlFlour();
+        private static Item CreateWoodenBowl(int type) => new WoodenBowl();
+        private static Item CreateSackFlour(int type) => new SackFlour();
+        private static Item CreateEggshells(int type) => new Eggshells();
+        private static Item CreateWheatSheaf(int type) => new WheatSheaf();
+        private static Item CreateIcyHeart(int type) => new IcyHeart();
+        private static Item CreateGingseng(int type) => new Ginseng();
+        private static Item CreateMandrakeRoot(int type) => new MandrakeRoot();
+        private static Item CreateBatWing(int type) => new BatWing();
+        private static Item CreateDaemonBlood(int type) => new DaemonBlood();
+        private static Item CreateSpidersSilk(int type) => new SpidersSilk();
+        private static Item CreateEnchanterDust(int type) => new EnchanterDust();
+        
+        private static Item CreateRawFishSteak(int type) => new RawFishSteak();
+        private static Item CreateCocoaPulp(int type) => new CocoaPulp();
+        private static Item CreateWoodenBowlOfPeas(int type) => new WoodenBowlOfPeas();
+        private static Item CreateGreenTeaBasket(int type) => new GreenTeaBasket();
+        private static Item CreateTribalBerry(int type) => new TribalBerry();
+        private static Item CreateSackOfSugar(int type) => new SackOfSugar();
+        private static Item CreateVanilla(int type) => new Vanilla();        
+        
+        public override int ComputePoints(
+            int quantity, bool exceptional, BulkMaterialType material, int itemCount,
+            Type type
+        )
+        {
+            var points = 0;
+
+            if (quantity == 10)
+            {
+                points += 10;
+            }
+            else if (quantity == 15)
+            {
+                points += 25;
+            }
+            else if (quantity == 20)
+            {
+                points += 50;
+            }
+
+            return points;
+        }
+        public override int ComputeGold(int quantity, bool exceptional, BulkMaterialType material, int itemCount, Type type)
+        {
+            var goldTable = m_GoldTable;
+            var quanIndex = quantity switch
+            {
+                20 => 2,
+                15 => 1,
+                _  => 0
+            };
+
+            var gold = goldTable[0][0][quanIndex];
+
+            var min = gold * 9 / 10;
+            var max = gold * 10 / 9;
+
+            return Utility.RandomMinMax(min, max);
+        }
+        public CookingRewardCalculator() {
+            Groups = new[]
+            {
+                new RewardGroup(0, 
+                    new RewardItem(1, CreateDough),
+                    new RewardItem(1, CreateJarHoney),
+                    new RewardItem(1, CreateSweetDough),
+                    new RewardItem(1, RawFishSteak)
+                    ),
+                new RewardGroup(25, 
+                    new RewardItem(1, TribalBerry),
+                    new RewardItem(1, CreateBowlFlour),
+                    new RewardItem(1, CreateWoodenBowl),
+                    new RewardItem(1, CreateSackFlour),
+                    new RewardItem(1, CreateEggshells),
+                    new RewardItem(1, CreateWheatSheaf)
+                    ),
+                new RewardGroup(
+                    50,
+                    new RewardItem(1, CreateIcyHeart),
+                    new RewardItem(1, CreateGingseng),
+                    new RewardItem(1, CreateMandrakeRoot),
+                    new RewardItem(1, CreateBatWing),
+                    new RewardItem(1, CreateDaemonBlood),
+                    new RewardItem(1, CreateSpidersSilk),
+                    new RewardItem(1, CreateEnchanterDust)
+                )
+            };
+             if (Core.ML) {
+               Groups[1].AddItem(new RewardItem(1, CocoaPulp));
+               Groups[1].AddItem(new RewardItem(1, SackOfSugar));
+               Groups[1].AddItem(new RewardItem(1, Vanilla));
+               Groups[1].AddItem(new RewardItem(1, CocoaPulp));
+            }
+            if (Core.SE) {
+                
+               Groups[1].AddItem(new RewardItem(1, WoodenBowlOfPeas));
+               Groups[1].AddItem(new RewardItem(1, GreenTeaBasket));
+            }
         }
     }
 

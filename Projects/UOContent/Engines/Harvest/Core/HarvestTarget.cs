@@ -2,6 +2,7 @@ using Server.Engines.Quests.Hag;
 using Server.Items;
 using Server.Mobiles;
 using Server.Targeting;
+using Server.Talent;
 
 namespace Server.Engines.Harvest
 {
@@ -30,21 +31,25 @@ namespace Server.Engines.Harvest
                 {
                     if (from is PlayerMobile player)
                     {
+                        GraveDigger graveDigger =  player.GetTalent(typeof(GraveDigger)) as GraveDigger;
                         var qs = player.Quest;
-                        if (!(qs is WitchApprenticeQuest))
+                        if (!(qs is WitchApprenticeQuest) || graveDigger is null)
                         {
                             return;
                         }
+                        if (qs is WitchApprenticeQuest) {
+                            var obj = qs.FindObjective<FindIngredientObjective>();
 
-                        var obj = qs.FindObjective<FindIngredientObjective>();
+                            if (obj?.Completed == false && obj.Ingredient == Ingredient.Bones)
+                            {
+                                // You finish your grim work, finding some of the specific bones listed in the Hag's recipe.
+                                player.SendLocalizedMessage(1055037);
+                                obj.Complete();
 
-                        if (obj?.Completed == false && obj.Ingredient == Ingredient.Bones)
-                        {
-                            // You finish your grim work, finding some of the specific bones listed in the Hag's recipe.
-                            player.SendLocalizedMessage(1055037);
-                            obj.Complete();
-
-                            return;
+                                return;
+                            }
+                        } else {
+                            graveDigger.Dig(m_Tool, from, target.Location);
                         }
                     }
                 }

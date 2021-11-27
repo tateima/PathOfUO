@@ -144,6 +144,9 @@ namespace Server.Items
     public partial class Shoes : BaseShoes
     {
         [Constructible]
+        public Shoes() : this(0) {
+        }
+        [Constructible]
         public Shoes(int hue = 0) : base(0x170F, hue) => Weight = 2.0;
 
         public override CraftResource DefaultResource => CraftResource.RegularLeather;
@@ -153,6 +156,9 @@ namespace Server.Items
     [Serializable(0, false)]
     public partial class Sandals : BaseShoes
     {
+        [Constructible]
+        public Sandals() : this(0) {
+        }
         [Constructible]
         public Sandals(int hue = 0) : base(0x170D, hue) => Weight = 1.0;
 

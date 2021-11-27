@@ -8,5 +8,6 @@ namespace Server.Regions
         public TownRegion(DynamicJson json, JsonSerializerOptions options) : base(json, options)
         {
         }
+        
     }
 }

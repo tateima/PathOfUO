@@ -3,6 +3,9 @@ namespace Server.Items
     public class BagOfAllReagents : Bag
     {
         [Constructible]
+        public BagOfAllReagents() : this(1) {
+        }
+        [Constructible]
         public BagOfAllReagents(int amount = 50)
         {
             DropItem(new BlackPearl(amount));

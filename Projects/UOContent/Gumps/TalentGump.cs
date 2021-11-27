@@ -113,6 +113,7 @@ namespace Server.Gumps
                 {
                     hue = 0x26;
                 }
+                talent.Level = talentLevel;
                 AddImage(x + 160, y - 10, talent.ImageID, hue);
                 if (talent.HasSkillRequirement(from)
                     && (talentLevel < talent.MaxLevel && ((PlayerMobile)from).TalentPoints > 0)

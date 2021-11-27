@@ -13,6 +13,7 @@ namespace Server.Items
         [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
         private bool _isShipwreckedItem;
 
+
         public BaseHat(int itemID, int hue = 0) : base(itemID, Layer.Helm, hue)
         {
         }
@@ -36,7 +37,6 @@ namespace Server.Items
                 list.Add(1041645); // recovered from a shipwreck
             }
         }
-
         public override int OnCraft(
             int quality, bool makersMark, Mobile from, CraftSystem craftSystem, Type typeRes,
             BaseTool tool, CraftItem craftItem, int resHue
@@ -174,6 +174,9 @@ namespace Server.Items
     [Serializable(0, false)]
     public partial class Bandana : BaseHat
     {
+        [Constructible]
+        public Bandana() : this(1) {
+        }
         [Constructible]
         public Bandana(int hue = 0) : base(0x1540, hue) => Weight = 1.0;
 
@@ -399,6 +402,9 @@ namespace Server.Items
     [Serializable(0, false)]
     public partial class WizardsHat : BaseHat
     {
+        [Constructible]
+        public WizardsHat() : this(0) {
+        }
         [Constructible]
         public WizardsHat(int hue = 0) : base(0x1718, hue) => Weight = 1.0;
 

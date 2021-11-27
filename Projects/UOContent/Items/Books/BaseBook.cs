@@ -44,7 +44,7 @@ namespace Server.Items
         [SerializableFieldSaveFlag(3)]
         private bool ShouldSerializeWritable() => _writable;
 
-        [SerializableField(4, setter: "protected")]
+        [SerializableField(4)]
         private BookPageInfo[] _pages;
 
         [SerializableFieldSaveFlag(4)]
@@ -90,7 +90,7 @@ namespace Server.Items
         [CommandProperty(AccessLevel.GameMaster)]
         public int PagesCount => _pages.Length;
 
-        public virtual BookContent DefaultContent => null;
+        public virtual BookContent DefaultContent {get; set;}
 
         public string ContentAsString
         {

@@ -109,6 +109,50 @@ namespace Server.Items
         // Field 10
         private int _strReq = -1;
 
+        private int _pocketAmount = 0;
+
+        [EncodedInt]
+        [SerializableField(11)]
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int PocketAmount
+        {
+            get => _pocketAmount;
+            set
+            {
+                if (_pocketAmount != value)
+                {
+                    _pocketAmount = value;
+                    InvalidateProperties();
+                    this.MarkDirty();
+                }
+            }
+        }
+
+        [SerializableFieldSaveFlag(11)]
+        private bool ShouldSerializePocketAmount() => _pocketAmount != 0;
+
+        private List<Item> _pockets = new List<Item>();
+
+        [EncodedInt]
+        [SerializableField(12)]
+        [CommandProperty(AccessLevel.GameMaster)]
+        public List<Item> Pockets
+        {
+            get => _pockets;
+            set
+            {
+                if (_pockets != value)
+                {
+                    _pockets = value;
+                    InvalidateProperties();
+                    this.MarkDirty();
+                }
+            }
+        }
+
+        [SerializableFieldSaveFlag(12)]
+        private bool ShouldSerializePockets() => _pockets.Count > 0;
+
         private FactionItem _factionState;
 
         public BaseClothing(int itemID, Layer layer, int hue = 0) : base(itemID)
@@ -119,7 +163,8 @@ namespace Server.Items
             _rawResource = DefaultResource;
 
             _hitPoints = _maxHitPoints = Utility.RandomMinMax(InitMinHits, InitMaxHits);
-
+            _pocketAmount = 0;
+            _pockets = new List<Item>();
             Attributes = new AosAttributes(this);
             ClothingAttributes = new AosArmorAttributes(this);
             SkillBonuses = new AosSkillBonuses(this);
@@ -596,6 +641,7 @@ namespace Server.Items
 
                 AddStatBonuses(mob);
                 mob.CheckStatTimers();
+                SocketBonus.CheckSockets(mob, false, _pockets, this);
             }
 
             base.OnAdded(parent);
@@ -617,6 +663,7 @@ namespace Server.Items
                 mob.RemoveStatMod($"{modName}Int");
 
                 mob.CheckStatTimers();
+                SocketBonus.CheckSockets(mob, true, _pockets, this);
             }
 
             base.OnRemoved(parent);
@@ -696,6 +743,28 @@ namespace Server.Items
         public override void GetProperties(ObjectPropertyList list)
         {
             base.GetProperties(list);
+
+             if (_pocketAmount > 0) {
+                list.Add(
+                   1060847,
+                    "Sockets: {0}/{1}",
+                    _pockets.Count.ToString(),
+                    _pocketAmount.ToString()
+                );
+                foreach(Item pocket in _pockets) {
+                    string itemName = pocket.Name;
+                    if (string.IsNullOrEmpty(itemName)) {
+                        list.Add(pocket.LabelNumber);
+                    } else {
+                        list.Add(
+                        1060847,
+                            "{0}",
+                            itemName
+                        );
+                    }
+                    SocketBonus.AddSocketProperties(pocket, this, list);
+                }
+            }
 
             if (_crafter != null)
             {

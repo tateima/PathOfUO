@@ -4,6 +4,9 @@ namespace Server.Items
     public class Gears : Item
     {
         [Constructible]
+        public Gears() : this(1) {
+        }
+        [Constructible]
         public Gears(int amount = 1) : base(0x1053)
         {
             Stackable = true;

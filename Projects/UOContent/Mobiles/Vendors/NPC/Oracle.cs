@@ -32,39 +32,30 @@ namespace Server.Mobiles
 
         public override bool HandlesOnSpeech(Mobile from) => true;
 
-        public void TryReset(ref SpeechEventArgs e, PlayerMobile player, string type, bool skipConsume = false) {
+        public void TryReset(ref SpeechEventArgs e, PlayerMobile player, bool skipConsume = false) {
             e.Handled = true;
             Container bank = player.FindBankNoCreate();
-            int requiredGold = player.SkillResets * 20000;
-            int remaining = 5;
-            if (string.Equals("talent", type)) {
-                requiredGold = player.TalentResets * 10000;
-                remaining -= player.TalentResets;
-            } else {
-                remaining -= player.SkillResets;
-            }
+            int requiredGold = player.TalentResets * 10000;
+            int remaining = 5 - player.TalentResets;
             if (remaining > 0) {
                 if (skipConsume) {
                     requiredGold = 0;
                 }
                 if (player.Backpack?.ConsumeTotal(typeof(Gold), requiredGold) == true || Banker.Withdraw(player, requiredGold))
                 {
-                    if (type == "talent") {
-                        player.ResetTalents();
-                    } else if (type == "skill") {
-                        player.ResetSkills();
-                    }
+                    player.ResetTalents();
+                    player.ResetSkills();
                     remaining--;   
                     player.FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
                     PlaySound(0x202);
-                    SayTo(player, string.Format("I have reset thy {0}s, you have {1} resets remaining", type, remaining.ToString()));
+                    SayTo(player, string.Format("I have reset thy path, you have {0} resets remaining", remaining.ToString()));
                 }
                 else
                 {
-                    SayTo(player, string.Format("Thou needs {0} gold to reset thy {1}s.", requiredGold.ToString(), type)); 
+                    SayTo(player, string.Format("Thou needs {0} gold to reset thy path.", requiredGold.ToString())); 
                 }
             } else {
-                  SayTo(player, "You have reached the allowed limit of five {0} resets", type);
+                  SayTo(player, "You have reached the allowed limit of five path resets");
             }
             
         }
@@ -81,15 +72,16 @@ namespace Server.Mobiles
                 PlayerMobile player = (PlayerMobile)e.Mobile;
 
                 if (!e.Handled) {
-                    if (speech == "reset talents") {
-                        TryReset(ref e, player, "talent", player.TalentResets == 0);
-                    } else if (speech == "reset skills") {
-                        TryReset(ref e, player, "skill");
-                    }
+                    if (string.Equals(speech, "reset path")) {
+                        TryReset(ref e, player, player.TalentResets == 0);
+                    } 
                 }
                 else
                 {
                     base.OnSpeech(e);
+                }
+                if (!e.Handled) {
+                    SayTo(player, "I do not understand thee. If you wish to reset your path, speak 'reset path'");
                 }
             }            
         }

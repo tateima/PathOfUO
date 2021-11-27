@@ -10,6 +10,7 @@ namespace Server.Engines.BulkOrders
             {
                 LargeTailorBOD => BODType.Tailor,
                 LargeSmithBOD  => BODType.Smith,
+                LargeCookingBOD  => BODType.Cooking,
                 _              => DeedType
             };
 
@@ -70,6 +71,7 @@ namespace Server.Engines.BulkOrders
             {
                 BODType.Smith  => new LargeSmithBOD(AmountMax, RequireExceptional, Material, ReconstructEntries()),
                 BODType.Tailor => new LargeTailorBOD(AmountMax, RequireExceptional, Material, ReconstructEntries()),
+                BODType.Cooking => new LargeCookingBOD(AmountMax, RequireExceptional, Material, ReconstructEntries()),
                 _              => null
             };
 

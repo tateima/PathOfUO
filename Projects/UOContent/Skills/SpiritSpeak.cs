@@ -3,6 +3,8 @@ using System.Linq;
 using Server.Items;
 using Server.Network;
 using Server.Spells;
+using Server.Mobiles;
+using Server.Talent;
 
 namespace Server.SkillHandlers
 {
@@ -182,7 +184,17 @@ namespace Server.SkillHandlers
                         }
 
                         Caster.Hits += Utility.RandomMinMax(min, max);
-
+                        if (Caster is PlayerMobile player) {
+                            CharmUndead charmUndead = player.GetTalent(typeof(CharmUndead)) as CharmUndead;
+                            bool charmed = false;
+                            if (charmUndead != null) {
+                                charmed = charmUndead.CheckCharm(Caster);
+                            }
+                            Mediumship mediumship = player.GetTalent(typeof(Mediumship)) as Mediumship;
+                            if (mediumship != null && !charmed && !mediumship.OnCooldown) {
+                                mediumship.CheckConnection(Caster);
+                            }
+                        }
                         Caster.FixedParticles(0x375A, 1, 15, 9501, 2100, 4, EffectLayer.Waist);
                     }
                 }

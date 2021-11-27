@@ -245,7 +245,7 @@ namespace Server.Items
         }
     }
 
-    public class DragonNunchaku : Nunchaku
+    public class DragonNunchaku : Nunchaku 
     {
         [Constructible]
         public DragonNunchaku()

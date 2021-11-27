@@ -18,6 +18,10 @@ namespace Server.Items
         private int _curArcaneCharges;
 
         [Constructible]
+        public Cloak() : this(0) {
+        }
+
+        [Constructible]
         public Cloak(int hue = 0) : base(0x1515, hue) => Weight = 5.0;
 
         [EncodedInt]

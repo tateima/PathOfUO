@@ -2,7 +2,7 @@ using Server.Mobiles;
 using Server.Spells;
 using Server.Gumps;
 using Server.Network;
-using Server.Talent.Devices;
+using Server.Items;
 using System;
 
 namespace Server.Talent

@@ -149,7 +149,10 @@ namespace Server.Misc
             newChar.Race = Core.Expansion >= args.Race.RequiredExpansion ? args.Race : Race.DefaultRace;
             newChar.Hue = newChar.Race.ClipSkinHue(args.Hue & 0x3FFF) | 0x8000;
             newChar.Hunger = 20;
-
+            ((PlayerMobile)newChar).TalentPoints = 1;
+            ((PlayerMobile)newChar).CraftSkillPoints = 6;
+            ((PlayerMobile)newChar).NonCraftSkillPoints = 6;
+            
             var young = false;
 
             if (newChar is PlayerMobile pm)

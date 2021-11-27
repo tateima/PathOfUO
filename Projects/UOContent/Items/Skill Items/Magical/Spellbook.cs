@@ -79,6 +79,9 @@ namespace Server.Items
         private SlayerName m_Slayer2;
 
         [Constructible]
+        public Spellbook() : this(0, 0xEFA) {
+        }
+        [Constructible]
         public Spellbook(ulong content = 0, int itemID = 0xEFA) : base(itemID)
         {
             Attributes = new AosAttributes(this);

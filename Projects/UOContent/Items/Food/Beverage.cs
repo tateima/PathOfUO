@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Server.Engines.Plants;
 using Server.Engines.Quests;
 using Server.Engines.Quests.Hag;
@@ -9,8 +8,8 @@ using Server.Mobiles;
 using Server.Talent;
 using Server.Multis;
 using Server.Network;
-using Server.Gumps;
 using Server.Targeting;
+using Server.Spells;
 
 namespace Server.Items
 {
@@ -110,6 +109,1092 @@ namespace Server.Items
                         break;
                     }
             }
+        }
+    }
+
+    public class BoneBroth : BaseBeverage
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod;
+        [Constructible]
+        public BoneBroth(BeverageType type)
+            : base(type) =>
+            Weight = 1.0;
+
+        public BoneBroth(Serial serial)
+            : base(serial)
+        {
+        }
+
+        public override int BaseLabelNumber => 1022456; // a jug of Ale
+        public override int MaxQuantity => 5;
+        public override bool Fillable => false;
+
+        public override int ComputeItemID()
+        {
+            if (!IsEmpty)
+            {
+                return 0x99B;
+            }
+
+            return 0;
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(1); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+            Quantity = MaxQuantity;
+            Content = BeverageType.Liquor;
+        }
+
+        public override void OnDoubleClick(Mobile from) {
+            from.SendMessage("You feel a slight increase in magic resistance");
+            m_Mobile = from;
+            m_Mod = new DefaultSkillMod(SkillName.MagicResist, true, 2);
+            m_Mobile.AddSkillMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            base.OnDoubleClick(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveSkillMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Bone",
+                "broth"
+            );
+        }
+    }
+
+    public class EnchantedMilk : BaseBeverage
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod;
+        [Constructible]
+        public EnchantedMilk(BeverageType type)
+            : base(type) =>
+            Weight = 1.0;
+
+        public EnchantedMilk(Serial serial)
+            : base(serial)
+        {
+            Hue = MonsterBuff.IllusionistHue;
+        }
+
+        public override int BaseLabelNumber => 1022456; // a jug of Ale
+        public override int MaxQuantity => 5;
+        public override bool Fillable => false;
+
+        public override int ComputeItemID()
+        {
+            if (!IsEmpty)
+            {
+                return 0x9F0;
+            }
+
+            return 0;
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(1); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+            Quantity = MaxQuantity;
+            Content = BeverageType.Milk;
+        }
+
+        public override void OnDoubleClick(Mobile from) {
+            from.SendMessage("You feel a slight increase in alchemy.");
+            m_Mobile = from;
+            m_Mod = new DefaultSkillMod(SkillName.Alchemy, true, 2);
+            m_Mobile.AddSkillMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            base.OnDoubleClick(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveSkillMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Enchanted",
+                "milk"
+            );
+        }
+    }
+
+    public class MageWater : BaseBeverage
+    {
+        [Constructible]
+        public MageWater(BeverageType type)
+            : base(type) =>
+            Weight = 1.0;
+
+        public MageWater(Serial serial)
+            : base(serial)
+        {
+            Hue = 0x53;
+        }
+
+        public override int BaseLabelNumber => 1022456; // a jug of Ale
+        public override int MaxQuantity => 5;
+        public override bool Fillable => false;
+
+        public override int ComputeItemID()
+        {
+            if (!IsEmpty)
+            {
+                return 0x1F9D;
+            }
+
+            return 0;
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(1); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+            Quantity = MaxQuantity;
+            Content = BeverageType.Water;
+        }
+
+        public override void OnDoubleClick(Mobile from) {
+            from.SendMessage("Your mana is magically rejuvenated.");    
+            int amount = AOS.Scale(from.ManaMax, 33);
+            if ((from.Mana += amount) > from.ManaMax) {
+                from.Mana = from.ManaMax;
+            } else {
+                from.Mana += amount;
+            }
+            base.OnDoubleClick(from);
+        }
+       
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Mage",
+                "water"
+            );
+        }
+    }
+    public class OrcishWater : BaseBeverage
+    {
+        private Mobile m_Mobile;
+        [Constructible]
+        public OrcishWater(BeverageType type)
+            : base(type) =>
+            Weight = 1.0;
+
+        public OrcishWater(Serial serial)
+            : base(serial)
+        {
+            Hue = 0x3A;
+        }
+
+        public override int BaseLabelNumber => 1022456; // a jug of Ale
+        public override int MaxQuantity => 5;
+        public override bool Fillable => false;
+
+        public override int ComputeItemID()
+        {
+            if (!IsEmpty)
+            {
+                return 0x1F9D;
+            }
+
+            return 0;
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(1); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+            Quantity = MaxQuantity;
+            Content = BeverageType.Water;
+        }
+
+        public override void OnDoubleClick(Mobile from) {
+            from.SendMessage("You feel a rush or orcish magic upon you!");    
+            from.BodyMod = (Utility.RandomBool()) ? 138 : 140;
+            m_Mobile = from;
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            base.OnDoubleClick(from);
+        }
+
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mobile.IsBodyMod) {
+                m_Mobile.BodyMod = 0;
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Orcish",
+                "water"
+            );
+        }
+    }
+    public class DemonicWater : BaseBeverage
+    {
+        private Mobile m_Mobile;
+        [Constructible]
+        public DemonicWater(BeverageType type)
+            : base(type) =>
+            Weight = 1.0;
+
+        public DemonicWater(Serial serial)
+            : base(serial)
+        {
+            Hue = 0x2C;
+        }
+
+        public override int BaseLabelNumber => 1022456; // a jug of Ale
+        public override int MaxQuantity => 5;
+        public override bool Fillable => false;
+
+        public override int ComputeItemID()
+        {
+            if (!IsEmpty)
+            {
+                return 0x1F9D;
+            }
+
+            return 0;
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(1); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+            Quantity = MaxQuantity;
+            Content = BeverageType.Water;
+        }
+
+        public override void OnDoubleClick(Mobile from) {
+            from.SendMessage("You feel a rush or demonic magic upon you!");    
+            from.BodyMod = (Utility.RandomBool()) ? 74 : 149;
+            m_Mobile = from;
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            base.OnDoubleClick(from);
+        }
+
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mobile.IsBodyMod) {
+                m_Mobile.BodyMod = 0;
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Demonic",
+                "water"
+            );
+        }
+    }
+    public class SkeletalWater : BaseBeverage
+    {
+        private Mobile m_Mobile;
+        [Constructible]
+        public SkeletalWater(BeverageType type)
+            : base(type) =>
+            Weight = 1.0;
+
+        public SkeletalWater(Serial serial)
+            : base(serial)
+        {
+            Hue = 0x2C;
+        }
+
+        public override int BaseLabelNumber => 1022456; // a jug of Ale
+        public override int MaxQuantity => 5;
+        public override bool Fillable => false;
+
+        public override int ComputeItemID()
+        {
+            if (!IsEmpty)
+            {
+                return 0x1F9D;
+            }
+
+            return 0;
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(1); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+            Quantity = MaxQuantity;
+            Content = BeverageType.Water;
+        }
+
+        public override void OnDoubleClick(Mobile from) {
+            from.SendMessage("You feel a rush or skeletal magic upon you!");    
+            from.BodyMod = Utility.RandomList(50, 56);
+            m_Mobile = from;
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            base.OnDoubleClick(from);
+        }
+
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mobile.IsBodyMod) {
+                m_Mobile.BodyMod = 0;
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Skeletal",
+                "water"
+            );
+        }
+    }
+    public class ChargedSpirits : BaseBeverage
+    {
+        [Constructible]
+        public ChargedSpirits(BeverageType type)
+            : base(type) =>
+            Weight = 1.0;
+
+        public ChargedSpirits(Serial serial)
+            : base(serial)
+        {
+        }
+
+        public override int BaseLabelNumber => 1042959; // a bottle of Ale
+        public override int MaxQuantity => 5;
+        public override bool Fillable => false;
+
+        public override int ComputeItemID()
+        {
+            if (!IsEmpty)
+            {
+                return 0x99B;
+            }
+
+            return 0;
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(1); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+            Quantity = MaxQuantity;
+            Content = BeverageType.Liquor;
+        }
+
+        public override void OnDoubleClick(Mobile from) {
+            foreach(Mobile mobile in from.GetMobilesInRange(1)) {
+                if (mobile != from && from.CanBeHarmful(mobile)) {
+                    if (Core.AOS) {
+                        AOS.Damage(mobile, Utility.RandomMinMax(1,5), true, 0, 0, 0, 0, 100);
+                    } else {
+                        from.Damage(Utility.RandomMinMax(1,5), from);
+                    }
+                    mobile.BoltEffect(0);
+                }
+            }
+            from.SendMessage("Electricity leaves your skin!");
+            base.OnDoubleClick(from);
+        }
+
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Charged",
+                "spirits"
+            );
+        }
+    }
+
+    public class HolyWater : BaseBeverage
+    {
+        [Constructible]
+        public HolyWater(BeverageType type)
+            : base(type) =>
+            Weight = 1.0;
+
+        public HolyWater(Serial serial)
+            : base(serial)
+        {
+            Hue = 0x1C2;
+        }
+
+        public override int BaseLabelNumber => 1042959; // a bottle of Ale
+        public override int MaxQuantity => 5;
+        public override bool Fillable => false;
+
+        public override int ComputeItemID()
+        {
+            if (!IsEmpty)
+            {
+                return 0x1F9D;
+            }
+
+            return 0;
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(1); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+            Quantity = MaxQuantity;
+            Content = BeverageType.Water;
+        }
+
+        public override void OnDoubleClick(Mobile from) {
+            foreach(Mobile mobile in from.GetMobilesInRange(1)) {
+                if (mobile != from && from.CanBeHarmful(mobile)) {
+                    Effects.SendLocationParticles(
+                        EffectItem.Create(new Point3D(mobile.X, mobile.Y, mobile.Z), mobile.Map, EffectItem.DefaultDuration),
+                        0x37C4,
+                        1,
+                        29,
+                        0x47D,
+                        2,
+                        9502,
+                        0
+                    );
+                    if (BaseTalent.IsMobileType(OppositionGroup.AbyssalGroup, mobile.GetType()) || BaseTalent.IsMobileType(OppositionGroup.UndeadGroup, mobile.GetType())) {
+                        mobile.Damage(Utility.RandomMinMax(2,9), from);
+                    } else {
+                        mobile.Heal(Utility.RandomMinMax(2,9), mobile);
+                    }
+                }
+            }
+            from.SendMessage("You splash holy water around you!");
+            Delete();
+        }
+
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Holy",
+                "water"
+            );
+        }
+    }
+
+    public class FireSpirits : BaseBeverage
+    {
+        [Constructible]
+        public FireSpirits(BeverageType type)
+            : base(type) =>
+            Weight = 1.0;
+
+        public FireSpirits(Serial serial)
+            : base(serial)
+        {
+        }
+
+        public override int BaseLabelNumber => 1042959; // a bottle of Ale
+        public override int MaxQuantity => 5;
+        public override bool Fillable => false;
+
+        public override int ComputeItemID()
+        {
+            if (!IsEmpty)
+            {
+                return 0x99B;
+            }
+
+            return 0;
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(1); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+            Quantity = MaxQuantity;
+            Content = BeverageType.Liquor;
+        }
+
+        public override void OnDoubleClick(Mobile from) {
+            foreach(Mobile mobile in from.GetMobilesInRange(1)) {
+                if (mobile != from && from.CanBeHarmful(mobile)) {
+                    if (Core.AOS) {
+                        AOS.Damage(mobile, Utility.RandomMinMax(1,5), true, 0, 100, 0, 0, 0);
+                    } else {
+                        mobile.Damage(Utility.RandomMinMax(1,5), from);
+                    }
+                    mobile.FixedParticles(0x36BD, 20, 10, 5044, 0, 0, EffectLayer.Head, 0);
+                    mobile.PlaySound(0x307);
+                }
+            }
+            from.SendMessage("You burp out fire!");
+            base.OnDoubleClick(from);
+        }
+
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Fire",
+                "spirits"
+            );
+        }
+    }
+
+    public class BlackSambucca : BaseBeverage
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod;
+        [Constructible]
+        public BlackSambucca(BeverageType type)
+            : base(type) =>
+            Weight = 1.0;
+
+        public BlackSambucca(Serial serial)
+            : base(serial)
+        {
+        }
+
+        public override int BaseLabelNumber => 1042959; // a bottle of Ale
+        public override int MaxQuantity => 5;
+        public override bool Fillable => false;
+
+        public override int ComputeItemID()
+        {
+            if (!IsEmpty)
+            {
+                return 0x99B;
+            }
+
+            return 0;
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(1); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+            Quantity = MaxQuantity;
+            Content = BeverageType.Liquor;
+        }
+
+        public override void OnDoubleClick(Mobile from) {
+            from.SendMessage("You feel a slight increase in tactics");
+            m_Mobile = from;
+            m_Mod = new DefaultSkillMod(SkillName.Tactics, true, 2);
+            m_Mobile.AddSkillMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            base.OnDoubleClick(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveSkillMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Black",
+                "sambucca"
+            );
+        }
+    }
+
+    public class SoldiersBrew : BaseBeverage
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod;
+        [Constructible]
+        public SoldiersBrew(BeverageType type)
+            : base(type) =>
+            Weight = 1.0;
+
+        public SoldiersBrew(Serial serial)
+            : base(serial)
+        {
+        }
+
+        public override int BaseLabelNumber => 1042959; // a bottle of Ale
+        public override int MaxQuantity => 5;
+        public override bool Fillable => false;
+
+        public override int ComputeItemID()
+        {
+            if (!IsEmpty)
+            {
+                return 0x99B;
+            }
+
+            return 0;
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(1); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+            Quantity = MaxQuantity;
+            Content = BeverageType.Ale;
+        }
+
+        public override void OnDoubleClick(Mobile from) {
+            from.SendMessage("You feel a slight increase in parrying");
+            m_Mobile = from;
+            m_Mod = new DefaultSkillMod(SkillName.Parry, true, 2);
+            m_Mobile.AddSkillMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            base.OnDoubleClick(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveSkillMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Soldier's",
+                "brew"
+            );
+        }
+    }
+
+    public class NinjasBrew : BaseBeverage
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod_Hiding;
+        private SkillMod m_Mod_Stealth;
+        [Constructible]
+        public NinjasBrew(BeverageType type)
+            : base(type) =>
+            Weight = 1.0;
+
+        public NinjasBrew(Serial serial)
+            : base(serial)
+        {
+        }
+
+        public override int BaseLabelNumber => 1042959; // a bottle of Ale
+        public override int MaxQuantity => 5;
+        public override bool Fillable => false;
+
+        public override int ComputeItemID()
+        {
+            if (!IsEmpty)
+            {
+                return 0x99B;
+            }
+
+            return 0;
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(1); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+            Quantity = MaxQuantity;
+            Content = BeverageType.Ale;
+        }
+
+        public override void OnDoubleClick(Mobile from) {
+            from.SendMessage("You feel a slight increase in stealth");
+            m_Mobile = from;
+            m_Mod_Stealth = new DefaultSkillMod(SkillName.Stealth, true, 2);
+            m_Mod_Hiding = new DefaultSkillMod(SkillName.Hiding, true, 2);
+            m_Mobile.AddSkillMod(m_Mod_Stealth);
+            m_Mobile.AddSkillMod(m_Mod_Hiding);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            base.OnDoubleClick(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null) {
+                if (m_Mod_Hiding != null) {
+                    m_Mobile.RemoveSkillMod(m_Mod_Hiding);
+                }
+                if (m_Mod_Stealth != null) {
+                    m_Mobile.RemoveSkillMod(m_Mod_Stealth);
+                }
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Ninja's",
+                "brew"
+            );
+        }
+    }
+
+    public class HealersBrew : BaseBeverage
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod_Anatomy;
+        private SkillMod m_Mod_Healing;
+        [Constructible]
+        public HealersBrew(BeverageType type)
+            : base(type) =>
+            Weight = 1.0;
+
+        public HealersBrew(Serial serial)
+            : base(serial)
+        {
+        }
+
+        public override int BaseLabelNumber => 1042959; // a bottle of Ale
+        public override int MaxQuantity => 5;
+        public override bool Fillable => false;
+
+        public override int ComputeItemID()
+        {
+            if (!IsEmpty)
+            {
+                return 0x99B;
+            }
+
+            return 0;
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(1); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+            Quantity = MaxQuantity;
+            Content = BeverageType.Ale;
+        }
+
+        public override void OnDoubleClick(Mobile from) {
+            from.SendMessage("You feel a slight increase in healing");
+            m_Mobile = from;
+            m_Mod_Anatomy = new DefaultSkillMod(SkillName.Anatomy, true, 2);
+            m_Mod_Healing = new DefaultSkillMod(SkillName.Healing, true, 2);
+            m_Mobile.AddSkillMod(m_Mod_Anatomy);
+            m_Mobile.AddSkillMod(m_Mod_Healing);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            base.OnDoubleClick(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null) {
+                if (m_Mod_Anatomy != null) {
+                    m_Mobile.RemoveSkillMod(m_Mod_Anatomy);
+                }
+                if (m_Mod_Healing != null) {
+                    m_Mobile.RemoveSkillMod(m_Mod_Healing);
+                }
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Healer's",
+                "brew"
+            );
+        }
+    }
+
+    public class AncestralBrew : BaseBeverage
+    {
+        [Constructible]
+        public AncestralBrew(BeverageType type)
+            : base(type) =>
+            Weight = 1.0;
+
+        public AncestralBrew(Serial serial)
+            : base(serial)
+        {
+            Hue = 0x1B1;
+        }
+
+        public override int BaseLabelNumber => 1042959; // a bottle of Ale
+        public override int MaxQuantity => 5;
+        public override bool Fillable => false;
+
+        public override int ComputeItemID()
+        {
+            if (!IsEmpty)
+            {
+                return 0x99B;
+            }
+
+            return 0;
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(1); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+            Quantity = MaxQuantity;
+            Content = BeverageType.Ale;
+        }
+
+        public override void OnDoubleClick(Mobile from) {
+            if (from is PlayerMobile player) {
+                from.SendMessage("You feel your planar exhaustion lapse.");
+                player.NextPlanarTravel = Core.Now;
+            }       
+            base.OnDoubleClick(from);
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Ancestral",
+                "brew"
+            );
+        }
+    }
+
+    public class PiratesBrew : BaseBeverage
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod;
+        [Constructible]
+        public PiratesBrew(BeverageType type)
+            : base(type) =>
+            Weight = 1.0;
+
+        public PiratesBrew(Serial serial)
+            : base(serial)
+        {
+        }
+
+        public override int BaseLabelNumber => 1042959; // a bottle of Ale
+        public override int MaxQuantity => 5;
+        public override bool Fillable => false;
+
+        public override int ComputeItemID()
+        {
+            if (!IsEmpty)
+            {
+                return 0x99B;
+            }
+
+            return 0;
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(1); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+            Quantity = MaxQuantity;
+            Content = BeverageType.Ale;
+        }
+
+        public override void OnDoubleClick(Mobile from) {
+            from.SendMessage("You feel a slight increase in fishing");
+            m_Mobile = from;
+            m_Mod = new DefaultSkillMod(SkillName.Fishing, true, 2);
+            m_Mobile.AddSkillMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            base.OnDoubleClick(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveSkillMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Pirate's",
+                "brew"
+            );
+        }
+    }
+
+    public class Guinness : BaseBeverage
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod;
+        [Constructible]
+        public Guinness(BeverageType type)
+            : base(type) =>
+            Weight = 1.0;
+
+        public Guinness(Serial serial)
+            : base(serial)
+        {
+        }
+
+        public override int BaseLabelNumber => 1042959; // a bottle of Ale
+        public override int MaxQuantity => 5;
+        public override bool Fillable => false;
+
+        public override int ComputeItemID()
+        {
+            if (!IsEmpty)
+            {
+                return 0x99B;
+            }
+
+            return 0;
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(1); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+            Quantity = MaxQuantity;
+            Content = BeverageType.Ale;
+        }
+
+        public override void OnDoubleClick(Mobile from) {
+            from.SendMessage("You feel a slight increase in wrestling.");
+            m_Mobile = from;
+            m_Mod = new DefaultSkillMod(SkillName.Wrestling, true, 2);
+            m_Mobile.AddSkillMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            base.OnDoubleClick(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveSkillMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Guiness",
+                ""
+            );
         }
     }
 

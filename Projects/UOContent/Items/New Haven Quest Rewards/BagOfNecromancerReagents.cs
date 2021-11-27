@@ -3,6 +3,9 @@ namespace Server.Items
     public class BagOfNecromancerReagents : Bag
     {
         [Constructible]
+        public BagOfNecromancerReagents() : this(1) {
+        }
+        [Constructible]
         public BagOfNecromancerReagents(int amount = 50)
         {
             DropItem(new BatWing(amount));

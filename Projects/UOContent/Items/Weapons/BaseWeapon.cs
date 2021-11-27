@@ -15,6 +15,7 @@ using Server.Spells.Ninjitsu;
 using Server.Spells.Sixth;
 using Server.Spells.Spellweaving;
 using Server.Talent;
+using Server.Misc;
 
 namespace Server.Items
 {
@@ -29,6 +30,8 @@ namespace Server.Items
         private WeaponAccuracyLevel m_AccuracyLevel;
         private WeaponAnimation m_Animation;
         private Mobile m_Crafter;
+        private int m_SocketAmount;
+        private List<Item> m_Sockets;
 
         /* Weapon internals work differently now (Mar 13 2003)
          *
@@ -52,6 +55,7 @@ namespace Server.Items
         private string m_EngravedText;
 
         private FactionItem m_FactionState;
+        private bool m_Haunted;
         private int m_Hits;
         private int m_HitSound, m_MissSound;
         private bool m_Identified;
@@ -81,6 +85,9 @@ namespace Server.Items
         {
             Layer = (Layer)ItemData.Quality;
             m_ShardPower = 0;
+            m_SocketAmount = 0;
+            m_Sockets = new List<Item>();
+            m_Haunted = false;
             m_Electrified = false;
             m_Frozen = false;
             m_Burning = false;
@@ -208,6 +215,29 @@ namespace Server.Items
 
         [CommandProperty(AccessLevel.GameMaster)]
         public bool Consecrated { get; set; }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int SocketAmount
+        {
+            get => m_SocketAmount;
+            set
+            {
+                m_SocketAmount = value;
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public List<Item> Sockets
+        {
+            get => m_Sockets;
+            set
+            {
+                m_Sockets = value;
+                InvalidateProperties();
+            }
+        }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public int ShardPower
         {
@@ -218,6 +248,16 @@ namespace Server.Items
                 {
                     m_ShardPower = value;
                 }
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool Haunted
+        {
+            get => m_Haunted;
+            set
+            {
+                m_Haunted = value;
                 InvalidateProperties();
             }
         }
@@ -1041,6 +1081,7 @@ namespace Server.Items
                 from.AddSkillMod(m_MageMod);
             }
 
+            SocketBonus.CheckSockets(from, false, m_Sockets, this);
             return true;
         }
 
@@ -1100,6 +1141,8 @@ namespace Server.Items
                 m.CheckStatTimers();
 
                 m.Delta(MobileDelta.WeaponDamage);
+
+                SocketBonus.CheckSockets(m, true, m_Sockets, this);
             }
         }
 
@@ -1962,7 +2005,7 @@ namespace Server.Items
                 percentageBonus += talisman.Killer.DamageBonus(defender);
             }
 
-            if (holyAvenger != null && (holyAvenger.IsMobileType(OppositionGroup.UndeadGroup, defender.GetType()) || holyAvenger.IsMobileType(OppositionGroup.AbyssalGroup, defender.GetType())))
+            if (holyAvenger != null && (BaseTalent.IsMobileType(OppositionGroup.UndeadGroup, defender.GetType()) || BaseTalent.IsMobileType(OppositionGroup.AbyssalGroup, defender.GetType())))
             {
                 percentageBonus += holyAvenger.Level * 2;
             }
@@ -2361,6 +2404,13 @@ namespace Server.Items
 
             if (attacker is PlayerMobile)
             {
+                if (Haunted && Utility.Random(100) < Utility.Random(7)) {
+                    if (defender is BaseCreature) {
+                        ((BaseCreature)defender).Fear(Utility.Random(7));
+                    } else if (defender is PlayerMobile) {
+                        ((PlayerMobile)defender).Fear(Utility.Random(7));
+                    }
+                }
                 if (ShardPower > 0)
                 {
                     int elementalDamage = Utility.Random(ShardPower);
@@ -3211,13 +3261,42 @@ namespace Server.Items
         public override void GetProperties(ObjectPropertyList list)
         {
             base.GetProperties(list);
-
+            if (m_SocketAmount > 0) {
+                list.Add(
+                   1060847,
+                    "Sockets: {0}/{1}",
+                    m_Sockets.Count.ToString(),
+                    m_SocketAmount.ToString()
+                );
+                foreach(Item socket in m_Sockets) {
+                    string itemName = socket.Name;
+                    if (string.IsNullOrEmpty(itemName)) {
+                        list.Add(socket.LabelNumber);
+                    } else {
+                        list.Add(
+                        1060847,
+                            "{0}",
+                            itemName
+                        );
+                    }
+                    SocketBonus.AddSocketProperties(socket, this, list);
+                }
+            }
             if (m_ShardPower > 0)
             {
                 list.Add(
                    1060847,
-                   "Shard Power: {0}",
-                   m_ShardPower.ToString()
+                    "Shard Power: {0}",
+                    m_ShardPower.ToString()
+                );
+            }
+
+            if (m_Haunted)
+            {
+                list.Add(
+                    1060847,
+                    "Haunted\t{0}",
+                    ""
                 );
             }
 
@@ -3968,8 +4047,10 @@ namespace Server.Items
         {
             base.Serialize(writer);
 
-            writer.Write(10); // version
-
+            writer.Write(12); // version
+            writer.Write(m_SocketAmount);
+            writer.Write(m_Sockets);
+            writer.Write(m_Haunted);
             writer.Write(m_ShardPower);
             writer.Write(m_Frozen);
             writer.Write(m_Burning);
@@ -4168,6 +4249,13 @@ namespace Server.Items
 
             switch (version)
             {
+                case 12:
+                    m_SocketAmount = reader.ReadInt();
+                    m_Sockets = reader.ReadEntityList<Item>();
+                    goto case 11;
+                case 11:
+                    m_Haunted = reader.ReadBool();
+                    goto case 10;
                 case 10:
                     m_ShardPower = reader.ReadInt();
                     m_Frozen = reader.ReadBool();
@@ -4614,6 +4702,10 @@ namespace Server.Items
             if (version < 6)
             {
                 PlayerConstructed = true; // we don't know, so, assume it's crafted
+            }
+
+            if (m_Sockets is null) {
+                m_Sockets = new List<Item>();
             }
         }
 

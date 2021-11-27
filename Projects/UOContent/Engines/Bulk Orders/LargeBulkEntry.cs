@@ -89,6 +89,12 @@ namespace Server.Engines.BulkOrders
 
         public static SmallBulkEntry[] Wizard => GetEntries("Tailoring", "wizard");
 
+        public static SmallBulkEntry[] OldWorldCooking => GetEntries("Cooking", "oldworld");
+
+        public static SmallBulkEntry[] SECooking => GetEntries("Cooking", "se");
+
+        public static SmallBulkEntry[] MLCooking => GetEntries("Cooking", "ml");
+
         public static SmallBulkEntry[] GetEntries(string type, string name)
         {
             m_Cache ??= new Dictionary<string, Dictionary<string, SmallBulkEntry[]>>();

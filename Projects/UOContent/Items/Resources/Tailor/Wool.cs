@@ -8,6 +8,10 @@ namespace Server.Items
     public partial class Wool : Item, IDyable
     {
         [Constructible]
+        public Wool() : this(1)
+        {
+        }
+        [Constructible]
         public Wool(int amount = 1) : base(0xDF8)
         {
             Stackable = true;

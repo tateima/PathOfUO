@@ -17,9 +17,9 @@ namespace Server.Talent
             BlockedBy = new Type[] { typeof(LightAffinity) };
             RequiredSpell = new Type[] { typeof(NecromancerSpell), typeof(SpellPlagueSpell), typeof(WordOfDeathSpell) };
             DisplayName = "Dark affinity";
-            Description = "Enhances damage and strength of dark arts and spells.";
+            Description = "Enhances damage and strength of dark arts and spells. Requires 50+ Necromancy.";
             ImageID = 129;
-            GumpHeight = 85;
+            GumpHeight = 95;
             AddEndY = 80;
         }
 

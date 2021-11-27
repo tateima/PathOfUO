@@ -3,6 +3,9 @@ namespace Server.Items
     public class Sapphire : Item
     {
         [Constructible]
+        public Sapphire() : this(1) {
+        }
+        [Constructible]
         public Sapphire(int amount = 1) : base(0xF19)
         {
             Stackable = true;

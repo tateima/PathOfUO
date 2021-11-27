@@ -13,6 +13,9 @@ namespace Server.Items
     public partial class ShortPants : BasePants
     {
         [Constructible]
+        public ShortPants() : this(0) {
+        }
+        [Constructible]
         public ShortPants(int hue = 0) : base(0x152E, hue) => Weight = 2.0;
     }
 
@@ -20,6 +23,9 @@ namespace Server.Items
     [Serializable(0, false)]
     public partial class LongPants : BasePants
     {
+        [Constructible]
+        public LongPants() : this(0) {
+        }
         [Constructible]
         public LongPants(int hue = 0) : base(0x1539, hue) => Weight = 2.0;
     }

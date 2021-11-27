@@ -13,9 +13,9 @@ namespace Server.Talent
             TalentDependency = typeof(HolyAvenger);
             CanBeUsed = true;
             DisplayName = "Holy bolt";
-            Description = "Fires a bolt of pure holy damage towards a target. 1 minute cooldown.";
+            Description = "Fires a bolt of pure holy damage towards a target. 1 minute cooldown. Requires 85+ chivalry.";
             ImageID = 389;
-            AddEndY = 110;
+            AddEndY = 115;
         }
         public override bool HasSkillRequirement(Mobile mobile)
         {

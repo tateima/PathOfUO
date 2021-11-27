@@ -21,6 +21,9 @@ namespace Server.Items
     public partial class Shirt : BaseShirt
     {
         [Constructible]
+        public Shirt() : this(0) {
+        }
+        [Constructible]
         public Shirt(int hue = 0) : base(0x1517, hue) => Weight = 1.0;
     }
 

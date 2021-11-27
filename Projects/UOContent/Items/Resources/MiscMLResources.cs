@@ -194,7 +194,7 @@ namespace Server.Items
     }
 
     [Serializable(0, false)]
-    public partial class DarkSapphire : Item
+    public partial class DarkSapphire : Item 
     {
         [Constructible]
         public DarkSapphire(int amountFrom, int amountTo) : this(Utility.RandomMinMax(amountFrom, amountTo))
@@ -210,7 +210,7 @@ namespace Server.Items
     }
 
     [Serializable(0, false)]
-    public partial class Turquoise : Item
+    public partial class Turquoise : Item 
     {
         [Constructible]
         public Turquoise(int amountFrom, int amountTo) : this(Utility.RandomMinMax(amountFrom, amountTo))
@@ -226,7 +226,7 @@ namespace Server.Items
     }
 
     [Serializable(0, false)]
-    public partial class EcruCitrine : Item
+    public partial class EcruCitrine : Item 
     {
         [Constructible]
         public EcruCitrine(int amountFrom, int amountTo) : this(Utility.RandomMinMax(amountFrom, amountTo))
@@ -242,7 +242,7 @@ namespace Server.Items
     }
 
     [Serializable(0, false)]
-    public partial class WhitePearl : Item
+    public partial class WhitePearl : Item 
     {
         [Constructible]
         public WhitePearl(int amountFrom, int amountTo) : this(Utility.RandomMinMax(amountFrom, amountTo))
@@ -258,7 +258,7 @@ namespace Server.Items
     }
 
     [Serializable(0, false)]
-    public partial class FireRuby : Item
+    public partial class FireRuby : Item 
     {
         [Constructible]
         public FireRuby(int amountFrom, int amountTo) : this(Utility.RandomMinMax(amountFrom, amountTo))
@@ -274,7 +274,7 @@ namespace Server.Items
     }
 
     [Serializable(0, false)]
-    public partial class BlueDiamond : Item
+    public partial class BlueDiamond : Item 
     {
         [Constructible]
         public BlueDiamond(int amountFrom, int amountTo) : this(Utility.RandomMinMax(amountFrom, amountTo))
@@ -290,7 +290,7 @@ namespace Server.Items
     }
 
     [Serializable(0, false)]
-    public partial class BrilliantAmber : Item
+    public partial class BrilliantAmber : Item 
     {
         [Constructible]
         public BrilliantAmber(int amountFrom, int amountTo) : this(Utility.RandomMinMax(amountFrom, amountTo))

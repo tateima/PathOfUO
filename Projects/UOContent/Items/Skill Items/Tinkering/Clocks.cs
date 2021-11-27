@@ -23,6 +23,9 @@ namespace Server.Items
         private static readonly DateTime WorldStart = new(1997, 9, 1);
 
         [Constructible]
+        public Clock() : this(0x104B) {
+        }
+        [Constructible]
         public Clock(int itemID = 0x104B) : base(itemID) => Weight = 3.0;
 
         public Clock(Serial serial) : base(serial)

@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using Server.Items;
+using Server.Engines.BulkOrders;
 
 namespace Server.Mobiles
 {
@@ -37,6 +39,33 @@ namespace Server.Mobiles
             base.InitOutfit();
 
             AddItem(new HalfApron());
+        }
+
+        public override bool SupportsBulkOrders(Mobile from) => true;
+
+        public override Item CreateBulkOrder(Mobile from, bool fromContextMenu)
+        {
+            if (from is PlayerMobile pm && pm.NextCookBulkOrder == TimeSpan.Zero &&
+                (fromContextMenu || Utility.RandomDouble() < 0.2))
+            {
+                var theirSkill = pm.Skills.Cooking.Base;
+
+                pm.NextCookBulkOrder = theirSkill switch
+                {
+                    >= 70.1 => TimeSpan.FromHours(6.0),
+                    >= 50.1 => TimeSpan.FromHours(2.0),
+                    _       => TimeSpan.FromHours(1.0)
+                };
+
+                if (theirSkill >= 70.1 && (theirSkill - 40.0) / 300.0 > Utility.RandomDouble())
+                {
+                    return new LargeCookingBOD();
+                }
+
+                return SmallCookingBOD.CreateRandomFor(from);
+            }
+
+            return null;
         }
 
         public override void Serialize(IGenericWriter writer)

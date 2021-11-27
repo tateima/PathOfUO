@@ -43,6 +43,7 @@ namespace Server.Json
             options.Converters.Add(new GuidConverterFactory());
             options.Converters.Add(new JsonStringEnumConverter());
             options.Converters.Add(new MapConverterFactory());
+            options.Converters.Add(new Point2DConverterFactory());
             options.Converters.Add(new Point3DConverterFactory());
             options.Converters.Add(new Rectangle3DConverterFactory());
             options.Converters.Add(new TimeSpanConverterFactory());

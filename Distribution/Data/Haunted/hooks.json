@@ -1,0 +1,367 @@
+
+[
+    {
+        "type": "event",
+        "values": [
+            "declaring revenge for the death of their relation",
+            "decided to disappear after lots of debt",
+            "treacherous betrayal of a royal advisor",
+            "dreaming of a gargoyle prophecy",
+            "liches curse",
+            "impending ogre invasion",
+            "corruption amongst the guards",
+            "forbidden wedding",
+            "raging storm",
+            "wildfire",
+            "plague and food pestilence",
+            "undead rising from the ground",
+            "setting the local tavern on fire",
+            "turning of a new lunar moon",
+            "coming of a blood moon",
+            "stealing from the local healers",
+            "killing of a farmer",
+            "pillaging of a noble's home",
+            "getting into debt with the local thief guild",
+            "leaving their wife for another",
+            "discovering of a powerful spell",
+            "uncovering of a horrible truth",
+            "hiding of a lie from the authorities",
+            "finding of a rare gem",
+            "witnessing of a horrible crime",
+            "kidnapping of a baby from a woman",
+            "being found guilty for treason"
+        ]
+    },
+    {
+        "type": "phrase",
+        "values": [
+            "I was framed",
+            "I was murdered",
+            "I was innocent",
+            "I am guilty",
+            "I killed them",
+            "I betrayed my family",
+            "I stole it",
+            "It was stolen from me",
+            "I regret nothing",
+            "Catch me if you can",
+            "You will never find me",
+            "I am the master",
+            "I am the weak",
+            "I am the powerful",
+            "I am everywhere",
+            "I am watching"
+        ]
+    },
+    {
+        "type": "item_clue",
+        "values": [
+            "etched on one side of this item reads '@phrase'",
+            "the item is rusted with jagged edges",
+            "there is a smell of poison residue on this item",
+            "the item is incredibly fragile",
+            "a mysterious magic has touched this item",
+            "this item looks valuable to someone",
+            "family initials can be seen, but are indiscernable",
+            "a small smear of dried blood is on this item",
+            "this item is clean of fingerprints",
+            "there is something sinister about this item",
+            "a runic incantation reads on one side",
+            "this item is heavily corroded",
+            "the words @organisation can be found in small print",
+            "markings can be found, reading 'for the @role'",
+            "this item smells of sea salt",
+            "this item smells of swamp bog",
+            "this item smells royally purfumed"
+        ]
+    },
+    {
+        "type": "trait",
+        "values": [
+            "powerful",
+            "weak",
+            "good",
+            "evil",
+            "dastardly",
+            "glorious",
+            "murderous",
+            "pious",
+            "pure-hearted",
+            "intelligent",
+            "stupid",
+            "heroic",
+            "cowardly",
+            "beautiful",
+            "ugly",
+            "smelly",
+            "purfumed"
+        ]
+    },
+    {
+        "type": "combatant",
+        "values": [
+            "warrior",
+            "rogue",
+            "thief",
+            "mage",
+            "sorceror",
+            "barbarian",
+            "paladin",
+            "archer",
+            "tamer",
+            "mystic",
+            "elder",
+            "necromancer",
+            "demonic summoner",
+            "monk",
+            "bard"
+        ]
+    },
+    {
+        "type": "trammel_town",
+        "values": [
+            "New Haven",
+            "Britain",
+            "Buccaneers Den",
+            "Cove",
+            "Jhelom",
+            "Magincia",
+            "Minoc",
+            "Moonglow",
+            "Nujel'm",
+            "Serpents Hold",
+            "Skara Brae",
+            "Trinsic",
+            "Vesper",
+            "Wind",
+            "Yew",
+            "Delucia",
+            "Papua"
+        ]
+    },
+    {
+        "type": "place",
+        "values": [
+            "dock",
+            "lake",
+            "desert",
+            "bridge",
+            "fort",
+            "forest",
+            "cavern",
+            "abandoned mine",
+            "farm house",
+            "maze",
+            "swamp",
+            "jungle",
+            "river",
+            "beach",
+            "shrine",
+            "ruins",
+            "abbey",
+            "crypt",
+            "graveyard",
+            "temple",
+            "snowplain"
+        ]
+    },
+    {
+        "type": "profession",
+        "values": [
+            "Fishermen",
+            "Blacksmith",
+            "Alchemist",
+            "Poisoner",
+            "Tailor",
+            "Tinkerer",
+            "Cook",
+            "Miner",
+            "Lumberjack",
+            "Fletcher",
+            "Healer",
+            "Scholar",
+            "Banker"
+        ]
+    },
+    {
+        "type": "item",
+        "values": [
+            "powerful artifact",
+            "weak phylactery",
+            "shiny necklace",
+            "rustic ring",
+            "family heirloom",
+            "rusty dagger",
+            "noble sword",
+            "ancient hilt",
+            "wizard stone",
+            "justicar's breastplate",
+            "tome of wisdom",
+            "rare fruit",
+            "hoard of gold",
+            "precious jewel",
+            "timeless painting",
+            "rare pet",
+            "heavy helmet",
+            "faded parchment",
+            "authority declaration",
+            "treasure map",
+            "magical scroll",
+            "old steed"
+        ]
+    },
+    {
+        "type": "folk",
+        "values": [
+            "farmer",
+            "fruiter",
+            "artist",
+            "actor",
+            "bride",
+            "gypsy",
+            "henchmen",
+            "merchant",
+            "minter",
+            "prisoner",
+            "sculptor",
+            "seeker of adventurer",
+            "slave",
+            "town crier"
+        ]
+    },
+    {
+        "type": "organisation",
+        "values": [
+            "the Black Adders",
+            "the Red Butchers",
+            "the Gold Hoarders",
+            "the Snakes",
+            "the Virtue Guards",
+            "the Nether Cult",
+            "the Church of Amil",
+            "the Freedom Fighters",
+            "the Trade Co.",
+            "the Death Cult",
+            "the Royals",
+            "the Truth Seekers",
+            "the Seafarers",
+            "the Bounty Hunters"
+        ]
+    },
+    {
+        "type": "role",
+        "values": [
+            "leader",
+            "manager",
+            "treasurer",
+            "advisor",
+            "protector",
+            "diviner",
+            "hunter",
+            "assassin",
+            "debt collector",
+            "torturer",
+            "general",
+            "second in command",
+            "ambassador",
+            "mercenary"
+        ]
+    },
+    {
+        "type": "trammel_dungeon",
+        "values": [
+            "Covetous",
+            "Deceit",
+            "Despise",
+            "Destard",
+            "Hythloth",
+            "Shame",
+            "Wrong",
+            "Fire Dungeon",
+            "Ice Dungeon"
+        ]
+    },
+    {
+        "type": "gruesomeend",
+        "values": [
+            "devoured slowly by ooze",
+            "swallowed whole by a dragon",
+            "tortured brutally by a band of orcs",
+            "enslaved by lizardmen",
+            "sacrified by a balron",
+            "eaten by a bear",
+            "staked onto a pike",
+            "becoming a vampire and burned in the sun",
+            "lost",
+            "drowned at sea",
+            "ambused by bandits"
+        ]
+    },
+    {
+      "type": "hook_one",
+      "values": [
+            "@author's adventure started a long time ago in the wilderness around @town",
+            "@author's adventure began when they were only young in the streets of @town",
+            "@author's adventure began while trading with @profession's at @town",
+            "@author's adventure started  in a @place",
+            "@profession's tell of a mysterious @folk who travelled the @place's looking for a @item that belonged to @author",
+            "a @combatant reported a development near @town, which was investigated by @author",
+            "@author was a retired @combatant who had one last adventure which started in @town",
+            "@author's adventure began when they found a mysterious sign near @dungeon",
+            "@author's adventure began at @town after an @event"
+      ]
+    },
+    {
+        "type": "hook_two",
+        "values": [
+            "@author met a powerful legendary @combatant, who gives them a quest to go to a @place",
+            "@author finds a rich @profession, who gives them a quest to seek out @town",
+            "@author met a brilliant yet infamous @combatant, who gives them a quest to investigate a @place",
+            "@author met a @folk of their father, who gives them a task at @town",
+            "@author stumbled upon an @item, which set them on a quest to seek out a @place",
+            "@author located a @place, but on their way discovered a quest",
+            "@author was bored with their life until a @folk gave them a secret @dungeon quest",
+            "@author met a wandering @folk who died infront of them, holding valuable information for the @town guards"
+        ]
+    },
+    {
+        "type": "hook_three",
+        "values": [
+            "@author had to resolve a mysterious kidnapping of local @folk at @town",
+            "@author had to end a rash of major thefts from the rich and powerful by entering @town",
+            "@author found a rise in the local monstrous population within a @place",
+            "@author discovered unexplained deaths among the local nobility near @town",
+            "A @profession's wagon was found in a ditch battered and broken by the adventurer. All their trinkets were cursed but later found at @town",
+            "A group of @combatant's set up a traveling circus, tricking bystanders at @town",
+            "A @combatant's camp was set up, celebrating the @event. A mysterious figure approached them and hired their services to raid @town",
+            "whilst adventuring, a drunken @profession asks them to find an @item at @dungeon which belonged to their mother",
+            "during their journey, the adventurer became pursued by @folk's after @event near @dungeon",
+            "every night vivid nightmares about @trait @folk boil up out of the @combatant's consciousness, beseeching them to seek out a distant @place",
+            "At a @place, two family's became engaged in an all out war over an @event",
+            "Strangers report a @trait @combatant that lived in a dark @place. @trait @folk pursued them out of hiding"
+        ]
+    },
+    {
+        "type": "hook_four",
+        "values": [
+            "@author determined it was the work of a rich @profession, who lived at @town",
+            "@author determined it is the work of the @folk of one his closest relative, who got killed at @dungeon",
+            "@author worked hard to find a clever @folk, and pursued them across treacherous @place's",
+            "@author determined it is the work of a nobleman of @trait character, they sought to report them to authorities at @town",
+            "@author determined it is the work of a pious and powerful @combatant of @trait intent. Legend said they retreated to a @place",
+            "@author managed to figure out that it was his @profession friend all along who betrayed his loved ones and locked them at @dungeon",
+            "@author was about to give up when a hooded @trait @folk presented them with an @item from @dungeon"
+        ]
+    },
+    {
+        "type": "hook_five",
+        "values": [
+            "@author travelled to a desecrated @dungeon to find a @trait @profession",
+            "@author travelled to the ruins of an @dungeon to find their @trait nemesis",
+            "@author ended up fleeing to a nearby @town in a desperate attempt to save themselves from being @gruesomeend at @dungeon",
+            "@author ended up searching isolated farms and outlying areas around @town",
+            "@author pursued them to @place's to find bring them to justice",
+            "@author unforunately was @gruesomeend at @town"
+        ]
+    }
+]

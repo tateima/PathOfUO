@@ -15,9 +15,14 @@ namespace Server.Talent
             HasDefenseEffect = true;
             DisplayName = "Mana shield";
             MaxLevel = 1;
-            Description = "Absorbs damage with mana. Does not work in Wraith Form.";
+            Description = "Absorbs damage with mana. Does not work in Wraith Form. Requires 75+ magery.";
             ImageID = 155;
             AddEndY = 95;
+        }
+
+        public override bool HasSkillRequirement(Mobile mobile)
+        {
+            return mobile.Skills[SkillName.Magery].Base >= 75;
         }
 
         public override void CheckDefenseEffect(Mobile defender, Mobile attacker, int damage)

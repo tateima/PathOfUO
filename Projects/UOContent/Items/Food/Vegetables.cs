@@ -1,3 +1,5 @@
+using Server.Mobiles; 
+using System;
 namespace Server.Items
 {
     [Flippable(0xc77, 0xc78)]
@@ -28,6 +30,59 @@ namespace Server.Items
             var version = reader.ReadInt();
         }
     }
+    [Flippable(0xc77, 0xc78)]
+    public class Chilli : Food
+    {
+        private Mobile m_Mobile;
+        private ResistanceMod m_Mod;
+
+        [Constructible]
+        public Chilli(int amount = 1) : base(0xc78, amount)
+        {
+            Hue = 0x8A;
+            Weight = 1.0;
+            FillFactor = 1;
+        }
+
+        public Chilli(Serial serial) : base(serial)
+        {
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+        public override bool Eat(Mobile from) {
+            from.SendMessage("You feel a slight increase in fire resistance");
+            m_Mobile = from;
+            m_Mod = new ResistanceMod(ResistanceType.Fire, +1);
+            m_Mobile.AddResistanceMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            return base.Eat(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveResistanceMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Chilli",
+                ""
+            );
+        }
+    }
 
     [Flippable(0xc7b, 0xc7c)]
     public class Cabbage : Food
@@ -55,6 +110,60 @@ namespace Server.Items
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+        }
+    }
+
+    [Flippable(0xc7b, 0xc7c)]
+    public class FrozenCabbage : Food
+    {
+        private Mobile m_Mobile;
+        private ResistanceMod m_Mod;
+
+        [Constructible]
+        public FrozenCabbage(int amount = 1) : base(0xc78, amount)
+        {
+            Hue = 0xBC;
+            Weight = 1.0;
+            FillFactor = 1;
+        }
+
+        public FrozenCabbage(Serial serial) : base(serial)
+        {
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+        public override bool Eat(Mobile from) {
+            from.SendMessage("You feel a slight increase in cold resistance");
+            m_Mobile = from;
+            m_Mod = new ResistanceMod(ResistanceType.Cold, +5);
+            m_Mobile.AddResistanceMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            return base.Eat(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveResistanceMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Frozen",
+                "cabbage"
+            );
         }
     }
 

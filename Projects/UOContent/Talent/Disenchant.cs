@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Server.Items;
 using Server.Targeting;
 
@@ -11,12 +9,12 @@ namespace Server.Talent
         public Disenchant() : base()
         {
             DisplayName = "Disenchant";
-            Description = "Can disenchant non-crafted magical items. Each level enables the disenchantment of more powerful items.";
+            Description = "Can disenchant non-crafted magical items. Each level enables the disenchantment of more powerful items. Requires at least one combat and one crafting skill above 70+.";
             ImageID = 400;
             CanBeUsed = true;
             MaxLevel = 3;
             GumpHeight = 85;
-            AddEndY = 105;
+            AddEndY = 135;
         }
 
         public static bool CanDisenchant(Mobile mobile, int level) {

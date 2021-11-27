@@ -1945,9 +1945,7 @@ namespace Server.Mobiles
             }
         }
 
-        public override void OnBeforeSpawn(Point3D location, Map m)
-
-        {
+        public void CheckBuffs() {
             Type type = GetType();
             if (type != typeof(BaseVendor) && type != typeof(BaseGuard) && type != typeof(BaseFamiliar) && !Region.IsPartOf<TownRegion>())
             {
@@ -1996,11 +1994,17 @@ namespace Server.Mobiles
                     IsReflective = (Utility.Random(1, 10000) < chance);
                     IsRegenerative = (Utility.Random(1, 10000) < chance);
 
-                    if (Paragon.CheckConvert(this, location, m))
-                    {
-                        IsParagon = true;
-                    }
+                    
                 }
+            }
+        }
+
+        public override void OnBeforeSpawn(Point3D location, Map m)
+        {
+            CheckBuffs();
+            if (Paragon.CheckConvert(this, location, m))
+            {
+                IsParagon = true;
             }
 
             base.OnBeforeSpawn(location, m);
@@ -3853,7 +3857,10 @@ namespace Server.Mobiles
                     }
                 }
             }
-
+            if (Utility.Random(7200 - (int)DynamicExperienceValue()) < 1 && DynamicExperienceValue() >= 1200) {
+                RuneWord runeWord = new RuneWord();
+                PackItem(runeWord);
+            }
             if (Utility.Random(5000 - (int)DynamicExperienceValue()) < 1 && MonsterBuff.CanDropShards(this))
             {
                 if (IsFrozen)

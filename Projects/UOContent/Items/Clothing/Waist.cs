@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace Server.Items
 {
     [Serializable(0, false)]

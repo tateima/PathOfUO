@@ -290,7 +290,16 @@ namespace Server.Talent
             typeof(Enchant),
             typeof(Meld),
             typeof(UnMeld),
-            typeof(AstralBorn)
+            typeof(AstralBorn),
+            typeof(GraveDigger),
+            typeof(ExperimentalFood),
+            typeof(ExperimentalDrink),
+            typeof(Fortitude),
+            typeof(CharmUndead),
+            typeof(Mediumship),
+            typeof(Detective),
+            typeof(OrnateCrafter),
+            typeof(RuneBinding)
         };
 
         public int Level
@@ -489,7 +498,7 @@ namespace Server.Talent
             OnCooldown = false;
             Activated = false;
         }
-        public bool IsMobileType(Type[] group, Type type)
+        public static bool IsMobileType(Type[] group, Type type)
         {
             var contains = false;
             for (var j = 0; !contains && j < group.Length; ++j)

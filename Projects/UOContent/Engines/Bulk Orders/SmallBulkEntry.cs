@@ -29,6 +29,12 @@ namespace Server.Engines.BulkOrders
 
         public static SmallBulkEntry[] TailorLeather => GetEntries("Tailoring", "leather");
 
+        public static SmallBulkEntry[] OldWorldCooking => GetEntries("Cooking", "oldworld");
+
+        public static SmallBulkEntry[] SECooking => GetEntries("Cooking", "se");
+
+        public static SmallBulkEntry[] MLCooking => GetEntries("Cooking", "ml");
+
         public static SmallBulkEntry[] GetEntries(string type, string name)
         {
             if (m_Cache == null)

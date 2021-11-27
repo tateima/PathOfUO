@@ -17,10 +17,10 @@ namespace Server.Talent
             RequiredSpell = new Type[] { typeof(FireballSpell), typeof(FireFieldSpell), typeof(FlameStrikeSpell), typeof(MeteorSwarmSpell), typeof(MagicArrowSpell), typeof(ExplosionSpell), typeof(ImmolatingWeaponSpell) };
             TalentDependency = typeof(SpellMind);
             DisplayName = "Frostfire";
-            Description = "Converts Level * 10% of fire spell damage to cold. Slows target. Levels increase potency.";
+            Description = "Converts Level * 10% of fire spell damage to cold. Slows target. Levels increase potency. Requires either 70+ magery or spellweaving.";
             ImageID = 391;
             GumpHeight = 70;
-            AddEndY = 90;
+            AddEndY = 105;
         }
         public override bool HasSkillRequirement(Mobile mobile)
         {

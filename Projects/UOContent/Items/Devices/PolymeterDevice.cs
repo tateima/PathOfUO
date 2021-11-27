@@ -2,10 +2,9 @@ using System;
 using Server;
 using Server.Mobiles;
 using Server.Spells.First;
-using Server.Items;
+using Server.Talent;
 
-
-namespace Server.Talent.Devices
+namespace Server.Items
 {
     [Serializable(0, false)]
     public partial class PolymeterDevice : BaseDevice

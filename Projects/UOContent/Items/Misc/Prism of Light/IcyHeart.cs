@@ -1,3 +1,4 @@
+using Server.Mobiles;
 namespace Server.Items
 {
     public class IcyHeart : Item
@@ -5,6 +6,7 @@ namespace Server.Items
         [Constructible]
         public IcyHeart() : base(0x24B)
         {
+            Hue = MonsterBuff.FrozenHue;
         }
 
         public IcyHeart(Serial serial) : base(serial)

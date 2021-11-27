@@ -3,6 +3,9 @@ namespace Server.Items
     public class NecromancerSpellbook : Spellbook
     {
         [Constructible]
+        public NecromancerSpellbook() : this(0) {
+        }
+        [Constructible]
         public NecromancerSpellbook(ulong content = 0) : base(content, 0x2253) =>
             Layer = Core.ML ? Layer.OneHanded : Layer.Invalid;
 

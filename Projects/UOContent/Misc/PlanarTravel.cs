@@ -14,11 +14,11 @@ namespace Server
             if (mobile is PlayerMobile player) {
                 AstralBorn astralBorn = player.GetTalent(typeof(AstralBorn)) as AstralBorn;
                 if (astralBorn != null) {
-                    player.NextPlanarTravel = Core.Now.AddMinutes(30);
+                    player.NextPlanarTravel = Core.Now.AddMinutes(15);
                 }
                 else
                 {
-                    player.NextPlanarTravel = Core.Now.AddHours(1);
+                    player.NextPlanarTravel = Core.Now.AddHours(30);
                 }
                 
             }

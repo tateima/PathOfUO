@@ -16,7 +16,7 @@ namespace Server.Talent
             HasDeathEffect = true;
             HasKillEffect = true;
             DisplayName = "Master of death";
-            Description = "Chance to summon nearby corpses as undead allies killed by player.";
+            Description = "Chance to summon nearby corpses as undead allies killed by player. Requires 85 necromancy.";
             ImageID = 154;
         }
         public override bool HasSkillRequirement(Mobile mobile)
@@ -42,12 +42,10 @@ namespace Server.Talent
             destination.RawStr += AOS.Scale(target.RawStr, Level);
             return destination;
         }
-        public override void CheckKillEffect(Mobile victim, Mobile killer)
-        {
-            if (Utility.Random(100) < Level * 2) // max 10%
-            {
-                BaseCreature undead = null;
-                switch (Utility.Random(1, 16))
+
+        public static BaseCreature RandomUndead() {
+            BaseCreature undead = null;
+            switch (Utility.RandomMinMax(1, 16))
                 {
                     case 1:
                         undead = new AncientLich();
@@ -98,6 +96,13 @@ namespace Server.Talent
                         undead = new Lich();
                        break;
                 }
+            return undead;
+        }
+        public override void CheckKillEffect(Mobile victim, Mobile killer)
+        {
+            if (Utility.Random(100) < Level * 2) // max 10%
+            {
+                BaseCreature undead = RandomUndead();
                 if (undead != null)
                 {
                     // steal level % of stats from victim -- the stronger the victim the better the summon

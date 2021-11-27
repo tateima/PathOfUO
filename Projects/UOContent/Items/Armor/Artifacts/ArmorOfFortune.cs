@@ -12,7 +12,7 @@ namespace Server.Items
             Attributes.LowerRegCost = 40;
             ArmorAttributes.MageArmor = 1;
         }
-
+        
         public override int LabelNumber => 1061098; // Armor of Fortune
         public override int ArtifactRarity => 11;
 

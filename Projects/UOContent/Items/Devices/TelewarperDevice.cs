@@ -5,10 +5,9 @@ using Server.Mobiles;
 using Server.Spells.Fourth;
 using Server.Spells.Fifth;
 using Server.Spells.Eighth;
-using Server.Items;
+using Server.Talent;
 
-
-namespace Server.Talent.Devices
+namespace Server.Items
 {
     [Serializable(0, false)]
 

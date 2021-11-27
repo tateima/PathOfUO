@@ -4,6 +4,9 @@ namespace Server.Items
     public partial class Nightshade : BaseReagent, ICommodity
     {
         [Constructible]
+        public Nightshade() : this(1) {
+        }
+        [Constructible]
         public Nightshade(int amount = 1) : base(0xF88, amount)
         {
         }

@@ -3,6 +3,9 @@ namespace Server.Items
     public class BagOfingots : Bag
     {
         [Constructible]
+        public BagOfingots() : this(1) {
+        }
+        [Constructible]
         public BagOfingots(int amount = 5000)
         {
             DropItem(new DullCopperIngot(amount));

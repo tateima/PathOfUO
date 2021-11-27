@@ -263,7 +263,6 @@ namespace Server.Mobiles
         private bool m_Slowed;
         private bool m_Blinded;
         private int m_TalentResets;
-        private int m_SkillResets;
         private bool m_Feared;
         private DateTime m_NextPlanarTravel;
 
@@ -280,6 +279,7 @@ namespace Server.Mobiles
         private int m_NextProtectionCheck = 10;
         private DateTime m_NextSmithBulkOrder;
         private DateTime m_NextTailorBulkOrder;
+        private DateTime m_NextCookBulkOrder;
 
         private bool m_NoDeltaRecursion;
 
@@ -305,7 +305,6 @@ namespace Server.Mobiles
             m_StatPoints = 0;
             m_TalentPoints = 0;
             m_TalentResets = 0;
-            m_SkillResets = 0;
             m_Slowed = false;
             m_Blinded = false;
             m_Feared = false;
@@ -536,18 +535,6 @@ namespace Server.Mobiles
             InvalidateProperties();
         }
         [CommandProperty(AccessLevel.GameMaster)]
-        public int SkillResets
-        {
-            get
-            {
-                return m_SkillResets;
-            }
-            set
-            {
-                m_SkillResets = value;
-            }
-        }
-        [CommandProperty(AccessLevel.GameMaster)]
         public int TalentResets
         {
             get
@@ -708,6 +695,24 @@ namespace Server.Mobiles
         {
             get => Utility.Max(m_SavagePaintExpiration - Core.Now, TimeSpan.Zero);
             set => m_SavagePaintExpiration = Core.Now + value;
+        }
+
+        
+        [CommandProperty(AccessLevel.GameMaster)]
+        public TimeSpan NextCookBulkOrder
+        {
+            get => Utility.Max(m_NextCookBulkOrder - Core.Now, TimeSpan.Zero);
+            set
+            {
+                try
+                {
+                    m_NextCookBulkOrder = Core.Now + value;
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
@@ -1225,15 +1230,20 @@ namespace Server.Mobiles
         }
         public void Fear(int duration , string message = "* Feared *")
         {
-            Feared = true;
-            SendSound(0x182);
-            PublicOverheadMessage(
-                MessageType.Regular,
-                0x3B2,
-                false,
-                message
-                );
-            Timer.StartTimer(TimeSpan.FromSeconds(duration), UnFear);
+            Fearless fearless = GetTalent(typeof(Fearless)) as Fearless;
+            if (fearless != null && fearless.CheckFearSave(this)) {
+                SendMessage("You courageously resisted the fear effect");
+            } else {
+                Feared = true;
+                SendSound(0x182);
+                PublicOverheadMessage(
+                    MessageType.Regular,
+                    0x3B2,
+                    false,
+                    message
+                    );
+                Timer.StartTimer(TimeSpan.FromSeconds(duration), UnFear);
+            }
         }
         public void UnFear()
         {
@@ -1801,9 +1811,15 @@ namespace Server.Mobiles
             int damage = Utility.RandomMinMax(11, 30 - (int)(Skills.Cooking.Value / 10)); // cooking helps save hunger death!
             if (Hunger < 10)
             {
+                string message = "Thou need food or else thy will die!";
+                BaseTalent fortitude = GetTalent(typeof(Fortitude));
+                if (fortitude != null && Hits - damage <= 0) {
+                    damage = 0;
+                    message = "Thou need food but thy talents spared thee!";
+                } 
+                SendMessage(0x21, message);
                 Damage(damage - Hunger, this);
                 Stam -= (damage - Hunger);
-                SendMessage(0x21, "Thou need food or else thy will die!");
             }
             if (Thirst < 10)
             {
@@ -2440,9 +2456,8 @@ namespace Server.Mobiles
             NonCraftSkillPoints += nonCraftPoints;
             CraftSkillPoints += craftPoints;
             RangerSkillPoints += rangerPoints;
-            SkillResets++;
         }
-
+        
         public void ResetTalents()
         {
             foreach (KeyValuePair<Type, BaseTalent> entry in Talents)
@@ -3622,9 +3637,6 @@ namespace Server.Mobiles
             var version = reader.ReadInt();
             switch (version)
             {
-                case 38:
-                    m_SkillResets = reader.ReadInt();
-                    goto case 37;
                 case 37:
                     m_NextPlanarTravel = reader.ReadDateTime();
                     m_Feared = reader.ReadBool();
@@ -4017,8 +4029,7 @@ namespace Server.Mobiles
 
             base.Serialize(writer);
 
-            writer.Write(38); // version
-            writer.Write(m_SkillResets);
+            writer.Write(37); // version
             writer.Write(m_NextPlanarTravel);
             writer.Write(m_Feared);
             writer.Write(m_Blinded);

@@ -129,6 +129,9 @@ namespace Server.Mobiles
             else if (bc.IsFrozen)
             {
                 bc.SetResistance(ResistanceType.Cold, 100);
+                if (bc.Backpack != null) {
+                    bc.Backpack.AddItem(new IcyHeart());
+                }
             }
             AddLoot(bc, Utility.Random(2, 4));
             new ElementalDamageTimer(bc).Start();
@@ -714,9 +717,8 @@ namespace Server.Mobiles
                                 continue;
                             }
                             creature.IsCorrupted = true;
-                        } else if (mobile is PlayerMobile player) {
-                            Fearless fearless = player.GetTalent(typeof(Fearless)) as Fearless;
-                            if (CheckElementalEffect(5) && fearless is null || (fearless != null && !fearless.CheckFearSave(player))) {
+                        } else if (mobile is PlayerMobile player) {                            
+                            if (CheckElementalEffect(5)) {
                                 player.Fear(Utility.Random(10));
                             }
                         }

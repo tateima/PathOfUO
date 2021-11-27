@@ -4,6 +4,9 @@ namespace Server.Items
     public partial class Bone : Item, ICommodity
     {
         [Constructible]
+        public Bone() : this(1) {
+        }
+        [Constructible]
         public Bone(int amount = 1) : base(0xf7e)
         {
             Stackable = true;

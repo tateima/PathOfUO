@@ -10,11 +10,11 @@ namespace Server.Talent
         {
             TalentDependency = typeof(Resonance);
             DisplayName = "Mass Confusion";
-            Description = "Your music confuses nearby monsters. Each level increases AOE and decreases cooldown by 10s. 3 min cooldown.";
+            Description = "Your music confuses nearby monsters. Each level increases AOE and decreases cooldown by 10s. 3 min cooldown. Requires 60 peace, provocation and 70 music.";
             ImageID = 384;
             CanBeUsed = true;
             GumpHeight = 230;
-            AddEndY = 105;
+            AddEndY = 125;
             MaxLevel = 5;
         }
          public override bool HasSkillRequirement(Mobile mobile)

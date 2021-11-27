@@ -9,10 +9,10 @@ namespace Server.Talent
         public Fearless() : base()
         {
             DisplayName = "Fearless";
-            Description = "Decreases chance to be feared by 2% per point.";
+            Description = "Decreases chance to be feared by 2% per point. Requires at least 80+ melee skill.";
             ImageID = 401;
             GumpHeight = 85;
-            AddEndY = 80;
+            AddEndY = 90;
         }
         public bool CheckFearSave(Mobile from) {
             return HasSkillRequirement(from) && Utility.Random(100) < Level * 2;

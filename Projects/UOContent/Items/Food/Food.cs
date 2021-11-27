@@ -221,6 +221,58 @@ namespace Server.Items
         }
     }
 
+    public class GarlicBread : Food
+    {
+        private Mobile m_Mobile;
+        private ResistanceMod m_Mod;
+
+        [Constructible]
+        public GarlicBread(int amount = 1) : base(0x103B, amount)
+        {
+            Weight = 1.0;
+            FillFactor = 1;
+        }
+
+        public GarlicBread(Serial serial) : base(serial)
+        {
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+        public override bool Eat(Mobile from) {
+            from.SendMessage("You feel a slight increase in energy resistance");
+            m_Mobile = from;
+            m_Mod = new ResistanceMod(ResistanceType.Energy, +1);
+            m_Mobile.AddResistanceMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            return base.Eat(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveResistanceMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Garlic",
+                "bread"
+            );
+        }
+    }
+
     public class Bacon : Food
     {
         [Constructible]
@@ -303,8 +355,71 @@ namespace Server.Items
         }
     }
 
+    public class SingingFillet : Food
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod;
+        [Constructible]
+        public SingingFillet(int amount = 1) : base(0x97B, amount) => FillFactor = 3;
+
+        public SingingFillet(Serial serial) : base(serial)
+        {
+        }
+
+        public override double DefaultWeight => 0.1;
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+        public override bool Eat(Mobile from) {
+            from.SendMessage("You feel a slight increase in a barding skill");
+            m_Mobile = from;
+            switch(Utility.RandomMinMax(1, 3)) {
+                case 1:
+                    m_Mod = new DefaultSkillMod(SkillName.Peacemaking, true, 5);
+                break;
+                case 2:
+                    m_Mod = new DefaultSkillMod(SkillName.Discordance, true, 5);
+                break;
+                case 3:
+                    m_Mod = new DefaultSkillMod(SkillName.Provocation, true, 5);
+                break;
+            }
+            m_Mobile.AddSkillMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            return base.Eat(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveSkillMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Singing",
+                "fillet"
+            );
+        }
+    }
+
     public class CheeseWheel : Food
     {
+        [Constructible]
+        public CheeseWheel() : this(1) 
+        {            
+        }
         [Constructible]
         public CheeseWheel(int amount = 1) : base(0x97E, amount) => FillFactor = 3;
 
@@ -326,6 +441,58 @@ namespace Server.Items
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+        }
+    }
+
+    public class IronRichCheese : Food
+    {
+        private Mobile m_Mobile;
+        private ResistanceMod m_Mod;
+
+        [Constructible]
+        public IronRichCheese(int amount = 1) : base(0x97E, amount)
+        {
+            Weight = 1.0;
+            FillFactor = 1;
+        }
+
+        public IronRichCheese(Serial serial) : base(serial)
+        {
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+        public override bool Eat(Mobile from) {
+            from.SendMessage("You feel a slight increase in physical resistance");
+            m_Mobile = from;
+            m_Mod = new ResistanceMod(ResistanceType.Physical, +1);
+            m_Mobile.AddResistanceMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            return base.Eat(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveResistanceMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Iron-rich",
+                "cheese"
+            );
         }
     }
 
@@ -409,6 +576,58 @@ namespace Server.Items
         }
     }
 
+    public class SourDough : Food
+    {
+        private Mobile m_Mobile;
+        private ResistanceMod m_Mod;
+
+        [Constructible]
+        public SourDough(int amount = 1) : base(0x98C, amount)
+        {
+            Weight = 2.0;
+            FillFactor = 1;
+        }
+
+        public SourDough(Serial serial) : base(serial)
+        {
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+           public override bool Eat(Mobile from) {
+            from.SendMessage("You feel a slight increase in poison resistance");
+            m_Mobile = from;
+            m_Mod = new ResistanceMod(ResistanceType.Poison, +1);
+            m_Mobile.AddResistanceMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            return base.Eat(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveResistanceMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Sourdough",
+                "bread"
+            );
+        }
+    }
+
     public class FriedEggs : Food
     {
         [Constructible]
@@ -434,6 +653,57 @@ namespace Server.Items
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+        }
+    }
+
+    public class BraveEggs : Food
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod;
+        [Constructible]
+        public BraveEggs(int amount = 1) : base(0x9B6, amount)
+        {
+            Weight = 1.0;
+            FillFactor = 1;
+        }
+
+        public BraveEggs(Serial serial) : base(serial)
+        {
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+        public override bool Eat(Mobile from) {
+            from.SendMessage("You feel a slight increase in swordsman skill");
+            m_Mobile = from;
+            m_Mod = new DefaultSkillMod(SkillName.Swords, true, 5);
+            m_Mobile.AddSkillMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            return base.Eat(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveSkillMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Brave",
+                "eggs"
+            );
         }
     }
 
@@ -465,6 +735,57 @@ namespace Server.Items
         }
     }
 
+    public class StickyChicken : Food
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod;
+        [Constructible]
+        public StickyChicken(int amount = 1) : base(0x9B7, amount)
+        {
+            Weight = 1.0;
+            FillFactor = 5;
+        }
+
+        public StickyChicken(Serial serial) : base(serial)
+        {
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+        public override bool Eat(Mobile from) {
+            from.SendMessage("You feel a slight increase in taming skill");
+            m_Mobile = from;
+            m_Mod = new DefaultSkillMod(SkillName.AnimalTaming, true, 5);
+            m_Mobile.AddSkillMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            return base.Eat(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveSkillMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Sticky",
+                "chicken"
+            );
+        }
+    }
+
     public class RoastPig : Food
     {
         [Constructible]
@@ -490,6 +811,58 @@ namespace Server.Items
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+        }
+    }
+
+    public class DecoratedRoastPig : Food
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod;
+
+        [Constructible]
+        public DecoratedRoastPig(int amount = 1) : base(0x9BB, amount)
+        {
+            Weight = 20.0;
+            FillFactor = 1;
+        }
+
+        public DecoratedRoastPig(Serial serial) : base(serial)
+        {
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+        public override bool Eat(Mobile from) {
+            from.SendMessage("You feel a slight increase in macing skill");
+            m_Mobile = from;
+            m_Mod = new DefaultSkillMod(SkillName.Macing, true, 5);
+            m_Mobile.AddSkillMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            return base.Eat(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveSkillMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Decorated roast",
+                "pig"
+            );
         }
     }
 
@@ -521,13 +894,63 @@ namespace Server.Items
         }
     }
 
+    public class EnchantedSausage : Food
+    {
+
+        [Constructible]
+        public EnchantedSausage(int amount = 1) : base(0x9C0, amount)
+        {
+            Hue = 0x7D;
+            Weight = 1.0;
+            FillFactor = 1;
+        }
+
+        public EnchantedSausage(Serial serial) : base(serial)
+        {
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+
+        public override bool Eat(Mobile from) {
+            
+            from.SendMessage("Your hitpoints is magically rejuvenated.");    
+            int hitsAmount = AOS.Scale(from.HitsMax, 33);
+            if ((from.Hits += hitsAmount) > from.HitsMax) {
+                from.Hits = from.HitsMax;
+            } else {
+                from.Hits += hitsAmount;
+            }
+            return base.Eat(from);
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Enchanted",
+                "sausage"
+            );
+        }
+    }
+
     public class Ham : Food
     {
         [Constructible]
         public Ham(int amount = 1) : base(0x9C9, amount)
         {
             Weight = 1.0;
-            FillFactor = 5;
+            FillFactor = 1;
         }
 
         public Ham(Serial serial) : base(serial)
@@ -546,6 +969,54 @@ namespace Server.Items
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+        }
+    }
+
+    public class GoldenHam : Food
+    {
+        [Constructible]
+        public GoldenHam(int amount = 1) : base(0x9C9, amount)
+        {
+            Hue = 0x94;
+            Weight = 1.0;
+            FillFactor = 1;
+        }
+
+        public GoldenHam(Serial serial) : base(serial)
+        {
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+        public override bool Eat(Mobile from) {
+            
+            from.SendMessage("Your stamina is magically rejuvenated.");    
+            int amount = AOS.Scale(from.StamMax, 33);
+            if ((from.Stam += amount) > from.StamMax) {
+                from.Stam = from.StamMax;
+            } else {
+                from.Stam += amount;
+            }
+            return base.Eat(from);
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Golden",
+                "ham"
+            );
         }
     }
 
@@ -578,6 +1049,60 @@ namespace Server.Items
         }
     }
 
+    public class MandrakeCake : Food
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod;
+        [Constructible]
+        public MandrakeCake() : base(0x9E9, 1)
+        {
+            Hue = 0x8E;
+            Stackable = false;
+            Weight = 1.0;
+            FillFactor = 10;
+        }
+
+        public MandrakeCake(Serial serial) : base(serial)
+        {
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+
+        public override bool Eat(Mobile from) {
+            from.SendMessage("You feel a slight increase in magery skill");
+            m_Mobile = from;
+            m_Mod = new DefaultSkillMod(SkillName.Magery, true, 5);
+            m_Mobile.AddSkillMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            return base.Eat(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveSkillMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Mandrake",
+                "cake"
+            );
+        }
+    }
+
     public class Ribs : Food
     {
         [Constructible]
@@ -603,6 +1128,58 @@ namespace Server.Items
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+        }
+    }
+
+    public class BatEncrustedRibs : Food
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod;
+        [Constructible]
+        public BatEncrustedRibs(int amount = 1) : base(0x9F2, amount)
+        {
+            Hue = 0x21E;
+            Weight = 1.0;
+            FillFactor = 1;
+        }
+
+        public BatEncrustedRibs(Serial serial) : base(serial)
+        {
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+        public override bool Eat(Mobile from) {
+            from.SendMessage("You feel a slight increase in fencing skill");
+            m_Mobile = from;
+            m_Mod = new DefaultSkillMod(SkillName.Fencing, true, 5);
+            m_Mobile.AddSkillMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            return base.Eat(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveSkillMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Bat-encrusted",
+                "ribs"
+            );
         }
     }
 
@@ -789,6 +1366,60 @@ namespace Server.Items
         }
     }
 
+    public class AthletesPie : Food
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod;
+        [Constructible]
+        public AthletesPie() : base(0x1041, 1)
+        {
+            Stackable = false;
+            Weight = 1.0;
+            FillFactor = 5;
+        }
+
+        public AthletesPie(Serial serial) : base(serial)
+        {
+        }
+
+        public override int LabelNumber => 1041347; // baked meat pie
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+        public override bool Eat(Mobile from) {
+            from.SendMessage("You feel a slight increase in anatomy skill");
+            m_Mobile = from;
+            m_Mod = new DefaultSkillMod(SkillName.Anatomy, true, 5);
+            m_Mobile.AddSkillMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            return base.Eat(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveSkillMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Athletes",
+                "pie"
+            );
+        }
+    }
+
     public class PumpkinPie : Food
     {
         [Constructible]
@@ -848,6 +1479,61 @@ namespace Server.Items
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+        }
+    }
+
+    public class LemonPie : Food
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod;
+        [Constructible]
+        public LemonPie() : base(0x1041, 1)
+        {
+            Hue = 0x229;
+            Stackable = false;
+            Weight = 1.0;
+            FillFactor = 1;
+        }
+
+        public LemonPie(Serial serial) : base(serial)
+        {
+        }
+
+        public override int LabelNumber => 1041343; // baked apple pie
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+        public override bool Eat(Mobile from) {
+            from.SendMessage("You feel a slight increase in archery skill");
+            m_Mobile = from;
+            m_Mod = new DefaultSkillMod(SkillName.Archery, true, 5);
+            m_Mobile.AddSkillMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            return base.Eat(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveSkillMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Lemon",
+                "pie"
+            );
         }
     }
 
@@ -913,6 +1599,60 @@ namespace Server.Items
         }
     }
 
+    public class PhilosophersQuiche : Food
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod;
+        [Constructible]
+        public PhilosophersQuiche() : base(0x1041, 1)
+        {
+            Stackable = Core.ML;
+            Weight = 1.0;
+            FillFactor = 5;
+        }
+
+        public PhilosophersQuiche(Serial serial) : base(serial)
+        {
+        }
+
+        public override int LabelNumber => 1041345; // baked quiche
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+        public override bool Eat(Mobile from) {
+            from.SendMessage("You feel a slight increase in evaluating intelligence skill");
+            m_Mobile = from;
+            m_Mod = new DefaultSkillMod(SkillName.EvalInt, true, 5);
+            m_Mobile.AddSkillMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            return base.Eat(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveSkillMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Philosophers",
+                "quiche"
+            );
+        }
+    }
+
     public class LambLeg : Food
     {
         [Constructible]
@@ -938,6 +1678,58 @@ namespace Server.Items
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+        }
+    }
+
+    public class SacrificialLambLeg : Food
+    {
+        private Mobile m_Mobile;
+        private SkillMod m_Mod;
+        [Constructible]
+        public SacrificialLambLeg(int amount = 1) : base(0x160a, amount)
+        {
+            Hue = 0x215;
+            Weight = 2.0;
+            FillFactor = 1;
+        }
+
+        public SacrificialLambLeg(Serial serial) : base(serial)
+        {
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+        public override bool Eat(Mobile from) {
+            from.SendMessage("You feel a slight increase in necromancy skill");
+            m_Mobile = from;
+            m_Mod = new DefaultSkillMod(SkillName.Archery, true, 5);
+            m_Mobile.AddSkillMod(m_Mod);
+            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            return base.Eat(from);
+        }
+        public void ExpireBuff() {
+            if (m_Mobile != null && m_Mod != null) {
+                m_Mobile.RemoveSkillMod(m_Mod);
+            }            
+        }
+        public override void GetProperties(ObjectPropertyList list)
+        {
+            list.Add(
+                1060847,
+                "Sacrificial lamb",
+                "leg"
+            );
         }
     }
 

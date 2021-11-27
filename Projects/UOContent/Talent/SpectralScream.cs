@@ -52,10 +52,7 @@ namespace Server.Talent
                             PathFollower path = new PathFollower(other, newLocation);
                             creature.AIObject.Path = path;
                         } else if (other is PlayerMobile player) {
-                            Fearless fearless = player.GetTalent(typeof(Fearless)) as Fearless;
-                            if (fearless is null || fearless != null && !fearless.CheckFearSave(player))  {
-                                player.Fear(Utility.Random(10));
-                            }
+                            player.Fear(Utility.Random(10));
                         }
                     }
                     OnCooldown = true;

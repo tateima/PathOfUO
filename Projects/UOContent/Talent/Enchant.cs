@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Server.Items;
 using Server.Targeting;
 
@@ -12,12 +10,12 @@ namespace Server.Talent
         {
             TalentDependency = typeof(Disenchant);
             DisplayName = "Enchant";
-            Description = "Enchant crafted weaponary with random magical properties. Each level enables more affixes.";
+            Description = "Enchant crafted weaponary with random magical properties. Each level enables more affixes. Requires at least one combat and one crafting skill above 70+.";
             ImageID = 399;
             CanBeUsed = true;
             MaxLevel = 8;
             GumpHeight = 85;
-            AddEndY = 105;
+            AddEndY = 135;
         }
 
         public override bool HasSkillRequirement(Mobile mobile)
@@ -31,6 +29,24 @@ namespace Server.Talent
                 from.SendMessage("What item do you wish to enchant?");
                 from.Target = new InternalTarget(from, this);
             }
+        }
+
+        public static AosElementAttribute RandomElementAttribute() {
+            Array attributes = Enum.GetValues(typeof(AosElementAttribute));
+            AosElementAttribute randomAttribute = (AosElementAttribute)attributes.GetValue(Utility.Random(attributes.Length));
+            return randomAttribute;
+        }
+
+        public static AosAttribute RandomAttribute() {
+            Array attributes = Enum.GetValues(typeof(AosAttribute));
+            AosAttribute randomAttribute = (AosAttribute)attributes.GetValue(Utility.Random(attributes.Length));
+            return randomAttribute;
+        }
+
+        public static AosArmorAttribute RandomArmorAttribute() {
+                Array attributes = Enum.GetValues(typeof(AosArmorAttribute));
+                AosArmorAttribute randomAttribute = (AosArmorAttribute)attributes.GetValue(Utility.Random(attributes.Length));
+                return randomAttribute;
         }
 
         private class InternalTarget : Target
@@ -64,18 +80,6 @@ namespace Server.Talent
                 }
             }
 
-            public AosElementAttribute RandomElementAttribute() {
-                Array attributes = Enum.GetValues(typeof(AosElementAttribute));
-                AosElementAttribute randomAttribute = (AosElementAttribute)attributes.GetValue(Utility.Random(attributes.Length));
-                return randomAttribute;
-            }
-
-            public AosAttribute RandomAttribute() {
-                Array attributes = Enum.GetValues(typeof(AosAttribute));
-                AosAttribute randomAttribute = (AosAttribute)attributes.GetValue(Utility.Random(attributes.Length));
-                return randomAttribute;
-            }
-
             public void CalculateAffixPower(ref int affixPower, ref int numberOfAffixes, ref int numberOfSkills, ref int numberOfElements, int tierOne, int tierTwo, int tierThree, int tierFour) {
                 if (Utility.Random(100) < tierFour) {
                     numberOfAffixes = 4;
@@ -103,11 +107,7 @@ namespace Server.Talent
                 }
             }
 
-            public AosArmorAttribute RandomArmorAttribute() {
-                Array attributes = Enum.GetValues(typeof(AosArmorAttribute));
-                AosArmorAttribute randomAttribute = (AosArmorAttribute)attributes.GetValue(Utility.Random(attributes.Length));
-                return randomAttribute;
-            }
+            
 
              public BaseArmor GenerateArmorAttributes(BaseArmor armor, int numberOfAffixes, int affixPower, int numberOfSkills, int numberOfElements) {
                 int affixes = Utility.Random(numberOfAffixes);
@@ -463,6 +463,14 @@ namespace Server.Talent
                 if (targeted is Item item && item.IsChildOf(from.Backpack)) 
                 {
                     if (dust != null && dust.Amount >= 50) {
+                        if (item is RuneWord && dust.Amount >= 500) {
+                            // roll a new runeword
+                            RuneWord rune = new RuneWord();
+                            from.Backpack.DropItem(rune);
+                            item.Delete();
+                            dust.Consume(500);
+                            return;
+                        }
                         int tierOne = 0;
                         int tierTwo = 0;
                         int tierThree = 0;
@@ -511,11 +519,7 @@ namespace Server.Talent
                             from.PlaySound(0x5C);
                             from.SendMessage("You fail to enchant the item with any magical properties.");
                         }
-                        if (dust.Amount == 50) {
-                            dust.Delete();
-                        } else {
-                            dust.Amount -= 50;
-                        }   
+                        dust.Consume(50);
                     } else {
                         from.SendMessage("You do not have enough enchanter dust in your backpack.");
                     }

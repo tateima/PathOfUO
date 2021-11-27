@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Server.Engines.Craft;
 
 namespace Server.Items
@@ -24,6 +25,8 @@ namespace Server.Items
         private int m_MaxHitPoints;
         private CraftResource m_Resource;
         private Mobile m_Crafter;
+        private int m_SocketAmount;
+        private List<Item> m_Sockets;
 
         public BaseJewel(int itemID, Layer layer) : base(itemID)
         {
@@ -32,7 +35,8 @@ namespace Server.Items
             SkillBonuses = new AosSkillBonuses(this);
             m_Resource = CraftResource.Iron;
             m_GemType = GemType.None;
-
+            m_SocketAmount = 0;
+            m_Sockets = new List<Item>();
             Layer = layer;
 
             m_HitPoints = m_MaxHitPoints = Utility.RandomMinMax(InitMinHits, InitMaxHits);
@@ -40,6 +44,28 @@ namespace Server.Items
 
         public BaseJewel(Serial serial) : base(serial)
         {
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int SocketAmount
+        {
+            get => m_SocketAmount;
+            set
+            {
+                m_SocketAmount = value;
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public List<Item> Sockets
+        {
+            get => m_Sockets;
+            set
+            {
+                m_Sockets = value;
+                InvalidateProperties();
+            }
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
@@ -276,6 +302,27 @@ namespace Server.Items
         {
             base.GetProperties(list);
 
+            if (m_SocketAmount > 0) {
+                list.Add(
+                   1060847,
+                    "Sockets: {0}/{1}",
+                    m_Sockets.Count.ToString(),
+                    m_SocketAmount.ToString()
+                );
+                foreach(Item socket in m_Sockets) {
+                    string itemName = socket.Name;
+                    if (string.IsNullOrEmpty(itemName)) {
+                        list.Add(socket.LabelNumber);
+                    } else {
+                        list.Add(
+                        1060847,
+                            "{0}",
+                            itemName
+                        );
+                    }
+                    SocketBonus.AddSocketProperties(socket, this, list);
+                }
+            }
             SkillBonuses.GetProperties(list);
 
             int prop;
@@ -417,7 +464,9 @@ namespace Server.Items
         {
             base.Serialize(writer);
 
-            writer.Write(4); // version
+            writer.Write(5); // version
+            writer.Write(m_SocketAmount);
+            writer.Write(m_Sockets);
             
             writer.Write(m_Crafter);
             writer.WriteEncodedInt(m_MaxHitPoints);
@@ -439,6 +488,12 @@ namespace Server.Items
 
             switch (version)
             {
+                case 5:
+                    {
+                        m_SocketAmount = reader.ReadInt();
+                        m_Sockets = reader.ReadEntityList<Item>();
+                        goto case 4;
+                    }
                 case 4:
                     {
                         m_Crafter = reader.ReadEntity<Mobile>();
@@ -516,6 +571,10 @@ namespace Server.Items
             {
                 m_Resource = CraftResource.Iron;
                 m_GemType = GemType.None;
+            }
+
+            if (m_Sockets is null) {
+                m_Sockets = new List<Item>();
             }
         }
     }

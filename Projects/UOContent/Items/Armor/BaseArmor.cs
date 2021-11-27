@@ -189,6 +189,57 @@ namespace Server.Items
         [SerializableFieldSaveFlag(25)]
         private bool ShouldSerializeShardPower() => _shardPower != 0;
 
+        // Field 26
+        private int _socketAmount = 0;
+
+        [EncodedInt]
+        [SerializableField(26)]
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int SocketAmount
+        {
+            get => _socketAmount;
+            set
+            {
+                if (_socketAmount != value)
+                {
+                    _socketAmount = value;
+
+                    Invalidate();
+                    InvalidateProperties();
+                    this.MarkDirty();
+                }
+            }
+        }
+
+        [SerializableFieldSaveFlag(26)]
+        private bool ShouldSerializeSocketAmount() => _socketAmount != 0;
+
+         // Field 27
+        private List<Item> _sockets = new List<Item>();
+
+        [EncodedInt]
+        [SerializableField(27)]
+        [CommandProperty(AccessLevel.GameMaster)]
+        public List<Item> Sockets
+        {
+            get => _sockets;
+            set
+            {
+                if (_sockets != value)
+                {
+                    _sockets = value;
+
+                    Invalidate();
+                    InvalidateProperties();
+                    this.MarkDirty();
+                }
+            }
+        }
+
+        [SerializableFieldSaveFlag(27)]
+        private bool ShouldSerializeSockets() => _sockets.Count > 0;
+
+        public static string RuneWord => null;
 
         private FactionItem m_FactionState;
 
@@ -206,6 +257,8 @@ namespace Server.Items
             ArmorAttributes = new AosArmorAttributes(this);
             SkillBonuses = new AosSkillBonuses(this);
             _shardPower = 0;
+            _socketAmount = 0;
+            _sockets = new List<Item>();
         }
 
         public virtual bool AllowMaleWearer => true;
@@ -1111,6 +1164,16 @@ namespace Server.Items
 
             Attributes = new AosAttributes(this);
 
+            if (GetSaveFlag(flags, OldSaveFlag.SocketAmount))
+            {
+                _socketAmount = reader.ReadEncodedInt();
+            }
+
+            if (GetSaveFlag(flags, OldSaveFlag.Sockets))
+            {
+                _sockets = reader.ReadEntityList<Item>();
+            }
+
             if (GetSaveFlag(flags, OldSaveFlag.ShardPower))
             {
                 _shardPower = reader.ReadEncodedInt();
@@ -1368,6 +1431,7 @@ namespace Server.Items
                 }
             }
 
+            SocketBonus.CheckSockets(from, false, _sockets, this);
             return base.OnEquip(from);
         }
 
@@ -1388,6 +1452,7 @@ namespace Server.Items
 
                 m.Delta(MobileDelta.Armor); // Tell them armor rating has changed
                 m.CheckStatTimers();
+                SocketBonus.CheckSockets(m, true, _sockets, this);
             }
 
             base.OnRemoved(parent);
@@ -1688,6 +1753,36 @@ namespace Server.Items
         {
             base.GetProperties(list);
 
+            if (_socketAmount > 0) {
+                list.Add(
+                   1060847,
+                   "Sockets: {0}/{1}",
+                    _sockets.Count.ToString(),
+                    _socketAmount.ToString()
+                );
+                foreach(Item socket in _sockets) {
+                    string itemName = socket.Name;
+                    if (string.IsNullOrEmpty(itemName)) {
+                        list.Add(socket.LabelNumber);
+                    } else {
+                        list.Add(
+                        1060847,
+                            "{0}",
+                            itemName
+                        );
+                    }
+                    SocketBonus.AddSocketProperties(socket, this, list);
+                }
+            }
+            if (_shardPower > 0)
+            {
+                list.Add(
+                   1060847,
+                    "Shard Power: {0}",
+                    _shardPower.ToString()
+                );
+            }
+
             if (_crafter != null)
             {
                 list.Add(1050043, _crafter.Name); // crafted by ~1_NAME~
@@ -1868,8 +1963,7 @@ namespace Server.Items
             {
                 list.Add(1060639, "{0}\t{1}", _hitPoints, _maxHitPoints); // durability ~1_val~ / ~2_val~
             }
-        }
-
+        }       
         public override void OnSingleClick(Mobile from)
         {
             var attrs = new List<EquipInfoAttribute>();
@@ -1963,7 +2057,9 @@ namespace Server.Items
             MedAllowance = 0x00400000,
             SkillBonuses = 0x00800000,
             PlayerConstructed = 0x01000000,
-            ShardPower = 0x02000000
+            ShardPower = 0x02000000,
+            SocketAmount = 0x03000000,
+            Sockets = 0x04000000
         }
     }
 }

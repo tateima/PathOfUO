@@ -1,8 +1,10 @@
 using System;
+using System.Linq;
 using Server.Buffers;
 using Server.Items;
 using Server.Mobiles;
 using Server.Targeting;
+using Server.Talent;
 
 namespace Server.SkillHandlers
 {
@@ -31,6 +33,12 @@ namespace Server.SkillHandlers
 
             protected override void OnTarget(Mobile from, object target)
             {
+                if (target is Item item && from is PlayerMobile player) {
+                    Detective detective = player.GetTalent(typeof(Detective)) as Detective;
+                    if (detective != null) {
+                       Clue clue = detective.CheckSolve(from, item);
+                    }
+                }
                 if (target is Mobile)
                 {
                     if (from.CheckTargetSkill(SkillName.Forensics, target, 40.0, 100.0))

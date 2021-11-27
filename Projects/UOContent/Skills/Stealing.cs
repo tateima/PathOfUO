@@ -195,7 +195,7 @@ namespace Server.SkillHandlers
                                     sig.LastMonolith.Sigil = null;
                                     sig.LastStolen = Core.Now;
                                 }
-
+                                ((PlayerMobile)m_Thief).NonCraftExperience += Utility.RandomMinMax(200, 300);
                                 return sig;
                             }
                         }
@@ -323,6 +323,7 @@ namespace Server.SkillHandlers
                                 toSteal.Movable = true;
                                 si.Item = null;
                             }
+                            ((PlayerMobile)m_Thief).NonCraftExperience += Utility.RandomMinMax(75, 150);
                         }
                         else
                         {

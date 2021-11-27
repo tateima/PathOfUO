@@ -16,6 +16,10 @@ namespace Server.Engines.BulkOrders
             else if (bod is SmallSmithBOD)
             {
                 DeedType = BODType.Smith;
+            } 
+            else if (bod is SmallCookingBOD)
+            {
+                DeedType = BODType.Cooking;
             }
 
             Material = bod.Material;
@@ -85,6 +89,9 @@ namespace Server.Engines.BulkOrders
             else if (DeedType == BODType.Tailor)
             {
                 bod = new SmallTailorBOD(AmountCur, AmountMax, ItemType, Number, Graphic, RequireExceptional, Material);
+            } else if (DeedType == BODType.Cooking) 
+            {                
+                bod = new SmallCookingBOD(AmountCur, AmountMax, ItemType, Number, Graphic, RequireExceptional, Material);
             }
 
             return bod;
