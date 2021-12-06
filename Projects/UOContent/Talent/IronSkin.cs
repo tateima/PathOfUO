@@ -1,14 +1,12 @@
-using Server.Mobiles;
 using System;
 
 namespace Server.Talent
 {
-    public class IronSkin : BaseTalent, ITalent
+    public class IronSkin : BaseTalent
     {
         private Mobile m_Mobile;
-        private TimerExecutionToken _buffTimerToken;
 
-        public IronSkin() : base()
+        public IronSkin()
         {
             TalentDependency = typeof(GiantsHeritage);
             DisplayName = "Iron skin";
@@ -18,24 +16,26 @@ namespace Server.Talent
             GumpHeight = 70;
             AddEndY = 65;
         }
-        public override void OnUse(Mobile mobile)
+
+        public override void OnUse(Mobile from)
         {
             if (!OnCooldown)
             {
                 ResMod = new ResistanceMod(ResistanceType.Physical, Level * 5);
-                m_Mobile = mobile;
+                m_Mobile = from;
                 OnCooldown = true;
                 if (Core.AOS)
                 {
                     m_Mobile.AddResistanceMod(ResMod);
                     m_Mobile.FixedParticles(0x373A, 10, 15, 5021, EffectLayer.Waist);
                     m_Mobile.PlaySound(0x63B);
-
                 }
-                Timer.StartTimer(TimeSpan.FromSeconds(60 + Utility.Random(20)), ExpireBuff, out _buffTimerToken);
+
+                Timer.StartTimer(TimeSpan.FromSeconds(60 + Utility.Random(20)), ExpireBuff, out _);
                 Timer.StartTimer(TimeSpan.FromSeconds(180 - Level * 5), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
+
         public void ExpireBuff()
         {
             if (m_Mobile != null)

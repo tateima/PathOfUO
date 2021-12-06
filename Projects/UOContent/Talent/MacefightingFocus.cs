@@ -1,13 +1,10 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class MacefightingFocus : BaseTalent, ITalent
+    public class MacefightingFocus : BaseTalent
     {
-        public MacefightingFocus() : base()
+        public MacefightingFocus()
         {
-            BlockedBy = new Type[] { typeof(ArcherFocus) };
+            BlockedBy = new[] { typeof(ArcherFocus) };
             RequiredWeaponSkill = SkillName.Macing;
             DisplayName = "Macefighting focus";
             Description = "Chance of getting a critical strike with macing weapons.";
@@ -15,11 +12,11 @@ namespace Server.Talent
             GumpHeight = 85;
             AddEndY = 80;
         }
+
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
             if (Utility.Random(100) < Level)
             {
-                // double damage crit so damage them with the same damage again
                 CriticalStrike(attacker, target, damage);
             }
         }

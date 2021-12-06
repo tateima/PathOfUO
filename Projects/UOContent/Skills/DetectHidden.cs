@@ -2,6 +2,7 @@ using System;
 using Server.Factions;
 using Server.Mobiles;
 using Server.Multis;
+using Server.Talent;
 using Server.Targeting;
 
 namespace Server.SkillHandlers
@@ -38,6 +39,15 @@ namespace Server.SkillHandlers
                     IPoint3D d    => new Point3D(d),
                     _             => src.Location
                 };
+
+                if (src is PlayerMobile player) {
+                    if (player.GetTalent(typeof(Detective)) is Detective) {
+                        if (Detective.CheckClue(src))
+                        {
+                            return;
+                        }
+                    }
+                }
 
                 var srcSkill = src.Skills.DetectHidden.Value;
                 var range = (int)(srcSkill / 10.0);

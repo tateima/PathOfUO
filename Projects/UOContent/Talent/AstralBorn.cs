@@ -1,9 +1,8 @@
-
 namespace Server.Talent
 {
-    public class AstralBorn : BaseTalent, ITalent
+    public class AstralBorn : BaseTalent
     {
-        public AstralBorn() : base()
+        public AstralBorn()
         {
             DisplayName = "Astral born";
             Description = "Decreases your planar exhaustion by 15 minutes.";
@@ -12,9 +11,7 @@ namespace Server.Talent
             MaxLevel = 1;
             AddEndY = 70;
         }
-        public override int ModifySpellMultiplier()
-        {
-            return Level * 30;
-        }
+
+        public override int ModifySpellMultiplier() => Level * 30;
     }
 }

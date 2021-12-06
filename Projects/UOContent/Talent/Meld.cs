@@ -1,23 +1,19 @@
-using System;
-
 namespace Server.Talent
 {
-    public class Meld : BaseTalent, ITalent
+    public class Meld : BaseTalent
     {
-        public Meld() : base()
+        public Meld()
         {
             TalentDependency = typeof(Enchant);
             DisplayName = "Meld";
-            Description = "Can meld elemental shards into items to increase their power. Requires at least one combat and one crafting skill above 70+.";
+            Description =
+                "Can meld elemental shards into items to increase their power. Requires at least one magic and one crafting skill above 70+.";
             ImageID = 398;
             MaxLevel = 1;
             GumpHeight = 85;
             AddEndY = 110;
         }
-        public override bool HasSkillRequirement(Mobile mobile)
-        {
-            return Disenchant.CanDisenchant(mobile, 90);
-        }
+
+        public override bool HasSkillRequirement(Mobile mobile) => Disenchant.CanDisenchant(mobile, 90);
     }
 }
-

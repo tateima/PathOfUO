@@ -1,27 +1,17 @@
 using Server.Mobiles;
-using System;
 
 namespace Server.Talent
 {
-    public class HumanoidHunter : BaseTalent, ITalent
+    public class HumanoidHunter : BaseTalent
     {
-        public HumanoidHunter() : base()
+        public HumanoidHunter()
         {
-            BlockedBy = new Type[] { typeof(ElementalHunter) };
+            BlockedBy = new[] { typeof(ElementalHunter) };
             TalentDependency = typeof(ExperiencedHunter);
             DisplayName = "Humanoid hunter";
             Description = "Increases damage to humanoids and lowers damage from them.";
             ImageID = 183;
             AddEndY = 90;
-        }
-
-        public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
-        {
-            if (IsMobileType(OppositionGroup.HumanoidGroup, target.GetType()))
-            {
-                
-                defender.Heal(AOS.Scale(damage, Level));
-            }
         }
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
@@ -32,6 +22,12 @@ namespace Server.Talent
             }
         }
 
-
+        public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
+        {
+            if (IsMobileType(OppositionGroup.HumanoidGroup, target.GetType()))
+            {
+                defender.Heal(AOS.Scale(damage, Level));
+            }
+        }
     }
 }

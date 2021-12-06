@@ -1,12 +1,8 @@
-using Server.Mobiles;
-using Server.Items;
-using System;
-
 namespace Server.Talent
 {
-    public class WarMagicFocus : BaseTalent, ITalent
+    public class WarMagicFocus : BaseTalent
     {
-        public WarMagicFocus() : base()
+        public WarMagicFocus()
         {
             TalentDependency = typeof(PlanarShift);
             DisplayName = "War Magic";
@@ -15,35 +11,20 @@ namespace Server.Talent
             AddEndY = 100;
         }
 
-        public override int ModifySpellMultiplier()
-        {
-            return Level * 15;
-        }
+        public override int ModifySpellMultiplier() => Level * 15;
+
         public override bool HasSkillRequirement(Mobile mobile)
         {
-            switch(Level)
+            return Level switch
             {
-                case 0:
-                    return mobile.Skills.Magery.Value >= 20.0;
-                    break;
-                case 1:
-                    return mobile.Skills.Magery.Value >= 40.0;
-                    break;
-                case 2:
-                    return mobile.Skills.Magery.Value >= 60.0;
-                    break;
-                case 3:
-                    return mobile.Skills.Magery.Value >= 80.0;
-                    break;
-                case 4:
-                    return mobile.Skills.Magery.Value >= 100.0;
-                    break;
-                case 5:
-                    return true;
-                    break;
-            }
-            return false;
+                0 => mobile.Skills.Magery.Value >= 20.0,
+                1 => mobile.Skills.Magery.Value >= 40.0,
+                2 => mobile.Skills.Magery.Value >= 60.0,
+                3 => mobile.Skills.Magery.Value >= 80.0,
+                4 => mobile.Skills.Magery.Value >= 100.0,
+                5 => true,
+                _ => false
+            };
         }
     }
 }
-

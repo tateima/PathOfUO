@@ -1,15 +1,12 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class EfficientSpinner : BaseTalent, ITalent
+    public class EfficientSpinner : BaseTalent
     {
-        public EfficientSpinner() : base()
+        public EfficientSpinner()
         {
             TalentDependency = typeof(ResourcefulHarvester);
             DisplayName = "Thread master";
-            Description = "0.5% Chance per level to receive extra tailoring materials when spinning.";
+            Description = "1% Chance per level to receive extra tailoring materials when spinning.";
             ImageID = 358;
             MaxLevel = 6;
             GumpHeight = 85;

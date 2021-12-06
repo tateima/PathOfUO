@@ -1,15 +1,11 @@
-using Server.Mobiles;
-using Server.Spells;
-using Server.Gumps;
-using Server.Network;
-using Server.Items;
 using System;
+using Server.Items;
 
 namespace Server.Talent
 {
-    public class Telewarper : BaseTalent, ITalent
+    public class Telewarper : BaseTalent
     {
-        public Telewarper() : base()
+        public Telewarper()
         {
             TalentDependency = typeof(MerchantPorter);
             DisplayName = "Telewarper disc";
@@ -21,14 +17,22 @@ namespace Server.Talent
             MaxLevel = 1;
         }
 
-        public override void OnUse(Mobile mobile)
+        public override void OnUse(Mobile from)
         {
             if (!OnCooldown)
             {
-                OnCooldown = true;
-                TelewarperDevice device = new TelewarperDevice();
-                mobile.AddToBackpack(device);
-                Timer.StartTimer(TimeSpan.FromMinutes(60), ExpireTalentCooldown, out _talentTimerToken);
+                var current = @from.Backpack?.FindItemByType<TelewarperDevice>() ?? @from.BankBox?.FindItemByType<TelewarperDevice>();
+                if (current != null)
+                {
+                    from.SendMessage("You already have a Telewarper disc");
+                }
+                else
+                {
+                    OnCooldown = true;
+                    var device = new TelewarperDevice();
+                    from.AddToBackpack(device);
+                    Timer.StartTimer(TimeSpan.FromMinutes(60), ExpireTalentCooldown, out _talentTimerToken);
+                }
             }
         }
     }

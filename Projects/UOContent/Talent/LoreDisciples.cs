@@ -1,15 +1,15 @@
-using Server.Mobiles;
-using Server.Spells;
-using Server.Network;
-using Server.Targeting;
 using System;
 using System.Collections.Generic;
+using Server.Mobiles;
+using Server.Network;
+using Server.Spells;
+using Server.Targeting;
 
 namespace Server.Talent
 {
-    public class LoreDisciples : BaseTalent, ITalent
+    public class LoreDisciples : BaseTalent
     {
-        public LoreDisciples() : base()
+        public LoreDisciples()
         {
             TalentDependency = typeof(LoreSeeker);
             CanBeUsed = true;
@@ -20,29 +20,37 @@ namespace Server.Talent
             GumpHeight = 75;
             AddEndY = 90;
         }
-        public override void OnUse(Mobile summoner)
+
+        public override void OnUse(Mobile from)
         {
             if (!OnCooldown)
             {
-                bool canCast = true;
-                if (summoner.Mana < 40)
+                var canCast = true;
+                if (from.Mana < 40)
                 {
                     canCast = false;
-                    summoner.SendMessage("You need 40 mana to call upon your disciples.");
+                    from.SendMessage("You need 40 mana to call upon your disciples.");
                 }
+
                 if (canCast)
                 {
-                    summoner.Mana -= 40;
-                    summoner.RevealingAction();
-                    summoner.PublicOverheadMessage(MessageType.Spell, summoner.SpeechHue, true, "Come to my aid, disciples!", false);
+                    from.Mana -= 40;
+                    from.RevealingAction();
+                    from.PublicOverheadMessage(
+                        MessageType.Spell,
+                        from.SpeechHue,
+                        true,
+                        "Come to my aid, disciples!",
+                        false
+                    );
                     // its a talent, no need for animation timer, just a single animation is fine
-                    summoner.Animate(269, 7, 1, true, false, 0);
-                    List<Mobile> disciples = new List<Mobile>();
-                    for (int i = 0; i < Level; i++)
+                    from.Animate(269, 7, 1, true, false, 0);
+                    var disciples = new List<Mobile>();
+                    for (var i = 0; i < Level; i++)
                     {
                         BaseCreature disciple = null;
-                        BaseTalent loreTeacher = ((PlayerMobile)summoner).GetTalent(typeof(LoreTeacher));
-                        double skillIncrease = (loreTeacher != null) ? (double)(loreTeacher.Level * 3) : 0.0;
+                        var loreTeacher = ((PlayerMobile)from).GetTalent(typeof(LoreTeacher));
+                        var skillIncrease = loreTeacher != null ? loreTeacher.Level * 3 : 0.0;
                         switch (Utility.Random(1, 4))
                         {
                             case 1:
@@ -68,7 +76,7 @@ namespace Server.Talent
                                 break;
                         }
 
-                        if (disciple is EvilMage || disciple is EvilMageLord)
+                        if (disciple is EvilMage or EvilMageLord)
                         {
                             disciple.Skills.EvalInt.Base += skillIncrease;
                             disciple.Skills.Magery.Base += skillIncrease;
@@ -88,39 +96,39 @@ namespace Server.Talent
                                     item.Delete();
                                 }
                             }
-                            SpellHelper.Summon(disciple, summoner, 0x1FE, TimeSpan.FromMinutes(2), false, false);
+
+                            SpellHelper.Summon(disciple, from, 0x1FE, TimeSpan.FromMinutes(2), false, false);
                             disciple.Say("I am here to serve thee!");
                             disciple.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
                             disciple.PlaySound(0x1FE);
                             disciples.Add(disciple);
                         }
                     }
+
                     Timer.StartTimer(TimeSpan.FromMinutes(5), ExpireTalentCooldown, out _talentTimerToken);
                     OnCooldown = true;
-                    summoner.SendMessage("Whom do you wish them to attack?");
-                    summoner.Target = new InternalTarget(summoner, disciples);
+                    from.SendMessage("Whom do you wish them to attack?");
+                    from.Target = new InternalTarget(disciples);
                 }
             }
         }
+
         private class InternalTarget : Target
         {
             private readonly List<Mobile> m_Disciples;
-            private readonly Mobile m_Summoner;
-            public InternalTarget(Mobile summoner, List<Mobile> disciples) : base(
+
+            public InternalTarget(List<Mobile> disciples) : base(
                 8,
                 false,
                 TargetFlags.None
-            )
-            {
-                m_Summoner = summoner;
+            ) =>
                 m_Disciples = disciples;
-            }
 
             protected override void OnTarget(Mobile from, object targeted)
             {
                 if (targeted is Mobile target && from.CanBeHarmful(target, true))
                 {
-                    for (int i = 0; i < m_Disciples.Count; i++)
+                    for (var i = 0; i < m_Disciples.Count; i++)
                     {
                         m_Disciples[i].Attack(target);
                     }

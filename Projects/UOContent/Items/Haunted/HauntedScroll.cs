@@ -1,6 +1,7 @@
-using System;
 using System.Collections.Generic;
 using Server.Gumps;
+using Server.Mobiles;
+using Server.Talent;
 
 namespace Server.Items
 {
@@ -47,71 +48,51 @@ namespace Server.Items
         [SerializableFieldSaveFlag(4)]
         private bool ShouldSerializeProtagonist() => _protagonist != null;
 
-        
-
-        [Constructible]
-        public HauntedScroll() : base (0x46B2)
-        {
-            _content = Array.Empty<string>();
-            Name = "a britannian haunted scroll";
-            _hookNumber = 1;            
-        }
-
         [Constructible]
         public HauntedScroll(string protagonist, List<string> hooks, string mapKey) : base(0x46B2)
         {
-            switch(Utility.Random(12))
+            ItemID = Utility.Random(12) switch
             {
-                case 1:
-                    ItemID = 0x0E35;
-                    break;
-                case 2:
-                    ItemID = 0x0E36;
-                    break;
-                case 3:
-                    ItemID = 0x0E37;
-                    break;
-                case 4:
-                    ItemID = 0x0E38;
-                    break;
-                case 5:
-                    ItemID = 0x0E39;
-                    break;
-                case 6:
-                    ItemID = 0x0E3A;
-                    break;
-                case 7:
-                    ItemID = 0x0EF4;
-                    break;
-                case 8:
-                    ItemID = 0x0EF5;
-                    break;
-                case 9:
-                    ItemID = 0x0EF6;
-                    break;
-                case 10:
-                    ItemID = 0x0EF7;
-                    break;
-                case 11:
-                    ItemID = 0x0EF8;
-                    break;
-                case 12:
-                    ItemID = 0x0EF9;
-                    break;
-            }
+                1  => 0x0E35,
+                2  => 0x0E36,
+                3  => 0x0E37,
+                4  => 0x0E38,
+                5  => 0x0E39,
+                6  => 0x0E3A,
+                7  => 0x0EF4,
+                8  => 0x0EF5,
+                9  => 0x0EF6,
+                10 => 0x0EF7,
+                11 => 0x0EF8,
+                12 => 0x0EF9,
+                _  => ItemID
+            };
 
             string mapContext = (mapKey == "trammel_") ? "britannian" : mapKey.Replace("_", "");
             _content = hooks.ToArray();
             _protagonist = protagonist;
             _mapKey = mapKey;
-            Name = string.Format("a {0} haunted scroll", mapContext);
+            Name = $"a {mapContext} haunted scroll";
             _hookNumber = 1;
         }
 
         public override void OnDoubleClick(Mobile from)
         {
-            from.SendGump(new MiscScrollGump(from, string.Format("A haunted message from a soul called {0}", _protagonist), _content));
-        }           
+            if (from is PlayerMobile playerMobile)
+            {
+                if (playerMobile.GetTalent(typeof(Mediumship)) is Mediumship mediumship)
+                {
+                    from.SendGump(
+                        new MiscScrollGump(
+                            $"A haunted message from a soul called {_protagonist}",
+                            _content,
+                            mediumship.ImageID
+                        )
+                    );
+                }
+            }
+
+        }
 
         private void Deserialize(IGenericReader reader, int version)
         {

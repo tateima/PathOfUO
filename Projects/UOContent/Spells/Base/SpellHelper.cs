@@ -1152,7 +1152,14 @@ namespace Server.Spells
                 }
             }
             // TODO: All Healing *spells* go through ArcaneEmpowerment
-            target.Heal(amount, from, message);
+            if (target is AutomatonConstruct)
+            {
+                from.SendMessage("This creature cannot be healed with spells");
+            }
+            else
+            {
+                target.Heal(amount, from, message);
+            }
         }
 
         private delegate bool TravelValidator(Map map, Point3D loc);

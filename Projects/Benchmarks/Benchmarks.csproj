@@ -9,9 +9,10 @@
         <SkipLocalsInitiAttribute>true</SkipLocalsInitiAttribute>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Argon2.Bindings" Version="1.9.1" />
         <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
-        <PackageReference Include="MimeKit" Version="2.15.1" />
+        <PackageReference Include="Microsoft.NETCore.Jit" Version="2.0.8" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+        <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
         <ProjectReference Include="..\Server\Server.csproj" />
         <ProjectReference Include="..\UOContent\UOContent.csproj" />
     </ItemGroup>

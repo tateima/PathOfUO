@@ -95,7 +95,7 @@ namespace Server.Spells.Spellweaving
             if (timer._caster is PlayerMobile playerCaster) {
                 BaseTalent frostFire = playerCaster.GetTalent(typeof(FrostFire));
                 if (frostFire != null && fire > 0) {
-                    ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, target, ref hue);
+                    ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, target, hue: ref hue);
                 }
             }
             AOS.Damage(target, timer._caster, timer._damage, 0, fire, cold, 0, 0);

@@ -34,9 +34,8 @@ namespace Server.SkillHandlers
             protected override void OnTarget(Mobile from, object target)
             {
                 if (target is Item item && from is PlayerMobile player) {
-                    Detective detective = player.GetTalent(typeof(Detective)) as Detective;
-                    if (detective != null) {
-                       Clue clue = detective.CheckSolve(from, item);
+                    if (player.GetTalent(typeof(Detective)) is Detective) {
+                        Detective.CheckSolve(from, item);
                     }
                 }
                 if (target is Mobile)

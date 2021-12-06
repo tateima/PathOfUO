@@ -10,6 +10,7 @@ namespace Server.Items
         public BaseDevice(WandEffect wandEffect, int minCharges, int maxCharges) : base(wandEffect, minCharges, maxCharges)
         {
             Charges = 10;
+            WeaponAttributes.MageWeapon = 0;
             if (Parent is PlayerMobile player)
             {
                 BaseTalent talent = player.GetTalent(typeof(Inventive));

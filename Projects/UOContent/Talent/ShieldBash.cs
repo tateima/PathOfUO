@@ -1,12 +1,13 @@
-using Server.Items;
 using System;
+using Server.Items;
+
 namespace Server.Talent
 {
-    public class ShieldBash : BaseTalent, ITalent
+    public class ShieldBash : BaseTalent
     {
-        public ShieldBash() : base()
+        public ShieldBash()
         {
-            RequiredWeapon = new Type[] { typeof(BaseShield) };
+            RequiredWeapon = new[] { typeof(BaseShield) };
             CanBeUsed = true;
             TalentDependency = typeof(ShieldFocus);
             DisplayName = "Shield bash";
@@ -15,18 +16,18 @@ namespace Server.Talent
             GumpHeight = 75;
             AddEndY = 90;
         }
-        public override void CheckHitEffect(Mobile defender, Mobile attacker, int damage)
-        {
 
-            if (Activated && defender.Weapon != null && defender.Weapon is BaseWeapon weapon && defender.FindItemOnLayer(Layer.TwoHanded) is BaseShield shield)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        {
+            if (Activated && attacker.Weapon is BaseWeapon weapon && attacker.FindItemOnLayer(Layer.TwoHanded) is BaseShield)
             {
-                if (weapon.CheckHit(attacker, defender))
+                if (weapon.CheckHit(attacker, target))
                 {
                     Activated = false;
                     OnCooldown = true;
-                    attacker.SendSound(0x140);
-                    attacker.FixedEffect(0x37B9, 10, 16);
-                    attacker.Paralyze(TimeSpan.FromSeconds(Level * 2));
+                    target.SendSound(0x140);
+                    target.FixedEffect(0x37B9, 10, 16);
+                    target.Paralyze(TimeSpan.FromSeconds(Level * 2));
                     Timer.StartTimer(TimeSpan.FromSeconds(30), ExpireTalentCooldown, out _talentTimerToken);
                 }
             }

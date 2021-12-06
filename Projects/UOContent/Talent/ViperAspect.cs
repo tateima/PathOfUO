@@ -1,16 +1,14 @@
-using Server.Mobiles;
-using Server.Spells;
 using System;
 
 namespace Server.Talent
 {
-    public class ViperAspect : BaseTalent, ITalent
+    public class ViperAspect : BaseTalent
     {
         private Mobile m_Mobile;
-        private TimerExecutionToken _buffTimerToken;
-        public ViperAspect() : base()
+
+        public ViperAspect()
         {
-            BlockedBy = new Type[] { typeof(DragonAspect) };
+            BlockedBy = new[] { typeof(DragonAspect) };
             DisplayName = "Viper aspect";
             CanBeUsed = true;
             Description = "Increased poison resistance and adds a chance to poison your target on weapon or spell hit.";
@@ -19,24 +17,30 @@ namespace Server.Talent
             AddEndY = 85;
         }
 
-        public override void OnUse(Mobile mobile)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        {
+            CheckViperEffect(attacker, target);
+        }
+
+        public override void OnUse(Mobile from)
         {
             if (!OnCooldown)
             {
                 ResMod = new ResistanceMod(ResistanceType.Poison, Level * 5);
-                m_Mobile = mobile;
+                m_Mobile = from;
                 OnCooldown = true;
                 if (Core.AOS)
                 {
                     m_Mobile.AddResistanceMod(ResMod);
                     m_Mobile.FixedParticles(0x374A, 10, 15, 5021, EffectLayer.Waist);
                     m_Mobile.PlaySound(0x205);
-
                 }
-                Timer.StartTimer(TimeSpan.FromSeconds(60 + Utility.Random(20)), ExpireBuff, out _buffTimerToken);
+
+                Timer.StartTimer(TimeSpan.FromSeconds(60 + Utility.Random(20)), ExpireBuff, out _);
                 Timer.StartTimer(TimeSpan.FromSeconds(180 - Level * 5), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
+
         public void ExpireBuff()
         {
             if (m_Mobile != null)
@@ -60,11 +64,5 @@ namespace Server.Talent
         {
             CheckViperEffect(attacker, target);
         }
-
-        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
-        {
-            CheckViperEffect(attacker, target);
-        }
-
     }
 }

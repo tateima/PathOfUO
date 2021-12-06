@@ -1,11 +1,8 @@
-using System;
-using Server.Mobiles;
-
 namespace Server.Talent
 {
-    public class FastLearner : BaseTalent, ITalent
+    public class FastLearner : BaseTalent
     {
-        public FastLearner() : base()
+        public FastLearner()
         {
             TalentDependency = typeof(DivineIntellect);
             DisplayName = "Fast learner";
@@ -14,6 +11,5 @@ namespace Server.Talent
             GumpHeight = 85;
             AddEndY = 80;
         }
-
     }
 }

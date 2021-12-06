@@ -1,12 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class RangerCommand : BaseTalent, ITalent
+    public class RangerCommand : BaseTalent
     {
-
-        public RangerCommand() : base()
+        public RangerCommand()
         {
             TalentDependency = typeof(NatureAffinity);
             DisplayName = "Ranger command";
@@ -14,9 +10,7 @@ namespace Server.Talent
             ImageID = 188;
             AddEndY = 95;
         }
-        public override double ModifySpellScalar()
-        {
-            return (Level / 100);
-        }
+
+        public override double ModifySpellScalar() => Level / 100.0;
     }
 }

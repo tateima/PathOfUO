@@ -122,7 +122,7 @@ namespace Server.Spells.Seventh
                         toDeal *= GetDamageScalar(m);
                         Caster.DoHarmful(m);
                         if (frostFire != null && fire > 0) {
-                            ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, m, ref hue);
+                            ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, m, hue: ref hue);
                         }
                         SpellHelper.Damage(this, m, toDeal, 0, fire, cold, 0, 0);
                         Caster.MovingParticles(m, 0x36D4, 7, 0, false, true, hue, 0, 9501, 1, 0, 0x100);

@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using Server.Mobiles;
 using Server.Targeting;
 
@@ -28,7 +29,8 @@ namespace Server.Items
             {
                 if (o is Item item)
                 {
-                    if (from.CheckTargetSkill(SkillName.ItemID, item, 0, 100))
+                    int minSkill = (o is RuneScroll) ? 98 : 0 ;
+                    if (from.CheckTargetSkill(SkillName.ItemID, item, minSkill, 100))
                     {
                         if (item is BaseWeapon weapon)
                         {
@@ -37,6 +39,9 @@ namespace Server.Items
                         else if (item is BaseArmor armor)
                         {
                             armor.Identified = true;
+                        } else if (item is RuneScroll runeScroll)
+                        {
+                            runeScroll.Identified = true;
                         }
 
                         if (!Core.AOS)

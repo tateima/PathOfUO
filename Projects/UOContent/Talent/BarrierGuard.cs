@@ -1,27 +1,14 @@
-using Server.Mobiles;
-using Server.Items;
 using System;
+using Server.Items;
 
 namespace Server.Talent
 {
-    public class BarrierGuard : BaseTalent, ITalent
+    public class BarrierGuard : BaseTalent
     {
-        private int m_RemainingParry;
-        public int RemainingParry
-        {
-            get
-            {
-                return m_RemainingParry;
-            }
-            set
-            {
-                m_RemainingParry = value;
-            }
-        }
-        public BarrierGuard() : base()
+        public BarrierGuard()
         {
             RequiredWeaponSkill = SkillName.Swords;
-            RequiredWeapon = new Type[] { typeof(BaseSword) };
+            RequiredWeapon = new[] { typeof(BaseSword) };
             TalentDependency = typeof(SwordSpecialist);
             DisplayName = "Barrier guard";
             CanBeUsed = true;
@@ -30,22 +17,28 @@ namespace Server.Talent
             GumpHeight = 75;
             AddEndY = 85;
         }
+
+        public int RemainingParry { get; set; }
+
         public bool CheckParry()
         {
-            bool canParry = (RemainingParry > 0);
+            var canParry = RemainingParry > 0;
             if (canParry)
             {
                 RemainingParry--;
-            } else
+            }
+            else
             {
                 OnCooldown = true;
                 Timer.StartTimer(TimeSpan.FromSeconds(45), ExpireTalentCooldown, out _talentTimerToken);
             }
+
             return canParry;
         }
-        public override void OnUse(Mobile mobile)
+
+        public override void OnUse(Mobile from)
         {
-            BaseWeapon weapon = mobile.Weapon as BaseWeapon;
+            var weapon = from.Weapon as BaseWeapon;
             if (weapon is not BaseSword)
             {
                 if (!Activated && !OnCooldown)
@@ -56,9 +49,8 @@ namespace Server.Talent
             }
             else
             {
-                mobile.SendMessage("You do not have a one handed sword equipped.");
+                from.SendMessage("You do not have a one handed sword equipped.");
             }
-
         }
     }
 }

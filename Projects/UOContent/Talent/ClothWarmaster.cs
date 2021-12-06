@@ -1,12 +1,11 @@
-using Server.Mobiles;
-using Server.Items;
 using System;
+using Server.Items;
 
 namespace Server.Talent
 {
-    public class ClothWarmaster : BaseTalent, ITalent
+    public class ClothWarmaster : BaseTalent
     {
-        public ClothWarmaster() : base()
+        public ClothWarmaster()
         {
             DisplayName = "Cloth warmaster";
             Description = "Reduces damage while wearing cloth. Increases Int by 2 per Level";
@@ -17,10 +16,11 @@ namespace Server.Talent
 
         public override void UpdateMobile(Mobile mobile)
         {
-            if (BaseArmor.FullChain(mobile) || BaseArmor.FullRing(mobile)) {
+            if (BaseArmor.FullChain(mobile) || BaseArmor.FullRing(mobile))
+            {
                 mobile.RemoveStatMod("ClothWarmaster");
                 mobile.RemoveStatMod("ClothWarmaster");
-                mobile.AddStatMod(new StatMod(StatType.Int, "ClothWarmaster", Level*2, TimeSpan.Zero));
+                mobile.AddStatMod(new StatMod(StatType.Int, "ClothWarmaster", Level * 2, TimeSpan.Zero));
             }
         }
     }

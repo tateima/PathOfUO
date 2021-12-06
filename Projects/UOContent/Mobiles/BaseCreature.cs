@@ -214,6 +214,19 @@ namespace Server.Mobiles
         private static readonly bool EnableRummaging = true;
         public static readonly TimeSpan ShoutDelay = TimeSpan.FromMinutes(1);
 
+        private DateTime m_NextGambleTime;
+        public DateTime NextGambleTime
+        {
+            get => m_NextGambleTime;
+            set => m_NextGambleTime = value;
+        }
+        private int m_GambleLosses;
+        public int GambleLosses
+        {
+            get => m_GambleLosses;
+            set => m_GambleLosses = value;
+        }
+
         private int m_CannibalPoints;
 
         public int CannibalPoints
@@ -288,9 +301,6 @@ namespace Server.Mobiles
         private bool m_Controlled;        // Is controlled
         private Mobile m_ControlMaster;   // My master
         private OrderType m_ControlOrder; // My order
-
-        private int m_ExperienceValue; // how much a creature is worth
-        private int m_MaxLevel; // the maximum level a player can be to get experience from creature
 
         private AIType m_CurrentAI; // The current AI
 
@@ -385,7 +395,8 @@ namespace Server.Mobiles
                 iRangePerception = DefaultRangePerception;
             }
             m_Loyalty = MaxLoyalty; // Wonderfully Happy
-
+            m_NextGambleTime = DateTime.Now;
+            m_GambleLosses = 0;
             m_CannibalPoints = 0;
             m_CurrentAI = ai;
             m_DefaultAI = ai;
@@ -485,7 +496,7 @@ namespace Server.Mobiles
                 }
             }
         }
-        
+
         [CommandProperty(AccessLevel.GameMaster)]
         public bool Blinded
         {
@@ -530,18 +541,10 @@ namespace Server.Mobiles
         public virtual double WeaponAbilityChance => 0.4;
 
         [CommandProperty(AccessLevel.GameMaster)]
-        public int ExperienceValue
-        {
-            get { return m_ExperienceValue; }
-            set { m_ExperienceValue = value; }
-        }
+        public int ExperienceValue { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster)]
-        public int MaxLevel
-        {
-            get { return m_MaxLevel; }
-            set { m_MaxLevel = value; }
-        }
+        public int MaxLevel { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster)]
         public bool IsParagon
@@ -932,7 +935,7 @@ namespace Server.Mobiles
                                 Minions.Remove(minion);
                                 continue;
                             }
-                            Mobile nearby = mobilesInRange.FirstOrDefault(m => m.Serial == minion.Serial);
+                            Mobile nearby = mobilesInRange.Find(m => m.Serial == minion.Serial);
                             if (nearby != null)
                             {
                                 if (nearby.Combatant != Combatant)
@@ -951,7 +954,7 @@ namespace Server.Mobiles
                     } else
                     {
                         MonsterBuff.DespawnMinions(this);
-                    } 
+                    }
                 }
             }
         }
@@ -1858,11 +1861,11 @@ namespace Server.Mobiles
             {
                 amount = 0;
                 PublicOverheadMessage(
-                  MessageType.Regular,
-                  0x3B2,
-                  false,
-                  "*The creature absorbs your attack *"
-              );
+                    MessageType.Regular,
+                    0x3B2,
+                    false,
+                    "*The creature absorbs your attack *"
+                );
             }
             bool corruptionOffset = false;
             if (IsCorruptor && amount > 0)
@@ -1881,10 +1884,10 @@ namespace Server.Mobiles
                 if (corruptionOffset)
                 {
                     PublicOverheadMessage(
-                     MessageType.Regular,
-                     0x3B2,
-                     false,
-                     "* The creature redirects the attack to a nearby corrupted target *"
+                        MessageType.Regular,
+                        0x3B2,
+                        false,
+                        "* The creature redirects the attack to a nearby corrupted target *"
                     );
                 }
             }
@@ -1919,8 +1922,11 @@ namespace Server.Mobiles
 
             if (IsReflective)
             {
-                from.Damage(AOS.Scale(amount, 50), this);
-                from.FixedParticles(0x376A, 9, 32, 5008, EffectLayer.Waist);
+                if (from != null)
+                {
+                    from.Damage(AOS.Scale(amount, 50), this);
+                    from.FixedParticles(0x376A, 9, 32, 5008, EffectLayer.Waist);
+                }
             }
 
             if (SubdueBeforeTame && !Controlled && oldHits > HitsMax / 10 && Hits <= HitsMax / 10)
@@ -1993,7 +1999,7 @@ namespace Server.Mobiles
                     IsReflective = (Utility.Random(1, 10000) < chance);
                     IsRegenerative = (Utility.Random(1, 10000) < chance);
 
-                    
+
                 }
             }
         }
@@ -2307,7 +2313,10 @@ namespace Server.Mobiles
         {
             base.Serialize(writer);
 
-            writer.Write(27); // version
+            writer.Write(28); // version
+            // version 28
+            writer.Write(m_NextGambleTime);
+            writer.Write(m_GambleLosses);
             // version 27
             writer.Write(m_Feared);
             // version 26
@@ -2336,8 +2345,8 @@ namespace Server.Mobiles
             writer.Write(CannibalPoints);
             writer.Write(m_Heroic);
             // version 20
-            writer.Write(m_ExperienceValue);
-            writer.Write(m_MaxLevel);
+            writer.Write(ExperienceValue);
+            writer.Write(MaxLevel);
             writer.Write((int)m_CurrentAI);
             writer.Write((int)m_DefaultAI);
 
@@ -2475,13 +2484,18 @@ namespace Server.Mobiles
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+            if (version >= 28)
+            {
+                m_NextGambleTime = reader.ReadDateTime();
+                m_GambleLosses = reader.ReadInt();
+            }
             if (version >= 27) {
                 m_Feared = reader.ReadBool();
                 if (m_Feared) {
                     Timer.StartTimer(TimeSpan.FromSeconds(Utility.Random(10)), UnFear);
                 }
             }
-            if (version >= 26) 
+            if (version >= 26)
             {
                 m_Blinded = reader.ReadBool();
                 if (m_Blinded) {
@@ -2553,8 +2567,8 @@ namespace Server.Mobiles
             }
 
             if (version >= 20) {
-                m_ExperienceValue = reader.ReadInt();
-                m_MaxLevel = reader.ReadInt();
+                ExperienceValue = reader.ReadInt();
+                MaxLevel = reader.ReadInt();
             }
 
             m_CurrentAI = (AIType)reader.ReadInt();
@@ -4071,7 +4085,7 @@ namespace Server.Mobiles
 
         public int ExperienceScale(int xp)
         {
-            double xpScale = 0;            
+            double xpScale = 0;
             int tier = 1;
             while (xp > 0)
             {
@@ -4389,65 +4403,57 @@ namespace Server.Mobiles
                             givenQuestKill = true;
                         }
                     }
-                    int baseXp = (int)DynamicExperienceValue() + (m_ExperienceValue / 10);
-                    int scaleXp = ExperienceScale(baseXp);
-                    if (m_ExperienceValue == 0)
-                    {
-                        scaleXp = 0;
-                    } 
-
-                    m_MaxLevel = (int)Math.Floor((double)(baseXp / 52));
-                    if (m_MaxLevel < 1)
-                    {
-                        m_MaxLevel = 2;
-                    }
-                    for (var i = 0; i < titles.Count; ++i)
-                    {
-                        Titles.AwardFame(titles[i], fame[i], true);
-                        Titles.AwardKarma(titles[i], karma[i], true);
-                        if (titles[i] is PlayerMobile)
-                        {
-                            PlayerMobile player = (PlayerMobile)titles[i];
-                            int levelIndex = Array.IndexOf(Enum.GetNames(typeof(Level)), player.Level) + 1;
-                            if (levelIndex <= m_MaxLevel && scaleXp > 0)
-                            {
-                                BaseTalent fastLearner = player.GetTalent(typeof(FastLearner));
-                                if (fastLearner != null)
-                                {
-                                    scaleXp += AOS.Scale(scaleXp, (fastLearner.Level * 2));
-                                }
-                                if (player.Ranger())
-                                {
-                                    scaleXp = scaleXp / 2; // 50% ranger 50% normal gain
-                                    player.RangerExperience += scaleXp;
-                                } 
-                                player.NonCraftExperience += scaleXp;
-                            }
-                        }
-                    }
                 }
-
-                base.OnDeath(c);
-
-                if (LastKiller is PlayerMobile playerThatKilled)
+                int baseXp = (int)DynamicExperienceValue() + (ExperienceValue / 10);
+                int scaleXp = ExperienceScale(baseXp);
+                if (ExperienceValue == 0)
                 {
-                    foreach (KeyValuePair<Type, BaseTalent> entry in playerThatKilled.Talents)
-                    {
-                        if (entry.Value.HasKillEffect)
-                        {
-                            entry.Value.CheckKillEffect(this, LastKiller);
-                        }
-                    }
+                    scaleXp = 0;
                 }
 
-                MonsterBuff.CheckElementalAoe(this);
-
-                if (DeleteCorpseOnDeath)
+                MaxLevel = (int)Math.Floor(baseXp / 52.0);
+                if (MaxLevel < 1)
+                {
+                    MaxLevel = 2;
+                }
+                for (var i = 0; i < titles.Count; ++i)
                 {
                     Titles.AwardFame(titles[i], fame[i], true);
                     Titles.AwardKarma(titles[i], karma[i], true);
+                    if (titles[i] is PlayerMobile)
+                    {
+                        PlayerMobile player = (PlayerMobile)titles[i];
+                        int levelIndex = Array.IndexOf(Enum.GetNames(typeof(Level)), player.Level) + 1;
+                        if (levelIndex <= MaxLevel && scaleXp > 0)
+                        {
+                            BaseTalent fastLearner = player.GetTalent(typeof(FastLearner));
+                            if (fastLearner != null)
+                            {
+                                scaleXp += AOS.Scale(scaleXp, (fastLearner.Level * 2));
+                            }
+                            if (player.Ranger())
+                            {
+                                scaleXp /= 2; // 50% ranger 50% normal gain
+                                player.RangerExperience += scaleXp;
+                            }
+                            player.NonCraftExperience += scaleXp;
+                        }
+                    }
                 }
             }
+
+            if (LastKiller is PlayerMobile playerThatKilled)
+            {
+                foreach (KeyValuePair<Type, BaseTalent> entry in playerThatKilled.Talents)
+                {
+                    if (entry.Value.HasKillEffect)
+                    {
+                        entry.Value.CheckKillEffect(this, LastKiller);
+                    }
+                }
+            }
+
+            MonsterBuff.CheckElementalAoe(this);
 
             base.OnDeath(c);
 
@@ -5868,7 +5874,7 @@ namespace Server.Mobiles
 
         public void SetSkill(SkillName name, double val)
         {
-            m_ExperienceValue += (int)val;
+            ExperienceValue += (int)val;
             Skills[name].BaseFixedPoint = (int)(val * 10);
 
             if (Skills[name].Base > Skills[name].Cap)
@@ -5887,7 +5893,7 @@ namespace Server.Mobiles
             var minFixed = (int)(min * 10);
             var maxFixed = (int)(max * 10);
 
-            m_ExperienceValue += (int)max;
+            ExperienceValue += (int)max;
 
             Skills[name].BaseFixedPoint = Utility.RandomMinMax(minFixed, maxFixed);
 
@@ -6067,7 +6073,7 @@ namespace Server.Mobiles
                                 break;
                         }
                     }
-                    
+
                 }
             }
 

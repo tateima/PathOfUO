@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Server;
 using Server.Items;
 using Server.Network;
 using Server.Mobiles;
@@ -11,19 +10,15 @@ namespace Server.Gumps
 {
     public class TalentBarGump : Gump
     {
-        private int m_LastTalentIndex = 0;
-        private int m_LastPage = 1;
-        private List<BaseTalent> m_UseableTalents;
-        private List<TalentGump.TalentGumpPage> m_TalentGumpPages;
+        private readonly int m_LastTalentIndex = 0;
+        private readonly int m_LastPage = 1;
+        private readonly List<BaseTalent> m_UseableTalents;
+        private readonly List<TalentGump.TalentGumpPage> m_TalentGumpPages;
         public TimerExecutionToken _talentBarExecutionToken;
-        private Mobile m_Mobile;
+        private readonly Mobile m_Mobile;
 
         public TalentBarGump(Mobile from, int page, int lastTalentIndex, List<TalentGump.TalentGumpPage> talentGumpPages) : base(0, 0)
         {
-            if (from == null)
-            {
-                from.CloseGump<TalentGump>();
-            }
             Closable = false;
             Disposable = true;
             Draggable = true;
@@ -34,22 +29,21 @@ namespace Server.Gumps
             PlayerMobile player = (PlayerMobile)from;
             m_UseableTalents = new List<BaseTalent>();
 
-            foreach (KeyValuePair<Type, BaseTalent> entry in player.Talents)
+            foreach (var (_, value) in player.Talents)
             {
-                if (entry.Value.CanBeUsed)
+                if (value.CanBeUsed)
                 {
-                    m_UseableTalents.Add(entry.Value);
+                    m_UseableTalents.Add(value);
                 }
             }
             m_UseableTalents.Sort((x, y) => string.Compare(x.DisplayName, y.DisplayName));
-            int barWidth = (m_UseableTalents.Count * 55);
-            if (barWidth > 1100)
+            int barWidth = (m_UseableTalents.Count * 60);
+            barWidth = barWidth switch
             {
-                barWidth = 1100;
-            } else if (barWidth < 200)
-            {
-                barWidth = 220;
-            }
+                > 1100 => 1100,
+                < 200  => 220,
+                _      => barWidth
+            };
             AddPage(0);
             AddImageTiled(0, 0, barWidth, 175, 0xA8E);
             AddImageTiled(0, 0, 5, 175, 0x27A7);
@@ -57,14 +51,14 @@ namespace Server.Gumps
             AddImageTiled(barWidth, 0, 5, 175, 0x27A7);
             AddImageTiled(0, 175, barWidth, 5, 0x27A7);
             // close button
-            AddButton(barWidth, 0, 40015, 40015, 1002, GumpButtonType.Reply, 0);
+            AddButton(barWidth, 0, 40015, 40015, 1002);
             int x = 10;
             int y = 10;
             if (page > 1)
             {
-                AddButton(0, 0, 40016, 40016, 1001, GumpButtonType.Reply, 0);
+                AddButton(0, 0, 40016, 40016, 1001);
             }
-            TalentGump.TalentGumpPage existingTalentGumpPage = m_TalentGumpPages.Where(g => g.TalentPage == page).FirstOrDefault();
+            TalentGump.TalentGumpPage existingTalentGumpPage = m_TalentGumpPages.FirstOrDefault(g => g.TalentPage == page);
             if (existingTalentGumpPage == null)
             {
                 TalentGump.TalentGumpPage talentGumpPage = new TalentGump.TalentGumpPage(lastTalentIndex, page);
@@ -74,7 +68,7 @@ namespace Server.Gumps
             for (int i = lastTalentIndex; i < m_UseableTalents.Count; i++)
             {
                 var talent = m_UseableTalents.ElementAt(i);
-                if (y + 55 > 175)
+                if (y + 60 > 175)
                 {
                     y = 10;
                     x += 110;
@@ -83,11 +77,10 @@ namespace Server.Gumps
                 {
                     // need a new page
                     m_LastTalentIndex = i;
-                    AddButton(1069, 0, 40017, 40017, 1000, GumpButtonType.Reply, 0);
+                    AddButton(1069, 0, 40017, 40017, 1000);
                     break;
                 }
 
-                int talentLevel = talent.Level;
                 int hue = 0;
                 string cooldownLeft = "";
                 if (talent.Activated)
@@ -96,19 +89,19 @@ namespace Server.Gumps
                 } else if (talent.OnCooldown)
                 {
                     hue = 0x26;
-                    cooldownLeft = string.Format("{0}", WaitTeleporter.FormatTime(talent._talentTimerToken.Next - Core.Now));
-                } 
+                    cooldownLeft = $"{WaitTeleporter.FormatTime(talent._talentTimerToken.Next - Core.Now)}";
+                }
                 AddImage(x, y, talent.ImageID, hue);
                 string display = talent.DisplayName;
                 if (cooldownLeft.Length > 0)
                 {
-                    display = string.Format("{0}: {1}", display, cooldownLeft);
+                    display = $"{display}: {cooldownLeft}";
                 }
                 AddHtml(x, y + 40, 100, 100, $"<BASEFONT COLOR=#FFFFE5>{display}</FONT>");
 
                 if (talent.HasSkillRequirement(from) && !talent.OnCooldown)
                 {
-                    AddButton(x + 30, y + 10, 2223, 2223, 0 + i, GumpButtonType.Reply, 0);
+                    AddButton(x + 30, y + 10, 2223, 2223, 0 + i);
                 }
                 y += 85;
             }
@@ -151,17 +144,14 @@ namespace Server.Gumps
                     var talent = m_UseableTalents.ElementAt(info.ButtonID);
                     talent.OnUse(state.Mobile);
                 }
-               
+
                 if (page < 0)
                 {
                     page = 1;
                 }
 
-                TalentGump.TalentGumpPage talentGumpPage = m_TalentGumpPages.Where(g => g.TalentPage == page).First();
-                if (talentGumpPage != null)
-                {
-                    lastTalentIndex = talentGumpPage.TalentIndex;
-                }
+                TalentGump.TalentGumpPage talentGumpPage = m_TalentGumpPages.First(g => g.TalentPage == page);
+                lastTalentIndex = talentGumpPage.TalentIndex;
 
                 if (lastTalentIndex < 0)
                 {

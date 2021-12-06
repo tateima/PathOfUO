@@ -1,11 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class HandFinesse : BaseTalent, ITalent
+    public class HandFinesse : BaseTalent
     {
-        public HandFinesse() : base()
+        public HandFinesse()
         {
             TalentDependency = typeof(EscapeDeath);
             DisplayName = "Hand finesse";

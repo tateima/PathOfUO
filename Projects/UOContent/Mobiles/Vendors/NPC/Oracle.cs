@@ -45,19 +45,19 @@ namespace Server.Mobiles
                 {
                     player.ResetTalents();
                     player.ResetSkills();
-                    remaining--;   
+                    remaining--;
                     player.FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
                     PlaySound(0x202);
-                    SayTo(player, string.Format("I have reset thy path, you have {0} resets remaining", remaining.ToString()));
+                    SayTo(player, $"I have reset thy path, you have {remaining.ToString()} resets remaining");
                 }
                 else
                 {
-                    SayTo(player, string.Format("Thou needs {0} gold to reset thy path.", requiredGold.ToString())); 
+                    SayTo(player, $"Thou needs {requiredGold.ToString()} gold to reset thy path.");
                 }
             } else {
-                  SayTo(player, "You have reached the allowed limit of five path resets");
+                SayTo(player, "You have reached the allowed limit of five path resets");
             }
-            
+
         }
         public override void OnSpeech(SpeechEventArgs e)
         {
@@ -74,7 +74,7 @@ namespace Server.Mobiles
                 if (!e.Handled) {
                     if (string.Equals(speech, "reset path")) {
                         TryReset(ref e, player, player.TalentResets == 0);
-                    } 
+                    }
                 }
                 else
                 {
@@ -83,7 +83,7 @@ namespace Server.Mobiles
                 if (!e.Handled) {
                     SayTo(player, "I do not understand thee. If you wish to reset your path, speak 'reset path'");
                 }
-            }            
+            }
         }
 
         public override void Serialize(IGenericWriter writer)

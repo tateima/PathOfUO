@@ -1,11 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class TycoonCrafter : BaseTalent, ITalent
+    public class TycoonCrafter : BaseTalent
     {
-        public TycoonCrafter() : base()
+        public TycoonCrafter()
         {
             TalentDependency = typeof(ResourcefulCrafter);
             DisplayName = "Tycoon Crafter";
@@ -15,9 +12,6 @@ namespace Server.Talent
             AddEndY = 80;
         }
 
-        public override double ModifySpellScalar()
-        {
-            return (Level / 100) * 2; // 2% per point
-        }
+        public override double ModifySpellScalar() => Level / 100 * 2; // 2% per point
     }
 }

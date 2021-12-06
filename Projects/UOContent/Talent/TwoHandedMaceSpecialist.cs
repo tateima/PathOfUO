@@ -1,17 +1,15 @@
-using Server.Mobiles;
 using Server.Items;
-using System;
 
 namespace Server.Talent
 {
-    public class TwoHandedMaceSpecialist : BaseTalent, ITalent
+    public class TwoHandedMaceSpecialist : BaseTalent
     {
-        public TwoHandedMaceSpecialist() : base()
+        public TwoHandedMaceSpecialist()
         {
             TalentDependency = typeof(MacefightingFocus);
-            RequiredWeapon = new Type[] { typeof(WarHammer) };
+            RequiredWeapon = new[] { typeof(WarHammer) };
             DisplayName = "Warmonger";
-            Description = "Increases damage to two handed macefighting weapons.";
+            Description = "Increases damage to two handed mace fighting weapons.";
             ImageID = 196;
             GumpHeight = 75;
             AddEndY = 85;
@@ -21,6 +19,5 @@ namespace Server.Talent
         {
             target.Damage(Level * 2, attacker);
         }
-
     }
 }

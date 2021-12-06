@@ -4,7 +4,7 @@ using Server.Mobiles;
 
 namespace Server.Items
 {
-    public class SpiritBoard : Item
+    public sealed class SpiritBoard : Item
     {
         [Constructible]
         public SpiritBoard() : base(0x0FAA) {
@@ -16,13 +16,13 @@ namespace Server.Items
             if (random == 2) {
                 Hue = 0x97A;
                 Name = "an agapite spirit board";
-            } 
+            }
             if (random == 3) {
                 Hue = 0x961;
                 Name = "a silver spirit board";
-            }         
+            }
             Weight = 2.0;
-        } 
+        }
 
         public SpiritBoard(Serial serial) : base(serial)
         {
@@ -48,12 +48,12 @@ namespace Server.Items
                 string message = "";
                 Mediumship mediumship = player.GetTalent(typeof(Mediumship)) as Mediumship;
                 if (mediumship != null) {
-                    HauntedScroll scroll = mediumship.GetPlayerScroll(from);
+                    HauntedScroll scroll = Mediumship.GetPlayerScroll(from);
                     if (scroll != null) {
                         if (from.Map == Map.Trammel || from.Map == Map.Felucca) {
                             Point2D chapterLocation = scroll.ChapterLocation;
                             string temperature = "icy";
-                            if (!from.InRange(chapterLocation, 75)) { 
+                            if (!from.InRange(chapterLocation, 75)) {
                                 Direction direction = player.GetDirectionTo(chapterLocation.X, chapterLocation.Y, false);
                                 if (from.InRange(chapterLocation, 100)) {
                                     temperature = "hot";
@@ -74,31 +74,34 @@ namespace Server.Items
                                 } else if (from.InRange(chapterLocation, 500)) {
                                     temperature = "slightly icy";
                                 }
-                                if (chapterLocation.X > 4999 && from.X < 4999) { // its in the second age area and they are not
-                                    message = string.Format("* Your spirit board gives you a vision of another land with a vast inland sea and a fiery volcano, the board is {0} to the touch. *", temperature);
-                                } else if (chapterLocation.X < 4999 && from.X > 4999) { // its in britannia and they are in second age
-                                    message = string.Format("* Your spirit board gives you a vision of your homeland, the board is {1} to the touch. *", direction.ToString(), temperature);
-                                } else {
-                                    message = string.Format("* Your spirit board leads you to a {0} direction, the board is {1} to the touch. *", direction.ToString(), temperature);
-                                }
+
+                                message = chapterLocation.X switch
+                                {
+                                    > 4999 when @from.X < 4999 =>
+                                        $"* Your spirit board gives you a vision of another land with a vast inland sea and a fiery volcano, the board is {temperature} to the touch. *",
+                                    < 4999 when @from.X > 4999 =>
+                                        $"* Your spirit board gives you a vision of your homeland, the board is {temperature} to the touch. *",
+                                    _ =>
+                                        $"* Your spirit board leads you to a {direction.ToString()} direction, the board is {temperature} to the touch. *"
+                                };
                             } else {
                                 message = "* You are so close to the source that the spirit board rattles furiously, it is too hard to discern the exact location *";
-                            }                            
+                            }
                         } else {
                             message = "* You cannot commune with the netherworld at this location *";
                         }
                     } else {
-                        message = "* You cannot commune with the netherworld as you have no seanced scroll on your person *";
+                        message = "* You cannot commune with the netherworld as you have no seance scroll on your person *";
                     }
                 } else {
-                     message = "* You do not have the appropriate talent to use this item *";
+                    message = "* You do not have the appropriate talent to use this item *";
                 }
-                 from.LocalOverheadMessage(
-                        MessageType.Regular,
-                        0x3B2,
-                        false,
-                        message
-                    );
+                from.LocalOverheadMessage(
+                    MessageType.Regular,
+                    0x3B2,
+                    false,
+                    message
+                );
             }
         }
         public override void GetProperties(ObjectPropertyList list)

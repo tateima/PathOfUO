@@ -1,13 +1,10 @@
-using Server.Mobiles;
-using Server.Items;
-using System;
 namespace Server.Talent
 {
-    public class MageCombatant : BaseTalent, ITalent
+    public class MageCombatant : BaseTalent
     {
-        public MageCombatant() : base()
+        public MageCombatant()
         {
-            BlockedBy = new Type[] { typeof(ManaShield) };
+            BlockedBy = new[] { typeof(ManaShield) };
             TalentDependency = typeof(FastLearner);
             DisplayName = "Mage combatant";
             Description = "Uses Eval Int instead of Tactics for combat damage. Allows weapon casting.";
@@ -16,6 +13,5 @@ namespace Server.Talent
             GumpHeight = 230;
             AddEndY = 130;
         }
-
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Server.Engines.Craft;
 using Server.Ethics;
 using Server.Factions;
+using Server.Misc;
 using Server.Network;
 using Server.Utilities;
 
@@ -31,7 +32,7 @@ namespace Server.Items
         [SerializableFieldSaveFlag(0)]
         private bool ShouldSerializeResource() => _rawResource != DefaultResource;
 
-        [SerializableField(1, setter: "private")]
+        [SerializableField(1)]
         [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster, canModify: true)]")]
         private AosAttributes _attributes;
 
@@ -41,7 +42,7 @@ namespace Server.Items
         [SerializableFieldDefault(1)]
         private AosAttributes AttributesDefaultValue() => new(this);
 
-        [SerializableField(2, setter: "private")]
+        [SerializableField(2)]
         [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster, canModify: true)]")]
         private AosArmorAttributes _clothingAttributes;
 
@@ -109,7 +110,7 @@ namespace Server.Items
         // Field 10
         private int _strReq = -1;
 
-        private int _pocketAmount = 0;
+        private int _pocketAmount;
 
         [EncodedInt]
         [SerializableField(11)]
@@ -131,12 +132,14 @@ namespace Server.Items
         [SerializableFieldSaveFlag(11)]
         private bool ShouldSerializePocketAmount() => _pocketAmount != 0;
 
-        private List<Item> _pockets = new List<Item>();
+        private string _pockets = "";
+
+        public string[] PocketArray => _pockets.Split(',');
 
         [EncodedInt]
         [SerializableField(12)]
         [CommandProperty(AccessLevel.GameMaster)]
-        public List<Item> Pockets
+        public string Pockets
         {
             get => _pockets;
             set
@@ -151,7 +154,7 @@ namespace Server.Items
         }
 
         [SerializableFieldSaveFlag(12)]
-        private bool ShouldSerializePockets() => _pockets.Count > 0;
+        private bool ShouldSerializePockets() => !string.IsNullOrEmpty(_pockets);
 
         private FactionItem _factionState;
 
@@ -164,7 +167,7 @@ namespace Server.Items
 
             _hitPoints = _maxHitPoints = Utility.RandomMinMax(InitMinHits, InitMaxHits);
             _pocketAmount = 0;
-            _pockets = new List<Item>();
+            _pockets = "";
             Attributes = new AosAttributes(this);
             ClothingAttributes = new AosArmorAttributes(this);
             SkillBonuses = new AosSkillBonuses(this);
@@ -641,7 +644,6 @@ namespace Server.Items
 
                 AddStatBonuses(mob);
                 mob.CheckStatTimers();
-                SocketBonus.CheckSockets(mob, false, _pockets, this);
             }
 
             base.OnAdded(parent);
@@ -663,7 +665,6 @@ namespace Server.Items
                 mob.RemoveStatMod($"{modName}Int");
 
                 mob.CheckStatTimers();
-                SocketBonus.CheckSockets(mob, true, _pockets, this);
             }
 
             base.OnRemoved(parent);
@@ -745,25 +746,19 @@ namespace Server.Items
             base.GetProperties(list);
 
              if (_pocketAmount > 0) {
-                list.Add(
-                   1060847,
-                    "Sockets: {0}/{1}",
-                    _pockets.Count.ToString(),
-                    _pocketAmount.ToString()
-                );
-                foreach(Item pocket in _pockets) {
-                    string itemName = pocket.Name;
-                    if (string.IsNullOrEmpty(itemName)) {
-                        list.Add(pocket.LabelNumber);
-                    } else {
-                        list.Add(
-                        1060847,
-                            "{0}",
-                            itemName
-                        );
-                    }
-                    SocketBonus.AddSocketProperties(pocket, this, list);
-                }
+                 list.Add(
+                     1060847,
+                     "Sockets: {0}/{1}",
+                     PocketArray.Length.ToString(),
+                     _pocketAmount.ToString()
+                 );
+                 for (var i = 0; i < PocketArray.Length; i++) {
+                     list.Add(
+                         1060847,
+                         "{0}",
+                         PocketArray[i]
+                     );
+                 }
             }
 
             if (_crafter != null)

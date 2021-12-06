@@ -1,173 +1,14 @@
-using Server.Items;
-using Server.Spells;
-using Server.Gumps;
-using Server.Mobiles;
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using Server.Gumps;
+using Server.Items;
+using Server.Mobiles;
+using Server.Spells;
 
 namespace Server.Talent
 {
     public class BaseTalent : ITalent
     {
-        public virtual double SpecialDamageScalar => Core.AOS ? 0.16 : 0.05;
-
-        public TimerExecutionToken _talentTimerToken;
-
-        private bool m_UpdateOnEquip;
-        public bool UpdateOnEquip
-        {
-            get { return m_UpdateOnEquip; }
-            set { m_UpdateOnEquip = value; }
-        }
-
-        private bool m_HasBeforeDeathSave;
-        public bool HasBeforeDeathSave
-        {
-            get { return m_HasBeforeDeathSave; }
-            set { m_HasBeforeDeathSave = value; }
-        }
-
-        private bool m_HasKillEffect;
-        public bool HasKillEffect
-        {
-            get { return m_HasKillEffect; }
-            set { m_HasKillEffect = value; }
-        }
-
-        private bool m_HasDefenseEffect;
-        public bool HasDefenseEffect
-        {
-            get { return m_HasDefenseEffect; }
-            set { m_HasDefenseEffect = value; }
-        }
-
-
-        private bool m_HasDeathEffect;
-        public bool HasDeathEffect
-        {
-            get { return m_HasDeathEffect; }
-            set { m_HasDeathEffect = value; }
-        }
-
-        private bool m_CanBeUsed;
-        public bool CanBeUsed
-        {
-            get { return m_CanBeUsed; }
-            set { m_CanBeUsed = value; }
-        }
-
-        private bool m_Activated;
-        public bool Activated
-        {
-            get { return m_Activated; }
-            set { m_Activated = value; }
-        }
-        private bool m_OnCooldown;
-        public bool OnCooldown
-        {
-            get { return m_OnCooldown; }
-            set { m_OnCooldown = value; }
-        }
-
-        private int m_TalentDependencyPoints;
-        public int TalentDependencyPoints
-        {
-            get { return m_TalentDependencyPoints; }
-            set { m_TalentDependencyPoints = value; }
-        }
-        private int m_GumpHeight;
-        public int GumpHeight
-        {
-            get { return m_GumpHeight; }
-            set { m_GumpHeight = value; }
-        }
-        private int m_AddEndY;
-        public int AddEndY
-        {
-            get { return m_AddEndY; }
-            set { m_AddEndY = value;  }
-        }
-        private bool m_IncreaseParryChance;
-        public bool IncreaseParryChance
-        {
-            get { return m_IncreaseParryChance; }
-            set { m_IncreaseParryChance = value; }
-        }
-        private bool m_IncreaseHitChance;
-        public bool IncreaseHitChance
-        {
-            get { return m_IncreaseHitChance; }
-            set { m_IncreaseHitChance = value; }
-        }
-        private Type[] m_BlockTalents;
-        public Type[] BlockedBy
-        {
-            get { return m_BlockTalents; }
-            set { m_BlockTalents = value; }
-        }
-        private Type m_TalentDependency;
-        private Type[] m_RequiredWeapon;
-        private SkillName m_RequiredWeaponSkill;
-        public SkillName RequiredWeaponSkill
-        {
-            get { return m_RequiredWeaponSkill; }
-            set { m_RequiredWeaponSkill = value; }
-        }
-
-        private Type[] m_RequiredSpell;
-
-        private string m_Description;
-        public string Description
-        {
-            get { return m_Description; }
-            set { m_Description = value; }
-        }
-        private string m_DisplayName;
-        public string DisplayName
-        {
-            get { return m_DisplayName; }
-            set { m_DisplayName = value; }
-        }
-        private int m_MaxLevel;
-        public int MaxLevel
-        {
-            get { return m_MaxLevel; }
-            set { m_MaxLevel = value; }
-        }
-
-        private int m_MobilePercentagePerPoint;
-
-        public int MobilePercentagePerPoint
-        {
-            get { return m_MobilePercentagePerPoint; }
-            set { m_MobilePercentagePerPoint = value; }
-        }
-
-        public Type TalentDependency
-        {
-            get { return m_TalentDependency; }
-            set { m_TalentDependency = value; }
-        }
-
-        public Type[] RequiredWeapon
-        {
-            get { return m_RequiredWeapon; }
-            set { m_RequiredWeapon = value; }
-        }
-        public Type[] RequiredSpell
-        {
-            get { return m_RequiredSpell; }
-            set { m_RequiredSpell = value; }
-        }
-        private int m_Level;
-        private ResistanceMod m_ResistanceMod;
-
-        public ResistanceMod ResMod
-        {
-            get { return m_ResistanceMod; }
-            set { m_ResistanceMod = value; }
-        }
         public static readonly Type[] TalentTypes =
         {
             typeof(ViperAspect),
@@ -299,172 +140,201 @@ namespace Server.Talent
             typeof(Mediumship),
             typeof(Detective),
             typeof(OrnateCrafter),
-            typeof(RuneBinding)
+            typeof(Runebinding)
         };
 
-        public int Level
-        {
-            get { return m_Level; }
-            set { m_Level = value; }
-        }
+        public TimerExecutionToken _talentTimerToken;
 
-        private int m_ImageID;
-        public int ImageID
-        {
-            get { return m_ImageID; }
-            set { m_ImageID = value; }
-        }
 
         public BaseTalent()
         {
-            m_Activated = false;
-            m_OnCooldown = false;
-            m_CanBeUsed = false;
-            m_HasDefenseEffect = false;
-            m_HasDeathEffect = false;
-            m_HasKillEffect = false;
-            m_UpdateOnEquip = false;
-            m_HasBeforeDeathSave = false;
-            m_MobilePercentagePerPoint = 3;
-            m_BlockTalents = new Type[] { };
-            m_RequiredWeapon = new Type[] { typeof(BaseWeapon) };
-            m_RequiredWeaponSkill = SkillName.Alchemy;
-            m_RequiredSpell = Array.Empty<Type>();
-            m_IncreaseHitChance = false;
-            m_IncreaseParryChance = false;
-            m_TalentDependencyPoints = 3;
-            m_Level = 0;
-            m_MaxLevel = 5;
-            m_DisplayName = "Basic Talent";
-            m_Description = "Does something.";
-            m_ImageID = 30145;
-            m_AddEndY = 110;
-            m_GumpHeight = 200;
+            UpgradeCost = false;
+            Activated = false;
+            OnCooldown = false;
+            CanBeUsed = false;
+            HasDefenseEffect = false;
+            HasDeathEffect = false;
+            HasKillEffect = false;
+            UpdateOnEquip = false;
+            HasBeforeDeathSave = false;
+            MobilePercentagePerPoint = 3;
+            BlockedBy = Array.Empty<Type>();
+            RequiredWeapon = new[] { typeof(BaseWeapon) };
+            RequiredWeaponSkill = SkillName.Alchemy;
+            RequiredSpell = Array.Empty<Type>();
+            IncreaseHitChance = false;
+            IncreaseParryChance = false;
+            TalentDependencyPoints = 3;
+            Level = 0;
+            MaxLevel = 5;
+            DisplayName = "Basic Talent";
+            Description = "Does something.";
+            ImageID = 30145;
+            AddEndY = 110;
+            GumpHeight = 200;
         }
+
+        public virtual double SpecialDamageScalar => Core.AOS ? 0.16 : 0.05;
+
+        public bool UpdateOnEquip { get; set; }
+
+        public bool HasBeforeDeathSave { get; set; }
+
+        public bool HasKillEffect { get; set; }
+
+        public bool HasDefenseEffect { get; set; }
+
+        public bool HasDeathEffect { get; set; }
+
+        public bool CanBeUsed { get; set; }
+
+        public bool Activated { get; set; }
+
+        public bool UpgradeCost { get; set; }
+
+        public bool OnCooldown { get; set; }
+
+        public int TalentDependencyPoints { get; set; }
+
+        public int GumpHeight { get; set; }
+
+        public bool IncreaseParryChance { get; set; }
+
+        public bool IncreaseHitChance { get; set; }
+
+        public SkillName RequiredWeaponSkill { get; set; }
+
+        public string Description { get; set; }
+
+        public string DisplayName { get; set; }
+
+        public int MobilePercentagePerPoint { get; set; }
+
+        public Type[] RequiredWeapon { get; set; }
+
+        public Type[] RequiredSpell { get; set; }
+
+        public ResistanceMod ResMod { get; set; }
+
+        public int Level { get; set; }
+
+        public int AddEndY { get; set; }
+
+        public Type[] BlockedBy { get; set; }
+
+        public int MaxLevel { get; set; }
+
+        public Type TalentDependency { get; set; }
+
+        public int ImageID { get; set; }
+
+        public virtual void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        {
+        }
+
+
+        public virtual void UpdateMobile(Mobile mobile)
+        {
+        }
+
+        public virtual int ModifySpellMultiplier() => Level;
+
+        public virtual bool HasSkillRequirement(Mobile mobile) => true;
+        public virtual bool HasUpgradeRequirement(Mobile mobile) => true;
 
         public virtual bool CanApplyHitEffect(Item i)
         {
-            bool debug = i.GetType().IsSubclassOf(typeof(BaseWeapon));
-            Type valid = RequiredWeapon.Where(w => w == i.GetType() || i.GetType().IsSubclassOf(w)).FirstOrDefault();
+            var debug = i.GetType().IsSubclassOf(typeof(BaseWeapon));
+            var valid = RequiredWeapon.FirstOrDefault(w => w == i.GetType() || i.GetType().IsSubclassOf(w));
 
-            bool validSkill = false;
+            var validSkill = false;
             if (i is BaseWeapon bw)
             {
-                validSkill = (RequiredWeaponSkill == bw.DefSkill);
+                validSkill = RequiredWeaponSkill == bw.DefSkill;
             }
-            
+
             return valid != null || validSkill;
         }
 
-        public virtual void CheckHitEffect(Mobile a, Mobile t, int d)
+        public virtual void CheckMissEffect(Mobile attacker, Mobile target)
         {
-            return;
         }
 
-        public virtual void CheckMissEffect(Mobile a, Mobile t)
+        public virtual void CheckDefenderMissEffect(Mobile attacker, Mobile target)
         {
-            return;
         }
 
-        public virtual void CheckDefenderMissEffect(Mobile a, Mobile t)
-        {
-            return;
-        }
-
-
-        public virtual void UpdateMobile(Mobile m)
-        {
-            return;
-        }
-
-        public virtual int GetHitChanceModifier()
-        {
-            return Level;
-        }
+        public virtual int GetHitChanceModifier() => Level;
 
         public virtual bool CanScaleSpellDamage(Spell spell)
         {
-            Type valid = RequiredSpell.Where(w => w == spell.GetType() || spell.GetType().IsSubclassOf(w)).FirstOrDefault();
+            var valid = RequiredSpell.FirstOrDefault(w => w == spell.GetType() || spell.GetType().IsSubclassOf(w));
             return valid != null;
         }
 
-        public virtual int ModifySpellMultiplier()
+        public virtual double ModifySpellScalar() => 0.0;
+
+        public virtual void CheckSpellEffect(Mobile attacker, Mobile target)
         {
-            return Level;
-        }
-        public virtual double ModifySpellScalar()
-        {
-            return 0.0;
-        }
-        public virtual void CheckSpellEffect(Mobile m, Mobile t)
-        {
-            return;
-        }
-        public virtual bool HasSkillRequirement(Mobile mobile) {
-            return true;
-        }
-        public virtual void CheckDefenseEffect(Mobile m, Mobile t, int d)
-        {
-            return;
         }
 
-        public virtual void CheckDeathEffect(Mobile t)
+        public virtual void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
         {
-            return;
         }
 
-        public virtual void CheckKillEffect(Mobile v, Mobile k)
+        public virtual void CheckDeathEffect(Mobile target)
         {
-            return;
         }
 
-        public virtual void CheckBeforeDeathEffect(Mobile t)
+        public virtual void CheckKillEffect(Mobile victim, Mobile killer)
         {
-            return;
         }
 
-        public virtual Mobile ScaleMobile(Mobile m)
+        public virtual void CheckBeforeDeathEffect(Mobile target)
         {
-            m = ScaleMobileStats(m);
-            m = ScaleMobileSkills(m, "Magical");
-            m = ScaleMobileSkills(m, "Combat Ratings");
-            m = ScaleMobileSkills(m, "Lore & Knowledge");
-            return m;
         }
 
-        public virtual Mobile ScaleMobileStats(Mobile m)
+        public virtual Mobile ScaleMobile(Mobile mobile)
+        {
+            mobile = ScaleMobileStats(mobile);
+            mobile = ScaleMobileSkills(mobile, "Magical");
+            mobile = ScaleMobileSkills(mobile, "Combat Ratings");
+            mobile = ScaleMobileSkills(mobile, "Lore & Knowledge");
+            return mobile;
+        }
+
+        public virtual Mobile ScaleMobileStats(Mobile mobile)
         {
             // default affinity scaling is 3% per level
-            int modifier = (Level * MobilePercentagePerPoint);
-            m.RawDex += AOS.Scale(m.RawDex, modifier);
-            m.RawInt += AOS.Scale(m.RawInt, modifier);
-            m.RawStr += AOS.Scale(m.RawStr, modifier);
-            return m;
+            var modifier = Level * MobilePercentagePerPoint;
+            mobile.RawDex += AOS.Scale(mobile.RawDex, modifier);
+            mobile.RawInt += AOS.Scale(mobile.RawInt, modifier);
+            mobile.RawStr += AOS.Scale(mobile.RawStr, modifier);
+            return mobile;
         }
 
-        public virtual Mobile ScaleMobileSkills(Mobile m, string skillGroupName)
+        public virtual Mobile ScaleMobileSkills(Mobile mobile, string skillGroupName)
         {
-            SkillsGumpGroup group = SkillsGumpGroup.Groups.Where(group => group.Name == skillGroupName).FirstOrDefault();
+            var group = SkillsGumpGroup.Groups.FirstOrDefault(group => group.Name == skillGroupName);
             if (group != null)
             {
-                foreach (SkillName skill in group.Skills)
+                foreach (var skill in group.Skills)
                 {
-                    m.Skills[skill].Base += (Level * MobilePercentagePerPoint);
+                    mobile.Skills[skill].Base += Level * MobilePercentagePerPoint;
                 }
             }
-            return m;
+
+            return mobile;
         }
 
 
-
-        public void CriticalStrike(Mobile m, Mobile t, int d)
+        public void CriticalStrike(Mobile mobile, Mobile target, int damage)
         {
-            // double damage crit so damage them with half total damage again
-            t.Damage((int)(d / 2), m);
+            target.Damage(damage / 2, mobile);
         }
 
 
-        public virtual void OnUse(Mobile m)
+        public virtual void OnUse(Mobile from)
         {
             if (!Activated && !OnCooldown)
             {
@@ -474,30 +344,29 @@ namespace Server.Talent
 
         public virtual int CalculateResetValue(int value)
         {
-
             if (Activated)
             {
                 // been activated once before, so remove last levels values
                 value -= Level - 1;
             }
+
             return value;
         }
+
         public virtual int CalculateNewValue(int value)
         {
             Activated = true;
             return value += Level;
         }
 
-        public virtual bool IgnoreTalentBlock(Mobile mobile)
-        {
-            return false;
-        }
+        public virtual bool IgnoreTalentBlock(Mobile mobile) => false;
 
         public virtual void ExpireTalentCooldown()
         {
             OnCooldown = false;
             Activated = false;
         }
+
         public static bool IsMobileType(Type[] group, Type type)
         {
             var contains = false;
@@ -505,39 +374,49 @@ namespace Server.Talent
             {
                 contains = group[j].IsAssignableFrom(type);
             }
+
             return contains;
         }
-        public virtual int GetExtraResourceCheck()
-        {
-            if (Utility.RandomDouble() < Level / 20)
-            { // 0.5% per point
-                return Level;
-            }
-            return 0;
-        }
-        public int GoldAmount(int amount)
-        {
-            return (int)(amount * Utility.RandomDouble());
-        }
+
+        public int GetExtraResourceCheck() => Utility.RandomDouble() < Level / 10.0 ? Level : 0;
 
         public virtual bool CanAffordLoss(PlayerMobile player, int amount)
         {
             Container bank = player.FindBankNoCreate();
-            bool validBankGold = Banker.GetBalance(player) >= amount;
-            bool validGold = player.Backpack?.GetAmount(typeof(Gold)) >= amount;
-            return (validGold || validBankGold);
+            var validBankGold = Banker.GetBalance(player) >= amount;
+            var validGold = player.Backpack?.GetAmount(typeof(Gold)) >= amount;
+            return validGold || validBankGold;
         }
 
-        public virtual void ProcessGoldGain(PlayerMobile player, int amount, bool loss)
+        public bool HasResourceQuantity(Mobile mobile, Type type, int amount)
         {
-            int modifiedAmount = (int)(amount * Utility.RandomDouble());
+            int itemAmount = 0;
+            var items = mobile.BankBox?.FindItemsByType(type);
+            if (items != null)
+            {
+                itemAmount += items.Sum(item => item.Amount);
+            }
+            if (amount > 0 && itemAmount >= amount)
+            {
+                mobile.BankBox?.ConsumeTotal(type, amount);
+            }
+            return itemAmount >= amount;
+        }
+
+        public virtual void ProcessGoldGain(PlayerMobile player, int amount, bool loss, bool ignoreMod = false)
+        {
+            var modifiedAmount = (ignoreMod) ? amount : (int)(amount * Utility.RandomDouble());
             if (player.Backpack != null)
             {
                 Container bank = player.FindBankNoCreate();
-                if (loss && (player.Backpack?.ConsumeTotal(typeof(Gold), modifiedAmount) == true || Banker.Withdraw(player, modifiedAmount)))
+                if (loss && (player.Backpack?.ConsumeTotal(typeof(Gold), modifiedAmount) == true ||
+                             Banker.Withdraw(player, modifiedAmount)))
                 {
                     return;
-                } else if (!loss) {
+                }
+
+                if (!loss)
+                {
                     if (modifiedAmount > 1000)
                     {
                         player.AddToBackpack(new BankCheck(modifiedAmount));
@@ -548,7 +427,6 @@ namespace Server.Talent
                     }
                 }
             }
-            return;
         }
     }
 }

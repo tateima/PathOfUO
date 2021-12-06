@@ -1,15 +1,14 @@
-using System;
 using Server.Items;
 
 namespace Server.Talent
 {
-    public class CarefulShooter : BaseTalent, ITalent
+    public class CarefulShooter : BaseTalent
     {
-        public CarefulShooter() : base()
+        public CarefulShooter()
         {
             TalentDependency = typeof(ArcherFocus);
             RequiredWeaponSkill = SkillName.Archery;
-            RequiredWeapon = new Type[] { typeof(BaseRanged) };
+            RequiredWeapon = new[] { typeof(BaseRanged) };
             DisplayName = "Careful shooter";
             Description = "Lowers chance for arrow to be lost on miss.";
             ImageID = 171;

@@ -1,13 +1,10 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class SmoothTalker : BaseTalent, ITalent
+    public class SmoothTalker : BaseTalent
     {
-        public SmoothTalker() : base()
+        public SmoothTalker()
         {
-            BlockedBy = new Type[] { typeof(MerchantPorter) };
+            BlockedBy = new[] { typeof(MerchantPorter) };
             DisplayName = "Smooth talker";
             Description = "Receive discounts on items from vendors, scales with level.";
             ImageID = 366;
@@ -16,9 +13,6 @@ namespace Server.Talent
             MaxLevel = 10;
         }
 
-        public override double ModifySpellScalar()
-        {
-            return (Level / 100) * 2; // 2% per point
-        }
+        public override double ModifySpellScalar() => Level * 2; // 2% per point
     }
 }

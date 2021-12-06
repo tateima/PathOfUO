@@ -1,99 +1,393 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Server.Items;
-using Server.Talent;
 using Server.Network;
+using Server.Talent;
 
-namespace Server
+namespace Server.Misc
 {
     public class SocketBonus
     {
-        public static AosAttributes AddAosAttribute(AosAttribute attribute, AosAttributes parentAttributes, int attributeBonus) {
-            switch(attribute) {
-                case AosAttribute.AttackChance:
-                    parentAttributes.AttackChance += attributeBonus;
-                break;
-                case AosAttribute.BonusDex:
-                    parentAttributes.BonusDex += attributeBonus;
-                break;
-                case AosAttribute.BonusHits:
-                    parentAttributes.BonusHits += attributeBonus;
-                break;
-                case AosAttribute.BonusInt:
-                    parentAttributes.BonusInt += attributeBonus;
-                break;
-                case AosAttribute.BonusMana:
-                    parentAttributes.BonusMana += attributeBonus;
-                break;
-                case AosAttribute.BonusStam:
-                    parentAttributes.BonusStam += attributeBonus;
-                break;
-                case AosAttribute.BonusStr:
-                    parentAttributes.BonusStr += attributeBonus;
-                break;
-                case AosAttribute.CastRecovery:
-                    parentAttributes.CastRecovery += attributeBonus;
-                break;
-                case AosAttribute.CastSpeed:
-                    parentAttributes.CastSpeed += attributeBonus;
-                break;
-                case AosAttribute.DefendChance:
-                    parentAttributes.DefendChance += attributeBonus;
-                break;
-                case AosAttribute.EnhancePotions:
-                    parentAttributes.EnhancePotions += attributeBonus;
-                break;
+        public static string RandomWeaponRuneWord()
+        {
+            string[] words =
+            {
+                "KresHurKazZetLuxNex",
+                "LiEspDemChaKaxVax",
+                "ZoatDothPaxOrtEspMox",
+                "LiDemKresKazAmnVas",
+                "NexOrtDemKazDumPax",
+                "VasOrtLuxPaxVaxNex",
+                "NexZaqVasHemPax",
+                "VasCurHurDrux",
+                "MeaMoxVoxVexAmn",
+                "EspCurLuxKresOrt",
+                "AmnDruxDothOrtVax",
+                "OrtVasHemZaqNex",
+                "NexZaqAmnVasOrt",
+                "UmDruxZaqOrtHem",
+                "DruxHemOrtVasZet",
+                "VasDothZetOrtLeq",
+                "HemOrtMarZetAmn",
+                "ZaqMarAmnNexDrux",
+                "VaxZetDothDruxVax",
+                "DothZetPaxLeqDoth",
+                "ZetDruxNexOrtHem",
+                "MarUmDruxZaqZet",
+                "LeqAmnVasNexPax",
+                "PaxLeqUmAmnLeq",
+                "VaxDothHemOrtVas",
+                "AlozHemLeqOrt",
+                "VaxZoatLuxZet",
+                "KresMeaOrtDoth",
+                "DothNexZoatUm",
+                "AeoOrtZetDrux",
+                "VasDruxAlozZoat",
+                "NexPaxZoatAloz",
+                "NexHurZoatHurAloz",
+                "UmAlozHurAmnVas",
+                "KresAeoLuzDothVas",
+                "VasOrtDruxLuxMea",
+                "AeoVasKresHurOrt",
+                "VoxVexAlozEsp",
+                "CurVexMeaMox",
+                "VexCurDruxHur",
+                "VexVasOrtAmnEsp",
+                "AeoNexUmEspVex",
+                "KresVaxMoxMeaCur",
+                "VexHurLuxNexZaq",
+                "KazDemEspZeZa",
+                "DumOrtMoxZaHur",
+                "MoxKazOrtDumZe",
+                "KazAmnCurVexPax",
+                "LuxMoxDruxVexVox",
+                "VexVoxZetVasOrt",
+                "AmnOrtLeqAlozZoat",
+                "VexAlozLeqZe",
+                "VasZeKazAeoHem",
+                "AloxVoxMarZetDoth",
+                "ZeCurHemDruxDoth",
+                "LuxOrtAmnDoth",
+                "LarChaZoAmnOrt",
+                "LarAmnChaZoPax",
+                "ChaZaAeoDruxZoat",
+                "ZeMirZoAmnVas",
+                "ZoDruxAmnDoth",
+                "LeqMarZothZeZa",
+                "UmOrtChaLiAmn",
+                "KazDumChaPaxVax",
+                "MoxCurDothLiLar",
+                "KazDemDumVexZa",
+            };
+            return words[Utility.Random(words.Length)];
+        }
+        public static string RandomShieldRuneWord()
+        {
+            string[] words =
+            {
+                "ZetAmnMarLeq",
+                "PaxZaqMarOrtNex",
+                "ZaqMarOrt",
+                "ZeZaKazMoxVex"
+            };
+            return words[Utility.Random(words.Length)];
+        }
+        public static string RandomJewelleryRuneWord()
+        {
+            string[] words =
+            {
+                "AmnMarLeqDruxZaq",
+                "NexAmnVasUmZet",
+                "VasZetUmZetOrt",
+                "OrtMarLeqAmnOrt",
+                "OrtVasDruxCurMox",
+                "EspCurAmnOrt"
+            };
+            return words[Utility.Random(words.Length)];
+        }
+        public static string RandomArmorRuneWord()
+        {
+            string[] words =  {
+                "DruxOrtHemZetVax",
+                "NexDruxVasHemZaq",
+                "MarNexMarAmnVas",
+                "DruxZaqUmOrtUm",
+                "HemOrtMarVasNex",
+                "DothZetAmnLeqZaq",
+                "OrtZetMarDruxAmn",
+                "MarAmnNexAmnMar",
+                "ZetVaxLeqDruxOrt",
+                "PaxZetUmLeqDoth",
+                "DruxPaxNexOrtNex",
+                "UmDruxZaqHemZet",
+                "MeaZoatKres",
+                "ZoatKresOrt",
+                "HurLuxAloz",
+                "MeaZoatKresAloz",
+                "AmnDothHurAloz",
+                "HurZaqMarAmn",
+                "ZaqAmnOrtKresLux",
+                "AmnZoatOrtDruxLux",
+                "HurAlozOrtVasMea",
+                "EspMoxCur",
+                "ZoatOrtCur",
+                "ZoatZaOrtKazDem",
+                "VexAmnVaxKazDem",
+                "KazVaxZaDem",
+                "KazOrtDemDum",
+                "DumVoxAlozVexPax",
+                "MeaAeoKresHurDum",
+                "EspDruxMirZaLux",
+                "ZoatDruxDem",
+                "DruxDemKazOrtDum",
+                "KazOrtDumZaLi",
+                "KazAmnVasLi",
+                "DruxHurEspOrt",
+                "AmnCurOrt",
+                "OrtVasMox",
+                "NexZeDum",
+                "LuxDumKresVexHur",
+                "KresEspCurAmnMar",
+                "OrtAmnZeKazMar",
+                "LiMirAmnOrt",
+                "MirZoMarLar",
+                "VexKazZoAmn",
+                "EspMoxCurZo",
+                "LiChaKaxDumKres",
+                "DemLiDumKazAmn"
+            };
+            return words[Utility.Random(words.Length)];
+        }
+        public static string RandomClothingRuneWord()
+        {
+            string[] words = {
+                "ZetAmnMar",
+                "LuxAmnMarAoe",
+                "CurOrtZetMar",
+                "MarNexLeqMar",
+                "NexMarUmDrux",
+                "DruxMarPaxZaq",
+                "PaxZaqOrtZet",
+                "AlozAeoLux",
+                "LuxZetOrt",
+                "AeoMeaAoe",
+                "MeaAlozOrtKres",
+                "ZaOrtZeAloz",
+                "OrtVexMar",
+                "KresZeAlozOrt",
+                "ChaZoAmnZoat",
+                "ChaAmnOrtZet",
+                "ChaOrtAlozMea"
+            };
+            return words[Utility.Random(words.Length)];
+        }
+
+        public static string GetRuneWordSymbolType(string runeword)
+        {
+            return runeword switch
+            {
+                "ZetAmnMar"            => "Half Apron",
+                "LuxAmnMarAoe"         => "Robe",
+                "CurOrtZetMar"         => "Robe",
+                "MarNexLeqMar"         => "Bear Mask",
+                "NexMarUmDrux"         => "Deer Mask",
+                "DruxMarPaxZaq"        => "Wizards Hat",
+                "PaxZaqOrtZet"         => "Horned Tribal Mask",
+                "AlozAeoLux"           => "Kasa",
+                "LuxZetOrt"            => "Jester Hat",
+                "AeoMeaAoe"            => "Cloth Ninja Hood",
+                "MeaAlozOrtKres"       => "Kasa",
+                "ZaOrtZeAloz"          => "Bandana",
+                "OrtVexMar"            => "Bear Mask",
+                "KresZeAlozOrt"        => "Tricorne Hat",
+                "ChaZoAmnZoat"         => "Tricorne Hat",
+                "ChaAmnOrtZet"         => "Cloak",
+                "ChaOrtAlozMea"        => "Bandana",
+                "DruxOrtHemZetVax"     => "Studded Chest",
+                "NexDruxVasHemZaq"     => "Ringmail Gloves",
+                "MarNexMarAmnVas"      => "Plate Helm",
+                "DruxZaqUmOrtUm"       => "Plate Chest",
+                "HemOrtMarVasNex"      => "Plate Gloves",
+                "DothZetAmnLeqZaq"     => "Plate Gorget",
+                "OrtZetMarDruxAmn"     => "Chain Legs",
+                "MarAmnNexAmnMar"      => "Bone Arms",
+                "ZetVaxLeqDruxOrt"     => "Bone Helm",
+                "PaxZetUmLeqDoth"      => "Leather Legs",
+                "DruxPaxNexOrtNex"     => "Chain Chest",
+                "UmDruxZaqHemZet"      => "Leather Gorget",
+                "MeaZoatKres"          => "Plate Do",
+                "ZoatKresOrt"          => "Leather Hiro Sode",
+                "HurLuxAloz"           => "Plate Battle Kabuto",
+                "MeaZoatKresAloz"      => "Plate Do",
+                "AmnDothHurAloz"       => "Leather Ninja Mitts",
+                "HurZaqMarAmn"         => "Plate Suneate",
+                "ZaqAmnOrtKresLux"     => "Leather Mempo",
+                "AmnZoatOrtDruxLux"    => "Plate Do",
+                "HurAlozOrtVasMea"     => "Leather Ninja Mitts",
+                "EspMoxCur"            => "Dragon Helm",
+                "ZoatOrtCur"           => "Elven Glasses",
+                "ZoatZaOrtKazDem"      => "Elven Glasses",
+                "VexAmnVaxKazDem"      => "Elven Glasses",
+                "KazVaxZaDem"          => "Elven Glasses",
+                "KazOrtDemDum"         => "Elven Glasses",
+                "DumVoxAlozVexPax"     => "Elven Glasses",
+                "MeaAeoKresHurDum"     => "Elven Glasses",
+                "EspDruxMirZaLux"      => "Elven Glasses",
+                "ZoatDruxDem"          => "Elven Glasses",
+                "DruxDemKazOrtDum"     => "Elven Glasses",
+                "KazOrtDumZaLi"        => "Elven Glasses",
+                "KazAmnVasLi"          => "Elven Glasses",
+                "DruxHurEspOrt"        => "Elven Glasses",
+                "AmnCurOrt"            => "Chain Legs",
+                "OrtVasMox"            => "Winged Helm",
+                "NexZeDum"             => "Orc Helm",
+                "LuxDumKresVexHur"     => "Female Plate Chest",
+                "KresEspCurAmnMar"     => "Plate Chest",
+                "OrtAmnZeKazMar"       => "Leather Gloves",
+                "LiMirAmnOrt"          => "Plate Gloves",
+                "MirZoMarLar"          => "Plate Gorget",
+                "VexKazZoAmn"          => "Orc Helm",
+                "EspMoxCurZo"          => "Bone Chest",
+                "LiChaKaxDumKres"      => "Plate Battle Kabuto",
+                "DemLiDumKazAmn"       => "Plate Legs",
+                "AmnMarLeqDruxZaq"     => "Gold Bracelet",
+                "NexAmnVasUmZet"       => "Gold Bracelet",
+                "VasZetUmZetOrt"       => "Gold Ring",
+                "OrtMarLeqAmnOrt"      => "Gold Ring",
+                "OrtVasDruxCurMox"     => "Gold Bracelet",
+                "EspCurAmnOrt"         => "Silver Ring",
+                "ZetAmnMarLeq"         => "Wooden Kite Shield",
+                "PaxZaqMarOrtNex"      => "Heater Shield",
+                "ZaqMarOrt"            => "Any",
+                "ZeZaKazMoxVex"        => "Metal Shield",
+                "KresHurKazZetLuxNex"  => "Frost bringer",
+                "LiEspDemChaKaxVax"    => "Enchanted Titan Leg Bone",
+                "ZoatDothPaxOrtEspMox" => "The Beserkers Maul",
+                "LiDemKresKazAmnVas"   => "Staff Of Power",
+                "NexOrtDemKazDumPax"   => "Blade Of The Righteous",
+                "VasOrtLuxPaxVaxNex"   => "Calm",
+                "NexZaqVasHemPax"      => "Magical Shortbow",
+                "VasCurHurDrux"        => "Elven Composite Longbow",
+                "MeaMoxVoxVexAmn"      => "Radiant Scimitar",
+                "EspCurLuxKresOrt"     => "Ornate Axe",
+                "AmnDruxDothOrtVax"    => "Double Axe",
+                "OrtVasHemZaqNex"      => "Katana",
+                "NexZaqAmnVasOrt"      => "Longsword",
+                "UmDruxZaqOrtHem"      => "Longsword",
+                "DruxHemOrtVasZet"     => "Bone Harvester",
+                "VasDothZetOrtLeq"     => "Bow",
+                "HemOrtMarZetAmn"      => "Bardiche",
+                "ZaqMarAmnNexDrux"     => "Kryss",
+                "VaxZetDothDruxVax"    => "Black Staff",
+                "DothZetPaxLeqDoth"    => "Maul",
+                "ZetDruxNexOrtHem"     => "Lance",
+                "MarUmDruxZaqZet"      => "Bow",
+                "LeqAmnVasNexPax"      => "War Fork",
+                "PaxLeqUmAmnLeq"       => "War Hammer",
+                "VaxDothHemOrtVas"     => "Executioners Axe",
+                "AlozHemLeqOrt"        => "Tessen",
+                "VaxZoatLuxZet"        => "Sai",
+                "KresMeaOrtDoth"       => "Nunchaku",
+                "DothNexZoatUm"        => "Tetsubo",
+                "AeoOrtZetDrux"        => "Yumi",
+                "VasDruxAlozZoat"      => "Bokuto",
+                "NexPaxZoatAloz"       => "No Dachi",
+                "NexHurZoatHurAloz"    => "Daisho",
+                "UmAlozHurAmnVas"      => "No Dachi",
+                "KresAeoLuzDothVas"    => "Tessen",
+                "VasOrtDruxLuxMea"     => "Kama",
+                "AeoVasKresHurOrt"     => "Yumi",
+                "VoxVexAlozEsp"        => "Rune Blade",
+                "CurVexMeaMox"         => "Diamond Mace",
+                "VexCurDruxHur"        => "Wild Staff",
+                "VexVasOrtAmnEsp"      => "Assassin Spike",
+                "AeoNexUmEspVex"       => "War Cleaver",
+                "KresVaxMoxMeaCur"     => "Elven Machete",
+                "VexHurLuxNexZaq"      => "War Mace",
+                "KazDemEspZeZa"        => "Halberd",
+                "DumOrtMoxZaHur"       => "Bow",
+                "MoxKazOrtDumZe"       => "Club",
+                "KazAmnCurVexPax"      => "ShortSpear",
+                "LuxMoxDruxVexVox"     => "Lance",
+                "VexVoxZetVasOrt"      => "Dagger",
+                "AmnOrtLeqAlozZoat"    => "Heavy Crossbow",
+                "VexAlozLeqZe"         => "Black Staff",
+                "VasZeKazAeoHem"       => "Gnarled Staff",
+                "AloxVoxMarZetDoth"    => "Scepter",
+                "ZeCurHemDruxDoth"     => "Cutlass",
+                "LuxOrtAmnDoth"        => "Cleaver",
+                "LarChaZoAmnOrt"       => "Katana",
+                "LarAmnChaZoPax"       => "Dagger",
+                "ChaZaAeoDruxZoat"     => "Skinning Knife",
+                "ZeMirZoAmnVas"        => "Halberd",
+                "ZoDruxAmnDoth"        => "Kryss",
+                "LeqMarZothZeZa"       => "Pike",
+                "UmOrtChaLiAmn"        => "Bardiche",
+                "KazDumChaPaxVax"      => "Scythe",
+                "MoxCurDothLiLar"      => "Longsword",
+                "KazDemDumVexZa"       => "Repeating Crossbow"
+            };
+        }
+
+        public static string GetItemName(Item item)
+        {
+            string itemName = item.Name;
+            if (string.IsNullOrEmpty(itemName)) {
+                itemName = item.ItemData.Name;
+                itemName = Regex.Replace(itemName, @"%.%", "");
             }
-            return parentAttributes;
+            if (!string.IsNullOrEmpty(itemName))
+            {
+                itemName = string.Concat(itemName[0].ToString().ToUpper(), itemName.AsSpan(1));
+            }
+            return itemName;
         }
         public static void AddItem(Mobile from, Item item, Item socketItem) {
             string overheadMessage = "";
             Item runeWordItem = null;
-            string itemName = socketItem.Name;
-            if (string.IsNullOrEmpty(itemName)) {
-                itemName = socketItem.ItemData.Name;
-            }
-            itemName = Regex.Replace(itemName, @"[^0-9a-zA-Z\._]", "");
-            if (item is BaseWeapon weapon && weapon.SocketAmount > 0 && weapon.Sockets.Count < weapon.SocketAmount) { // only crafted items
-                weapon.Sockets.Add(socketItem);
+            string itemName = GetItemName(socketItem);
+            if (item is BaseWeapon { SocketAmount: > 0 } weapon && weapon.SocketArray.Length < weapon.SocketAmount) {
+                weapon.Sockets = weapon.SocketArray.Length > 0 ? weapon.Sockets  + "," + itemName : itemName;
                 if (socketItem is RuneWord) {
-                    runeWordItem = SocketBonus.GetRuneWordWeapon(weapon);
+                    runeWordItem = GetRuneWordWeapon(weapon);
                 }
-                overheadMessage = string.Format("* You add {0} to the weapon *", itemName);
-            } else if (item is BaseArmor armor && armor.SocketAmount > 0 && armor.Sockets.Count < armor.SocketAmount) { 
-                armor.Sockets.Add(socketItem);
+                overheadMessage = $"* You add {itemName} to the weapon *";
+            } else if (item is BaseArmor { SocketAmount: > 0 } armor && armor.SocketArray.Length < armor.SocketAmount)
+            {
+                armor.Sockets = armor.SocketArray.Length > 0 ? armor.Sockets  + "," + itemName : itemName;
                 if (socketItem is RuneWord) {
-                    runeWordItem = SocketBonus.GetRuneWordArmor(armor);
+                    runeWordItem = GetRuneWordArmor(armor);
                 }
-                overheadMessage = string.Format("* You add {0} to the armor *", itemName);
-            } else if (item is BaseJewel jewellery && jewellery.SocketAmount > 0 && jewellery.Sockets.Count < jewellery.SocketAmount) { 
-                jewellery.Sockets.Add(socketItem);
+                overheadMessage = $"* You add {itemName} to the armor *";
+            } else if (item is BaseJewel { SocketAmount: > 0 } jewellery && jewellery.SocketArray.Length < jewellery.SocketAmount) {
+                jewellery.Sockets = jewellery.SocketArray.Length > 0 ? jewellery.Sockets  + "," + itemName : itemName;
                 if (socketItem is RuneWord) {
-                    runeWordItem = SocketBonus.GetRuneWordJewellery(jewellery);
+                    runeWordItem = GetRuneWordJewellery(jewellery);
                 }
-                overheadMessage = string.Format("* You add {0} to the armor *", itemName);
-            } else if (item is BaseShield shield && shield.SocketAmount > 0 && shield.Sockets.Count < shield.SocketAmount) { 
-                shield.Sockets.Add(socketItem);
+                overheadMessage = $"* You add {itemName} to the armor *";
+            } else if (item is BaseShield { SocketAmount: > 0 } shield && shield.SocketArray.Length < shield.SocketAmount)
+            {
+                shield.Sockets = shield.SocketArray.Length > 0 ? shield.Sockets + "," + itemName : itemName;
                 if (socketItem is RuneWord) {
-                    runeWordItem = SocketBonus.GetRuneWordShield(shield);
+                    runeWordItem = GetRuneWordShield(shield);
                 }
-                overheadMessage = string.Format("* You add {0} to the armor *", itemName);
-            } else if (item is BaseClothing clothing && clothing.PocketAmount > 0 && clothing.Pockets.Count < clothing.PocketAmount 
-                    && (clothing is BaseHat || clothing is BaseWaist || clothing is BaseOuterTorso)) {
-                clothing.Pockets.Add(socketItem);
+                overheadMessage = $"* You add {itemName} to the armor *";
+            } else if (item is BaseClothing { PocketAmount: > 0 } clothing && clothing.PocketArray.Length < clothing.PocketAmount && clothing is BaseHat or BaseWaist or BaseOuterTorso) {
+                clothing.Pockets = clothing.PocketArray.Length > 0 ? clothing.Pockets + "," + itemName : itemName;
                 if (socketItem is RuneWord) {
-                    runeWordItem = SocketBonus.GetRuneWordClothing(clothing);
+                    runeWordItem = GetRuneWordClothing(clothing);
                 }
-                overheadMessage = string.Format("* You add {0} to the clothing *", itemName);
+                overheadMessage = $"* You add {itemName} to the clothing *";
             } else {
-                from.SendMessage(string.Format("You cannot place {0} into this item", itemName));
+                from.SendMessage($"You cannot place {itemName} into this item");
             }
             if (runeWordItem != null) {
                 item.Delete();
                 from.Backpack.DropItem(runeWordItem);
                 from.SendSound(0x1F7);
-                overheadMessage = string.Format("* Your runewords create a powerful item *", runeWordItem.Name);
+                overheadMessage = "* Your runewords create a powerful item *";
             }
             if (!string.IsNullOrEmpty(overheadMessage)) {
                 item.InvalidateProperties();
@@ -107,249 +401,186 @@ namespace Server
             }
         }
 
-        public static void AddSocketProperties(Item socket, Item parent, ObjectPropertyList list) {
-            List<ResistanceMod> resistanceMods = GetSocketItemResistanceBonus(socket);
+        public static void AddJewellerySocketProperties(BaseJewel jewel, List<ResistanceMod> resistanceMods)
+        {
+            AosElementAttributes jewelResistances = jewel.Resistances;
             foreach(ResistanceMod mod in resistanceMods) {
-                if (mod.Type == ResistanceType.Cold) {
-                    list.Add(1060445, mod.Offset.ToString());
-                } else if (mod.Type == ResistanceType.Energy) {
-                    list.Add(1060446, mod.Offset.ToString());
-                } else if (mod.Type == ResistanceType.Fire) {
-                    list.Add(1060447, mod.Offset.ToString());
-                } else if (mod.Type == ResistanceType.Poison) {
-                    list.Add(1060449, mod.Offset.ToString()); 
-                } else if (mod.Type == ResistanceType.Physical) {
-                    list.Add(1060448, mod.Offset.ToString()); 
-                }
-            }
-            List<AosAttribute> attributes = GetSocketItemAttributeBonus(socket, parent);
-            string attributeBonus = "5";
-            int labelNumber = 0;
-            foreach(AosAttribute attribute in attributes) {
-                labelNumber = 0;
-                if (attribute == AosAttribute.WeaponSpeed) {
-                    labelNumber = 1060486; // swing speed increase ~1_val~%
-                } else if (attribute == AosAttribute.BonusStr) {
-                    labelNumber = 1060485; // strength bonus ~1_val~                     
-                } else if (attribute == AosAttribute.RegenMana) {
-                    labelNumber = 1060440; // mana regeneration ~1_val~
-                } else if (attribute == AosAttribute.SpellDamage) {
-                    labelNumber = 1060483; // spell damage increase ~1_val~%
-                } else if (attribute == AosAttribute.SpellChanneling) {
-                    labelNumber = 1060482;
-                } else if (attribute == AosAttribute.RegenHits) {
-                    labelNumber = 1060444; // hit point regeneration ~1_val~
-                } else if (attribute == AosAttribute.LowerRegCost) {
-                    labelNumber = 1060484; // stamina increase ~1_val~
-                } else if (attribute == AosAttribute.BonusStam) {
-                    labelNumber = 1060484; // stamina increase ~1_val~
-                } else if (attribute == AosAttribute.NightSight) {
-                   labelNumber = 1060441;
-                } else if (attribute == AosAttribute.BonusMana) {
-                    labelNumber = 1060439; // mana increase ~1_val~
-                } else if (attribute == AosAttribute.Luck) {
-                    labelNumber = 1060436; // luck ~1_val~
-                } else if (attribute == AosAttribute.LowerManaCost) {
-                    labelNumber = 1060433; // lower mana cost ~1_val~%
-                } else if (attribute == AosAttribute.LowerRegCost) {
-                    labelNumber = 1060434; // lower reagent cost ~1_val~%
-                } else if (attribute == AosAttribute.BonusInt) {
-                    labelNumber = 1060432; // intelligence bonus ~1_val~
-                } else if (attribute == AosAttribute.BonusHits) {
-                    labelNumber = 1060435;
-                } else if (attribute == AosAttribute.AttackChance) {
-                    labelNumber = 1060415; // hit chance increase ~1_val~%
-                } else if (attribute == AosAttribute.CastSpeed) {
-                    labelNumber = 1060413; // faster casting ~1_val~
-                } else if (attribute == AosAttribute.CastRecovery) {
-                    labelNumber = 1060412; // faster cast recovery ~1_val~
-                } else if (attribute == AosAttribute.EnhancePotions) {
-                    labelNumber = 1060411; // enhance potions ~1_val~%
-                } else if (attribute == AosAttribute.BonusDex) {
-                    labelNumber = 1060409; // dexterity bonus ~1_val~
-                } else if (attribute == AosAttribute.DefendChance) {
-                    labelNumber = 1060408; // defense chance increase ~1_val~%
-                } else if (attribute == AosAttribute.WeaponDamage) {
-                    labelNumber = 1060401; // damage increase ~1_val~%
-                } else if (attribute == AosAttribute.BonusDex) {
-                    labelNumber = 1060409; // dexterity bonus ~1_val~
-                } else if (attribute == AosAttribute.ReflectPhysical) {
-                    labelNumber = 1060442; // reflect physical damage ~1_val~%s
-                } else if (attribute == AosAttribute.IncreasedKarmaLoss) {
-                    labelNumber = 1075210; // Increased Karma Loss ~1val~%
-                }
-                if (labelNumber > 0) {
-                    list.Add(labelNumber, attributeBonus);
-                }
-            }
-            if (parent is BaseWeapon) {
-                List<AosWeaponAttribute> weaponAttributes = GetSocketItemWeaponAttributeBonus(socket);
-                foreach(AosWeaponAttribute weaponAttribute in weaponAttributes) {
-                    labelNumber = 0;
-                    switch(weaponAttribute) {
-                        case AosWeaponAttribute.HitColdArea:
-                            labelNumber = 1060416;
-                        break;
-                        case AosWeaponAttribute.HitLeechHits:
-                            labelNumber = 1060422;
-                        break;
-                        case AosWeaponAttribute.HitEnergyArea:
-                            labelNumber = 1060418;
-                        break;
-                        case AosWeaponAttribute.HitFireArea:
-                            labelNumber = 1060419;
-                        break;
-                        case AosWeaponAttribute.HitLeechMana:
-                            labelNumber = 1060427;
-                        break;
-                        case AosWeaponAttribute.HitLightning:
-                            labelNumber = 1060423;
-                        break;
-                        case AosWeaponAttribute.HitLowerDefend:
-                            labelNumber = 1060425;
-                        break;
-                    }
-                    if (labelNumber > 0) {
-                        list.Add(labelNumber, attributeBonus);
-                    }
-                }
-                List<AosElementAttribute> elementAttributes = GetSocketItemElementAttributeBonus(socket);
-                foreach(AosElementAttribute elementAttribute in elementAttributes) {
-                    labelNumber = 0;
-                    switch(elementAttribute) {
-                        case AosElementAttribute.Chaos: 
-                            labelNumber = 1072846;
-                        break;
-                        case AosElementAttribute.Energy:
-                            labelNumber = 1060407;
-                        break;
-                        case AosElementAttribute.Cold:
-                            labelNumber = 1060404;
-                        break;
-                        case AosElementAttribute.Fire:
-                            labelNumber = 1060405;
-                        break;
-                    }
-                    if (labelNumber > 0) {
-                        list.Add(labelNumber, attributeBonus);
-                    }
-                }
-            } else if (parent is BaseArmor) {
-                List<AosArmorAttribute> armorAttributes = GetSocketArmorAttributeBonus(socket);
-                foreach(AosArmorAttribute armorAttribute in armorAttributes) {
-                    labelNumber = 0;
-                    switch(armorAttribute) {
-                        case AosArmorAttribute.LowerStatReq:
-                            labelNumber = 1060435;
-                        break;
-                        case AosArmorAttribute.MageArmor:
-                            labelNumber = 1060437;
-                        break;
-                        case AosArmorAttribute.SelfRepair:
-                            labelNumber = 1060450;
-                        break;
-                    }
-                    if (labelNumber > 0) {
-                        list.Add(labelNumber, attributeBonus);
-                    }
-                }
-            }
-            
-        }
-
-        public static void CheckSockets(Mobile from, bool remove, List<Item> sockets, Item parent) {
-            if (sockets != null && sockets.Count > 0) {
-                List<ResistanceMod> socketMods = new List<ResistanceMod>();
-                List<AosElementAttribute> elements = new List<AosElementAttribute>();
-                List<AosWeaponAttribute> weaponAttributes = new List<AosWeaponAttribute>();
-                List<AosAttribute> attributes = new List<AosAttribute>();
-                int attributeBonus = remove ? -5 : +5;
-                foreach(Item item in sockets) {
-                    socketMods.AddRange(GetSocketItemResistanceBonus(item));
-                    if (parent is BaseWeapon) {
-                        elements.AddRange(GetSocketItemElementAttributeBonus(item));
-                        weaponAttributes.AddRange(GetSocketItemWeaponAttributeBonus(item));
-                    }
-                    attributes.AddRange(GetSocketItemAttributeBonus(item, parent));
-                }
-                if (parent is BaseWeapon weapon) {
-                    AosElementAttributes parentElementDamages = weapon.AosElementDamages;
-                    foreach(AosElementAttribute elementAttribute in elements) {
-                        if (elementAttribute == AosElementAttribute.Chaos) {
-                            parentElementDamages.Chaos += attributeBonus;
-                        } else if (elementAttribute == AosElementAttribute.Cold) {
-                            parentElementDamages.Cold += attributeBonus;
-                        } else if (elementAttribute == AosElementAttribute.Energy) {
-                            parentElementDamages.Energy += attributeBonus;
-                        } else if (elementAttribute == AosElementAttribute.Fire) {
-                            parentElementDamages.Fire += attributeBonus;
-                        } 
-                    }
-                    weapon.AosElementDamages = parentElementDamages;
-                    AosWeaponAttributes parentWeaponAttributes = weapon.WeaponAttributes;
-                    foreach(AosWeaponAttribute attribute in weaponAttributes) {
-                        switch(attribute) {
-                            case AosWeaponAttribute.HitColdArea:
-                                parentWeaponAttributes.HitColdArea += attributeBonus;
-                            break;
-                            case AosWeaponAttribute.HitLeechHits:
-                                parentWeaponAttributes.HitLeechHits += attributeBonus;
-                            break;
-                            case AosWeaponAttribute.HitEnergyArea:
-                                parentWeaponAttributes.HitEnergyArea += attributeBonus;
-                            break;
-                            case AosWeaponAttribute.HitFireArea:
-                                parentWeaponAttributes.HitFireArea += attributeBonus;
-                            break;
-                            case AosWeaponAttribute.HitLeechMana:
-                                parentWeaponAttributes.HitLeechMana += attributeBonus;
-                            break;
-                            case AosWeaponAttribute.HitLightning:
-                                parentWeaponAttributes.HitLightning += attributeBonus;
-                            break;
-                            case AosWeaponAttribute.HitLowerDefend:
-                                parentWeaponAttributes.HitLowerDefend += attributeBonus;
-                            break;
-                        }
-                    }
-                    weapon.WeaponAttributes = parentWeaponAttributes;
-
-                    AosAttributes parentAttributes = weapon.Attributes;
-                    foreach(AosAttribute attribute in attributes) {
-                        parentAttributes = AddAosAttribute(attribute, parentAttributes, attributeBonus);
-                    }
-                    weapon.Attributes = parentAttributes;
-                }
-                if (parent is BaseArmor armor) {
-                    AosAttributes parentAttributes = armor.Attributes;
-                    foreach(AosAttribute attribute in attributes) {
-                        parentAttributes = AddAosAttribute(attribute, parentAttributes, attributeBonus);
-                    }
-                    armor.Attributes = parentAttributes;
-                }
-                
-                foreach(ResistanceMod mod in socketMods) {
-                    if (remove) {
-                        from.RemoveResistanceMod(mod);
-                    } else {
-                        from.AddResistanceMod(mod);
-                    }
+                if (mod.Type == ResistanceType.Cold)
+                {
+                    jewelResistances.Cold += mod.Offset;
+                } else if (mod.Type == ResistanceType.Energy)
+                {
+                    jewelResistances.Energy += mod.Offset;
+                } else if (mod.Type == ResistanceType.Fire)
+                {
+                    jewelResistances.Fire += mod.Offset;
+                } else if (mod.Type == ResistanceType.Poison)
+                {
+                    jewelResistances.Poison += mod.Offset;
+                } else if (mod.Type == ResistanceType.Physical)
+                {
+                    jewelResistances.Physical += mod.Offset;
                 }
             }
         }
 
-        public static string GetRuneWords(List<Item> sockets) {
+        public static void AddClothingPocketProperties(BaseClothing clothing, List<ResistanceMod> resistanceMods, Dictionary<AosArmorAttribute, int> clothingAttributeDictionary)
+        {
+            AosElementAttributes clothingAttributes = clothing.Resistances;
+            foreach(ResistanceMod mod in resistanceMods) {
+                if (mod.Type == ResistanceType.Cold)
+                {
+                    clothingAttributes.Cold += mod.Offset;
+                } else if (mod.Type == ResistanceType.Energy)
+                {
+                    clothingAttributes.Energy += mod.Offset;
+                } else if (mod.Type == ResistanceType.Fire)
+                {
+                    clothingAttributes.Fire += mod.Offset;
+                } else if (mod.Type == ResistanceType.Poison)
+                {
+                    clothingAttributes.Poison += mod.Offset;
+                } else if (mod.Type == ResistanceType.Physical)
+                {
+                    clothingAttributes.Physical += mod.Offset;
+                }
+            }
+
+            AosArmorAttributes armorAttributes = clothing.ClothingAttributes;
+            foreach (var (key, value) in clothingAttributeDictionary)
+            {
+                armorAttributes[key] += value;
+            }
+            clothing.ClothingAttributes  = armorAttributes;
+        }
+
+        public static void AddWeaponSocketProperties(BaseWeapon weapon, List<ResistanceMod> resistanceMods
+            , Dictionary<AosWeaponAttribute, int> aosWeaponAttributeDictionary
+            , Dictionary<AosElementAttribute, int> elementAttributeDictionary)
+        {
+            AosWeaponAttributes weaponAttributes = weapon.WeaponAttributes;
+            AosElementAttributes aosElementDamages = weapon.AosElementDamages;
+            foreach (ResistanceMod mod in resistanceMods)
+            {
+                if (mod.Type == ResistanceType.Cold)
+                {
+                    weaponAttributes.ResistColdBonus += mod.Offset;
+                }
+                else if (mod.Type == ResistanceType.Energy)
+                {
+                    weaponAttributes.ResistEnergyBonus += mod.Offset;
+                }
+                else if (mod.Type == ResistanceType.Fire)
+                {
+                    weaponAttributes.ResistFireBonus += mod.Offset;
+                }
+                else if (mod.Type == ResistanceType.Poison)
+                {
+                    weaponAttributes.ResistPoisonBonus += mod.Offset;
+                }
+                else if (mod.Type == ResistanceType.Physical)
+                {
+                    weaponAttributes.ResistPhysicalBonus += mod.Offset;
+                }
+            }
+            foreach (var (key, value) in aosWeaponAttributeDictionary)
+            {
+                weaponAttributes[key] += value;
+            }
+            foreach (var (key, value) in elementAttributeDictionary)
+            {
+                aosElementDamages[key] += value;
+            }
+
+            weapon.AosElementDamages = aosElementDamages;
+            weapon.WeaponAttributes = weaponAttributes;
+        }
+
+        public static void AddArmorSocketProperties(BaseArmor armor, List<ResistanceMod> resistanceMods, Dictionary<AosArmorAttribute, int> armorAttributeDictionary)
+        {
+            AosArmorAttributes armorAttributes = armor.ArmorAttributes;
+            foreach(ResistanceMod mod in resistanceMods) {
+                if (mod.Type == ResistanceType.Cold)
+                {
+                    armor.ColdBonus += mod.Offset;
+                } else if (mod.Type == ResistanceType.Energy)
+                {
+                    armor.EnergyBonus += mod.Offset;
+                } else if (mod.Type == ResistanceType.Fire)
+                {
+                    armor.FireBonus += mod.Offset;
+                } else if (mod.Type == ResistanceType.Poison)
+                {
+                    armor.PoisonBonus += mod.Offset;
+                } else if (mod.Type == ResistanceType.Physical)
+                {
+                    armor.PhysicalBonus += mod.Offset;
+                }
+            }
+            foreach (var (key, value) in armorAttributeDictionary)
+            {
+                armorAttributes[key] += value;
+            }
+
+            armor.ArmorAttributes = armorAttributes;
+        }
+
+        public static void AddSocketProperties(Item socket, Item parent)
+        {
+            List<ResistanceMod> resistanceMods = GetSocketItemResistanceBonus(socket);
+            AosAttributes aosAttributes = parent switch
+            {
+                BaseWeapon weapon     => weapon.Attributes,
+                BaseArmor armor       => armor.Attributes,
+                BaseJewel jewel       => jewel.Attributes,
+                BaseClothing clothing => clothing.Attributes,
+                _                     => null
+            };
+
+            Dictionary<AosAttribute, int> attributes = GetSocketItemAttributeBonus(socket, parent);
+            foreach(var (key, value) in attributes) {
+                if (aosAttributes != null)
+                {
+                    aosAttributes[key] += value;
+                }
+            }
+            if (parent is BaseWeapon baseWeapon)
+            {
+                baseWeapon.Attributes = aosAttributes;
+                Dictionary<AosWeaponAttribute, int> aosWeaponAttributeDictionary = GetSocketItemWeaponAttributeBonus(socket);
+                Dictionary<AosElementAttribute, int> elementAttributeDictionary = GetSocketItemElementAttributeBonus(socket);
+                AddWeaponSocketProperties(baseWeapon, resistanceMods, aosWeaponAttributeDictionary, elementAttributeDictionary);
+            } else if (parent is BaseArmor baseArmor)
+            {
+                baseArmor.Attributes = aosAttributes;
+                Dictionary<AosArmorAttribute, int> armorAttributeDictionary = GetSocketArmorAttributeBonus(socket);
+                AddArmorSocketProperties(baseArmor, resistanceMods, armorAttributeDictionary);
+            } else if (parent is BaseJewel baseJewel)
+            {
+                baseJewel.Attributes = aosAttributes;
+                AddJewellerySocketProperties(baseJewel, resistanceMods);
+            } else if (parent is BaseClothing baseClothing)
+            {
+                baseClothing.Attributes = aosAttributes;
+                Dictionary<AosArmorAttribute, int> clothingAttributeDictionary = GetSocketArmorAttributeBonus(socket);
+                AddClothingPocketProperties(baseClothing, resistanceMods, clothingAttributeDictionary);
+            }
+        }
+
+        public static string GetRuneWords(List<string> sockets) {
             string runeWords = "";
-            foreach(Item item in sockets) {
-                if (item is RuneWord) {
-                    runeWords += item.Name;
+            string[] runeList = RuneWord.WordList();
+            foreach(string name in sockets) {
+                if (runeList.Any(name.Contains))
+                {
+                    runeWords += name;
                 }
             }
             return runeWords;
         }
 
         public static BaseClothing GetRuneWordClothing(BaseClothing clothing) {
-            List<Item> pockets = clothing.Pockets;
+            List<string> pockets = clothing.PocketArray.ToList();
             string runeWords = GetRuneWords(pockets);
             if (!string.IsNullOrEmpty(runeWords)) {
                 switch(runeWords) {
@@ -357,823 +588,1092 @@ namespace Server
                         if (clothing is HalfApron) {
                             return new CrimsonCincture();
                         }
-                    break;
+                        break;
                     case "LuxAmnMarAoe":
                         if (clothing is Robe) {
                             return new RobeOfTheEclipse();
                         }
-                    break;
+                        break;
                     case "CurOrtZetMar":
                         if (clothing is Robe) {
                             return new RobeOfTheEquinox();
                         }
-                    break;
+                        break;
                     case "MarNexLeqMar":
                         if (clothing is BearMask) {
                             return new SpiritOfTheTotem();
                         }
-                    break;
+                        break;
                     case "NexMarUmDrux":
                         if (clothing is DeerMask) {
                             return new HuntersHeaddress();
                         }
-                    break;
+                        break;
                     case "DruxMarPaxZaq":
                         if (clothing is WizardsHat) {
                             return new HatOfTheMagi();
                         }
-                    break;
+                        break;
                     case "PaxZaqOrtZet":
                         if (clothing is HornedTribalMask) {
                             return new DivineCountenance();
                         }
-                    break;
+                        break;
                     case "AlozAeoLux":
                         if (clothing is Kasa) {
-                        return new AncientFarmersKasa();
+                            return new AncientFarmersKasa();
                         }
-                    break;
+                        break;
                     case "LuxZetOrt":
                         if (clothing is JesterHat) {
                             return new JesterHatofChuckles();
                         }
-                    break;
+                        break;
                     case "AeoMeaAoe":
                         if (clothing is ClothNinjaHood) {
                             return new BlackLotusHood();
                         }
-                    break;
+                        break;
                     case "MeaAlozOrtKres":
                         if (clothing is Kasa) {
                             return new KasaOfTheRajin();
                         }
-                    break;
+                        break;
                     case "ZaOrtZeAloz":
                         if (clothing is Bandana) {
                             return new BurglarsBandana();
                         }
-                    break;
+                        break;
                     case "OrtVexMar":
                         if (clothing is BearMask) {
                             return new PolarBearMask();
                         }
-                    break;
+                        break;
                     case "KresZeAlozOrt":
                         if (clothing is TricorneHat) {
                             return new DreadPirateHat();
                         }
-                    break;
+                        break;
                     case "ChaZoAmnZoat":
-                        if (clothing is TricorneHat) {
+                        if (clothing is TricorneHat)
+                        {
                             return new CaptainJohnsHat();
                         }
-                    break;
+                        break;
                     case "ChaAmnOrtZet":
-                        if (clothing is Cloak) {
+                        if (clothing is Cloak)
+                        {
                             return new EmbroideredOakLeafCloak();
                         }
-                    break;
+                        break;
                     case "ChaOrtAlozMea":
-                        if (clothing is Bandana) {
+                        if (clothing is Bandana)
+                        {
                             return new CrownOfTalKeesh();
                         }
-                    break;
+                        break;
                 }
             }
             return null;
         }
 
         public static BaseJewel GetRuneWordJewellery(BaseJewel jewellery) {
-            List<Item> sockets = jewellery.Sockets;
+            List<string> sockets = jewellery.SocketArray.ToList();
             string runeWords = GetRuneWords(sockets);
             if (!string.IsNullOrEmpty(runeWords)) {
                 switch(runeWords) {
                     case "AmnMarLeqDruxZaq":
-                        if (jewellery is GoldBracelet) {
+                        if (jewellery is GoldBracelet)
+                        {
                             return new BraceletOfHealth();
                         }
-                    break;
+
+                        break;
                     case "NexAmnVasUmZet":
-                        if (jewellery is GoldBracelet) {
+                        if (jewellery is GoldBracelet)
+                        {
                             return new OrnamentOfTheMagician();
                         }
-                    break;
+
+                        break;
                     case "VasZetUmZetOrt":
-                        if (jewellery is GoldRing) {
+                        if (jewellery is GoldRing)
+                        {
                             return new RingOfTheElements();
                         }
-                    break;
+
+                        break;
                     case "OrtMarLeqAmnOrt":
-                        if (jewellery is GoldRing) {
+                        if (jewellery is GoldRing)
+                        {
                             return new RingOfTheVile();
                         }
-                    break;
+
+                        break;
                     case "OrtVasDruxCurMox":
-                        if (jewellery is GoldBracelet) {
+                        if (jewellery is GoldBracelet)
+                        {
                             return new AlchemistsBauble();
                         }
-                    break;
+
+                        break;
                     case "EspCurAmnOrt":
-                        if (jewellery is SilverRing) {
+                        if (jewellery is SilverRing)
+                        {
                             return new DjinnisRing();
                         }
-                    break;
+
+                        break;
                 }
             }
             return null;
         }
         public static BaseShield GetRuneWordShield(BaseShield shield) {
-            List<Item> sockets = shield.Sockets;
+            List<string> sockets = shield.SocketArray.ToList();
             string runeWords = GetRuneWords(sockets);
             if (!string.IsNullOrEmpty(runeWords)) {
                 switch(runeWords) {
                     case "ZetAmnMarLeq":
-                        if (shield is WoodenKiteShield) {
+                        if (shield is WoodenKiteShield)
+                        {
                             return new ArcaneShield();
                         }
-                    break;
+
+                        break;
                     case "PaxZaqMarOrtNex":
-                        if (shield is HeaterShield) {
+                        if (shield is HeaterShield)
+                        {
                             return new Aegis();
                         }
-                    break;
+
+                        break;
                     case "ZaqMarOrt":
-                        if (shield is BaseShield) {
-                            return new DupresShield();
-                        }
-                    break;
+                        return new DupresShield();
                     case "ZeZaKazMoxVex":
-                        if (shield is MetalShield) {
+                        if (shield is MetalShield)
+                        {
                             return new ShieldOfInvulnerability();
                         }
-                    break;
+
+                        break;
                 }
             }
             return null;
         }
-        
+
         public static BaseArmor GetRuneWordArmor(BaseArmor armor) {
-            List<Item> sockets = armor.Sockets;
+            List<string> sockets = armor.SocketArray.ToList();
             string runeWords = GetRuneWords(sockets);
             if (!string.IsNullOrEmpty(runeWords)) {
                 switch(runeWords) {
                     case "DruxOrtHemZetVax":
-                        if (armor is StuddedChest) {
+                        if (armor is StuddedChest)
+                        {
                             return new ArmorOfFortune();
                         }
-                    break;
+
+                        break;
                     case "NexDruxVasHemZaq":
-                        if (armor is RingmailGloves) {
+                        if (armor is RingmailGloves)
+                        {
                             return new GauntletsOfNobility();
                         }
-                    break;
+
+                        break;
                     case "MarNexMarAmnVas":
-                        if (armor is PlateHelm) {
+                        if (armor is PlateHelm)
+                        {
                             return new HelmOfInsight();
                         }
-                    break;
+
+                        break;
                     case "DruxZaqUmOrtUm":
-                        if (armor is PlateChest) {
+                        if (armor is PlateChest)
+                        {
                             return new HolyKnightsBreastplate();
                         }
-                    break;
+
+                        break;
                     case "HemOrtMarVasNex":
-                        if (armor is PlateGloves) {
+                        if (armor is PlateGloves)
+                        {
                             return new InquisitorsResolution();
                         }
-                    break;
+
+                        break;
                     case "DothZetAmnLeqZaq":
-                        if (armor is PlateGorget) {
+                        if (armor is PlateGorget)
+                        {
                             return new JackalsCollar();
                         }
-                    break;
+
+                        break;
                     case "OrtZetMarDruxAmn":
-                        if (armor is ChainLegs) {
+                        if (armor is ChainLegs)
+                        {
                             return new LeggingsOfBane();
                         }
-                    break;
+
+                        break;
                     case "MarAmnNexAmnMar":
-                        if (armor is BoneArms) {
+                        if (armor is BoneArms)
+                        {
                             return new MidnightBracers();
                         }
-                    break;
+
+                        break;
                     case "ZetVaxLeqDruxOrt":
-                        if (armor is BoneHelm) {
+                        if (armor is BoneHelm)
+                        {
                             return new OrnateCrownOfTheHarrower();
                         }
-                    break;
+
+                        break;
                     case "PaxZetUmLeqDoth":
-                        if (armor is LeatherLegs) {
+                        if (armor is LeatherLegs)
+                        {
                             return new ShadowDancerLeggings();
                         }
-                    break;
+
+                        break;
                     case "DruxPaxNexOrtNex":
-                        if (armor is ChainChest) {
+                        if (armor is ChainChest)
+                        {
                             return new TunicOfFire();
                         }
-                    break;
+
+                        break;
                     case "UmDruxZaqHemZet":
-                        if (armor is LeatherGorget) {
+                        if (armor is LeatherGorget)
+                        {
                             return new VoiceOfTheFallenKing();
                         }
-                    break;
+
+                        break;
                     case "MeaZoatKres":
-                        if (armor is PlateDo) {
+                        if (armor is PlateDo)
+                        {
                             return new AncientSamuraiDo();
                         }
-                    break;                    
+
+                        break;
                     case "ZoatKresOrt":
-                        if (armor is LeatherHiroSode) {
+                        if (armor is LeatherHiroSode)
+                        {
                             return new ArmsOfTacticalExcellence();
                         }
-                    break;
+
+                        break;
                     case "HurLuxAloz":
-                        if (armor is PlateBattleKabuto) {
+                        if (armor is PlateBattleKabuto)
+                        {
                             return new DaimyosHelm();
                         }
-                    break;
+
+                        break;
                     case "MeaZoatKresAloz":
-                        if (armor is PlateDo) {
+                        if (armor is PlateDo)
+                        {
                             return new AncientSamuraiDo();
                         }
-                    break;
+
+                        break;
                     case "AmnDothHurAloz":
-                        if (armor is LeatherNinjaMitts) {
+                        if (armor is LeatherNinjaMitts)
+                        {
                             return new GlovesOfTheSun();
                         }
-                    break;
+
+                        break;
                     case "HurZaqMarAmn":
-                        if (armor is PlateSuneate) {
+                        if (armor is PlateSuneate)
+                        {
                             return new LegsOfStability();
                         }
-                    break;
+
+                        break;
                     case "ZaqAmnOrtKresLux":
-                        if (armor is LeatherMempo) {
+                        if (armor is LeatherMempo)
+                        {
                             return new LeurociansMempoOfFortune();
                         }
-                    break;
+
+                        break;
                     case "AmnZoatOrtDruxLux":
-                        if (armor is PlateDo) {
+                        if (armor is PlateDo)
+                        {
                             return new RuneBeetleCarapace();
                         }
-                    break;
+
+                        break;
                     case "HurAlozOrtVasMea":
-                        if (armor is LeatherNinjaMitts) {
+                        if (armor is LeatherNinjaMitts)
+                        {
                             return new Stormgrip();
                         }
-                    break;
+
+                        break;
                     case "EspMoxCur":
-                        if (armor is DragonHelm) {
+                        if (armor is DragonHelm)
+                        {
                             return new AegisOfGrace();
                         }
-                    break;
+
+                        break;
                     case "ZoatOrtCur":
-                        if (armor is ElvenGlasses) {
+                        if (armor is ElvenGlasses)
+                        {
                             return new BrightsightLenses();
                         }
-                    break;
+
+                        break;
                     case "ZoatZaOrtKazDem":
-                        if (armor is ElvenGlasses) {
+                        if (armor is ElvenGlasses)
+                        {
                             return new MaritimeGlasses();
                         }
-                    break;
+
+                        break;
                     case "VexAmnVaxKazDem":
-                        if (armor is ElvenGlasses) {
+                        if (armor is ElvenGlasses)
+                        {
                             return new WizardsGlasses();
                         }
-                    break;
+
+                        break;
                     case "KazVaxZaDem":
-                        if (armor is ElvenGlasses) {
+                        if (armor is ElvenGlasses)
+                        {
                             return new TradeGlasses();
                         }
-                    break;
+
+                        break;
                     case "KazOrtDemDum":
-                        if (armor is ElvenGlasses) {
+                        if (armor is ElvenGlasses)
+                        {
                             return new LyricalGlasses();
                         }
-                    break;
+
+                        break;
                     case "DumVoxAlozVexPax":
-                        if (armor is ElvenGlasses) {
+                        if (armor is ElvenGlasses)
+                        {
                             return new NecromanticGlasses();
                         }
-                    break;
+
+                        break;
                     case "MeaAeoKresHurDum":
-                        if (armor is ElvenGlasses) {
+                        if (armor is ElvenGlasses)
+                        {
                             return new LightOfWayGlasses();
                         }
-                    break;
+
+                        break;
                     case "EspDruxMirZaLux":
-                        if (armor is ElvenGlasses) {
+                        if (armor is ElvenGlasses)
+                        {
                             return new FoldedSteelGlasses();
                         }
-                    break;
+
+                        break;
                     case "ZoatDruxDem":
-                        if (armor is ElvenGlasses) {
+                        if (armor is ElvenGlasses)
+                        {
                             return new PoisonedGlasses();
                         }
-                    break;
+
+                        break;
                     case "DruxDemKazOrtDum":
-                        if (armor is ElvenGlasses) {
+                        if (armor is ElvenGlasses)
+                        {
                             return new TreasureTrinketGlasses();
                         }
-                    break;
+
+                        break;
                     case "KazOrtDumZaLi":
-                        if (armor is ElvenGlasses) {
+                        if (armor is ElvenGlasses)
+                        {
                             return new MaceShieldGlasses();
                         }
-                    break;
+
+                        break;
                     case "KazAmnVasLi":
-                        if (armor is ElvenGlasses) {
+                        if (armor is ElvenGlasses)
+                        {
                             return new ArtsGlasses();
                         }
-                    break;
+
+                        break;
                     case "DruxHurEspOrt":
-                        if (armor is ElvenGlasses) {
+                        if (armor is ElvenGlasses)
+                        {
                             return new AnthropomorphistGlasses();
                         }
-                    break;
+
+                        break;
                     case "AmnCurOrt":
-                        if (armor is ChainLegs) {
+                        if (armor is ChainLegs)
+                        {
                             return new FeyLeggings();
                         }
-                    break;
+
+                        break;
                     case "OrtVasMox":
-                        if (armor is WingedHelm) {
+                        if (armor is WingedHelm)
+                        {
                             return new HelmOfSwiftness();
                         }
-                    break;
+
+                        break;
                     case "NexZeDum":
-                        if (armor is OrcHelm) {
+                        if (armor is OrcHelm)
+                        {
                             return new OrcishVisage();
                         }
-                    break;
+
+                        break;
                     case "LuxDumKresVexHur":
-                        if (armor is FemalePlateChest) {
+                        if (armor is FemalePlateChest)
+                        {
                             return new VioletCourage();
                         }
-                    break;
+
+                        break;
                     case "KresEspCurAmnMar":
-                        if (armor is PlateChest) {
+                        if (armor is PlateChest)
+                        {
                             return new HeartOfTheLion();
                         }
-                    break;
+
+                        break;
                     case "OrtAmnZeKazMar":
-                        if (armor is LeatherGloves) {
+                        if (armor is LeatherGloves)
+                        {
                             return new GlovesOfThePugilist();
                         }
-                    break;
+
+                        break;
                     case "LiMirAmnOrt":
-                        if (armor is PlateGloves) {
+                        if (armor is PlateGloves)
+                        {
                             return new GuantletsOfAnger();
                         }
-                    break;
+
+                        break;
                     case "MirZoMarLar":
-                        if (armor is PlateGorget) {
+                        if (armor is PlateGorget)
+                        {
                             return new GladiatorsCollar();
                         }
-                    break;
+
+                        break;
                     case "VexKazZoAmn":
-                        if (armor is OrcHelm) {
+                        if (armor is OrcHelm)
+                        {
                             return new OrcChieftainHelm();
                         }
-                    break;
+
+                        break;
                     case "EspMoxCurZo":
-                        if (armor is BoneChest) {
+                        if (armor is BoneChest)
+                        {
                             return new ShroudOfDeciet();
                         }
-                    break;
+
+                        break;
                     case "LiChaKaxDumKres":
-                        if (armor is PlateBattleKabuto) {
+                        if (armor is PlateBattleKabuto)
+                        {
                             return new SamuraiHelm();
                         }
-                    break;
+
+                        break;
                     case "DemLiDumKazAmn":
-                        if (armor is PlateLegs) {
+                        if (armor is PlateLegs)
+                        {
                             return new LeggingsOfEmbers();
                         }
-                    break;
+
+                        break;
                 }
             }
             return null;
         }
-        
+
         public static BaseWeapon GetRuneWordWeapon(BaseWeapon weapon) {
-            List<Item> sockets = weapon.Sockets;
+            List<string> sockets = weapon.SocketArray.ToList();
             string runeWords = GetRuneWords(sockets);
             if (!string.IsNullOrEmpty(runeWords)) {
                 switch(runeWords) {
+                    case "KresHurKazZetLuxNex":
+                        if (weapon is Frostbringer)
+                        {
+                            return new Forbidden();
+                        }
+                        break;
+                    case "LiEspDemChaKaxVax":
+                        if (weapon is EnchantedTitanLegBone)
+                        {
+                            return new Gruumsh();
+                        }
+                        break;
+                    case "ZoatDothPaxOrtEspMox":
+                        if (weapon is TheBeserkersMaul)
+                        {
+                            return new Exile();
+                        }
+                        break;
+                    case "LiDemKresKazAmnVas":
+                        if (weapon is StaffOfPower)
+                        {
+                            return new TwigOfCreation();
+                        }
+                        break;
+                    case "NexOrtDemKazDumPax":
+                        if (weapon is BladeOfTheRighteous)
+                        {
+                            return new Valkyrie();
+                        }
+                        break;
+                    case "VasOrtLuxPaxVaxNex":
+                        if (weapon is Calm)
+                        {
+                            return new DeathEater();
+                        }
+                        break;
                     case "NexZaqVasHemPax":
-                        if (weapon is MagicalShortbow) {
+                        if (weapon is MagicalShortbow)
+                        {
                             return new Windsong();
                         }
-                    break;
+
+                        break;
                     case "VasCurHurDrux":
-                        if (weapon is ElvenCompositeLongbow) {
+                        if (weapon is ElvenCompositeLongbow)
+                        {
                             return new WildfireBow();
                         }
-                    break;
+
+                        break;
                     case "MeaMoxVoxVexAmn":
-                        if (weapon is RadiantScimitar) {
+                        if (weapon is RadiantScimitar)
+                        {
                             return new SoulSeeker();
                         }
-                    break;
+
+                        break;
                     case "EspCurLuxKresOrt":
-                        if (weapon is OrnateAxe) {
+                        if (weapon is OrnateAxe)
+                        {
                             return new TalonBite();
                         }
-                    break;
+
+                        break;
                     case "AmnDruxDothOrtVax":
-                        if (weapon is DoubleAxe) {
+                        if (weapon is DoubleAxe)
+                        {
                             return new AxeOfTheHeavens();
                         }
-                    break;
+
+                        break;
                     case "OrtVasHemZaqNex":
-                        if (weapon is Katana) {
+                        if (weapon is Katana)
+                        {
                             return new BladeOfInsanity();
                         }
-                    break;
+
+                        break;
                     case "NexZaqAmnVasOrt":
-                        if (weapon is Longsword) {
-                            return new BladeOfTheRighteous();    
+                        if (weapon is Longsword)
+                        {
+                            return new BladeOfTheRighteous();
                         }
-                    break;
+
+                        break;
                     case "UmDruxZaqOrtHem":
-                        if (weapon is Longsword) {
+                        if (weapon is Longsword)
+                        {
                             return new BoneCrusher();
                         }
-                    break;
+
+                        break;
                     case "DruxHemOrtVasZet":
-                        if (weapon is BoneHarvester) {
+                        if (weapon is BoneHarvester)
+                        {
                             return new BreathOfTheDead();
                         }
-                    break;
+
+                        break;
                     case "VasDothZetOrtLeq":
-                        if (weapon is Bow) {
+                        if (weapon is Bow)
+                        {
                             return new Frostbringer();
                         }
-                    break;
+
+                        break;
                     case "HemOrtMarZetAmn":
-                        if (weapon is Bardiche) {
+                        if (weapon is Bardiche)
+                        {
                             return new LegacyOfTheDreadLord();
                         }
-                    break;
+
+                        break;
                     case "ZaqMarAmnNexDrux":
-                        if (weapon is Kryss) {
+                        if (weapon is Kryss)
+                        {
                             return new SerpentsFang();
                         }
-                    break;
+
+                        break;
                     case "VaxZetDothDruxVax":
-                        if (weapon is BlackStaff) {
+                        if (weapon is BlackStaff)
+                        {
                             return new StaffOfTheMagi();
                         }
-                    break;
+
+                        break;
                     case "DothZetPaxLeqDoth":
-                        if (weapon is Maul) {
+                        if (weapon is Maul)
+                        {
                             return new TheBeserkersMaul();
-                        }                        
-                    break;
+                        }
+
+                        break;
                     case "ZetDruxNexOrtHem":
-                        if (weapon is Lance) {
+                        if (weapon is Lance)
+                        {
                             return new TheDragonSlayer();
                         }
-                    break;
+
+                        break;
                     case "MarUmDruxZaqZet":
-                        if (weapon is Bow) {
+                        if (weapon is Bow)
+                        {
                             return new TheDryadBow();
                         }
-                    break;
+
+                        break;
                     case "LeqAmnVasNexPax":
-                        if (weapon is WarFork) {
+                        if (weapon is WarFork)
+                        {
                             return new TheTaskmaster();
                         }
-                    break;
+
+                        break;
                     case "PaxLeqUmAmnLeq":
-                        if (weapon is WarHammer) {
+                        if (weapon is WarHammer)
+                        {
                             return new TitansHammer();
                         }
-                    break;
+
+                        break;
                     case "VaxDothHemOrtVas":
-                        if (weapon is ExecutionersAxe) {
+                        if (weapon is ExecutionersAxe)
+                        {
                             return new ZyronicClaw();
                         }
-                    break;
-                     case "AlozHemLeqOrt":
-                        if (weapon is Tessen) {
+
+                        break;
+                    case "AlozHemLeqOrt":
+                        if (weapon is Tessen)
+                        {
                             return new PilferedDancerFans();
                         }
-                    break;
+
+                        break;
                     case "VaxZoatLuxZet":
-                        if (weapon is Sai) {
+                        if (weapon is Sai)
+                        {
                             return new DemonForks();
                         }
-                    break;
+
+                        break;
                     case "KresMeaOrtDoth":
-                        if (weapon is Nunchaku) {
+                        if (weapon is Nunchaku)
+                        {
                             return new DragonNunchaku();
                         }
-                    break;
+
+                        break;
                     case "DothNexZoatUm":
-                        if (weapon is Tetsubo) {
+                        if (weapon is Tetsubo)
+                        {
                             return new Exiler();
                         }
-                    break;
+
+                        break;
                     case "AeoOrtZetDrux":
-                        if (weapon is Yumi) {
+                        if (weapon is Yumi)
+                        {
                             return new HanzosBow();
                         }
-                    break;
+
+                        break;
                     case "VasDruxAlozZoat":
-                        if (weapon is Bokuto) {
+                        if (weapon is Bokuto)
+                        {
                             return new PeasantsBokuto();
                         }
-                    break;
+
+                        break;
                     case "NexPaxZoatAloz":
-                        if (weapon is NoDachi) {
+                        if (weapon is NoDachi)
+                        {
                             return new TheDestroyer();
                         }
-                    break;
+
+                        break;
                     case "NexHurZoatHurAloz":
-                        if (weapon is Daisho) {
+                        if (weapon is Daisho)
+                        {
                             return new SwordsOfProsperity();
                         }
-                    break;
+
+                        break;
                     case "UmAlozHurAmnVas":
-                        if (weapon is NoDachi) {
+                        if (weapon is NoDachi)
+                        {
                             return new SwordOfTheStampede();
                         }
-                    break;
+
+                        break;
                     case "KresAeoLuzDothVas":
-                        if (weapon is Tessen) {
+                        if (weapon is Tessen)
+                        {
                             return new WindsEdge();
                         }
-                    break;
+
+                        break;
                     case "VasOrtDruxLuxMea":
-                        if (weapon is Kama) {
+                        if (weapon is Kama)
+                        {
                             return new DarkenedSky();
                         }
-                    break;
+
+                        break;
                     case "AeoVasKresHurOrt":
-                        if (weapon is Yumi) {
+                        if (weapon is Yumi)
+                        {
                             return new TheHorselord();
                         }
-                    break;
+
+                        break;
                     case "VoxVexAlozEsp":
-                        if (weapon is RuneBlade) {
+                        if (weapon is RuneBlade)
+                        {
                             return new BladeDance();
                         }
-                    break;
+
+                        break;
                     case "CurVexMeaMox":
-                        if (weapon is DiamondMace) {
+                        if (weapon is DiamondMace)
+                        {
                             return new Bonesmasher();
                         }
-                    break;
+
+                        break;
                     case "VexCurDruxHur":
-                        if (weapon is WildStaff) {
+                        if (weapon is WildStaff)
+                        {
                             return new Boomstick();
                         }
-                    break;
+
+                        break;
                     case "VexVasOrtAmnEsp":
-                        if (weapon is AssassinSpike) {
+                        if (weapon is AssassinSpike)
+                        {
                             return new FleshRipper();
                         }
-                    break;
+
+                        break;
                     case "AeoNexUmEspVex":
-                        if (weapon is WarCleaver) {
+                        if (weapon is WarCleaver)
+                        {
                             return new RaedsGlory();
                         }
-                    break;
+
+                        break;
                     case "KresVaxMoxMeaCur":
-                        if (weapon is ElvenMachete) {
+                        if (weapon is ElvenMachete)
+                        {
                             return new RighteousAnger();
                         }
-                    break;
+
+                        break;
                     case "VexHurLuxNexZaq":
-                        if (weapon is WarMace) {
+                        if (weapon is WarMace)
+                        {
                             return new ArcticDeathDealer();
                         }
-                    break;
+
+                        break;
                     case "KazDemEspZeZa":
-                        if (weapon is Halberd) {
+                        if (weapon is Halberd)
+                        {
                             return new BlazeOfDeath();
                         }
-                    break;
+
+                        break;
                     case "DumOrtMoxZaHur":
-                        if (weapon is Bow) {
+                        if (weapon is Bow)
+                        {
                             return new BowOfTheJukaKing();
                         }
-                    break;
+
+                        break;
                     case "MoxKazOrtDumZe":
-                        if (weapon is Club) {
+                        if (weapon is Club)
+                        {
                             return new CavortingClub();
                         }
-                    break;
+
+                        break;
                     case "KazAmnCurVexPax":
-                        if (weapon is ShortSpear) {
+                        if (weapon is ShortSpear)
+                        {
                             return new EnchantedTitanLegBone();
                         }
-                    break;
+
+                        break;
                     case "LuxMoxDruxVexVox":
-                        if (weapon is Lance) {
+                        if (weapon is Lance)
+                        {
                             return new LunaLance();
                         }
-                    break;
+
+                        break;
                     case "VexVoxZetVasOrt":
-                        if (weapon is Dagger) {
+                        if (weapon is Dagger)
+                        {
                             return new NightsKiss();
                         }
-                    break;
+
+                        break;
                     case "AmnOrtLeqAlozZoat":
-                        if (weapon is HeavyCrossbow) {
+                        if (weapon is HeavyCrossbow)
+                        {
                             return new NoxRangersHeavyCrossbow();
                         }
-                    break;
+
+                        break;
                     case "VexAlozLeqZe":
-                        if (weapon is BlackStaff) {
+                        if (weapon is BlackStaff)
+                        {
                             return new StaffOfPower();
                         }
-                    break;
+
+                        break;
                     case "VasZeKazAeoHem":
-                        if (weapon is GnarledStaff) {
+                        if (weapon is GnarledStaff)
+                        {
                             return new WrathOfTheDryad();
                         }
-                    break;
+
+                        break;
                     case "AloxVoxMarZetDoth":
-                        if (weapon is Scepter) {
+                        if (weapon is Scepter)
+                        {
                             return new PixieSwatter();
                         }
-                    break;
+
+                        break;
                     case "ZeCurHemDruxDoth":
-                        if (weapon is Cutlass) {
+                        if (weapon is Cutlass)
+                        {
                             return new CaptainQuacklebushsCutlass();
                         }
-                    break;
+
+                        break;
                     case "LuxOrtAmnDoth":
-                        if (weapon is Cleaver) {
+                        if (weapon is Cleaver)
+                        {
                             return new ColdBlood();
                         }
-                    break;
+
+                        break;
                     case "LarChaZoAmnOrt":
-                        if (weapon is Katana) {
+                        if (weapon is Katana)
+                        {
                             return new BraveKnightOfTheBritannia();
                         }
-                    break;
+
+                        break;
                     case "LarAmnChaZoPax":
-                        if (weapon is Dagger) {
+                        if (weapon is Dagger)
+                        {
                             return new OblivionsNeedle();
                         }
-                    break;
+
+                        break;
                     case "ChaZaAeoDruxZoat":
-                        if (weapon is SkinningKnife) {
+                        if (weapon is SkinningKnife)
+                        {
                             return new RoyalGuardSurvivalKnife();
                         }
-                    break;
+
+                        break;
                     case "ZeMirZoAmnVas":
-                        if (weapon is Halberd) {
+                        if (weapon is Halberd)
+                        {
                             return new Calm();
                         }
-                    break;
+
+                        break;
                     case "ZoDruxAmnDoth":
-                        if (weapon is Kryss) {
+                        if (weapon is Kryss)
+                        {
                             return new FangOfRactus();
                         }
-                    break;
+
+                        break;
                     case "LeqMarZothZeZa":
-                        if (weapon is Pike) {
+                        if (weapon is Pike)
+                        {
                             return new Pacify();
                         }
-                    break;
+
+                        break;
                     case "UmOrtChaLiAmn":
-                        if (weapon is Bardiche) {
+                        if (weapon is Bardiche)
+                        {
                             return new Quell();
                         }
-                    break;
+
+                        break;
                     case "KazDumChaPaxVax":
-                        if (weapon is Scythe) {
+                        if (weapon is Scythe)
+                        {
                             return new Subdue();
                         }
-                    break;
+
+                        break;
                     case "MoxCurDothLiLar":
-                        if (weapon is Longsword) {
+                        if (weapon is Longsword)
+                        {
                             return new HolySword();
                         }
-                    break;
+
+                        break;
                     case "KazDemDumVexZa":
-                        if (weapon is RepeatingCrossbow) {
+                        if (weapon is RepeatingCrossbow)
+                        {
                             return new ShaminoCrossbow();
                         }
-                    break;
+
+                        break;
                 }
             }
             return null;
         }
 
-        public static List<AosElementAttribute> GetSocketItemElementAttributeBonus(Item item) {
-            List<AosElementAttribute> types = new List<AosElementAttribute>();
+        public static Dictionary<AosElementAttribute, int> GetSocketItemElementAttributeBonus(Item item) {
+            Dictionary<AosElementAttribute, int> types = new Dictionary<AosElementAttribute, int>();
             if (item is RuneWord rune) {
-                 switch (rune.Name) {
+                switch (rune.Name) {
                     case "Zo":
-                        types.Add(AosElementAttribute.Chaos);
-                    break;
+                        types.Add(AosElementAttribute.Chaos, 15);
+                        break;
                     case "Mir":
-                        types.Add(AosElementAttribute.Cold);
-                    break;
+                        types.Add(AosElementAttribute.Cold, 15);
+                        break;
                     case "Li":
-                        types.Add(AosElementAttribute.Energy);
-                    break;
+                        types.Add(AosElementAttribute.Energy, 15);
+                        break;
                     case "Cha":
-                        types.Add(AosElementAttribute.Fire);
-                    break;
-                 }
+                        types.Add(AosElementAttribute.Fire, 15);
+                        break;
+                }
             }
             return types;
         }
 
-        public static List<AosWeaponAttribute> GetSocketItemWeaponAttributeBonus(Item item) {
-            List<AosWeaponAttribute> types = new List<AosWeaponAttribute>();
+        public static Dictionary<AosWeaponAttribute, int> GetSocketItemWeaponAttributeBonus(Item item) {
+            Dictionary<AosWeaponAttribute, int> types = new Dictionary<AosWeaponAttribute, int>();
             if (item is RuneWord rune) {
-                 switch (rune.Name) {
+                switch (rune.Name) {
                     case "Mox":
-                        types.Add(AosWeaponAttribute.HitLeechHits);
-                    break;
+                        types.Add(AosWeaponAttribute.HitLeechHits, 15);
+                        break;
                     case "Kaz":
-                        types.Add(AosWeaponAttribute.HitColdArea);
-                    break;
+                        types.Add(AosWeaponAttribute.HitColdArea, 20);
+                        break;
                     case "Za":
-                        types.Add(AosWeaponAttribute.HitEnergyArea);
-                    break;
+                        types.Add(AosWeaponAttribute.HitEnergyArea, 20);
+                        break;
                     case "Dum":
-                        types.Add(AosWeaponAttribute.HitFireArea);
-                    break;
+                        types.Add(AosWeaponAttribute.HitFireArea, 20);
+                        break;
                     case "Dem":
-                        types.Add(AosWeaponAttribute.HitLeechMana);
-                    break;
+                        types.Add(AosWeaponAttribute.HitLeechMana, 15);
+                        break;
                     case "Ze":
-                        types.Add(AosWeaponAttribute.HitLightning);
-                    break;
+                        types.Add(AosWeaponAttribute.HitLightning, 20);
+                        break;
                     case "Lar":
-                        types.Add(AosWeaponAttribute.HitLowerDefend);
-                    break;
-                 }
+                        types.Add(AosWeaponAttribute.HitLowerDefend, 10);
+                        break;
+                }
             }
             return types;
         }
-        public static List<AosArmorAttribute> GetSocketArmorAttributeBonus(Item item) {
-            List<AosArmorAttribute> types = new List<AosArmorAttribute>();
+        public static Dictionary<AosArmorAttribute, int> GetSocketArmorAttributeBonus(Item item) {
+            Dictionary<AosArmorAttribute, int> types = new Dictionary<AosArmorAttribute, int>();
             if (item is RuneWord rune) {
-                 switch (rune.Name) {
+                switch (rune.Name) {
                     case "Mox":
-                        types.Add(AosArmorAttribute.MageArmor);
-                    break;
+                        types.Add(AosArmorAttribute.MageArmor, 1);
+                        break;
                     case "Kaz":
-                        types.Add(AosArmorAttribute.SelfRepair);
-                    break;
+                        types.Add(AosArmorAttribute.SelfRepair, 3);
+                        break;
                     case "Za":
-                        types.Add(AosArmorAttribute.LowerStatReq);
-                    break;
-                 }
+                        types.Add(AosArmorAttribute.LowerStatReq, 15);
+                        break;
+                }
             }
             return types;
         }
-        public static List<AosAttribute> GetSocketItemAttributeBonus(Item item, Item parent) {
+        public static Dictionary<AosAttribute, int> GetSocketItemAttributeBonus(Item item, Item parent) {
+            Dictionary<AosAttribute, int> dictionary = new Dictionary<AosAttribute, int>();
             List<AosAttribute> types = new List<AosAttribute>();
             if (item is RuneWord rune) {
-                 switch (rune.Name) {
+                switch (rune.Name) {
                     case "Lux":
-                        types.Add(AosAttribute.AttackChance);
-                    break;
+                        dictionary.Add(AosAttribute.AttackChance, 7);
+                        break;
                     case "Kres":
-                        types.Add(AosAttribute.BonusDex);
-                    break;
+                        dictionary.Add(AosAttribute.BonusDex, 5);
+                        break;
                     case "Hur":
-                        types.Add(AosAttribute.RegenHits);
-                    break;
+                        dictionary.Add(AosAttribute.RegenHits, 10);
+                        break;
                     case "Aeo":
-                        types.Add(AosAttribute.BonusInt);
-                    break;
+                        dictionary.Add(AosAttribute.BonusInt, 5);
+                        break;
                     case "Zoat":
-                        types.Add(AosAttribute.RegenMana);
-                    break;
+                        dictionary.Add(AosAttribute.RegenMana, 10);
+                        break;
                     case "Mea":
-                        types.Add(AosAttribute.RegenStam);
-                    break;
+                        dictionary.Add(AosAttribute.RegenStam, 10);
+                        break;
                     case "Aloz":
-                        types.Add(AosAttribute.BonusStr);
-                    break;
+                        dictionary.Add(AosAttribute.BonusStr, 5);
+                        break;
                     case "Vox":
-                        types.Add(AosAttribute.CastRecovery);
-                    break;
+                        dictionary.Add(AosAttribute.CastRecovery, 7);
+                        break;
                     case "Vex":
-                        types.Add(AosAttribute.CastSpeed);
-                    break;
+                        dictionary.Add(AosAttribute.CastSpeed, 7);
+                        break;
                     case "Cur":
-                        types.Add(AosAttribute.DefendChance);
-                    break;
+                        dictionary.Add(AosAttribute.DefendChance, 7);
+                        break;
                     case "Esp":
-                        types.Add(AosAttribute.EnhancePotions);
-                    break;
+                        dictionary.Add(AosAttribute.EnhancePotions, 10);
+                        break;
                 }
                 if (parent is BaseArmor) {
-                     switch (rune.Name) {
+                    switch (rune.Name) {
                         case "Dum":
                         case "Dem":
                         case "Ze":
@@ -1182,21 +1682,21 @@ namespace Server
                         case "Mir":
                         case "Li":
                         case "Cha":
-                            types.Add(Enchant.RandomAttribute());
-                            types.Add(Enchant.RandomAttribute());
-                        break;
+                            dictionary.Add(Enchant.RandomAttribute(), 7);
+                            dictionary.Add(Enchant.RandomAttribute(), 7);
+                            break;
                     }
-                }   
+                }
             }
-            return types;
+            return dictionary;
         }
 
         public static bool IsGem(Item item)
         {
             return (
-                item is Sapphire || item is Ruby || item is Diamond || item is StarSapphire || item is Emerald || item is Tourmaline || item is Citrine || item is Amber || item is Amethyst
-                || item is BrilliantAmber || item is BlueDiamond || item is FireRuby || item is WhitePearl || item is EcruCitrine || item is Turquoise || item is DarkSapphire || item is PerfectEmerald
-                );
+                item is Sapphire or Ruby or Diamond or StarSapphire or Emerald or Tourmaline or Citrine or Amber or Amethyst or BrilliantAmber
+                    or BlueDiamond or FireRuby or WhitePearl or EcruCitrine or Turquoise or DarkSapphire or PerfectEmerald
+            );
         }
 
         public static List<ResistanceMod> GetSocketItemResistanceBonus(Item item) {
@@ -1331,8 +1831,8 @@ namespace Server
                         types.Add(new ResistanceMod(ResistanceType.Cold, +8));
                     break;
                 }
-                
-            } 
+
+            }
             return types;
         }
     }

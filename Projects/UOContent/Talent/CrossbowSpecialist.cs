@@ -1,14 +1,13 @@
-using System;
 using Server.Items;
 
 namespace Server.Talent
 {
-    public class CrossbowSpecialist : BaseTalent, ITalent
+    public class CrossbowSpecialist : BaseTalent
     {
-        public CrossbowSpecialist() : base()
+        public CrossbowSpecialist()
         {
             TalentDependency = typeof(ArcherFocus);
-            RequiredWeapon = new Type[] { typeof(Crossbow), typeof(HeavyCrossbow), typeof(RepeatingCrossbow) };
+            RequiredWeapon = new[] { typeof(Crossbow), typeof(HeavyCrossbow), typeof(RepeatingCrossbow) };
             RequiredWeaponSkill = SkillName.Archery;
             IncreaseHitChance = true;
             DisplayName = "Crossbow specialist";
@@ -17,6 +16,7 @@ namespace Server.Talent
             GumpHeight = 85;
             AddEndY = 80;
         }
+
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
             target.Damage(Level, attacker);

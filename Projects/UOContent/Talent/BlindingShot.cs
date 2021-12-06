@@ -1,15 +1,15 @@
-using Server.Mobiles;
 using System;
 using Server.Items;
+using Server.Mobiles;
 
 namespace Server.Talent
 {
-    public class BlindingShot : BaseTalent, ITalent
+    public class BlindingShot : BaseTalent
     {
-        public BlindingShot() : base()
+        public BlindingShot()
         {
             TalentDependency = typeof(ArcherFocus);
-            RequiredWeapon = new Type[] { typeof(BaseRanged) };
+            RequiredWeapon = new[] { typeof(BaseRanged) };
             RequiredWeaponSkill = SkillName.Archery;
             DisplayName = "Blinding shot";
             CanBeUsed = true;
@@ -18,22 +18,30 @@ namespace Server.Talent
             GumpHeight = 75;
             AddEndY = 100;
         }
+
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
             if (Activated)
             {
                 Activated = false;
                 OnCooldown = true;
-                int cooldownSeconds = 120-(Level*10);
-                int duration = Level * 3;
-                if (target is PlayerMobile targetPlayer) {
+                var cooldownSeconds = 120 - Level * 10;
+                var duration = Level * 3;
+                if (target is PlayerMobile targetPlayer)
+                {
                     targetPlayer.Blind(duration);
-                } else if (target is BaseCreature targetCreature) {
+                }
+                else if (target is BaseCreature targetCreature)
+                {
                     targetCreature.Blind(duration);
-                } else {
+                }
+                else
+                {
                     cooldownSeconds = 0;
                 }
-                if (cooldownSeconds > 0) {
+
+                if (cooldownSeconds > 0)
+                {
                     Timer.StartTimer(TimeSpan.FromSeconds(cooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                 }
             }

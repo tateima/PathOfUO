@@ -4,12 +4,8 @@ namespace Server.Gumps
 {
     public class MiscScrollGump : Gump
     {
-        public MiscScrollGump(Mobile from, string title, string[] hooks, int[] imageIds = null) : base(0, 0)
+        public MiscScrollGump(string title, string[] hooks, int talentImageId) : base(0, 0)
         {
-            if (from == null)
-            {
-                from.CloseGump<MiscScrollGump>();
-            }
             Closable = true;
             Disposable = true;
             Draggable = true;
@@ -21,21 +17,15 @@ namespace Server.Gumps
             AddImage(0, 426, 0x63D);
             AddImage(0, 568, 0x63E);
             AddImage(0, 710, 0x63F);
-            AddImage(25, 700, 0x197);
+            AddImage(25, 700, talentImageId);
             // close button
-            AddButton(0, 0, 40015, 40015, 1002, GumpButtonType.Reply, 0);
-            int y = 60;
+            AddButton(0, 0, 40015, 40015, 1002);
+            int y = 65;
             AddHtml(25, y, 395, 50, $"<BASEFONT COLOR=#000000>{title}</FONT>");
-            y += 35;
+            y += 45;
             for(int i = 0; i < hooks.Length; i++) {
-                AddHtml(25, y, 365, 50, $"<BASEFONT COLOR=#000000>{hooks[i]}</FONT>");
-                if (imageIds != null && i < imageIds.Length) {
-                    if (imageIds[i] != 0) {
-                        y += 35;
-                        AddImage(25, y, 365, imageIds[i]);
-                    }
-                }
-                y += 35;
+                AddHtml(25, y, 365, 65, $"<BASEFONT COLOR=#000000>{hooks[i]}</FONT>");
+                y += 65;
             }
         }
         public override void OnResponse(NetState state, RelayInfo info)
@@ -45,7 +35,6 @@ namespace Server.Gumps
                 if (info.ButtonID == 1002)
                 {
                     state.Mobile.CloseGump<MiscScrollGump>();
-                    return;
                 }
             }
         }

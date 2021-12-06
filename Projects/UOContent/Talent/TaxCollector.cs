@@ -1,12 +1,12 @@
-using Server.Mobiles;
-using System;
+using Server.Gumps;
 
 namespace Server.Talent
 {
-    public class TaxCollector : BaseTalent, ITalent
+    public class TaxCollector : BaseTalent
     {
-        public TaxCollector() : base()
+        public TaxCollector()
         {
+            CanBeUsed = true;
             TalentDependency = typeof(SmoothTalker);
             DisplayName = "Land Lord";
             Description = "Receive tax payments from a maximum of 10 vendors every 3h, can result in gold loss.";
@@ -16,14 +16,13 @@ namespace Server.Talent
             MaxLevel = 10;
         }
 
-        public bool VendorCantPay()
-        {
-            return (Utility.Random(100) < 11 - Level);
-        }
+        public bool VendorCantPay() => Utility.Random(100) < 15 - Level;
 
-        public override double ModifySpellScalar()
+        public override double ModifySpellScalar() => Level / 100 * 2; // 2% per point
+
+        public override void OnUse(Mobile from)
         {
-            return (Level / 100) * 2; // 2% per point
+            from.SendGump(new TaxCollectorGump(from));
         }
     }
 }

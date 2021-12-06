@@ -1,11 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class KeenEye : BaseTalent, ITalent
+    public class KeenEye : BaseTalent
     {
-        public KeenEye() : base()
+        public KeenEye()
         {
             TalentDependency = typeof(DivineDexterity);
             DisplayName = "Keen eyes";

@@ -1,11 +1,11 @@
-using Server.Mobiles;
 using System;
+using Server.Mobiles;
 
 namespace Server.Talent
 {
-    public class SlaveDriver : BaseTalent, ITalent
+    public class SlaveDriver : BaseTalent
     {
-        public SlaveDriver() : base()
+        public SlaveDriver()
         {
             TalentDependency = typeof(ResourcefulHarvester);
             DisplayName = "Slave driver";
@@ -16,11 +16,12 @@ namespace Server.Talent
             AddEndY = 80;
             MaxLevel = 10;
         }
+
         public virtual void OnUse(Mobile mobile)
         {
             if (!OnCooldown)
             {
-                Slave slave = new Slave();
+                var slave = new Slave();
                 if (slave.Backpack != null)
                 {
                     for (var x = slave.Backpack.Items.Count - 1; x >= 0; x--)
@@ -29,7 +30,8 @@ namespace Server.Talent
                         item.Delete();
                     }
                 }
-                Point3D location = mobile.Location;
+
+                var location = mobile.Location;
                 location.X += 3;
                 location.Y += 3;
                 slave.MoveToWorld(location, mobile.Map);

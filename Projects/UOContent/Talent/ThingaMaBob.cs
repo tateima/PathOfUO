@@ -1,15 +1,11 @@
-using Server.Mobiles;
-using Server.Spells;
-using Server.Gumps;
-using Server.Network;
-using Server.Items;
 using System;
+using Server.Items;
 
 namespace Server.Talent
 {
-    public class ThingAMaBob : BaseTalent, ITalent
+    public class ThingAMaBob : BaseTalent
     {
-        public ThingAMaBob() : base()
+        public ThingAMaBob()
         {
             TalentDependency = typeof(MerchantPorter);
             DisplayName = "Thing-a-ma-bob";
@@ -21,14 +17,22 @@ namespace Server.Talent
             MaxLevel = 1;
         }
 
-        public override void OnUse(Mobile mobile)
+        public override void OnUse(Mobile from)
         {
             if (!OnCooldown)
             {
-                OnCooldown = true;
-                ThingAMaBobDevice device = new ThingAMaBobDevice();
-                mobile.AddToBackpack(device);
-                Timer.StartTimer(TimeSpan.FromMinutes(60), ExpireTalentCooldown, out _talentTimerToken);
+                var current = @from.Backpack?.FindItemByType<ThingAMaBobDevice>() ?? @from.BankBox?.FindItemByType<ThingAMaBobDevice>();
+                if (current != null)
+                {
+                    from.SendMessage("You already have a Thing-a-ma-bob");
+                }
+                else
+                {
+                    OnCooldown = true;
+                    var device = new ThingAMaBobDevice();
+                    from.AddToBackpack(device);
+                    Timer.StartTimer(TimeSpan.FromMinutes(60), ExpireTalentCooldown, out _talentTimerToken);
+                }
             }
         }
     }

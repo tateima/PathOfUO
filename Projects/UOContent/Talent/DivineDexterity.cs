@@ -1,13 +1,12 @@
-using Server.Mobiles;
 using System;
 
 namespace Server.Talent
 {
-    public class DivineDexterity : BaseTalent, ITalent
+    public class DivineDexterity : BaseTalent
     {
-        public DivineDexterity() : base()
+        public DivineDexterity()
         {
-            BlockedBy = new Type[] { };
+            BlockedBy = Array.Empty<Type>();
             DisplayName = "Divine dexterity";
             Description = "Increases dexterity by 2 per level.";
             ImageID = 147;
@@ -18,9 +17,7 @@ namespace Server.Talent
         public override void UpdateMobile(Mobile mobile)
         {
             mobile.RemoveStatMod("DivineDex");
-            mobile.AddStatMod(new StatMod(StatType.Dex, "DivineDex", Level*2, TimeSpan.Zero));
+            mobile.AddStatMod(new StatMod(StatType.Dex, "DivineDex", Level * 2, TimeSpan.Zero));
         }
-
-
     }
 }

@@ -1,11 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class ExperiencedHunter : BaseTalent, ITalent
+    public class ExperiencedHunter : BaseTalent
     {
-        public ExperiencedHunter() : base()
+        public ExperiencedHunter()
         {
             DisplayName = "Experienced hunter";
             Description = "Increases damage to animals.";

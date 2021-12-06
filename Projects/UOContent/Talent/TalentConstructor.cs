@@ -1,6 +1,5 @@
 using System;
 using Server.Utilities;
-using System.Collections.Generic;
 
 namespace Server.Talent
 {

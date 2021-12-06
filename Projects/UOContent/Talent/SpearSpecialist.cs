@@ -1,14 +1,13 @@
 using Server.Items;
-using System;
 
 namespace Server.Talent
 {
-    public class SpearSpecialist : BaseTalent, ITalent
+    public class SpearSpecialist : BaseTalent
     {
-        public SpearSpecialist() : base()
+        public SpearSpecialist()
         {
             RequiredWeaponSkill = SkillName.Fencing;
-            RequiredWeapon = new Type[] { typeof(BaseSpear) };
+            RequiredWeapon = new[] { typeof(BaseSpear) };
             IncreaseHitChance = true;
             TalentDependency = typeof(FencingFocus);
             DisplayName = "Spear specialist";
@@ -17,6 +16,7 @@ namespace Server.Talent
             GumpHeight = 85;
             AddEndY = 80;
         }
+
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
             // 2 damage per point because 2H

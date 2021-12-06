@@ -56,7 +56,7 @@ namespace Server.Spells.Necromancy
                 {
                     duration.Add(TimeSpan.FromSeconds(DarkAffinityDuration()));
                 }
-                m_Table.TryGetValue(weapon, out var timer);
+                _table.TryGetValue(weapon, out var timer);
                 timer?.Stop();
 
                 weapon.Cursed = true;

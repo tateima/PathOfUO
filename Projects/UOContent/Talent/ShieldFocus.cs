@@ -1,11 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class ShieldFocus : BaseTalent, ITalent
+    public class ShieldFocus : BaseTalent
     {
-        public ShieldFocus() : base()
+        public ShieldFocus()
         {
             DisplayName = "Shield focus";
             Description = "Decreases damage taken by spells and attack while shield equipped.";
@@ -13,6 +10,5 @@ namespace Server.Talent
             GumpHeight = 70;
             AddEndY = 65;
         }
-
     }
 }

@@ -1,14 +1,11 @@
 using Server.Mobiles;
 using Server.Targeting;
-using System.Linq;
-using System;
 
 namespace Server.Talent
 {
-    public class Cannibalism : BaseTalent, ITalent
+    public class Cannibalism : BaseTalent
     {
-
-        public Cannibalism() : base()
+        public Cannibalism()
         {
             TalentDependency = typeof(BondingMaster);
             DisplayName = "Cannibalise pet";
@@ -16,32 +13,32 @@ namespace Server.Talent
             Description = "Sacrifice another tamed animal, transferring between 10-50% of their stats.";
             ImageID = 376;
         }
-        public override void OnUse(Mobile mobile)
+
+        public override void OnUse(Mobile from)
         {
-            mobile.SendMessage("Which pet do you wish to improve?");
-            mobile.Target = new InternalFirstTarget(mobile, Level);
+            from.SendMessage("Which pet do you wish to improve?");
+            from.Target = new InternalFirstTarget(Level);
         }
 
         private class InternalFirstTarget : Target
         {
-            private int m_level;
-            public InternalFirstTarget(Mobile from, int level) : base(
+            private readonly int m_level;
+
+            public InternalFirstTarget(int level) : base(
                 3,
                 false,
                 TargetFlags.None
-            )
-            {
+            ) =>
                 m_level = level;
-            }
 
             protected override void OnTarget(Mobile from, object targeted)
             {
                 from.RevealingAction();
 
-                if (targeted is BaseCreature creature && creature.ControlMaster != null && creature.ControlMaster == from && creature.Controlled && creature.CannibalPoints < 3)
+                if (targeted is BaseCreature { ControlMaster: { } } creature && creature.ControlMaster == @from && creature.Controlled && creature.CannibalPoints < 3)
                 {
                     from.SendMessage("Wish pet do you wish to sacrifice?");
-                    from.Target = new InternalSecondTarget((Mobile)targeted, m_level);
+                    from.Target = new InternalSecondTarget(creature, m_level);
                 }
                 else
                 {
@@ -49,10 +46,11 @@ namespace Server.Talent
                 }
             }
         }
+
         private class InternalSecondTarget : Target
         {
             private BaseCreature m_CannibalCreature;
-            private int m_Level;
+            private readonly int m_Level;
 
             public InternalSecondTarget(Mobile cannibalCreature, int level) : base(
                 3,
@@ -67,11 +65,11 @@ namespace Server.Talent
             protected override void OnTarget(Mobile from, object targeted)
             {
                 from.RevealingAction();
-                if (targeted is BaseCreature creature && creature.ControlMaster != null && creature.ControlMaster == from && creature.Controlled && creature.GetType() == m_CannibalCreature.GetType() &&  creature.CannibalPoints == 0)
+                if (targeted is BaseCreature { ControlMaster: { } } creature && creature.ControlMaster == @from && creature.Controlled && creature.GetType() == m_CannibalCreature.GetType() && creature.CannibalPoints == 0)
                 {
-                    m_CannibalCreature = TransferMobileStats((Mobile)targeted, m_CannibalCreature);
+                    m_CannibalCreature = TransferMobileStats(creature, m_CannibalCreature);
                     m_CannibalCreature.CannibalPoints += 1;
-                    ((Mobile)targeted).Kill();
+                    creature.Kill();
                 }
                 else
                 {

@@ -1,15 +1,13 @@
 using Server.Items;
-using Server.Mobiles;
-using System;
 
 namespace Server.Talent
 {
-    public class PolearmSpecialist : BaseTalent, ITalent
+    public class PolearmSpecialist : BaseTalent
     {
-        public PolearmSpecialist() : base()
+        public PolearmSpecialist()
         {
             TalentDependency = typeof(SwordsmanshipFocus);
-            RequiredWeapon = new Type[] { typeof(BasePoleArm) };
+            RequiredWeapon = new[] { typeof(BasePoleArm) };
             RequiredWeaponSkill = SkillName.Swords;
             IncreaseHitChance = true;
             DisplayName = "Polearm specialist";
@@ -18,6 +16,7 @@ namespace Server.Talent
             GumpHeight = 85;
             AddEndY = 80;
         }
+
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
             target.Damage(Level * 2, attacker);

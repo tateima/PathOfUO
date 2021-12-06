@@ -27,7 +27,7 @@ namespace Server.Spells.Fourth
         public RecallSpell(Mobile caster, Item scroll = null) : base(
             caster,
             scroll,
-            m_Info
+            _info
         ) {
         } 
 

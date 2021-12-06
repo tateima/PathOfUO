@@ -1,11 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class KeenSenses : BaseTalent, ITalent
+    public class KeenSenses : BaseTalent
     {
-        public KeenSenses() : base()
+        public KeenSenses()
         {
             TalentDependency = typeof(KeenEye);
             DisplayName = "Keen senses";
@@ -15,10 +12,6 @@ namespace Server.Talent
             AddEndY = 80;
         }
 
-        public bool CheckDodge()
-        {
-            return (Utility.Random(100) < Level * 2);
-        }
-
+        public bool CheckDodge() => Utility.Random(100) < Level * 2;
     }
 }

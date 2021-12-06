@@ -1,11 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class SummonerCommand : BaseTalent, ITalent
+    public class SummonerCommand : BaseTalent
     {
-        public SummonerCommand() : base()
+        public SummonerCommand()
         {
             TalentDependency = typeof(DarkAffinity);
             DisplayName = "Summoner command";
@@ -14,9 +11,7 @@ namespace Server.Talent
             GumpHeight = 85;
             AddEndY = 75;
         }
-        public override bool HasSkillRequirement(Mobile mobile)
-        {
-            return mobile.Skills[SkillName.Necromancy].Base >= 70;
-        }
+
+        public override bool HasSkillRequirement(Mobile mobile) => mobile.Skills[SkillName.Necromancy].Base >= 70;
     }
 }

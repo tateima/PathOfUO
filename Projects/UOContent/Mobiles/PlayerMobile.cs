@@ -248,21 +248,11 @@ namespace Server.Mobiles
 
         private TimerExecutionToken _hungerTimerToken;
 
-        private int m_LevelExperience;
         private int m_CraftExperience;
-        private int m_CraftSkillPoints;
-        private int m_AllottedCraftSkillPoints;
         private int m_RangerExperience;
         private int m_NonCraftExperience;
-        private int m_NonCraftSkillPoints;
-        private int m_RangerSkillPoints;
-        private int m_StatPoints;
-        private int m_TalentPoints;
-        private string m_Level;
-        private bool m_HardCore;
         private bool m_Slowed;
         private bool m_Blinded;
-        private int m_TalentResets;
         private bool m_Feared;
         private DateTime m_NextPlanarTravel;
 
@@ -295,26 +285,26 @@ namespace Server.Mobiles
 
         public PlayerMobile()
         {
-            m_LevelExperience = 0;
-            m_CraftSkillPoints = 0;
-            m_AllottedCraftSkillPoints = 0;
+            LevelExperience = 0;
+            CraftSkillPoints = 0;
+            AllottedCraftSkillPoints = 0;
             m_CraftExperience = 0;
-            m_NonCraftSkillPoints = 0;
+            NonCraftSkillPoints = 0;
             m_RangerExperience = 0;
             m_NonCraftExperience = 0;
-            m_StatPoints = 0;
-            m_TalentPoints = 0;
-            m_TalentResets = 0;
+            StatPoints = 0;
+            TalentPoints = 0;
+            TalentResets = 0;
             m_Slowed = false;
             m_Blinded = false;
             m_Feared = false;
             m_NextPlanarTravel = Core.Now;
             m_Talents = new ConcurrentDictionary<Type, BaseTalent>();
             m_Henchmen = new List<Mobile>();
-            m_RestedHenchmen = new List<Mobile>(); 
+            m_RestedHenchmen = new List<Mobile>();
             m_AllDebtees = new List<Mobile>();
-            m_HardCore = true;
-            m_Level = "One";
+            HardCore = true;
+            Level = "One";
             AutoStabled = new List<Mobile>();
 
             VisibilityList = new List<Mobile>();
@@ -343,10 +333,7 @@ namespace Server.Mobiles
         [CommandProperty(AccessLevel.GameMaster)]
         public DateTime NextPlanarTravel
         {
-            get
-            {
-                return m_NextPlanarTravel;
-            }
+            get => m_NextPlanarTravel;
             set
             {
                 m_NextPlanarTravel = value;
@@ -355,97 +342,30 @@ namespace Server.Mobiles
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
-        public int TalentPoints
-        {
-            get
-            {
-                return m_TalentPoints;
-            }
-            set
-            {
-                m_TalentPoints = value;
-            }
-        }
+        public int TalentPoints { get; set; }
+
         [CommandProperty(AccessLevel.GameMaster)]
-        public int StatPoints
-        {
-            get
-            {
-                return m_StatPoints;
-            }
-            set
-            {
-                m_StatPoints = value;
-            }
-        }
-        
+        public int StatPoints { get; set; }
+
         [CommandProperty(AccessLevel.GameMaster)]
-        public int AllottedCraftSkillPoints
-        {
-            get
-            {
-                return m_AllottedCraftSkillPoints;
-            }
-            set
-            {
-                m_AllottedCraftSkillPoints = value;
-            }
-        }
+        public int AllottedCraftSkillPoints { get; set; }
+
         [CommandProperty(AccessLevel.GameMaster)]
-        public int CraftSkillPoints
-        {
-            get
-            {
-                return m_CraftSkillPoints;
-            }
-            set
-            {
-                m_CraftSkillPoints = value;
-            }
-        }
+        public int CraftSkillPoints { get; set; }
+
         [CommandProperty(AccessLevel.GameMaster)]
-        public int NonCraftSkillPoints
-        {
-            get
-            {
-                return m_NonCraftSkillPoints;
-            }
-            set
-            {
-                m_NonCraftSkillPoints = value;
-            }
-        }
+        public int NonCraftSkillPoints { get; set; }
+
         [CommandProperty(AccessLevel.GameMaster)]
-        public int RangerSkillPoints
-        {
-            get
-            {
-                return m_RangerSkillPoints;
-            }
-            set
-            {
-                m_RangerSkillPoints = value;
-            }
-        }
+        public int RangerSkillPoints { get; set; }
+
         [CommandProperty(AccessLevel.GameMaster)]
-        public int LevelExperience
-        {
-            get
-            {
-                return m_LevelExperience;
-            }
-            set
-            {
-                m_LevelExperience = value;
-            }
-        }
+        public int LevelExperience { get; set; }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public int CraftExperience
         {
-            get
-            {
-                return m_CraftExperience;
-            }
+            get => m_CraftExperience;
             set
             {
                 m_CraftExperience = value;
@@ -455,10 +375,7 @@ namespace Server.Mobiles
         [CommandProperty(AccessLevel.GameMaster)]
         public int NonCraftExperience
         {
-            get
-            {
-                return m_NonCraftExperience;
-            }
+            get => m_NonCraftExperience;
             set
             {
                 m_NonCraftExperience = value;
@@ -469,90 +386,72 @@ namespace Server.Mobiles
         [CommandProperty(AccessLevel.GameMaster)]
         public int RangerExperience
         {
-            get
-            {
-                return m_RangerExperience;
-            }
+            get => m_RangerExperience;
             set
             {
                 m_RangerExperience = value;
                 CheckExperience();
             }
         }
-        private int GetBaseExperience(string level)
-        {
-            return (int)Enum.Parse(typeof(Level), level);
-        }
+        private static int GetBaseExperience(string level) => (int)Enum.Parse(typeof(Level), level);
 
         private Level NextLevel()
         {
-            return Enum.GetValues(typeof(Level)).Cast<Level>().Where(level => m_LevelExperience + m_NonCraftExperience + m_CraftExperience + m_RangerExperience < (int)level).FirstOrDefault();
+            return Enum.GetValues(typeof(Level)).Cast<Level>().FirstOrDefault(level => LevelExperience + m_NonCraftExperience + m_CraftExperience + m_RangerExperience < (int)level);
         }
         private Level EntitledLevel()
         {
-            return Enum.GetValues(typeof(Level)).Cast<Level>().Where(level => m_LevelExperience + m_NonCraftExperience + m_CraftExperience + m_RangerExperience >= (int)level).Max();
+            return Enum.GetValues(typeof(Level)).Cast<Level>().AsParallel().Where(level => LevelExperience + m_NonCraftExperience + m_CraftExperience + m_RangerExperience >= (int)level).Max();
         }
 
         public void CheckExperience()
         {
             Level entitledLevel = EntitledLevel();
             string newLevel = Enum.GetName(typeof(Level), entitledLevel);
-            if (!string.Equals(newLevel, m_Level, StringComparison.InvariantCultureIgnoreCase))
+            if (!string.Equals(newLevel, Level, StringComparison.InvariantCultureIgnoreCase))
             {
-                int currentLevelBaseExp = GetBaseExperience(m_Level);
+                int currentLevelBaseExp = GetBaseExperience(Level);
                 // get the experience value between current level and next
                 int intermediaryExp = (int)entitledLevel - currentLevelBaseExp;
-                m_Level = newLevel;
-                int totalExperienceEarned = m_NonCraftExperience + m_CraftExperience + m_RangerExperience;
+                Level = newLevel;
+                double totalExperienceEarned = m_NonCraftExperience + m_CraftExperience + m_RangerExperience;
                 // calculate % contributions, round down not up to figure out point allocation
                 double craftingContr = m_CraftExperience / totalExperienceEarned;
                 double nonCraftingContr = m_NonCraftExperience / totalExperienceEarned;
                 double rangerContr = m_RangerExperience / totalExperienceEarned;
 
                 // get remaining experience to add later
-                int remainingExp = (m_LevelExperience + totalExperienceEarned) - (int)entitledLevel;
+                int remainingExp = (int)((LevelExperience + totalExperienceEarned) - (int)entitledLevel);
                 if (remainingExp < 0)
                 {
                     remainingExp = 0;
                 }
 
-                m_NonCraftSkillPoints += (int)Math.Round(nonCraftingContr*14, MidpointRounding.AwayFromZero);
-                m_CraftSkillPoints += (int)Math.Round(craftingContr*14, MidpointRounding.AwayFromZero);
-                m_RangerSkillPoints += (int)Math.Round(rangerContr*14, MidpointRounding.AwayFromZero);
-                m_StatPoints += 5;
-                m_TalentPoints += 1;
+                NonCraftSkillPoints += (int)Math.Round(nonCraftingContr*14, MidpointRounding.AwayFromZero);
+                CraftSkillPoints += (int)Math.Round(craftingContr*14, MidpointRounding.AwayFromZero);
+                RangerSkillPoints += (int)Math.Round(rangerContr*14, MidpointRounding.AwayFromZero);
+                StatPoints += 5;
+                TalentPoints += 1;
 
                 // reset craft and non craft experience for next level tracking
                 m_CraftExperience = (int)(remainingExp * craftingContr);
                 m_NonCraftExperience = (int)(remainingExp * nonCraftingContr);
-                m_RangerSkillPoints = (int)(remainingExp * rangerContr);
+                RangerSkillPoints = (int)(remainingExp * rangerContr);
 
                 SendMessage("You have gained a level!");
                 FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
                 PlaySound(0x202);
-                m_LevelExperience = GetBaseExperience(m_Level);
+                LevelExperience = GetBaseExperience(Level);
             }
             InvalidateProperties();
         }
         [CommandProperty(AccessLevel.GameMaster)]
-        public int TalentResets
-        {
-            get
-            {
-                return m_TalentResets;
-            }
-            set
-            {
-                m_TalentResets = value;
-            }
-        }
+        public int TalentResets { get; set; }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public bool Blinded
         {
-            get
-            {
-                return m_Blinded;
-            }
+            get => m_Blinded;
             set
             {
                 m_Blinded = value;
@@ -562,28 +461,22 @@ namespace Server.Mobiles
                 }
             }
         }
-    
+
         [CommandProperty(AccessLevel.GameMaster)]
         public bool Feared
         {
-            get
-            {
-                return m_Feared;
-            }
+            get => m_Feared;
             set
             {
                 m_Feared = value;
                 Slowed = value;
             }
         }
-        
+
         [CommandProperty(AccessLevel.GameMaster)]
         public bool Slowed
         {
-            get
-            {
-                return m_Slowed;
-            }
+            get => m_Slowed;
             set
             {
                 m_Slowed = value;
@@ -595,30 +488,10 @@ namespace Server.Mobiles
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
-        public bool HardCore
-        {
-            get
-            {
-                return m_HardCore;
-            }
-            set
-            {
-                m_HardCore = value;
-            }
-        }
+        public bool HardCore { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster)]
-        public string Level
-        {
-            get
-            {
-                return m_Level;
-            }
-            set
-            {
-                m_Level = value;
-            }
-        }
+        public string Level { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster)]
         public DateTime AnkhNextUse { get; set; }
@@ -677,14 +550,8 @@ namespace Server.Mobiles
         private ConcurrentDictionary<Type, BaseTalent> m_Talents;
         public ConcurrentDictionary<Type, BaseTalent> Talents
         {
-            get
-            {
-                return m_Talents;
-            }
-            set
-            {
-                m_Talents = value;
-            }
+            get => m_Talents;
+            set => m_Talents = value;
         }
         public List<Item> EquipSnapshot { get; private set; }
 
@@ -697,7 +564,7 @@ namespace Server.Mobiles
             set => m_SavagePaintExpiration = Core.Now + value;
         }
 
-        
+
         [CommandProperty(AccessLevel.GameMaster)]
         public TimeSpan NextCookBulkOrder
         {
@@ -1241,7 +1108,7 @@ namespace Server.Mobiles
                     0x3B2,
                     false,
                     message
-                    );
+                );
                 Timer.StartTimer(TimeSpan.FromSeconds(duration), UnFear);
             }
         }
@@ -1803,7 +1670,7 @@ namespace Server.Mobiles
                     }
                 }
 
-            }            
+            }
         }
 
         public void HungerHarmCheck()
@@ -1816,7 +1683,7 @@ namespace Server.Mobiles
                 if (fortitude != null && Hits - damage <= 0) {
                     damage = 0;
                     message = "Thou need food but thy talents spared thee!";
-                } 
+                }
                 SendMessage(0x21, message);
                 Damage(damage - Hunger, this);
                 Stam -= (damage - Hunger);
@@ -2451,13 +2318,13 @@ namespace Server.Mobiles
                         nonCraftPoints += pointValue;
                     }
                     Skills[skill].Base = 0.0;
-                } 
+                }
             }
             NonCraftSkillPoints += nonCraftPoints;
             CraftSkillPoints += craftPoints;
             RangerSkillPoints += rangerPoints;
         }
-        
+
         public void ResetTalents()
         {
             foreach (KeyValuePair<Type, BaseTalent> entry in Talents)
@@ -2530,7 +2397,7 @@ namespace Server.Mobiles
                         list.Add(new TalentBarEntry(this));
                     }
                 }
-             
+
 
                 var house = BaseHouse.FindHouseAt(this);
 
@@ -3114,7 +2981,7 @@ namespace Server.Mobiles
 
             RecoverAmmo();
 
-           
+
             foreach(KeyValuePair<Type,BaseTalent> entry in Talents)
             {
                 if (entry.Value.HasBeforeDeathSave && !entry.Value.OnCooldown)
@@ -3392,7 +3259,7 @@ namespace Server.Mobiles
 
             Point3D point = new Point3D(1602, 1591, 20); // teleport back to Britain
             MoveToWorld(point, Map.Trammel);
-            string broadcastMessage = $"{Name} has died at the hands of {LastKiller.Name}. At level {m_Level}, their deeds will be remembered.";
+            string broadcastMessage = $"{Name} has died at the hands of {LastKiller.Name}. At level {Level}, their deeds will be remembered.";
             World.Broadcast(0x22, true, broadcastMessage);
         }
 
@@ -3650,15 +3517,15 @@ namespace Server.Mobiles
                         Timer.StartTimer(TimeSpan.FromSeconds(Utility.Random(10)), UnBlind);
                     }
                     goto case 35;
-                case 35:            
-                    m_TalentResets = reader.ReadInt();
+                case 35:
+                    TalentResets = reader.ReadInt();
                     goto case 34;
                 case 34:
                     Slowed = reader.ReadBool();
                     goto case 33;
                 case 33:
                     m_RangerExperience = reader.ReadInt();
-                    m_RangerSkillPoints = reader.ReadInt();
+                    RangerSkillPoints = reader.ReadInt();
                     goto case 32;
                 case 32:
                     m_RestedHenchmen = reader.ReadEntityList<Mobile>(); // henchmen feature
@@ -3682,19 +3549,19 @@ namespace Server.Mobiles
                         else
                         {
                             int dummyLevel = reader.ReadInt();
-                        }                        
+                        }
                     }
-                    m_TalentPoints = reader.ReadInt();
-                    m_StatPoints = reader.ReadInt();
-                    m_AllottedCraftSkillPoints = reader.ReadInt();
-                    m_CraftSkillPoints = reader.ReadInt();
-                    m_NonCraftSkillPoints = reader.ReadInt();
-                    m_LevelExperience = reader.ReadInt();
+                    TalentPoints = reader.ReadInt();
+                    StatPoints = reader.ReadInt();
+                    AllottedCraftSkillPoints = reader.ReadInt();
+                    CraftSkillPoints = reader.ReadInt();
+                    NonCraftSkillPoints = reader.ReadInt();
+                    LevelExperience = reader.ReadInt();
                     m_CraftExperience = reader.ReadInt();
                     m_NonCraftExperience = reader.ReadInt();
-                    m_HardCore = reader.ReadBool();
-                    m_HardCore = true; // new default, all players are roguelike
-                    m_Level = reader.ReadString();
+                    HardCore = reader.ReadBool();
+                    HardCore = true; // new default, all players are roguelike
+                    Level = reader.ReadString();
                     goto case 29;
                 case 30:
                     goto case 29;
@@ -4033,10 +3900,10 @@ namespace Server.Mobiles
             writer.Write(m_NextPlanarTravel);
             writer.Write(m_Feared);
             writer.Write(m_Blinded);
-            writer.Write(m_TalentResets);
+            writer.Write(TalentResets);
             writer.Write(m_Slowed);
             writer.Write(m_RangerExperience);
-            writer.Write(m_RangerSkillPoints);
+            writer.Write(RangerSkillPoints);
             writer.Write(m_RestedHenchmen);
             writer.Write(m_Henchmen);
             writer.Write(m_AllDebtees);
@@ -4050,16 +3917,16 @@ namespace Server.Mobiles
                     writer.Write(talent.Level);
                 }
             }
-            writer.Write(m_TalentPoints);
-            writer.Write(m_StatPoints);
-            writer.Write(m_AllottedCraftSkillPoints);
-            writer.Write(m_CraftSkillPoints);
-            writer.Write(m_NonCraftSkillPoints);
-            writer.Write(m_LevelExperience);
+            writer.Write(TalentPoints);
+            writer.Write(StatPoints);
+            writer.Write(AllottedCraftSkillPoints);
+            writer.Write(CraftSkillPoints);
+            writer.Write(NonCraftSkillPoints);
+            writer.Write(LevelExperience);
             writer.Write(m_CraftExperience);
             writer.Write(m_NonCraftExperience);
-            writer.Write(m_HardCore);
-            writer.Write(m_Level);
+            writer.Write(HardCore);
+            writer.Write(Level);
 
             if (m_StuckMenuUses != null)
             {

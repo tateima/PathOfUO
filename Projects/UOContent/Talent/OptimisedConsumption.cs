@@ -1,14 +1,12 @@
-using System.Collections.Generic;
-using Server.Mobiles;
-using Server.Gumps;
 using System;
 using System.Linq;
+using Server.Gumps;
 
 namespace Server.Talent
 {
-    public class OptimisedConsumption : BaseTalent, ITalent
+    public class OptimisedConsumption : BaseTalent
     {
-        public OptimisedConsumption() : base()
+        public OptimisedConsumption()
         {
             TalentDependency = typeof(WarCraftFocus);
             DisplayName = "Consumable focus";
@@ -17,27 +15,21 @@ namespace Server.Talent
             GumpHeight = 75;
             AddEndY = 100;
         }
-         
+
         public override void UpdateMobile(Mobile mobile)
         {
             if (mobile.BAC > 0 && !Activated)
             {
                 Activated = true;
-                SkillsGumpGroup group = SkillsGumpGroup.Groups.Where(group => group.Name == "Combat Ratings").FirstOrDefault();
+                var group = SkillsGumpGroup.Groups.FirstOrDefault(group => group.Name == "Combat Ratings");
                 if (group != null)
                 {
-                    SkillMod[] skillmods = Array.Empty<SkillMod>();
-                    foreach (SkillName skill in group.Skills)
-                    {
-                        SkillMod mod = new DefaultSkillMod(skill, true, Level * 3);
-                        skillmods.Append(mod);
-                    }
-                    Timer drunkTimer = new DrunkTimer(mobile, skillmods);
+                    Timer drunkTimer = new DrunkTimer(mobile, group.Skills.Select(skill => new DefaultSkillMod(skill, true, Level * 3)).Cast<SkillMod>().ToArray());
                     drunkTimer.Start();
                 }
             }
-            return;
         }
+
         private class DrunkTimer : Timer
         {
             private readonly Mobile m_Drunk;
@@ -58,10 +50,11 @@ namespace Server.Talent
                 }
                 else if (m_Drunk.Alive && m_Drunk.BAC <= 0)
                 {
-                    foreach(SkillMod mod in m_SkillMods)
+                    foreach (var mod in m_SkillMods)
                     {
                         m_Drunk.RemoveSkillMod(mod);
                     }
+
                     Stop();
                 }
             }

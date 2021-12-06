@@ -1,12 +1,13 @@
-using Server.Mobiles;
 using System;
+using Server.Mobiles;
 
 namespace Server.Talent
 {
-    public class PackLeader : BaseTalent, ITalent
+    public class PackLeader : BaseTalent
     {
         private PlayerMobile m_Player;
-        public PackLeader() : base()
+
+        public PackLeader()
         {
             TalentDependency = typeof(BondingMaster);
             DisplayName = "Pack leader";
@@ -15,12 +16,6 @@ namespace Server.Talent
             ImageID = 381;
         }
 
-        public void UpdateStats()
-        {
-            m_Player.RemoveStatMod("PackLeader");
-            m_Player.AddStatMod(new StatMod(StatType.All, "PackLeader", m_Player.AllFollowers.Count, TimeSpan.Zero));
-            Timer.StartTimer(TimeSpan.FromSeconds(60), UpdateStats, out _talentTimerToken);
-        }
         public override void UpdateMobile(Mobile mobile)
         {
             if (mobile is PlayerMobile player)
@@ -30,7 +25,13 @@ namespace Server.Talent
                 player.AddStatMod(new StatMod(StatType.All, "PackLeader", player.AllFollowers.Count, TimeSpan.Zero));
                 Timer.StartTimer(TimeSpan.FromSeconds(60), UpdateStats, out _talentTimerToken);
             }
-           
+        }
+
+        public void UpdateStats()
+        {
+            m_Player.RemoveStatMod("PackLeader");
+            m_Player.AddStatMod(new StatMod(StatType.All, "PackLeader", m_Player.AllFollowers.Count, TimeSpan.Zero));
+            Timer.StartTimer(TimeSpan.FromSeconds(60), UpdateStats, out _talentTimerToken);
         }
     }
 }

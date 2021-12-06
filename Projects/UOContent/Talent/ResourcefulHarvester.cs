@@ -1,11 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class ResourcefulHarvester : BaseTalent, ITalent
+    public class ResourcefulHarvester : BaseTalent
     {
-        public ResourcefulHarvester() : base()
+        public ResourcefulHarvester()
         {
             DisplayName = "Resourceful";
             Description = "Chance on harvesting to receive extra resources.";

@@ -105,7 +105,7 @@ namespace Server.Spells.Fourth
                     }
                     BaseTalent frostFire = player.GetTalent(typeof(FrostFire));
                     if (frostFire != null) {
-                        ((FrostFire)frostFire).ModifyFireSpell(ref m_Fire, ref m_Cold, null, ref m_Hue);
+                        ((FrostFire)frostFire).ModifyFireSpell(ref m_Fire, ref m_Cold, null, hue: ref m_Hue);
                     }
                 }
                 m_Damage = damage;

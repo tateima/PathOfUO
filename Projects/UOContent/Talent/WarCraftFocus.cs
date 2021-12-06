@@ -1,12 +1,8 @@
-using System;
-using Server.Items;
-
-
 namespace Server.Talent
 {
-    public class WarCraftFocus : BaseTalent, ITalent
+    public class WarCraftFocus : BaseTalent
     {
-        public WarCraftFocus() : base()
+        public WarCraftFocus()
         {
             DisplayName = "Warcraft focus";
             Description = "Increases durability and damage done for crafted weapons and armor.";
@@ -15,6 +11,5 @@ namespace Server.Talent
             GumpHeight = 85;
             AddEndY = 80;
         }
-
     }
 }

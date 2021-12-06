@@ -158,12 +158,12 @@ namespace Server
         {
             var item = entry.ForceConstruct(from);
              if (item != null)
-                {
-                    if (!item.Stackable || !cont.TryDropItem(from, item, false))
-                    {
-                        cont.DropItem(item);
-                    }
-                }
+             {
+                 if (!item.Stackable || !cont.TryDropItem(from, item, false))
+                 {
+                     cont.DropItem(item);
+                 }
+             }
         }
         public void Generate(Mobile from, Container cont, bool spawning, int luckChance)
         {

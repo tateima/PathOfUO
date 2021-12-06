@@ -1,14 +1,10 @@
-using Server.Mobiles;
-using Server.Items;
-using System;
-
 namespace Server.Talent
 {
-    public class FencingFocus : BaseTalent, ITalent
+    public class FencingFocus : BaseTalent
     {
-        public FencingFocus() : base()
+        public FencingFocus()
         {
-            BlockedBy = new Type[] { typeof(ArcherFocus) };
+            BlockedBy = new[] { typeof(ArcherFocus) };
             RequiredWeaponSkill = SkillName.Fencing;
             DisplayName = "Fencing focus";
             Description = "Chance of getting a critical strike with fencing weapons.";
@@ -24,6 +20,5 @@ namespace Server.Talent
                 CriticalStrike(attacker, target, damage);
             }
         }
-
     }
 }

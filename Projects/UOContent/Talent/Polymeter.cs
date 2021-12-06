@@ -1,15 +1,11 @@
-using Server.Mobiles;
-using Server.Spells;
-using Server.Gumps;
-using Server.Network;
-using Server.Items;
 using System;
+using Server.Items;
 
 namespace Server.Talent
 {
-    public class Polymeter : BaseTalent, ITalent
+    public class Polymeter : BaseTalent
     {
-        public Polymeter() : base()
+        public Polymeter()
         {
             TalentDependency = typeof(MerchantPorter);
             DisplayName = "Poly gadget";
@@ -21,14 +17,22 @@ namespace Server.Talent
             MaxLevel = 1;
         }
 
-        public override void OnUse(Mobile mobile)
+        public override void OnUse(Mobile from)
         {
             if (!OnCooldown)
             {
-                OnCooldown = true;
-                PolymeterDevice device = new PolymeterDevice();
-                mobile.AddToBackpack(device);
-                Timer.StartTimer(TimeSpan.FromMinutes(60), ExpireTalentCooldown, out _talentTimerToken);
+                var current = @from.Backpack?.FindItemByType<PolymeterDevice>() ?? @from.BankBox?.FindItemByType<PolymeterDevice>();
+                if (current != null)
+                {
+                    from.SendMessage("You already have a Poly gadget");
+                }
+                else
+                {
+                    OnCooldown = true;
+                    var device = new PolymeterDevice();
+                    from.AddToBackpack(device);
+                    Timer.StartTimer(TimeSpan.FromMinutes(60), ExpireTalentCooldown, out _talentTimerToken);
+                }
             }
         }
     }

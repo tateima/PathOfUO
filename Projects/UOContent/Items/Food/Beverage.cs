@@ -155,24 +155,29 @@ namespace Server.Items
             Quantity = MaxQuantity;
             Content = BeverageType.Liquor;
         }
-
-        public override void OnDoubleClick(Mobile from) {
-            from.SendMessage("You feel a slight increase in magic resistance");
-            m_Mobile = from;
-            m_Mod = new DefaultSkillMod(SkillName.MagicResist, true, 2);
-            m_Mobile.AddSkillMod(m_Mod);
-            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
-            base.OnDoubleClick(from);
+        public override void Pour_OnTarget(Mobile from, object targ)
+        {
+            base.Pour_OnTarget(from, targ);
+            if (from == targ)
+            {
+                from.SendMessage("You feel a slight increase in magic resistance");
+                m_Mobile = from;
+                m_Mod = new DefaultSkillMod(SkillName.MagicResist, true, 2);
+                m_Mobile.AddSkillMod(m_Mod);
+                Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+                base.OnDoubleClick(from);
+            }
         }
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveSkillMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Bone",
                 "broth"
             );
@@ -223,24 +228,29 @@ namespace Server.Items
             Quantity = MaxQuantity;
             Content = BeverageType.Milk;
         }
-
-        public override void OnDoubleClick(Mobile from) {
-            from.SendMessage("You feel a slight increase in alchemy.");
-            m_Mobile = from;
-            m_Mod = new DefaultSkillMod(SkillName.Alchemy, true, 2);
-            m_Mobile.AddSkillMod(m_Mod);
-            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
-            base.OnDoubleClick(from);
+        public override void Pour_OnTarget(Mobile from, object targ)
+        {
+            base.Pour_OnTarget(from, targ);
+            if (from == targ)
+            {
+                from.SendMessage("You feel a slight increase in alchemy.");
+                m_Mobile = from;
+                m_Mod = new DefaultSkillMod(SkillName.Alchemy, true, 2);
+                m_Mobile.AddSkillMod(m_Mod);
+                Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+                base.OnDoubleClick(from);
+            }
         }
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveSkillMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Enchanted",
                 "milk"
             );
@@ -289,22 +299,25 @@ namespace Server.Items
             Quantity = MaxQuantity;
             Content = BeverageType.Water;
         }
-
-        public override void OnDoubleClick(Mobile from) {
-            from.SendMessage("Your mana is magically rejuvenated.");    
-            int amount = AOS.Scale(from.ManaMax, 33);
-            if ((from.Mana += amount) > from.ManaMax) {
-                from.Mana = from.ManaMax;
-            } else {
-                from.Mana += amount;
+        public override void Pour_OnTarget(Mobile from, object targ)
+        {
+            base.Pour_OnTarget(from, targ);
+            if (from == targ)
+            {
+                from.SendMessage("Your mana is magically rejuvenated.");
+                int amount = AOS.Scale(from.ManaMax, 33);
+                if ((from.Mana += amount) > from.ManaMax) {
+                    from.Mana = from.ManaMax;
+                } else {
+                    from.Mana += amount;
+                }
             }
-            base.OnDoubleClick(from);
         }
-       
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Mage",
                 "water"
             );
@@ -353,24 +366,28 @@ namespace Server.Items
             Quantity = MaxQuantity;
             Content = BeverageType.Water;
         }
-
-        public override void OnDoubleClick(Mobile from) {
-            from.SendMessage("You feel a rush or orcish magic upon you!");    
-            from.BodyMod = (Utility.RandomBool()) ? 138 : 140;
-            m_Mobile = from;
-            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
-            base.OnDoubleClick(from);
+        public override void Pour_OnTarget(Mobile from, object targ)
+        {
+            base.Pour_OnTarget(from, targ);
+            if (from == targ)
+            {
+                from.SendMessage("You feel a rush or orcish magic upon you!");
+                from.BodyMod = (Utility.RandomBool()) ? 138 : 140;
+                m_Mobile = from;
+                Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            }
         }
 
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mobile.IsBodyMod) {
                 m_Mobile.BodyMod = 0;
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Orcish",
                 "water"
             );
@@ -420,23 +437,27 @@ namespace Server.Items
             Content = BeverageType.Water;
         }
 
-        public override void OnDoubleClick(Mobile from) {
-            from.SendMessage("You feel a rush or demonic magic upon you!");    
-            from.BodyMod = (Utility.RandomBool()) ? 74 : 149;
-            m_Mobile = from;
-            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
-            base.OnDoubleClick(from);
+        public override void Pour_OnTarget(Mobile from, object targ)
+        {
+            base.Pour_OnTarget(from, targ);
+            if (from == targ)
+            {
+                from.SendMessage("You feel a rush or demonic magic upon you!");
+                from.BodyMod = (Utility.RandomBool()) ? 74 : 149;
+                m_Mobile = from;
+                Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            }
         }
-
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mobile.IsBodyMod) {
                 m_Mobile.BodyMod = 0;
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Demonic",
                 "water"
             );
@@ -485,24 +506,27 @@ namespace Server.Items
             Quantity = MaxQuantity;
             Content = BeverageType.Water;
         }
-
-        public override void OnDoubleClick(Mobile from) {
-            from.SendMessage("You feel a rush or skeletal magic upon you!");    
-            from.BodyMod = Utility.RandomList(50, 56);
-            m_Mobile = from;
-            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
-            base.OnDoubleClick(from);
+        public override void Pour_OnTarget(Mobile from, object targ)
+        {
+            base.Pour_OnTarget(from, targ);
+            if (from == targ)
+            {
+                from.SendMessage("You feel a rush or skeletal magic upon you!");
+                from.BodyMod = Utility.RandomList(50, 56);
+                m_Mobile = from;
+                Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            }
         }
-
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mobile.IsBodyMod) {
                 m_Mobile.BodyMod = 0;
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Skeletal",
                 "water"
             );
@@ -549,26 +573,29 @@ namespace Server.Items
             Quantity = MaxQuantity;
             Content = BeverageType.Liquor;
         }
-
-        public override void OnDoubleClick(Mobile from) {
-            foreach(Mobile mobile in from.GetMobilesInRange(1)) {
-                if (mobile != from && from.CanBeHarmful(mobile)) {
-                    if (Core.AOS) {
-                        AOS.Damage(mobile, Utility.RandomMinMax(1,5), true, 0, 0, 0, 0, 100);
-                    } else {
-                        from.Damage(Utility.RandomMinMax(1,5), from);
+        public override void Pour_OnTarget(Mobile from, object targ)
+        {
+            base.Pour_OnTarget(from, targ);
+            if (from == targ)
+            {
+                foreach(Mobile mobile in from.GetMobilesInRange(1)) {
+                    if (mobile != from && from.CanBeHarmful(mobile)) {
+                        if (Core.AOS) {
+                            AOS.Damage(mobile, Utility.RandomMinMax(1,5), true, 0, 0, 0, 0, 100);
+                        } else {
+                            from.Damage(Utility.RandomMinMax(1,5), from);
+                        }
+                        mobile.BoltEffect(0);
                     }
-                    mobile.BoltEffect(0);
                 }
+                from.SendMessage("Electricity leaves your skin!");
             }
-            from.SendMessage("Electricity leaves your skin!");
-            base.OnDoubleClick(from);
         }
-
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Charged",
                 "spirits"
             );
@@ -618,34 +645,39 @@ namespace Server.Items
             Content = BeverageType.Water;
         }
 
-        public override void OnDoubleClick(Mobile from) {
-            foreach(Mobile mobile in from.GetMobilesInRange(1)) {
-                if (mobile != from && from.CanBeHarmful(mobile)) {
-                    Effects.SendLocationParticles(
-                        EffectItem.Create(new Point3D(mobile.X, mobile.Y, mobile.Z), mobile.Map, EffectItem.DefaultDuration),
-                        0x37C4,
-                        1,
-                        29,
-                        0x47D,
-                        2,
-                        9502,
-                        0
-                    );
-                    if (BaseTalent.IsMobileType(OppositionGroup.AbyssalGroup, mobile.GetType()) || BaseTalent.IsMobileType(OppositionGroup.UndeadGroup, mobile.GetType())) {
-                        mobile.Damage(Utility.RandomMinMax(2,9), from);
-                    } else {
-                        mobile.Heal(Utility.RandomMinMax(2,9), mobile);
+        public override void Pour_OnTarget(Mobile from, object targ)
+        {
+            base.Pour_OnTarget(from, targ);
+            if (from == targ)
+            {
+                foreach(Mobile mobile in from.GetMobilesInRange(1)) {
+                    if (mobile != from && from.CanBeHarmful(mobile)) {
+                        Effects.SendLocationParticles(
+                            EffectItem.Create(new Point3D(mobile.X, mobile.Y, mobile.Z), mobile.Map, EffectItem.DefaultDuration),
+                            0x37C4,
+                            1,
+                            29,
+                            0x47D,
+                            2,
+                            9502,
+                            0
+                        );
+                        if (BaseTalent.IsMobileType(OppositionGroup.AbyssalGroup, mobile.GetType()) || BaseTalent.IsMobileType(OppositionGroup.UndeadGroup, mobile.GetType())) {
+                            mobile.Damage(Utility.RandomMinMax(2,9), from);
+                        } else {
+                            mobile.Heal(Utility.RandomMinMax(2,9), mobile);
+                        }
                     }
                 }
+                from.SendMessage("You splash holy water around you!");
+                Delete();
             }
-            from.SendMessage("You splash holy water around you!");
-            Delete();
         }
-
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Holy",
                 "water"
             );
@@ -693,27 +725,31 @@ namespace Server.Items
             Quantity = MaxQuantity;
             Content = BeverageType.Liquor;
         }
-
-        public override void OnDoubleClick(Mobile from) {
-            foreach(Mobile mobile in from.GetMobilesInRange(1)) {
-                if (mobile != from && from.CanBeHarmful(mobile)) {
-                    if (Core.AOS) {
-                        AOS.Damage(mobile, Utility.RandomMinMax(1,5), true, 0, 100, 0, 0, 0);
-                    } else {
-                        mobile.Damage(Utility.RandomMinMax(1,5), from);
+        public override void Pour_OnTarget(Mobile from, object targ)
+        {
+            base.Pour_OnTarget(from, targ);
+            if (from == targ)
+            {
+                foreach(Mobile mobile in from.GetMobilesInRange(1)) {
+                    if (mobile != from && from.CanBeHarmful(mobile)) {
+                        if (Core.AOS) {
+                            AOS.Damage(mobile, Utility.RandomMinMax(1,5), true, 0, 100, 0, 0, 0);
+                        } else {
+                            mobile.Damage(Utility.RandomMinMax(1,5), from);
+                        }
+                        mobile.FixedParticles(0x36BD, 20, 10, 5044, 0, 0, EffectLayer.Head, 0);
+                        mobile.PlaySound(0x307);
                     }
-                    mobile.FixedParticles(0x36BD, 20, 10, 5044, 0, 0, EffectLayer.Head, 0);
-                    mobile.PlaySound(0x307);
                 }
+                from.SendMessage("You burp out fire!");
             }
-            from.SendMessage("You burp out fire!");
-            base.OnDoubleClick(from);
         }
 
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Fire",
                 "spirits"
             );
@@ -764,25 +800,31 @@ namespace Server.Items
             Content = BeverageType.Liquor;
         }
 
-        public override void OnDoubleClick(Mobile from) {
-            from.SendMessage("You feel a slight increase in tactics");
-            m_Mobile = from;
-            m_Mod = new DefaultSkillMod(SkillName.Tactics, true, 2);
-            m_Mobile.AddSkillMod(m_Mod);
-            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
-            base.OnDoubleClick(from);
+        public override void Pour_OnTarget(Mobile from, object targ)
+        {
+            base.Pour_OnTarget(from, targ);
+            if (from == targ)
+            {
+                from.SendMessage("You feel a slight increase in tactics");
+                m_Mobile = from;
+                m_Mod = new DefaultSkillMod(SkillName.Tactics, true, 2);
+                m_Mobile.AddSkillMod(m_Mod);
+                Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            }
         }
+
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveSkillMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Black",
-                "sambucca"
+                "Sambucca"
             );
         }
     }
@@ -830,24 +872,28 @@ namespace Server.Items
             Quantity = MaxQuantity;
             Content = BeverageType.Ale;
         }
-
-        public override void OnDoubleClick(Mobile from) {
-            from.SendMessage("You feel a slight increase in parrying");
-            m_Mobile = from;
-            m_Mod = new DefaultSkillMod(SkillName.Parry, true, 2);
-            m_Mobile.AddSkillMod(m_Mod);
-            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
-            base.OnDoubleClick(from);
+        public override void Pour_OnTarget(Mobile from, object targ)
+        {
+            base.Pour_OnTarget(from, targ);
+            if (from == targ)
+            {
+                from.SendMessage("You feel a slight increase in parrying");
+                m_Mobile = from;
+                m_Mod = new DefaultSkillMod(SkillName.Parry, true, 2);
+                m_Mobile.AddSkillMod(m_Mod);
+                Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            }
         }
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveSkillMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Soldier's",
                 "brew"
             );
@@ -898,16 +944,19 @@ namespace Server.Items
             Quantity = MaxQuantity;
             Content = BeverageType.Ale;
         }
-
-        public override void OnDoubleClick(Mobile from) {
-            from.SendMessage("You feel a slight increase in stealth");
-            m_Mobile = from;
-            m_Mod_Stealth = new DefaultSkillMod(SkillName.Stealth, true, 2);
-            m_Mod_Hiding = new DefaultSkillMod(SkillName.Hiding, true, 2);
-            m_Mobile.AddSkillMod(m_Mod_Stealth);
-            m_Mobile.AddSkillMod(m_Mod_Hiding);
-            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
-            base.OnDoubleClick(from);
+        public override void Pour_OnTarget(Mobile from, object targ)
+        {
+            base.Pour_OnTarget(from, targ);
+            if (from == targ)
+            {
+                from.SendMessage("You feel a slight increase in stealth");
+                m_Mobile = from;
+                m_Mod_Stealth = new DefaultSkillMod(SkillName.Stealth, true, 2);
+                m_Mod_Hiding = new DefaultSkillMod(SkillName.Hiding, true, 2);
+                m_Mobile.AddSkillMod(m_Mod_Stealth);
+                m_Mobile.AddSkillMod(m_Mod_Hiding);
+                Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            }
         }
         public void ExpireBuff() {
             if (m_Mobile != null) {
@@ -917,12 +966,13 @@ namespace Server.Items
                 if (m_Mod_Stealth != null) {
                     m_Mobile.RemoveSkillMod(m_Mod_Stealth);
                 }
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Ninja's",
                 "brew"
             );
@@ -973,16 +1023,19 @@ namespace Server.Items
             Quantity = MaxQuantity;
             Content = BeverageType.Ale;
         }
-
-        public override void OnDoubleClick(Mobile from) {
-            from.SendMessage("You feel a slight increase in healing");
-            m_Mobile = from;
-            m_Mod_Anatomy = new DefaultSkillMod(SkillName.Anatomy, true, 2);
-            m_Mod_Healing = new DefaultSkillMod(SkillName.Healing, true, 2);
-            m_Mobile.AddSkillMod(m_Mod_Anatomy);
-            m_Mobile.AddSkillMod(m_Mod_Healing);
-            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
-            base.OnDoubleClick(from);
+        public override void Pour_OnTarget(Mobile from, object targ)
+        {
+            base.Pour_OnTarget(from, targ);
+            if (from == targ)
+            {
+                from.SendMessage("You feel a slight increase in healing");
+                m_Mobile = from;
+                m_Mod_Anatomy = new DefaultSkillMod(SkillName.Anatomy, true, 2);
+                m_Mod_Healing = new DefaultSkillMod(SkillName.Healing, true, 2);
+                m_Mobile.AddSkillMod(m_Mod_Anatomy);
+                m_Mobile.AddSkillMod(m_Mod_Healing);
+                Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            }
         }
         public void ExpireBuff() {
             if (m_Mobile != null) {
@@ -992,12 +1045,13 @@ namespace Server.Items
                 if (m_Mod_Healing != null) {
                     m_Mobile.RemoveSkillMod(m_Mod_Healing);
                 }
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Healer's",
                 "brew"
             );
@@ -1046,18 +1100,19 @@ namespace Server.Items
             Quantity = MaxQuantity;
             Content = BeverageType.Ale;
         }
-
-        public override void OnDoubleClick(Mobile from) {
-            if (from is PlayerMobile player) {
+        public override void Pour_OnTarget(Mobile from, object targ)
+        {
+            base.Pour_OnTarget(from, targ);
+            if (from == targ && from is PlayerMobile player) {
                 from.SendMessage("You feel your planar exhaustion lapse.");
                 player.NextPlanarTravel = Core.Now;
-            }       
-            base.OnDoubleClick(from);
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Ancestral",
                 "brew"
             );
@@ -1108,23 +1163,28 @@ namespace Server.Items
             Content = BeverageType.Ale;
         }
 
-        public override void OnDoubleClick(Mobile from) {
-            from.SendMessage("You feel a slight increase in fishing");
-            m_Mobile = from;
-            m_Mod = new DefaultSkillMod(SkillName.Fishing, true, 2);
-            m_Mobile.AddSkillMod(m_Mod);
-            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
-            base.OnDoubleClick(from);
+        public override void Pour_OnTarget(Mobile from, object targ)
+        {
+            base.Pour_OnTarget(from, targ);
+            if (from == targ)
+            {
+                from.SendMessage("You feel a slight increase in fishing");
+                m_Mobile = from;
+                m_Mod = new DefaultSkillMod(SkillName.Fishing, true, 2);
+                m_Mobile.AddSkillMod(m_Mod);
+                Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            }
         }
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveSkillMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Pirate's",
                 "brew"
             );
@@ -1174,26 +1234,29 @@ namespace Server.Items
             Quantity = MaxQuantity;
             Content = BeverageType.Ale;
         }
-
-        public override void OnDoubleClick(Mobile from) {
-            from.SendMessage("You feel a slight increase in wrestling.");
-            m_Mobile = from;
-            m_Mod = new DefaultSkillMod(SkillName.Wrestling, true, 2);
-            m_Mobile.AddSkillMod(m_Mod);
-            Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
-            base.OnDoubleClick(from);
+        public override void Pour_OnTarget(Mobile from, object targ)
+        {
+            base.Pour_OnTarget(from, targ);
+            if (from == targ)
+            {
+                from.SendMessage("You feel a slight increase in wrestling.");
+                m_Mobile = from;
+                m_Mod = new DefaultSkillMod(SkillName.Wrestling, true, 2);
+                m_Mobile.AddSkillMod(m_Mod);
+                Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
+            }
         }
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveSkillMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
-                "Guiness",
-                ""
+                "{0}",
+                "Guiness"
             );
         }
     }
@@ -2021,7 +2084,7 @@ namespace Server.Items
                 {
                     optimisedConsumption = player.GetTalent(typeof(OptimisedConsumption));
                 }
-                    if (from.Thirst < 20)
+                if (from.Thirst < 20)
                 {
                     from.Thirst += 1;
                 }
@@ -2051,7 +2114,7 @@ namespace Server.Items
                 {
                     from.ApplyPoison(Poisoner, Poison);
                 }
-                else 
+                else
                 {
                     // if they have optimised consumption return some mana
                     if (optimisedConsumption != null)
@@ -2059,7 +2122,7 @@ namespace Server.Items
                         if (!ContainsAlchohol && from.Mana < from.ManaMax)
                         {
                             from.Mana += optimisedConsumption.Level;
-                        }                        
+                        }
                     }
                 }
 

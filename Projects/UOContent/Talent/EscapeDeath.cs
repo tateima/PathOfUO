@@ -1,11 +1,10 @@
-using Server.Mobiles;
 using System;
 
 namespace Server.Talent
 {
-    public class EscapeDeath : BaseTalent, ITalent
+    public class EscapeDeath : BaseTalent
     {
-        public EscapeDeath() : base()
+        public EscapeDeath()
         {
             TalentDependency = typeof(KeenSenses);
             HasBeforeDeathSave = true;
@@ -24,8 +23,7 @@ namespace Server.Talent
                 target.Hits = Level * 5;
                 target.FixedEffect(0x37B9, 10, 16);
                 Timer.StartTimer(TimeSpan.FromSeconds(300), ExpireTalentCooldown, out _talentTimerToken);
-            };
+            }
         }
-
     }
 }

@@ -1,72 +1,72 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Server.Mobiles;
-using Server.Items;
-using Server.Targeting;
 using Server.Gumps;
+using Server.Items;
+using Server.Mobiles;
 using Server.Network;
-
+using Server.Targeting;
 
 namespace Server.Talent
 {
-    public class DominateCreature : BaseTalent, ITalent
+    public class DominateCreature : BaseTalent
     {
-        public DominateCreature() : base()
+        public DominateCreature()
         {
             TalentDependency = typeof(Resonance);
             CanBeUsed = true;
             DisplayName = "Dominate creature";
-            Description = "Chance on to control target for 1 minute per level. 5 minute cooldown. Requires 90 music, all bardic skills 70+.";
+            Description =
+                "Chance on to control target for 1 minute per level. 5 minute cooldown. Requires 90 music, all bardic skills 70+.";
             ImageID = 191;
             AddEndY = 110;
         }
+
         public override bool HasSkillRequirement(Mobile mobile)
         {
-            SkillsGumpGroup group = SkillsGumpGroup.Groups.Where(group => group.Name == "Bardic").FirstOrDefault();
-            bool bardicValid = false;
-            bool musicValid = false;
+            var group = SkillsGumpGroup.Groups.FirstOrDefault(group => group.Name == "Bardic");
+            var bardicValid = false;
+            var musicValid = false;
             if (group != null)
             {
-                foreach (SkillName skill in group.Skills)
+                foreach (var skill in group.Skills)
                 {
                     if (skill == SkillName.Musicianship && mobile.Skills[skill].Base >= 90)
                     {
                         musicValid = true;
                     }
-                    // this needs all bardic skills to be atleast 70
+                    // this needs all bardic skills to be at least 70
                     else
                     {
-                        bardicValid = (mobile.Skills[skill].Base >= 70);
+                        bardicValid = mobile.Skills[skill].Base >= 70;
                     }
                 }
             }
-            return (bardicValid && musicValid);
+
+            return bardicValid && musicValid;
         }
+
         public override void OnUse(Mobile from)
         {
             if (!OnCooldown)
             {
                 BaseInstrument instrument = null;
-                if (from.Backpack != null)
-                {
-                    from.Backpack.FindItemsByType<BaseInstrument>(true).ForEach(
-                    packInstrument =>
-                    {
-                        if (packInstrument.UsesRemaining > 0)
+                from.Backpack?.FindItemsByType<BaseInstrument>()
+                    .ForEach(
+                        packInstrument =>
                         {
-                            instrument = packInstrument;
-                            return;
+                            if (packInstrument.UsesRemaining > 0)
+                            {
+                                instrument = packInstrument;
+                            }
                         }
-                    }
                     );
-                }
+
                 if (instrument != null)
                 {
                     from.SendMessage("Whom do you wish to control");
                     from.Target = new InternalFirstTarget(from, instrument, Level);
                     OnCooldown = true;
-                    Timer.StartTimer(TimeSpan.FromSeconds(300 - (Level * 30)), ExpireTalentCooldown, out _talentTimerToken);
+                    Timer.StartTimer(TimeSpan.FromSeconds(300 - Level * 30), ExpireTalentCooldown, out _talentTimerToken);
                 }
                 else
                 {
@@ -74,12 +74,13 @@ namespace Server.Talent
                 }
             }
         }
+
         private class InternalFirstTarget : Target
         {
-            public TimerExecutionToken _dominateTimerToken;
             private readonly BaseInstrument m_Instrument;
-            private BaseCreature m_Creature;
             private readonly int m_level;
+            private BaseCreature m_Creature;
+
             public InternalFirstTarget(Mobile from, BaseInstrument instrument, int level) : base(
                 BaseInstrument.GetBardRange(from, SkillName.Provocation),
                 false,
@@ -111,14 +112,16 @@ namespace Server.Talent
                     {
                         from.SendMessage("They are too loyal to their master to be dominated.");
                     }
-                    else if ((creature.IsParagon || creature.IsHeroic) || BaseInstrument.GetBaseDifficulty(creature, true) >= 117) // dragons are 117 and cannot be tamed so dont allow bards to either
+                    else if (creature.IsParagon || creature.IsHeroic ||
+                             BaseInstrument.GetBaseDifficulty(creature, true) >=
+                             117) // dragons are 117 and cannot be tamed so dont allow bards to either
                     {
                         from.SendMessage(" You have no chance of dominating those creatures.");
                     }
                     else
                     {
                         from.RevealingAction();
-                        var diff = m_Instrument.GetDifficultyFor((Mobile)targeted) - 10.0;
+                        var diff = m_Instrument.GetDifficultyFor(creature) - 10.0;
                         // discordance is the core engine mechanic
                         var music = from.Skills.Discordance.Value;
 
@@ -126,6 +129,7 @@ namespace Server.Talent
                         {
                             diff -= (music - 100.0) * 0.5;
                         }
+
                         if (!BaseInstrument.CheckMusicianship(from))
                         {
                             from.NextSkillTime = Core.TickCount + 5000;
@@ -135,7 +139,6 @@ namespace Server.Talent
                         }
                         else
                         {
-
                             if (!from.CheckTargetSkill(SkillName.Discordance, creature, diff - 25.0, diff + 25.0))
                             {
                                 from.NextSkillTime = Core.TickCount + 5000;
@@ -145,15 +148,26 @@ namespace Server.Talent
                             }
                             else
                             {
-                                from.PrivateOverheadMessage(MessageType.Regular, 0x3B2, 502799, from.NetState); // It seems to accept you as master.
-                                from.SendMessage("You play your music and your target submits to your will for a brief time");
+                                from.PrivateOverheadMessage(
+                                    MessageType.Regular,
+                                    0x3B2,
+                                    502799,
+                                    from.NetState
+                                ); // It seems to accept you as master.
+                                from.SendMessage(
+                                    "You play your music and your target submits to your will for a brief time"
+                                );
                                 m_Instrument.PlayInstrumentWell(from);
                                 m_Instrument.ConsumeUse(from);
                                 m_Creature.Owners.Add(from);
                                 m_Creature.SetControlMaster(from);
                                 m_Creature.Summoned = true;
                                 m_Creature.BardEndTime = Core.Now + TimeSpan.FromSeconds(m_level * 10);
-                                Timer.StartTimer(TimeSpan.FromSeconds(m_level * 10), ExpireDomination, out _dominateTimerToken);
+                                Timer.StartTimer(
+                                    TimeSpan.FromSeconds(m_level * 10),
+                                    ExpireDomination,
+                                    out _
+                                );
                             }
                         }
                     }
@@ -163,6 +177,7 @@ namespace Server.Talent
                     from.SendLocalizedMessage(501589); // You can't incite that!
                 }
             }
+
             private void ExpireDomination()
             {
                 m_Creature.Owners.Clear();

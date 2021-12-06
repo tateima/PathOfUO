@@ -63,7 +63,7 @@ namespace Server.Spells.Seventh
                     }
                     BaseTalent frostFire = playerCaster.GetTalent(typeof(FrostFire));
                     if (frostFire != null && fire > 0) {
-                        ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, m, ref hue);
+                        ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, m, hue: ref hue);
                     }
                 }
 

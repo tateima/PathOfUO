@@ -21,36 +21,27 @@ namespace Server.Engines.Harvest
 
         protected override void OnTarget(Mobile from, object targeted)
         {
-            if (m_System is Mining && targeted is StaticTarget target)
+            if (m_System is Mining && from is PlayerMobile player)
             {
-                var itemID = target.ItemID;
-
-                // grave
-                if (itemID == 0xED3 || itemID == 0xEDF || itemID == 0xEE0 || itemID == 0xEE1 || itemID == 0xEE2 ||
-                    itemID == 0xEE8)
+                if (targeted is StaticTarget { ItemID: 0xED3 or 0xEDF or 0xEE0 or 0xEE1 or 0xEE2 or 0xEE8 } target)
+                    // grave
                 {
-                    if (from is PlayerMobile player)
+                    GraveDigger graveDigger = player.GetTalent(typeof(GraveDigger)) as GraveDigger;
+                    var qs = player.Quest;
+                    if (qs is not WitchApprenticeQuest)
                     {
-                        GraveDigger graveDigger =  player.GetTalent(typeof(GraveDigger)) as GraveDigger;
-                        var qs = player.Quest;
-                        if (!(qs is WitchApprenticeQuest) || graveDigger is null)
-                        {
-                            return;
-                        }
-                        if (qs is WitchApprenticeQuest) {
-                            var obj = qs.FindObjective<FindIngredientObjective>();
+                        graveDigger?.Dig((BaseHarvestTool)m_Tool, from, target.Location);
+                        return;
+                    }
+                    var obj = qs.FindObjective<FindIngredientObjective>();
 
-                            if (obj?.Completed == false && obj.Ingredient == Ingredient.Bones)
-                            {
-                                // You finish your grim work, finding some of the specific bones listed in the Hag's recipe.
-                                player.SendLocalizedMessage(1055037);
-                                obj.Complete();
+                    if (obj?.Completed == false && obj.Ingredient == Ingredient.Bones)
+                    {
+                        // You finish your grim work, finding some of the specific bones listed in the Hag's recipe.
+                        player.SendLocalizedMessage(1055037);
+                        obj.Complete();
 
-                                return;
-                            }
-                        } else {
-                            graveDigger.Dig(m_Tool, from, target.Location);
-                        }
+                        return;
                     }
                 }
             }

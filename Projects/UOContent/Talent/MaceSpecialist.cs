@@ -1,16 +1,18 @@
-using Server.Mobiles;
 using Server.Items;
-using System;
 
 namespace Server.Talent
 {
-    public class MaceSpecialist : BaseTalent, ITalent
+    public class MaceSpecialist : BaseTalent
     {
-        public MaceSpecialist() : base()
+        public MaceSpecialist()
         {
-            BlockedBy = new Type[] { typeof(TwoHandedMaceSpecialist) };
+            BlockedBy = new[] { typeof(TwoHandedMaceSpecialist) };
             TalentDependency = typeof(MacefightingFocus);
-            RequiredWeapon = new Type[] { typeof(Mace), typeof(Maul), typeof(Club), typeof(DiamondMace), typeof(MagicWand), typeof(HammerPick), typeof(Scepter), typeof(WarMace) };
+            RequiredWeapon = new[]
+            {
+                typeof(Mace), typeof(Maul), typeof(Club), typeof(DiamondMace), typeof(MagicWand), typeof(HammerPick),
+                typeof(Scepter), typeof(WarMace)
+            };
             RequiredWeaponSkill = SkillName.Macing;
             DisplayName = "Mace specialist";
             Description = "Increases damage to one handed macefighting weapons.";
@@ -21,7 +23,5 @@ namespace Server.Talent
         {
             target.Damage(Level, attacker);
         }
-
-
     }
 }

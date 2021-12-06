@@ -1,19 +1,14 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class SpellMind : BaseTalent, ITalent
+    public class SpellMind : BaseTalent
     {
-        public SpellMind() : base()
+        public SpellMind()
         {
-            BlockedBy = new Type[] { typeof(PlanarShift) };
+            BlockedBy = new[] { typeof(PlanarShift) };
             TalentDependency = typeof(ManaShield);
             DisplayName = "Spell mind";
             Description = "Reduces damage loss from spells cast without reagents. Increases damage by spells with reagents.";
             ImageID = 128;
         }
-
     }
 }
-

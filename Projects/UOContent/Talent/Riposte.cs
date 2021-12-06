@@ -1,11 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class Riposte : BaseTalent, ITalent
+    public class Riposte : BaseTalent
     {
-        public Riposte() : base()
+        public Riposte()
         {
             RequiredWeaponSkill = SkillName.Fencing;
             TalentDependency = typeof(FencingFocus);
@@ -15,13 +12,14 @@ namespace Server.Talent
             GumpHeight = 85;
             AddEndY = 80;
         }
-        public virtual void CheckDefenderMissEffect(Mobile attacker, Mobile defender)
+
+        public override void CheckDefenderMissEffect(Mobile attacker, Mobile target)
         {
             // 5% chance
             if (Utility.Random(100) < Level)
             {
                 // max 10 damage (2 per level)
-                attacker.Damage(Level * 2, defender);
+                attacker.Damage(Level * 2, target);
             }
         }
     }

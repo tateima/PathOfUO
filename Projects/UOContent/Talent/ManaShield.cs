@@ -1,15 +1,14 @@
-using Server.Mobiles;
+using System;
 using Server.Spells;
 using Server.Spells.Necromancy;
-using System;
 
 namespace Server.Talent
 {
-    public class ManaShield : BaseTalent, ITalent
+    public class ManaShield : BaseTalent
     {
-        public ManaShield() : base()
+        public ManaShield()
         {
-            BlockedBy = new Type[] { typeof(MageCombatant) };
+            BlockedBy = new[] { typeof(MageCombatant) };
             TalentDependency = typeof(FastLearner);
             CanBeUsed = true;
             HasDefenseEffect = true;
@@ -20,53 +19,51 @@ namespace Server.Talent
             AddEndY = 95;
         }
 
-        public override bool HasSkillRequirement(Mobile mobile)
-        {
-            return mobile.Skills[SkillName.Magery].Base >= 75;
-        }
+        public override bool HasSkillRequirement(Mobile mobile) => mobile.Skills[SkillName.Magery].Base >= 75;
 
-        public override void CheckDefenseEffect(Mobile defender, Mobile attacker, int damage)
+        public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
         {
             if (Activated)
             {
-                TransformContext context = TransformationSpellHelper.GetContext(attacker);
-                // dont apply the effect if Wraith Form 
+                var context = TransformationSpellHelper.GetContext(target);
+                // dont apply the effect if Wraith Form
                 if (context?.Type != typeof(WraithFormSpell) && defender.Mana > 10)
                 {
                     // restore hits first
                     defender.Hits += damage;
                     // get mana damage differential
-                    int manaDmgDiff = damage;
+                    var manaDmgDiff = damage;
                     if (defender.Mana < damage)
                     {
                         manaDmgDiff = defender.Mana;
                         Activated = false;
-                        int hitReDamage = damage - manaDmgDiff;
+                        var hitReDamage = damage - manaDmgDiff;
                         defender.Hits -= hitReDamage;
                     }
+
                     defender.Mana -= manaDmgDiff;
                     if (defender.Mana < 10)
                     {
                         Activated = false;
                     }
                 }
-            }   
+            }
         }
 
-        public override void OnUse(Mobile mobile)
+        public override void OnUse(Mobile from)
         {
-            if (mobile.Mana < 10) { 
-               mobile.SendMessage("You cannot use a mana shield at this time.");
+            if (from.Mana < 10)
+            {
+                from.SendMessage("You cannot use a mana shield at this time.");
             }
-             else if (!OnCooldown)
+            else if (!OnCooldown)
             {
                 Activated = true;
                 OnCooldown = true;
-                mobile.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
-                mobile.PlaySound(0x1E8);
+                from.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
+                from.PlaySound(0x1E8);
                 Timer.StartTimer(TimeSpan.FromSeconds(180 - Level * 5), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
-
     }
 }

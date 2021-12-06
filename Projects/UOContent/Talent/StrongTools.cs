@@ -1,15 +1,8 @@
-using Server.Mobiles;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Server.Talent
 {
-    public class StrongTools : BaseTalent, ITalent
+    public class StrongTools : BaseTalent
     {
-        public StrongTools() : base()
+        public StrongTools()
         {
             TalentDependency = typeof(WarCraftFocus);
             DisplayName = "Strong tools";
@@ -17,6 +10,5 @@ namespace Server.Talent
             ImageID = 199;
             AddEndY = 85;
         }
-
     }
 }

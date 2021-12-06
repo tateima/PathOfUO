@@ -1,11 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class SonicAffinity : BaseTalent, ITalent
+    public class SonicAffinity : BaseTalent
     {
-        public SonicAffinity() : base()
+        public SonicAffinity()
         {
             DisplayName = "Sonic affinity";
             Description = "Increases effectiveness of provocation, peacemaking and discordance.";
@@ -14,15 +11,8 @@ namespace Server.Talent
             AddEndY = 70;
         }
 
-        public override int ModifySpellMultiplier()
-        {
-            return Level * 2; // 2 per point
-        }
+        public override int ModifySpellMultiplier() => Level * 2; // 2 per point
 
-        public override double ModifySpellScalar()
-        {
-            return (Level / 100); // 1% per point
-        }
-
+        public override double ModifySpellScalar() => Level / 100.0; // 1% per point
     }
 }

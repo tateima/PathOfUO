@@ -1,15 +1,12 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class EfficientCarver : BaseTalent, ITalent
+    public class EfficientCarver : BaseTalent
     {
-        public EfficientCarver() : base()
+        public EfficientCarver()
         {
             TalentDependency = typeof(ResourcefulHarvester);
             DisplayName = "Carver";
-            Description = "0.5% Chance per level to receive extra plank materials when carving.";
+            Description = "1% Chance per level to receive extra plank materials when carving.";
             ImageID = 357;
             MaxLevel = 6;
             GumpHeight = 85;

@@ -1,12 +1,11 @@
-using Server.Mobiles;
-using Server.Items;
 using System;
+using Server.Items;
 
 namespace Server.Talent
 {
-    public class PlateWarmaster : BaseTalent, ITalent
+    public class PlateWarmaster : BaseTalent
     {
-        public PlateWarmaster() : base()
+        public PlateWarmaster()
         {
             DisplayName = "Plate warmaster";
             Description = "Reduces damage while wearing plate. Increases Str by 2 per Level";
@@ -18,9 +17,10 @@ namespace Server.Talent
 
         public override void UpdateMobile(Mobile mobile)
         {
-            if (BaseArmor.FullPlate(mobile)) {
+            if (BaseArmor.FullPlate(mobile))
+            {
                 mobile.RemoveStatMod("PlateWarmaster");
-                mobile.AddStatMod(new StatMod(StatType.Str, "PlateWarmaster", Level*2, TimeSpan.Zero));
+                mobile.AddStatMod(new StatMod(StatType.Str, "PlateWarmaster", Level * 2, TimeSpan.Zero));
             }
         }
     }

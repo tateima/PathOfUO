@@ -21,7 +21,7 @@ namespace Server.Items
 
         public static int CheckEfficientCarver(Mobile from)
         {
-            BaseTalent carver = null;
+            BaseTalent carver;
             if (from is PlayerMobile player)
             {
                 carver = player.GetTalent(typeof(EfficientCarver));

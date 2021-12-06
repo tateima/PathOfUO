@@ -1,15 +1,11 @@
-using Server.Mobiles;
-using Server.Spells;
-using Server.Gumps;
-using Server.Network;
-using Server.Items;
 using System;
+using Server.Items;
 
 namespace Server.Talent
 {
-    public class WhizzyGig : BaseTalent, ITalent
+    public class WhizzyGig : BaseTalent
     {
-        public WhizzyGig() : base()
+        public WhizzyGig()
         {
             TalentDependency = typeof(MerchantPorter);
             DisplayName = "Whizzy-gig";
@@ -21,14 +17,22 @@ namespace Server.Talent
             MaxLevel = 1;
         }
 
-        public override void OnUse(Mobile mobile)
+        public override void OnUse(Mobile from)
         {
             if (!OnCooldown)
             {
-                OnCooldown = true;
-                WhizzyGigDevice device = new WhizzyGigDevice();
-                mobile.AddToBackpack(device);
-                Timer.StartTimer(TimeSpan.FromMinutes(60), ExpireTalentCooldown, out _talentTimerToken);
+                var current = @from.Backpack?.FindItemByType<WhizzyGigDevice>() ?? @from.BankBox?.FindItemByType<WhizzyGigDevice>();
+                if (current != null)
+                {
+                    from.SendMessage("You already have a Whizzy-gig");
+                }
+                else
+                {
+                    OnCooldown = true;
+                    var device = new WhizzyGigDevice();
+                    from.AddToBackpack(device);
+                    Timer.StartTimer(TimeSpan.FromMinutes(60), ExpireTalentCooldown, out _talentTimerToken);
+                }
             }
         }
     }

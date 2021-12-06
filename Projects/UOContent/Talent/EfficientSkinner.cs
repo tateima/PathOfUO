@@ -1,15 +1,12 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class EfficientSkinner : BaseTalent, ITalent
+    public class EfficientSkinner : BaseTalent
     {
-        public EfficientSkinner() : base()
+        public EfficientSkinner()
         {
             TalentDependency = typeof(ResourcefulHarvester);
             DisplayName = "Skinner";
-            Description = "0.5% Chance per level to receive extra hide material when skinning creatures.";
+            Description = "1% Chance per level to receive extra hide material when skinning creatures.";
             ImageID = 359;
             MaxLevel = 6;
             GumpHeight = 85;

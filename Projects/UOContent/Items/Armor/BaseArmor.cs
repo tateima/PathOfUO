@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Server.Engines.Craft;
 using Server.Ethics;
 using Server.Factions;
+using Server.Misc;
 using Server.Network;
 using Server.Utilities;
 using Server.Mobiles;
@@ -164,7 +165,7 @@ namespace Server.Items
         private bool ShouldSerializePlayerConstructed() => _playerConstructed;
 
         // Field 25
-        private int _shardPower = 0;
+        private int _shardPower;
 
         [EncodedInt]
         [SerializableField(25)]
@@ -215,12 +216,12 @@ namespace Server.Items
         private bool ShouldSerializeSocketAmount() => _socketAmount != 0;
 
          // Field 27
-        private List<Item> _sockets = new List<Item>();
+         private string _sockets = "";
 
         [EncodedInt]
         [SerializableField(27)]
         [CommandProperty(AccessLevel.GameMaster)]
-        public List<Item> Sockets
+        public string Sockets
         {
             get => _sockets;
             set
@@ -236,10 +237,29 @@ namespace Server.Items
             }
         }
 
-        [SerializableFieldSaveFlag(27)]
-        private bool ShouldSerializeSockets() => _sockets.Count > 0;
+        public string[] SocketArray => _sockets.Split(',');
 
-        public static string RuneWord => null;
+        [SerializableFieldSaveFlag(27)]
+        private bool ShouldSerializeSockets() => !string.IsNullOrEmpty(_sockets);
+
+        private bool _enchanted;
+
+        [SerializableField(28)]
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool Enchanted
+        {
+            get => _enchanted;
+            set
+            {
+                _enchanted = value;
+                InvalidateProperties();
+                this.MarkDirty();
+            }
+        }
+
+        [SerializableFieldSaveFlag(28)]
+        private bool ShouldSerializeEnchanted() => _enchanted;
+
 
         private FactionItem m_FactionState;
 
@@ -258,7 +278,8 @@ namespace Server.Items
             SkillBonuses = new AosSkillBonuses(this);
             _shardPower = 0;
             _socketAmount = 0;
-            _sockets = new List<Item>();
+            _sockets = "";
+            _enchanted = false;
         }
 
         public virtual bool AllowMaleWearer => true;
@@ -1164,6 +1185,11 @@ namespace Server.Items
 
             Attributes = new AosAttributes(this);
 
+            if (GetSaveFlag(flags, OldSaveFlag.Enchanted))
+            {
+                _enchanted = reader.ReadBool();
+            }
+
             if (GetSaveFlag(flags, OldSaveFlag.SocketAmount))
             {
                 _socketAmount = reader.ReadEncodedInt();
@@ -1171,7 +1197,7 @@ namespace Server.Items
 
             if (GetSaveFlag(flags, OldSaveFlag.Sockets))
             {
-                _sockets = reader.ReadEntityList<Item>();
+                _sockets = reader.ReadString();
             }
 
             if (GetSaveFlag(flags, OldSaveFlag.ShardPower))
@@ -1430,8 +1456,6 @@ namespace Server.Items
                     from.AddStatMod(new StatMod(StatType.Int, $"{modName}Int", intBonus, TimeSpan.Zero));
                 }
             }
-
-            SocketBonus.CheckSockets(from, false, _sockets, this);
             return base.OnEquip(from);
         }
 
@@ -1452,7 +1476,6 @@ namespace Server.Items
 
                 m.Delta(MobileDelta.Armor); // Tell them armor rating has changed
                 m.CheckStatTimers();
-                SocketBonus.CheckSockets(m, true, _sockets, this);
             }
 
             base.OnRemoved(parent);
@@ -1465,32 +1488,32 @@ namespace Server.Items
                 bool validChest = false;
                 BaseArmor chestArmor = (BaseArmor)m.ChestArmor;
                 if (chestArmor != null) {
-                    validChest = chestArmor.MaterialType == ArmorMaterialType.Studded || chestArmor.MaterialType == ArmorMaterialType.Leather;   
+                    validChest = chestArmor.MaterialType is ArmorMaterialType.Studded or ArmorMaterialType.Leather;
                 }
                 bool validPants = false;
                 BaseArmor legArmor = (BaseArmor)m.LegsArmor;
                 if (chestArmor != null) {
-                    validPants = legArmor.MaterialType == ArmorMaterialType.Studded || legArmor.MaterialType == ArmorMaterialType.Leather;   
+                    validPants = legArmor.MaterialType is ArmorMaterialType.Studded or ArmorMaterialType.Leather;
                 }
                 bool validGloves = false;
                 BaseArmor glovesArmor = (BaseArmor)m.ArmsArmor;
                 if (glovesArmor != null) {
-                    validGloves = glovesArmor.MaterialType == ArmorMaterialType.Studded || glovesArmor.MaterialType == ArmorMaterialType.Leather;
+                    validGloves = glovesArmor.MaterialType is ArmorMaterialType.Studded or ArmorMaterialType.Leather;
                 }
                 bool validArms = false;
                 BaseArmor armsArmor = (BaseArmor)m.NeckArmor;
                 if (armsArmor != null) {
-                    validArms = armsArmor.MaterialType == ArmorMaterialType.Studded || armsArmor.MaterialType == ArmorMaterialType.Leather;
+                    validArms = armsArmor.MaterialType is ArmorMaterialType.Studded or ArmorMaterialType.Leather;
                 }
                 bool validGorget = false;
                 BaseArmor gorgetArmor = (BaseArmor)m.HandArmor;
                 if (gorgetArmor != null) {
-                    validGorget = gorgetArmor.MaterialType == ArmorMaterialType.Studded || gorgetArmor.MaterialType == ArmorMaterialType.Leather;
+                    validGorget = gorgetArmor.MaterialType is ArmorMaterialType.Studded or ArmorMaterialType.Leather;
                 }
                 bool validHelm = false;
                 BaseArmor helmArmor = (BaseArmor)m.HeadArmor;
                 if (helmArmor != null) {
-                    validHelm = helmArmor.MaterialType == ArmorMaterialType.Leather || helmArmor.MaterialType == ArmorMaterialType.Leather;
+                    validHelm = helmArmor.MaterialType is ArmorMaterialType.Leather or ArmorMaterialType.Leather;
                 }
                 return validChest && validPants && validGloves && validArms && validGorget && validHelm;
             }
@@ -1502,35 +1525,35 @@ namespace Server.Items
                 bool validChest = false;
                 BaseArmor chestArmor = (BaseArmor)m.ChestArmor;
                 if (chestArmor != null) {
-                    validChest = chestArmor.MaterialType == ArmorMaterialType.Plate || chestArmor.MaterialType == ArmorMaterialType.Plate;   
+                    validChest = chestArmor.MaterialType is ArmorMaterialType.Plate or ArmorMaterialType.Plate;
                 }
                 bool validPants = false;
                 BaseArmor legArmor = (BaseArmor)m.LegsArmor;
                 if (chestArmor != null) {
-                    validPants = legArmor.MaterialType == ArmorMaterialType.Plate || legArmor.MaterialType == ArmorMaterialType.Plate;   
+                    validPants = legArmor.MaterialType is ArmorMaterialType.Plate or ArmorMaterialType.Plate;
                 }
-                
+
                 bool validGloves = false;
                 BaseArmor glovesArmor = (BaseArmor)m.ArmsArmor;
                 if (glovesArmor != null) {
-                    validGloves = glovesArmor.MaterialType == ArmorMaterialType.Plate || glovesArmor.MaterialType == ArmorMaterialType.Plate;
+                    validGloves = glovesArmor.MaterialType is ArmorMaterialType.Plate or ArmorMaterialType.Plate;
                 }
                 bool validArms = false;
                 BaseArmor armsArmor = (BaseArmor)m.NeckArmor;
                 if (armsArmor != null) {
-                    validArms = armsArmor.MaterialType == ArmorMaterialType.Plate || armsArmor.MaterialType == ArmorMaterialType.Plate;
+                    validArms = armsArmor.MaterialType is ArmorMaterialType.Plate or ArmorMaterialType.Plate;
                 }
                 bool validGorget = false;
                 BaseArmor gorgetArmor = (BaseArmor)m.HandArmor;
                 if (gorgetArmor != null) {
-                    validGorget = gorgetArmor.MaterialType == ArmorMaterialType.Plate || gorgetArmor.MaterialType == ArmorMaterialType.Plate;
+                    validGorget = gorgetArmor.MaterialType is ArmorMaterialType.Plate or ArmorMaterialType.Plate;
                 }
                 bool validHelm = false;
                 BaseArmor helmArmor = (BaseArmor)m.HeadArmor;
                 if (helmArmor != null) {
-                    validHelm = helmArmor.MaterialType == ArmorMaterialType.Plate || helmArmor.MaterialType == ArmorMaterialType.Plate;
+                    validHelm = helmArmor.MaterialType is ArmorMaterialType.Plate or ArmorMaterialType.Plate;
                 }
-                return validChest && validPants && validGloves && validArms && validHelm;
+                return validChest && validPants && validGloves && validArms && validHelm && validGorget;
             }
             return false;
         }
@@ -1540,28 +1563,28 @@ namespace Server.Items
                 bool validChest = false;
                 BaseArmor chestArmor = (BaseArmor)m.ChestArmor;
                 if (chestArmor != null) {
-                    validChest = chestArmor.MaterialType == ArmorMaterialType.Bone || chestArmor.MaterialType == ArmorMaterialType.Bone;   
+                    validChest = chestArmor.MaterialType is ArmorMaterialType.Bone or ArmorMaterialType.Bone;
                 }
                 bool validPants = false;
                 BaseArmor legArmor = (BaseArmor)m.LegsArmor;
                 if (chestArmor != null) {
-                    validPants = legArmor.MaterialType == ArmorMaterialType.Bone || legArmor.MaterialType == ArmorMaterialType.Bone;   
+                    validPants = legArmor.MaterialType is ArmorMaterialType.Bone or ArmorMaterialType.Bone;
                 }
-                
+
                 bool validGloves = false;
                 BaseArmor glovesArmor = (BaseArmor)m.ArmsArmor;
                 if (glovesArmor != null) {
-                    validGloves = glovesArmor.MaterialType == ArmorMaterialType.Bone || glovesArmor.MaterialType == ArmorMaterialType.Bone;
+                    validGloves = glovesArmor.MaterialType is ArmorMaterialType.Bone or ArmorMaterialType.Bone;
                 }
                 bool validArms = false;
                 BaseArmor armsArmor = (BaseArmor)m.NeckArmor;
                 if (armsArmor != null) {
-                    validArms = armsArmor.MaterialType == ArmorMaterialType.Bone || armsArmor.MaterialType == ArmorMaterialType.Bone;
+                    validArms = armsArmor.MaterialType is ArmorMaterialType.Bone or ArmorMaterialType.Bone;
                 }
                 bool validHelm = false;
                 BaseArmor helmArmor = (BaseArmor)m.HeadArmor;
                 if (helmArmor != null) {
-                    validHelm = helmArmor.MaterialType == ArmorMaterialType.Bone || helmArmor.MaterialType == ArmorMaterialType.Bone;
+                    validHelm = helmArmor.MaterialType is ArmorMaterialType.Bone or ArmorMaterialType.Bone;
                 }
                 return validChest && validPants && validGloves && validArms && validHelm;
             }
@@ -1570,25 +1593,25 @@ namespace Server.Items
 
         public static bool FullChain(IEntity parent) {
             if (parent is Mobile m) {
-                 bool validChest = false;
+                bool validChest = false;
                 BaseArmor chestArmor = (BaseArmor)m.ChestArmor;
                 if (chestArmor != null) {
-                    validChest = chestArmor.MaterialType == ArmorMaterialType.Chainmail || chestArmor.MaterialType == ArmorMaterialType.Chainmail;   
+                    validChest = chestArmor.MaterialType is ArmorMaterialType.Chainmail or ArmorMaterialType.Chainmail;
                 }
                 bool validPants = false;
                 BaseArmor legArmor = (BaseArmor)m.LegsArmor;
                 if (chestArmor != null) {
-                    validPants = legArmor.MaterialType == ArmorMaterialType.Chainmail || legArmor.MaterialType == ArmorMaterialType.Chainmail;   
+                    validPants = legArmor.MaterialType is ArmorMaterialType.Chainmail or ArmorMaterialType.Chainmail;
                 }
                 bool validArms = false;
                 BaseArmor armsArmor = (BaseArmor)m.NeckArmor;
                 if (armsArmor != null) {
-                    validArms = armsArmor.MaterialType == ArmorMaterialType.Chainmail || armsArmor.MaterialType == ArmorMaterialType.Chainmail;
+                    validArms = armsArmor.MaterialType is ArmorMaterialType.Chainmail or ArmorMaterialType.Chainmail;
                 }
                 bool validHelm = false;
                 BaseArmor helmArmor = (BaseArmor)m.HeadArmor;
                 if (helmArmor != null) {
-                    validHelm = helmArmor.MaterialType == ArmorMaterialType.Chainmail || helmArmor.MaterialType == ArmorMaterialType.Chainmail;
+                    validHelm = helmArmor.MaterialType is ArmorMaterialType.Chainmail or ArmorMaterialType.Chainmail;
                 }
                 return validChest && validPants && validArms && validHelm;
             }
@@ -1600,23 +1623,23 @@ namespace Server.Items
                 bool validChest = false;
                 BaseArmor chestArmor = (BaseArmor)m.ChestArmor;
                 if (chestArmor != null) {
-                    validChest = chestArmor.MaterialType == ArmorMaterialType.Ringmail || chestArmor.MaterialType == ArmorMaterialType.Ringmail;   
+                    validChest = chestArmor.MaterialType is ArmorMaterialType.Ringmail or ArmorMaterialType.Ringmail;
                 }
                 bool validPants = false;
                 BaseArmor legArmor = (BaseArmor)m.LegsArmor;
                 if (chestArmor != null) {
-                    validPants = legArmor.MaterialType == ArmorMaterialType.Ringmail || legArmor.MaterialType == ArmorMaterialType.Ringmail;   
+                    validPants = legArmor.MaterialType is ArmorMaterialType.Ringmail or ArmorMaterialType.Ringmail;
                 }
-                
+
                 bool validGloves = false;
                 BaseArmor glovesArmor = (BaseArmor)m.ArmsArmor;
                 if (glovesArmor != null) {
-                    validGloves = glovesArmor.MaterialType == ArmorMaterialType.Ringmail || glovesArmor.MaterialType == ArmorMaterialType.Ringmail;
+                    validGloves = glovesArmor.MaterialType is ArmorMaterialType.Ringmail or ArmorMaterialType.Ringmail;
                 }
                 bool validArms = false;
                 BaseArmor armsArmor = (BaseArmor)m.NeckArmor;
                 if (armsArmor != null) {
-                    validArms = armsArmor.MaterialType == ArmorMaterialType.Ringmail || armsArmor.MaterialType == ArmorMaterialType.Ringmail;
+                    validArms = armsArmor.MaterialType is ArmorMaterialType.Ringmail or ArmorMaterialType.Ringmail;
                 }
                 return validChest && validPants && validGloves && validArms;
             }
@@ -1627,28 +1650,28 @@ namespace Server.Items
                 bool validChest = false;
                 BaseArmor chestArmor = (BaseArmor)m.ChestArmor;
                 if (chestArmor != null) {
-                    validChest = chestArmor.MaterialType == ArmorMaterialType.Dragon || chestArmor.MaterialType == ArmorMaterialType.Dragon;   
+                    validChest = chestArmor.MaterialType is ArmorMaterialType.Dragon or ArmorMaterialType.Dragon;
                 }
                 bool validPants = false;
                 BaseArmor legArmor = (BaseArmor)m.LegsArmor;
                 if (chestArmor != null) {
-                    validPants = legArmor.MaterialType == ArmorMaterialType.Dragon || legArmor.MaterialType == ArmorMaterialType.Dragon;   
+                    validPants = legArmor.MaterialType is ArmorMaterialType.Dragon or ArmorMaterialType.Dragon;
                 }
-                
+
                 bool validGloves = false;
                 BaseArmor glovesArmor = (BaseArmor)m.ArmsArmor;
                 if (glovesArmor != null) {
-                    validGloves = glovesArmor.MaterialType == ArmorMaterialType.Dragon || glovesArmor.MaterialType == ArmorMaterialType.Dragon;
+                    validGloves = glovesArmor.MaterialType is ArmorMaterialType.Dragon or ArmorMaterialType.Dragon;
                 }
                 bool validArms = false;
                 BaseArmor armsArmor = (BaseArmor)m.NeckArmor;
                 if (armsArmor != null) {
-                    validArms = armsArmor.MaterialType == ArmorMaterialType.Dragon || armsArmor.MaterialType == ArmorMaterialType.Dragon;
+                    validArms = armsArmor.MaterialType is ArmorMaterialType.Dragon or ArmorMaterialType.Dragon;
                 }
                 bool validHelm = false;
                 BaseArmor helmArmor = (BaseArmor)m.HeadArmor;
                 if (helmArmor != null) {
-                    validHelm = helmArmor.MaterialType == ArmorMaterialType.Dragon || helmArmor.MaterialType == ArmorMaterialType.Dragon;
+                    validHelm = helmArmor.MaterialType is ArmorMaterialType.Dragon or ArmorMaterialType.Dragon;
                 }
                 return validChest && validPants && validArms && validGloves && validHelm;
             }
@@ -1656,20 +1679,20 @@ namespace Server.Items
         }
         public static bool FullCloth(IEntity parent) {
             if (parent is Mobile m) {
-                 bool validChest = false;
+                bool validChest = false;
                 BaseArmor chestArmor = (BaseArmor)m.ChestArmor;
                 if (chestArmor != null) {
-                    validChest = chestArmor.MaterialType == ArmorMaterialType.Cloth || chestArmor.MaterialType == ArmorMaterialType.Cloth;   
+                    validChest = chestArmor.MaterialType is ArmorMaterialType.Cloth or ArmorMaterialType.Cloth;
                 }
                 bool validPants = false;
                 BaseArmor legArmor = (BaseArmor)m.LegsArmor;
                 if (chestArmor != null) {
-                    validPants = legArmor.MaterialType == ArmorMaterialType.Cloth || legArmor.MaterialType == ArmorMaterialType.Cloth;   
+                    validPants = legArmor.MaterialType is ArmorMaterialType.Cloth or ArmorMaterialType.Cloth;
                 }
                 bool validArms = false;
                 BaseArmor armsArmor = (BaseArmor)m.NeckArmor;
                 if (armsArmor != null) {
-                    validArms = armsArmor.MaterialType == ArmorMaterialType.Cloth || armsArmor.MaterialType == ArmorMaterialType.Cloth;
+                    validArms = armsArmor.MaterialType is ArmorMaterialType.Cloth or ArmorMaterialType.Cloth;
                 }
                 return validChest && validPants && validArms;
             }
@@ -1753,31 +1776,32 @@ namespace Server.Items
         {
             base.GetProperties(list);
 
+            if (_enchanted)
+            {
+                list.Add(
+                    1060847,
+                    "Enchanted"
+                );
+            }
             if (_socketAmount > 0) {
                 list.Add(
-                   1060847,
-                   "Sockets: {0}/{1}",
-                    _sockets.Count.ToString(),
+                    1060847,
+                    "Sockets: {0}/{1}",
+                    SocketArray.Length.ToString(),
                     _socketAmount.ToString()
                 );
-                foreach(Item socket in _sockets) {
-                    string itemName = socket.Name;
-                    if (string.IsNullOrEmpty(itemName)) {
-                        list.Add(socket.LabelNumber);
-                    } else {
-                        list.Add(
+                for (var i = 0; i < SocketArray.Length; i++) {
+                    list.Add(
                         1060847,
-                            "{0}",
-                            itemName
-                        );
-                    }
-                    SocketBonus.AddSocketProperties(socket, this, list);
+                        "{0}",
+                        SocketArray[i]
+                    );
                 }
             }
             if (_shardPower > 0)
             {
                 list.Add(
-                   1060847,
+                    1060847,
                     "Shard Power: {0}",
                     _shardPower.ToString()
                 );
@@ -1963,7 +1987,7 @@ namespace Server.Items
             {
                 list.Add(1060639, "{0}\t{1}", _hitPoints, _maxHitPoints); // durability ~1_val~ / ~2_val~
             }
-        }       
+        }
         public override void OnSingleClick(Mobile from)
         {
             var attrs = new List<EquipInfoAttribute>();
@@ -2059,7 +2083,8 @@ namespace Server.Items
             PlayerConstructed = 0x01000000,
             ShardPower = 0x02000000,
             SocketAmount = 0x03000000,
-            Sockets = 0x04000000
+            Sockets = 0x04000000,
+            Enchanted = 0x05000000
         }
     }
 }

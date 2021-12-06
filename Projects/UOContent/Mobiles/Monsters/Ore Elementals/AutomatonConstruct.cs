@@ -1,9 +1,9 @@
-using Server.Items;
-
 namespace Server.Mobiles
 {
     public class AutomatonConstruct : ValoriteElemental
     {
+        public override bool IsDispellable => false;
+
         [Constructible]
         public AutomatonConstruct() : base(0)
         {

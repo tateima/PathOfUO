@@ -1,26 +1,13 @@
-using Server.Items;
-using Server.Spells;
-using Server.Misc;
 using System;
+using Server.Items;
+
 namespace Server.Talent
 {
-    public class Phalanx : BaseTalent, ITalent
+    public class Phalanx : BaseTalent
     {
-        private int m_RemainingBlocks;
-        public int RemainingBlocks
+        public Phalanx()
         {
-            get
-            {
-                return m_RemainingBlocks;
-            }
-            set
-            {
-                m_RemainingBlocks = value;
-            }
-        }
-        public Phalanx() : base()
-        {
-            RequiredWeapon = new Type[] { typeof(BaseShield) };
+            RequiredWeapon = new[] { typeof(BaseShield) };
             CanBeUsed = true;
             TalentDependency = typeof(ShieldFocus);
             DisplayName = "Phalanx";
@@ -30,9 +17,12 @@ namespace Server.Talent
             AddEndY = 85;
         }
 
+        public int RemainingBlocks { get; set; }
+
         public bool CheckBlock(BaseWeapon weapon)
         {
-            if (((Mobile)weapon.Parent).FindItemOnLayer(Layer.TwoHanded) is BaseShield shield && weapon is BaseRanged && RemainingBlocks > 0 && Activated)
+            if (((Mobile)weapon.Parent).FindItemOnLayer(Layer.TwoHanded) is BaseShield && weapon is BaseRanged &&
+                RemainingBlocks > 0 && Activated)
             {
                 RemainingBlocks--;
                 if (RemainingBlocks == 0)
@@ -41,23 +31,26 @@ namespace Server.Talent
                     OnCooldown = true;
                     Timer.StartTimer(TimeSpan.FromSeconds(120), ExpireTalentCooldown, out _talentTimerToken);
                 }
+
                 return true;
             }
+
             return false;
         }
 
-        public override void OnUse(Mobile mobile)
+        public override void OnUse(Mobile from)
         {
-            if (mobile.FindItemOnLayer(Layer.TwoHanded) is BaseShield shield)
+            if (from.FindItemOnLayer(Layer.TwoHanded) is BaseShield)
             {
                 if (!Activated && !OnCooldown)
                 {
                     Activated = true;
                     RemainingBlocks = Level + Utility.Random(1, 3);
                 }
-            } else
+            }
+            else
             {
-                mobile.SendMessage("You require a shield equipped to use this talent.");
+                from.SendMessage("You require a shield equipped to use this talent.");
             }
         }
     }

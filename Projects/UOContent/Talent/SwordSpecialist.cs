@@ -1,15 +1,13 @@
-using Server.Mobiles;
 using Server.Items;
-using System;
 
 namespace Server.Talent
 {
-    public class SwordSpecialist : BaseTalent, ITalent
+    public class SwordSpecialist : BaseTalent
     {
-        public SwordSpecialist() : base()
+        public SwordSpecialist()
         {
             RequiredWeaponSkill = SkillName.Swords;
-            RequiredWeapon = new Type[] { typeof(BaseSword) };
+            RequiredWeapon = new[] { typeof(BaseSword) };
             TalentDependency = typeof(SwordsmanshipFocus);
             DisplayName = "Sword specialist";
             IncreaseHitChance = true;
@@ -18,6 +16,7 @@ namespace Server.Talent
             GumpHeight = 85;
             AddEndY = 80;
         }
+
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
             target.Damage(Level, attacker);

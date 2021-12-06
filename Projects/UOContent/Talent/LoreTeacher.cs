@@ -1,11 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class LoreTeacher : BaseTalent, ITalent
+    public class LoreTeacher : BaseTalent
     {
-        public LoreTeacher() : base()
+        public LoreTeacher()
         {
             TalentDependency = typeof(LoreDisciples);
             DisplayName = "Lore teacher";
@@ -14,6 +11,5 @@ namespace Server.Talent
             GumpHeight = 85;
             AddEndY = 80;
         }
-
     }
 }

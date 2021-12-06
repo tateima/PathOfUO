@@ -1,4 +1,4 @@
-using Server.Mobiles; 
+using Server.Mobiles;
 using System;
 namespace Server.Items
 {
@@ -72,7 +72,7 @@ namespace Server.Items
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveResistanceMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
@@ -155,12 +155,13 @@ namespace Server.Items
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveResistanceMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Frozen",
                 "cabbage"
             );

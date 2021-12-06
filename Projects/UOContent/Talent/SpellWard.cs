@@ -1,26 +1,14 @@
+using System;
 using Server.Items;
 using Server.Spells;
-using Server.Misc;
-using System;
+
 namespace Server.Talent
 {
-    public class SpellWard : BaseTalent, ITalent
+    public class SpellWard : BaseTalent
     {
-        private int m_RemainingReflections;
-        public int RemainingReflections
+        public SpellWard()
         {
-            get
-            {
-                return m_RemainingReflections;
-            }
-            set
-            {
-                m_RemainingReflections = value;
-            }
-        }
-        public SpellWard() : base()
-        {
-            RequiredWeapon = new Type[] { typeof(BaseShield) };
+            RequiredWeapon = new[] { typeof(BaseShield) };
             CanBeUsed = true;
             TalentDependency = typeof(ShieldFocus);
             DisplayName = "Spell ward";
@@ -30,12 +18,14 @@ namespace Server.Talent
             AddEndY = 75;
         }
 
+        public int RemainingReflections { get; set; }
+
         public void ProcessDamage(
-             Spell spell, TimeSpan delay, Mobile target, Mobile from, ref double damage, ref int phys, ref int fire,
+            Spell spell, TimeSpan delay, Mobile target, Mobile from, ref double damage, ref int phys, ref int fire,
             ref int cold, ref int pois, ref int nrgy, ref int chaos
-            )
+        )
         {
-            if (target.FindItemOnLayer(Layer.TwoHanded) is BaseShield shield && Activated)
+            if (target.FindItemOnLayer(Layer.TwoHanded) is BaseShield && Activated)
             {
                 if (RemainingReflections > 0)
                 {
@@ -52,6 +42,7 @@ namespace Server.Talent
                         from.FixedParticles(0x374A, 10, 15, 5013, EffectLayer.Waist);
                         from.PlaySound(0x1F1);
                     }
+
                     SpellHelper.Damage(spell, from, damage, phys, fire, cold, pois, nrgy, chaos);
                     damage = 0;
                     phys = 0;
@@ -69,23 +60,25 @@ namespace Server.Talent
                 }
             }
         }
-        public override void OnUse(Mobile mobile)
+
+        public override void OnUse(Mobile from)
         {
-            if (mobile.FindItemOnLayer(Layer.TwoHanded) is BaseShield shield)
+            if (from.FindItemOnLayer(Layer.TwoHanded) is BaseShield)
             {
-                if (mobile.Mana < 20)
+                if (from.Mana < 20)
                 {
-                    mobile.SendMessage("You require 20 mana to conjure a storm.");
+                    from.SendMessage("You require 20 mana to conjure a storm.");
                 }
                 else if (!Activated && !OnCooldown)
                 {
                     Activated = true;
-                    mobile.Mana -= 20;
+                    from.Mana -= 20;
                     RemainingReflections = Level + Utility.Random(1, 3);
                 }
-            } else
+            }
+            else
             {
-                mobile.SendMessage("You require a shield equipped to use this talent.");
+                from.SendMessage("You require a shield equipped to use this talent.");
             }
         }
     }

@@ -1,10 +1,8 @@
-using System;
-using Server;
-using Server.Spells;
 using Server.Mobiles;
 using Server.Spells.Fourth;
 using Server.Spells.Fifth;
 using Server.Spells.Eighth;
+using Server.Spells.Third;
 using Server.Talent;
 
 namespace Server.Items
@@ -13,16 +11,14 @@ namespace Server.Items
 
     public partial class TelewarperDevice : BaseDevice
     {
-        public override double DefaultWeight
-        {
-            get { return 0.1; }
-        }
+        public override double DefaultWeight => 0.1;
 
-        public override int LabelNumber { get { return 1061183; } } // A glitchy device
+        public override int LabelNumber => 1061183; // A glitchy device
 
         [Constructible]
         public TelewarperDevice() : base(WandEffect.Device, 10, 10)
         {
+            Name = "Telewarper Device";
             Stackable = false;
             Light = LightType.Circle150;
             Hue = 1992;
@@ -72,11 +68,11 @@ namespace Server.Items
                                     Cast(new EarthElementalSpell(from, this));
                                     break;
                             }
-                        }                       
+                        }
                     }
                     else
                     {
-                        Cast(new GreaterHealSpell(from, this));
+                        Cast(new TeleportSpell(from, this));
                     }
                 }
                 else

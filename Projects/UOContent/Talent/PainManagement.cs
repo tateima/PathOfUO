@@ -1,11 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class PainManagement : BaseTalent, ITalent
+    public class PainManagement : BaseTalent
     {
-        public PainManagement() : base()
+        public PainManagement()
         {
             TalentDependency = typeof(BoneBreaker);
             DisplayName = "Pain management";
@@ -14,9 +11,7 @@ namespace Server.Talent
             GumpHeight = 85;
             AddEndY = 80;
         }
-        public virtual int ModifySpellMultiplier()
-        {
-            return Level * 2; // 2% per point
-        }
+
+        public override int ModifySpellMultiplier() => Level * 2; // 2% per point
     }
 }

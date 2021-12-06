@@ -54,6 +54,8 @@ namespace Server.Mobiles
             set => DefaultPrice = value;
         }
 
+        public int OriginalPrice { get; set; }
+
         public int Price
         {
             get

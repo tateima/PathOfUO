@@ -141,6 +141,12 @@ namespace Server
             typeof(SilverRing), typeof(SilverBracelet)
         };
 
+        public static Type[] ShardTypes { get; } =
+        {
+            typeof(BurningShard), typeof(ElectrifiedShard),
+            typeof(ToxicShard), typeof(FrozenShard)
+        };
+
         public static Type[] RegTypes { get; } =
         {
             typeof(BlackPearl), typeof(Bloodmoss), typeof(Garlic),
@@ -434,6 +440,7 @@ namespace Server
 
             return Construct(WeaponTypes, JewelryTypes);
         }
+        public static BaseShard RandomShard() => Construct(ShardTypes) as BaseShard;
 
         public static BaseJewel RandomJewelry() => Construct(JewelryTypes) as BaseJewel;
 

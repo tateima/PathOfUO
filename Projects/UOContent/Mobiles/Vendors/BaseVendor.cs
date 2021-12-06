@@ -8,6 +8,7 @@ using Server.Misc;
 using Server.Mobiles;
 using Server.Network;
 using Server.Regions;
+using Server.Talent;
 
 namespace Server.Mobiles
 {
@@ -32,27 +33,15 @@ namespace Server.Mobiles
         private DateTime m_NextCollectionTime;
         public DateTime NextCollectionTime
         {
-            get
-            {
-                return m_NextCollectionTime;
-            }
-            set
-            {
-                m_NextCollectionTime = value;
-            }
+            get => m_NextCollectionTime;
+            set => m_NextCollectionTime = value;
         }
         private int m_TaxCollectorSerial = 0;
 
         public int TaxCollectorSerial
         {
-            get
-            {
-                return m_TaxCollectorSerial;
-            }
-            set
-            {
-                m_TaxCollectorSerial = value;
-            }
+            get => m_TaxCollectorSerial;
+            set => m_TaxCollectorSerial = value;
         }
 
         private static bool EnableVendorBuyOPL;
@@ -174,7 +163,7 @@ namespace Server.Mobiles
                 return false;
             }
 
-            UpdateBuyInfo();
+            UpdateBuyInfo(buyer);
 
             var info = GetSellInfo();
             var totalCost = 0;
@@ -895,7 +884,7 @@ namespace Server.Mobiles
                 Restock();
             }
 
-            UpdateBuyInfo();
+            UpdateBuyInfo(from);
 
             var buyInfo = GetBuyInfo();
             var sellInfo = GetSellInfo();
@@ -1141,12 +1130,18 @@ namespace Server.Mobiles
             if (smallBod != null)
             {
                 smallBod.GetRewards(out reward, out gold, out fame);
-                pm.CraftExperience += 150;
+                if (pm != null)
+                {
+                    pm.CraftExperience += 150;
+                }
             }
             else
             {
                 largeBod.GetRewards(out reward, out gold, out fame);
-                pm.CraftExperience += 300;
+                if (pm != null)
+                {
+                    pm.CraftExperience += 300;
+                }
             }
 
             from.SendSound(0x3D);
@@ -1449,13 +1444,38 @@ namespace Server.Mobiles
 
         public virtual int GetPriceScalar() => 100 + Town.FromRegion(Region)?.Tax ?? 0;
 
-        public void UpdateBuyInfo()
+        public void UpdateBuyInfo(Mobile mobile)
         {
+            double talentScalar = 100.0;
             var priceScalar = GetPriceScalar();
-
+            BaseTalent smoothTalker = null;
+            if (mobile is PlayerMobile player)
+            {
+                smoothTalker = player.GetTalent(typeof(SmoothTalker));
+                if (smoothTalker != null)
+                {
+                    talentScalar -= smoothTalker.ModifySpellScalar();
+                }
+            }
             foreach (var info in _buyInfo.ToArray())
             {
                 info.PriceScalar = priceScalar;
+                if (smoothTalker != null)
+                {
+                    if (info.OriginalPrice == 0)
+                    {
+                        info.OriginalPrice = info.Price;
+                        info.Price = AOS.Scale(info.Price, (int)talentScalar);
+                    }
+                }
+                else
+                {
+                    if (info.OriginalPrice > 0)
+                    {
+                        info.Price = info.OriginalPrice;
+                        info.OriginalPrice = 0;
+                    }
+                }
             }
         }
 
@@ -1595,8 +1615,10 @@ namespace Server
 
         int PriceScalar { get; set; }
 
+        int OriginalPrice { get; set; }
+
         // display price of the item
-        int Price { get; }
+        int Price { get; set; }
 
         // display name of the item
         string Name { get; }

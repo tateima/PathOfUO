@@ -1,13 +1,13 @@
-using Server.Mobiles;
-using Server.Spells;
-using Server.Network;
 using System;
+using Server.Mobiles;
+using Server.Network;
+using Server.Spells;
 
 namespace Server.Talent
 {
-    public class GreaterPoisonElemental : BaseTalent, ITalent
+    public class GreaterPoisonElemental : BaseTalent
     {
-        public GreaterPoisonElemental() : base()
+        public GreaterPoisonElemental()
         {
             TalentDependency = typeof(WyvernAspect);
             DisplayName = "Poison Elemental";
@@ -19,27 +19,42 @@ namespace Server.Talent
             GumpHeight = 230;
             AddEndY = 125;
         }
-        public override void OnUse(Mobile summoner)
+
+        public override void OnUse(Mobile from)
         {
             if (!OnCooldown)
             {
-                bool canCast = true;
-                if (summoner.Mana > 65)
+                var canCast = true;
+                if (from.Mana > 65)
                 {
-                    summoner.Mana -= 65;
+                    from.Mana -= 65;
                 }
                 else
                 {
                     canCast = false;
-                    summoner.SendMessage("You need 65 mana to summon this poison lord.");
+                    from.SendMessage("You need 65 mana to summon this poison lord.");
                 }
+
                 if (canCast)
                 {
-                    summoner.RevealingAction();
-                    summoner.PublicOverheadMessage(MessageType.Spell, summoner.SpeechHue, true, "Nox Vas Xen Apoch Gras", false);
+                    from.RevealingAction();
+                    from.PublicOverheadMessage(
+                        MessageType.Spell,
+                        from.SpeechHue,
+                        true,
+                        "Nox Vas Xen Apoch Gras",
+                        false
+                    );
                     // its a talent, no need for animation timer, just a single animation is fine
-                    summoner.Animate(269, 7, 1, true, false, 0);
-                    SpellHelper.Summon(new PoisonElemental(), summoner, 0x217, TimeSpan.FromMinutes(2), false, false); // dont scale because theyre already quite powerful
+                    from.Animate(269, 7, 1, true, false, 0);
+                    SpellHelper.Summon(
+                        new PoisonElemental(),
+                        from,
+                        0x217,
+                        TimeSpan.FromMinutes(2),
+                        false,
+                        false
+                    ); // dont scale because they're already quite powerful
                     Timer.StartTimer(TimeSpan.FromMinutes(5), ExpireTalentCooldown, out _talentTimerToken);
                     OnCooldown = true;
                 }

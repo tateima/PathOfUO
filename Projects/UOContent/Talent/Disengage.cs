@@ -1,12 +1,10 @@
 using System;
-using Server.Items;
-using Server.Mobiles;
 
 namespace Server.Talent
 {
-    public class Disengage : BaseTalent, ITalent
+    public class Disengage : BaseTalent
     {
-        public Disengage() : base()
+        public Disengage()
         {
             TalentDependency = typeof(ArcherFocus);
             CanBeUsed = true;
@@ -16,36 +14,41 @@ namespace Server.Talent
             GumpHeight = 85;
             AddEndY = 85;
         }
-        public override void OnUse(Mobile mobile)
+
+        public override void OnUse(Mobile from)
         {
             if (!OnCooldown)
             {
-                Point3D attackerPosition = mobile.Location;
-                if (mobile.Direction != Direction.Running)
+                var attackerPosition = from.Location;
+                if (from.Direction != Direction.Running)
                 {
-                    int distance = Level + Utility.Random(1, 3);
-                    Point3D newLocation;
-                    newLocation = mobile.Direction switch
+                    var distance = Level + Utility.Random(1, 3);
+                    var newLocation = from.Direction switch
                     {
                         Direction.East => new Point3D(attackerPosition.X + distance, attackerPosition.Y, attackerPosition.Y),
                         Direction.West => new Point3D(attackerPosition.X - distance, attackerPosition.Y, attackerPosition.Y),
-                        Direction.South => new Point3D(attackerPosition.X, attackerPosition.Y + distance, attackerPosition.Y),
+                        Direction.South => new Point3D(
+                            attackerPosition.X,
+                            attackerPosition.Y + distance,
+                            attackerPosition.Y
+                        ),
                         _ => new Point3D(attackerPosition.X, attackerPosition.Y - distance, attackerPosition.Y)
                     };
 
-                    while (!mobile.InLOS(newLocation))
+                    while (!from.InLOS(newLocation))
                     {
-                        newLocation = mobile.Direction switch
+                        newLocation = from.Direction switch
                         {
-                            Direction.East => new Point3D(attackerPosition.X - 1, attackerPosition.Y, attackerPosition.Y),
-                            Direction.West => new Point3D(attackerPosition.X + 1, attackerPosition.Y, attackerPosition.Y),
+                            Direction.East  => new Point3D(attackerPosition.X - 1, attackerPosition.Y, attackerPosition.Y),
+                            Direction.West  => new Point3D(attackerPosition.X + 1, attackerPosition.Y, attackerPosition.Y),
                             Direction.South => new Point3D(attackerPosition.X, attackerPosition.Y - 1, attackerPosition.Y),
-                            _ => new Point3D(attackerPosition.X, attackerPosition.Y + 1, attackerPosition.Y)
+                            _               => new Point3D(attackerPosition.X, attackerPosition.Y + 1, attackerPosition.Y)
                         };
                     }
-                    mobile.MoveToWorld(newLocation, mobile.Map);
+
+                    from.MoveToWorld(newLocation, from.Map);
                     OnCooldown = true;
-                    mobile.PlaySound(0x525);
+                    from.PlaySound(0x525);
                     Timer.StartTimer(TimeSpan.FromSeconds(120), ExpireTalentCooldown, out _talentTimerToken);
                 }
             }

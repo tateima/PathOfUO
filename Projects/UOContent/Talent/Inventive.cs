@@ -1,11 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class Inventive : BaseTalent, ITalent
+    public class Inventive : BaseTalent
     {
-        public Inventive() : base()
+        public Inventive()
         {
             TalentDependency = typeof(MerchantPorter);
             DisplayName = "Inventive";
@@ -15,5 +12,7 @@ namespace Server.Talent
             GumpHeight = 85;
             AddEndY = 80;
         }
+
+        public override int ModifySpellMultiplier() => Level * 15;
     }
 }

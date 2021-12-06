@@ -6,16 +6,6 @@
         <Product>ModernUO Content</Product>
         <PublishDir>..\..\Distribution\Assemblies</PublishDir>
         <OutDir>..\..\Distribution\Assemblies</OutDir>
-        <ApplicationIcon />
-        <OutputType>Library</OutputType>
-        <StartupObject />
-        <EnableNETAnalyzers>false</EnableNETAnalyzers>
-        <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      <Optimize>false</Optimize>
-      <DebugType>full</DebugType>
-      <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
     <Target Name="CleanPub" AfterTargets="Clean">
         <Message Text="Removing distribution assemblies..." />
@@ -50,7 +40,9 @@
         </ProjectReference>
         <PackageReference Include="MailKit" Version="2.15.0" />
         <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="6.0.0" />
+        <PackageReference Include="Microsoft.NETCore.Jit" Version="2.0.8" />
         <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.1.2" />
+        <PackageReference Include="NETStandard.Library" Version="2.0.3" />
         <PackageReference Include="Zlib.Bindings" Version="1.6.0" />
         <PackageReference Include="Argon2.Bindings" Version="1.10.0" />
         <PackageReference Include="Zstd.Binaries" Version="1.1.0" />

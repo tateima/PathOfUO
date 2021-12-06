@@ -1,13 +1,14 @@
-using Server.Gumps;
-using Server.Mobiles;
 using System;
 using System.Linq;
+using Server.Gumps;
+
 namespace Server.Talent
 {
-    public class LoreSeeker : BaseTalent, ITalent
+    public class LoreSeeker : BaseTalent
     {
         private Mobile m_Mobile;
-        public LoreSeeker() : base()
+
+        public LoreSeeker()
         {
             DisplayName = "Lore giver";
             Description = "Expose weaknesses in enemies on hit. Need 70 or above in two lore skills.";
@@ -16,21 +17,18 @@ namespace Server.Talent
             AddEndY = 80;
         }
 
-        public override bool HasSkillRequirement(Mobile mobile) {
-            SkillsGumpGroup group = SkillsGumpGroup.Groups.Where(group => group.Name == "Lore & Knowledge").FirstOrDefault();
-            int validCount = 0;
+        public override bool HasSkillRequirement(Mobile mobile)
+        {
+            var group = SkillsGumpGroup.Groups.FirstOrDefault(group => @group.Name == "Lore & Knowledge");
+            var validCount = 0;
             if (group != null)
             {
-                foreach (SkillName skill in group.Skills)
-                {
-                    if (mobile.Skills[skill].Base >= 70)
-                    {
-                        validCount++;
-                    }
-                }
+                validCount += @group.Skills.Count(skill => mobile.Skills[skill].Base >= 70);
             }
+
             return validCount >= 2;
         }
+
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
             if (!OnCooldown)
@@ -39,22 +37,19 @@ namespace Server.Talent
                 // reduce stats
                 target.AddStatMod(new StatMod(StatType.All, "LoreSeekerDebuff", -Level, TimeSpan.FromSeconds(20)));
                 // reduce random resistance
-                Array values = Enum.GetValues(typeof(ResistanceType));
-                ResistanceType randomResistanceType = (ResistanceType)values.GetValue(Utility.Random(values.Length));
+                var values = Enum.GetValues(typeof(ResistanceType));
+                var randomResistanceType = (ResistanceType)values.GetValue(Utility.Random(values.Length));
                 ResMod = new ResistanceMod(randomResistanceType, -(Level * 2));
                 target.AddResistanceMod(ResMod);
                 m_Mobile = target;
                 Timer.StartTimer(TimeSpan.FromSeconds(30), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
+
         public override void ExpireTalentCooldown()
         {
             base.ExpireTalentCooldown();
-            if (m_Mobile != null)
-            {
-                m_Mobile.RemoveResistanceMod(ResMod);
-            }
+            m_Mobile?.RemoveResistanceMod(ResMod);
         }
-
     }
 }

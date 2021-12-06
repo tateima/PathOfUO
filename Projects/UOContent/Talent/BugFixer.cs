@@ -1,11 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class BugFixer : BaseTalent, ITalent
+    public class BugFixer : BaseTalent
     {
-        public BugFixer() : base()
+        public BugFixer()
         {
             TalentDependency = typeof(Inventive);
             DisplayName = "Bug fixer";

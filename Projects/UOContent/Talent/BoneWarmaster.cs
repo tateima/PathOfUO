@@ -1,12 +1,11 @@
-using Server.Mobiles;
-using Server.Items;
 using System;
+using Server.Items;
 
 namespace Server.Talent
 {
-    public class BoneWarmaster : BaseTalent, ITalent
+    public class BoneWarmaster : BaseTalent
     {
-        public BoneWarmaster() : base()
+        public BoneWarmaster()
         {
             DisplayName = "Bone warmaster";
             Description = "Reduces damage while wearing bone. Increases Int by 1 and Str by 1 per Level";
@@ -18,7 +17,8 @@ namespace Server.Talent
 
         public override void UpdateMobile(Mobile mobile)
         {
-            if (BaseArmor.FullBone(mobile)) {
+            if (BaseArmor.FullBone(mobile))
+            {
                 mobile.RemoveStatMod("BoneWarmasterStr");
                 mobile.RemoveStatMod("BoneWarmasterInt");
                 mobile.AddStatMod(new StatMod(StatType.Str, "BoneWarmasterStr", Level, TimeSpan.Zero));

@@ -31,7 +31,8 @@ namespace Server.Items
         private WeaponAnimation m_Animation;
         private Mobile m_Crafter;
         private int m_SocketAmount;
-        private List<Item> m_Sockets;
+        private string m_Sockets;
+        private bool m_Enchanted;
 
         /* Weapon internals work differently now (Mar 13 2003)
          *
@@ -86,7 +87,8 @@ namespace Server.Items
             Layer = (Layer)ItemData.Quality;
             m_ShardPower = 0;
             m_SocketAmount = 0;
-            m_Sockets = new List<Item>();
+            m_Enchanted = false;
+            m_Sockets = "";
             m_Haunted = false;
             m_Electrified = false;
             m_Frozen = false;
@@ -228,7 +230,19 @@ namespace Server.Items
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
-        public List<Item> Sockets
+        public bool Enchanted
+        {
+            get => m_Enchanted;
+            set
+            {
+                m_Enchanted = value;
+                InvalidateProperties();
+            }
+        }
+        public string[] SocketArray => string.IsNullOrEmpty(Sockets) ? new string[] {} : m_Sockets.Split(',');
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public string Sockets
         {
             get => m_Sockets;
             set
@@ -1078,8 +1092,6 @@ namespace Server.Items
                 m_MageMod = new DefaultSkillMod(SkillName.Magery, true, -30 + WeaponAttributes.MageWeapon);
                 from.AddSkillMod(m_MageMod);
             }
-
-            SocketBonus.CheckSockets(from, false, m_Sockets, this);
             return true;
         }
 
@@ -1139,8 +1151,6 @@ namespace Server.Items
                 m.CheckStatTimers();
 
                 m.Delta(MobileDelta.WeaponDamage);
-
-                SocketBonus.CheckSockets(m, true, m_Sockets, this);
             }
         }
 
@@ -1220,30 +1230,29 @@ namespace Server.Items
 
             var bonus = GetHitChanceBonus();
             BaseTalent holyAvenger = null;
-            if (attacker is PlayerMobile)
+            if (attacker is PlayerMobile player)
             {
-                PlayerMobile player = (PlayerMobile)attacker;
                 holyAvenger = player.GetTalent(typeof(HolyAvenger));
-                foreach (KeyValuePair<Type, BaseTalent> entry in player.Talents)
+                foreach (var (_, value) in player.Talents)
                 {
-                    if (entry.Value.IncreaseHitChance && entry.Value.CanApplyHitEffect(this))
+                    if (value.IncreaseHitChance && value.CanApplyHitEffect(this))
                     {
-                        bonus += entry.Value.GetHitChanceModifier();
+                        bonus += value.GetHitChanceModifier();
                     }
                 }
             }
 
-            if (defender is PlayerMobile)
+            if (defender is PlayerMobile mobile)
             {
-                KeenSenses keenSenses = (KeenSenses)((PlayerMobile)defender).GetTalent(typeof(KeenSenses));
-                BarrierGuard barrierGuard = (BarrierGuard)((PlayerMobile)defender).GetTalent(typeof(BarrierGuard));
-                Phalanx phalanx = (Phalanx)((PlayerMobile)defender).GetTalent(typeof(Phalanx));
-                bool keenSenseCheck = (keenSenses != null && keenSenses.CheckDodge());
-                bool barrierGuardCheck = (barrierGuard != null && barrierGuard.CheckParry());
-                bool phalanxCheck = (phalanx != null && phalanx.CheckBlock(this));
+                KeenSenses keenSenses = (KeenSenses)mobile.GetTalent(typeof(KeenSenses));
+                BarrierGuard barrierGuard = (BarrierGuard)mobile.GetTalent(typeof(BarrierGuard));
+                Phalanx phalanx = (Phalanx)mobile.GetTalent(typeof(Phalanx));
+                bool keenSenseCheck = (keenSenses?.CheckDodge() == true);
+                bool barrierGuardCheck = (barrierGuard?.CheckParry() == true);
+                bool phalanxCheck = (phalanx?.CheckBlock(this) == true);
                 if (keenSenseCheck || barrierGuardCheck || phalanxCheck)
                 {
-                    defender.FixedEffect(0x37B9, 10, 16);
+                    mobile.FixedEffect(0x37B9, 10, 16);
                     return false;
                 }
             }
@@ -1931,7 +1940,7 @@ namespace Server.Items
                         if (defenderHolyAvenger != null)
                         {
                             // reduce enemy of one damage debuff
-                            percentageBonus -= holyAvenger.Level * 2;
+                            percentageBonus -= defenderHolyAvenger.Level * 2;
                         }
                     }
                 }
@@ -2458,21 +2467,21 @@ namespace Server.Items
                     }
                 }
 
-                foreach (KeyValuePair<Type, BaseTalent> entry in ((PlayerMobile)attacker).Talents)
+                foreach (var (_, value) in ((PlayerMobile)attacker).Talents)
                 {
-                    if (entry.Value.CanApplyHitEffect(this))
+                    if (value.CanApplyHitEffect(this))
                     {
-                        entry.Value.CheckHitEffect(attacker, defender, damageGiven);
+                        value.CheckHitEffect(attacker, defender, damageGiven);
                     }
                 }
             }
-            if (defender is PlayerMobile)
+            if (defender is PlayerMobile playerMobile)
             {
-                foreach (KeyValuePair<Type, BaseTalent> entry in ((PlayerMobile)defender).Talents)
+                foreach (var (_, value) in playerMobile.Talents)
                 {
-                    if (entry.Value.HasDefenseEffect)
+                    if (value.HasDefenseEffect)
                     {
-                        entry.Value.CheckDefenseEffect(defender, attacker, damageGiven);
+                        value.CheckDefenseEffect(playerMobile, attacker, damageGiven);
                     }
                 }
             }
@@ -2679,20 +2688,20 @@ namespace Server.Items
             }
             if (attacker is PlayerMobile attackingPlayer)
             {
-                foreach (KeyValuePair<Type, BaseTalent> entry in attackingPlayer.Talents)
+                foreach (var (_, value) in attackingPlayer.Talents)
                 {
-                    if (entry.Value.CanApplyHitEffect(this))
+                    if (value.CanApplyHitEffect(this))
                     {
-                        entry.Value.CheckMissEffect(attacker, defender);
+                        value.CheckMissEffect(attacker, defender);
                     }
                 }
             }
             if (defender is PlayerMobile defendingPlayer) {
-                foreach (KeyValuePair<Type, BaseTalent> entry in defendingPlayer.Talents)
+                foreach (var (_, value) in defendingPlayer.Talents)
                 {
-                    if (entry.Value.CanApplyHitEffect(this))
+                    if (value.CanApplyHitEffect(this))
                     {
-                        entry.Value.CheckDefenderMissEffect(attacker, defender);
+                        value.CheckDefenderMissEffect(attacker, defender);
                     }
                 }
             }
@@ -3218,40 +3227,37 @@ namespace Server.Items
             return Attributes.SpellChanneling != 0;
         }
 
-        public virtual int GetLuckBonus()
-        {
-            var resInfo = CraftResources.GetInfo(m_Resource);
-
         public virtual int GetLuckBonus() => CraftResources.GetInfo(m_Resource)?.AttributeInfo?.WeaponLuck ?? 0;
 
         public override void GetProperties(ObjectPropertyList list)
         {
             base.GetProperties(list);
+            if (m_Enchanted)
+            {
+                list.Add(
+                    1060847,
+                    "Enchanted"
+                );
+            }
             if (m_SocketAmount > 0) {
                 list.Add(
-                   1060847,
+                    1060847,
                     "Sockets: {0}/{1}",
-                    m_Sockets.Count.ToString(),
+                    SocketArray.Length.ToString(),
                     m_SocketAmount.ToString()
                 );
-                foreach(Item socket in m_Sockets) {
-                    string itemName = socket.Name;
-                    if (string.IsNullOrEmpty(itemName)) {
-                        list.Add(socket.LabelNumber);
-                    } else {
-                        list.Add(
+                for (var i = 0; i < SocketArray.Length; i++) {
+                    list.Add(
                         1060847,
-                            "{0}",
-                            itemName
-                        );
-                    }
-                    SocketBonus.AddSocketProperties(socket, this, list);
+                        "{0}",
+                        SocketArray[i]
+                    );
                 }
             }
             if (m_ShardPower > 0)
             {
                 list.Add(
-                   1060847,
+                    1060847,
                     "Shard Power: {0}",
                     m_ShardPower.ToString()
                 );
@@ -3269,36 +3275,36 @@ namespace Server.Items
             if (m_Burning)
             {
                 list.Add(
-                   1060847,
-                   "Burning\t{0}",
-                   ""
-               );
+                    1060847,
+                    "Burning\t{0}",
+                    ""
+                );
             }
             else if (m_Frozen)
             {
                 list.Add(
-                   1060847,
-                   "Frozen\t{0}",
-                   ""
-               );
+                    1060847,
+                    "Frozen\t{0}",
+                    ""
+                );
             }
             else if (m_Electrified)
             {
                 list.Add(
-                   1060847,
-                   "Electrified\t{0}",
-                   ""
-               );
+                    1060847,
+                    "Electrified\t{0}",
+                    ""
+                );
             }
             else if (m_Toxic)
             {
                 list.Add(
-                   1060847,
-                   "Toxic\t{0}",
-                   ""
-               );
+                    1060847,
+                    "Toxic\t{0}",
+                    ""
+                );
             }
-            
+
             if (m_Crafter != null)
             {
                 list.Add(1050043, m_Crafter.Name); // crafted by ~1_NAME~
@@ -4019,7 +4025,8 @@ namespace Server.Items
         {
             base.Serialize(writer);
 
-            writer.Write(12); // version
+            writer.Write(14); // version
+            writer.Write(m_Enchanted);
             writer.Write(m_SocketAmount);
             writer.Write(m_Sockets);
             writer.Write(m_Haunted);
@@ -4221,10 +4228,14 @@ namespace Server.Items
 
             switch (version)
             {
-                case 12:
+                case 14:
+                    m_Enchanted = reader.ReadBool();
+                    goto case 13;
+                case 13:
                     m_SocketAmount = reader.ReadInt();
-                    m_Sockets = reader.ReadEntityList<Item>();
-                    goto case 11;
+                    m_Sockets = reader.ReadString();
+                    goto case 12;
+                case 12:
                 case 11:
                     m_Haunted = reader.ReadBool();
                     goto case 10;
@@ -4676,8 +4687,9 @@ namespace Server.Items
                 PlayerConstructed = true; // we don't know, so, assume it's crafted
             }
 
-            if (m_Sockets is null) {
-                m_Sockets = new List<Item>();
+            if (m_Sockets is null)
+            {
+                m_Sockets = "";
             }
         }
 

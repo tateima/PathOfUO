@@ -1,11 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class ResourcefulCrafter : BaseTalent, ITalent
+    public class ResourcefulCrafter : BaseTalent
     {
-        public ResourcefulCrafter() : base()
+        public ResourcefulCrafter()
         {
             TalentDependency = typeof(WarCraftFocus);
             DisplayName = "Efficient crafting";
@@ -14,6 +11,5 @@ namespace Server.Talent
             GumpHeight = 85;
             AddEndY = 80;
         }
-
     }
 }

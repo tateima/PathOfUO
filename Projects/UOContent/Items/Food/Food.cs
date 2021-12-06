@@ -67,7 +67,7 @@ namespace Server.Items
                 if (Poison != null)
                 {
                     from.ApplyPoison(Poisoner, Poison);
-                } else if (from is PlayerMobile player) 
+                } else if (from is PlayerMobile player)
                 {
                     // if they have optimised consumption heal them slightly if hurt
                     BaseTalent optimisedConsumption = player.GetTalent(typeof(OptimisedConsumption));
@@ -261,12 +261,13 @@ namespace Server.Items
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveResistanceMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Garlic",
                 "bread"
             );
@@ -384,17 +385,13 @@ namespace Server.Items
         public override bool Eat(Mobile from) {
             from.SendMessage("You feel a slight increase in a barding skill");
             m_Mobile = from;
-            switch(Utility.RandomMinMax(1, 3)) {
-                case 1:
-                    m_Mod = new DefaultSkillMod(SkillName.Peacemaking, true, 5);
-                break;
-                case 2:
-                    m_Mod = new DefaultSkillMod(SkillName.Discordance, true, 5);
-                break;
-                case 3:
-                    m_Mod = new DefaultSkillMod(SkillName.Provocation, true, 5);
-                break;
-            }
+            m_Mod = Utility.RandomMinMax(1, 3) switch
+            {
+                1 => new DefaultSkillMod(SkillName.Peacemaking, true, 5),
+                2 => new DefaultSkillMod(SkillName.Discordance, true, 5),
+                3 => new DefaultSkillMod(SkillName.Provocation, true, 5),
+                _ => m_Mod
+            };
             m_Mobile.AddSkillMod(m_Mod);
             Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
             return base.Eat(from);
@@ -402,12 +399,13 @@ namespace Server.Items
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveSkillMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Singing",
                 "fillet"
             );
@@ -417,8 +415,8 @@ namespace Server.Items
     public class CheeseWheel : Food
     {
         [Constructible]
-        public CheeseWheel() : this(1) 
-        {            
+        public CheeseWheel() : this(1)
+        {
         }
         [Constructible]
         public CheeseWheel(int amount = 1) : base(0x97E, amount) => FillFactor = 3;
@@ -484,12 +482,13 @@ namespace Server.Items
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveResistanceMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Iron-rich",
                 "cheese"
             );
@@ -605,7 +604,7 @@ namespace Server.Items
 
             var version = reader.ReadInt();
         }
-           public override bool Eat(Mobile from) {
+        public override bool Eat(Mobile from) {
             from.SendMessage("You feel a slight increase in poison resistance");
             m_Mobile = from;
             m_Mod = new ResistanceMod(ResistanceType.Poison, +1);
@@ -616,12 +615,13 @@ namespace Server.Items
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveResistanceMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Sourdough",
                 "bread"
             );
@@ -695,12 +695,13 @@ namespace Server.Items
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveSkillMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Brave",
                 "eggs"
             );
@@ -774,12 +775,13 @@ namespace Server.Items
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveSkillMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Sticky",
                 "chicken"
             );
@@ -854,12 +856,13 @@ namespace Server.Items
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveSkillMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Decorated roast",
                 "pig"
             );
@@ -924,8 +927,8 @@ namespace Server.Items
         }
 
         public override bool Eat(Mobile from) {
-            
-            from.SendMessage("Your hitpoints is magically rejuvenated.");    
+
+            from.SendMessage("Your hitpoints is magically rejuvenated.");
             int hitsAmount = AOS.Scale(from.HitsMax, 33);
             if ((from.Hits += hitsAmount) > from.HitsMax) {
                 from.Hits = from.HitsMax;
@@ -938,6 +941,7 @@ namespace Server.Items
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Enchanted",
                 "sausage"
             );
@@ -1000,8 +1004,8 @@ namespace Server.Items
             var version = reader.ReadInt();
         }
         public override bool Eat(Mobile from) {
-            
-            from.SendMessage("Your stamina is magically rejuvenated.");    
+
+            from.SendMessage("Your stamina is magically rejuvenated.");
             int amount = AOS.Scale(from.StamMax, 33);
             if ((from.Stam += amount) > from.StamMax) {
                 from.Stam = from.StamMax;
@@ -1014,6 +1018,7 @@ namespace Server.Items
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Golden",
                 "ham"
             );
@@ -1091,12 +1096,13 @@ namespace Server.Items
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveSkillMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Mandrake",
                 "cake"
             );
@@ -1171,12 +1177,13 @@ namespace Server.Items
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveSkillMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Bat-encrusted",
                 "ribs"
             );
@@ -1408,12 +1415,13 @@ namespace Server.Items
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveSkillMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Athletes",
                 "pie"
             );
@@ -1525,12 +1533,13 @@ namespace Server.Items
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveSkillMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Lemon",
                 "pie"
             );
@@ -1641,12 +1650,13 @@ namespace Server.Items
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveSkillMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Philosophers",
                 "quiche"
             );
@@ -1713,7 +1723,7 @@ namespace Server.Items
         public override bool Eat(Mobile from) {
             from.SendMessage("You feel a slight increase in necromancy skill");
             m_Mobile = from;
-            m_Mod = new DefaultSkillMod(SkillName.Archery, true, 5);
+            m_Mod = new DefaultSkillMod(SkillName.Necromancy, true, 5);
             m_Mobile.AddSkillMod(m_Mod);
             Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
             return base.Eat(from);
@@ -1721,12 +1731,13 @@ namespace Server.Items
         public void ExpireBuff() {
             if (m_Mobile != null && m_Mod != null) {
                 m_Mobile.RemoveSkillMod(m_Mod);
-            }            
+            }
         }
         public override void GetProperties(ObjectPropertyList list)
         {
             list.Add(
                 1060847,
+                "{0} {1}",
                 "Sacrificial lamb",
                 "leg"
             );

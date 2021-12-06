@@ -1,3 +1,7 @@
+using Server.Mobiles;
+using Server.Talent;
+using Server.Targeting;
+
 namespace Server.Items
 {
     [Flippable(0x104F, 0x1050)]
@@ -15,6 +19,20 @@ namespace Server.Items
         {
         }
 
+        public override void OnDoubleClick(Mobile from)
+        {
+            base.OnDoubleClick(from);
+            if (from is PlayerMobile player)
+            {
+                BaseTalent inventive = player.GetTalent(typeof(Inventive));
+                if (inventive != null)
+                {
+                    player.SendMessage("What do you wish to use these spare clock parts on?");
+                    from.Target = new InternalTarget(inventive);
+                }
+            }
+        }
+
         public override void Serialize(IGenericWriter writer)
         {
             base.Serialize(writer);
@@ -27,6 +45,38 @@ namespace Server.Items
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+        }
+
+        private class InternalTarget : Target
+        {
+            private readonly BaseTalent m_Inventive;
+
+            public InternalTarget(BaseTalent inventive) : base(
+                2,
+                false,
+                TargetFlags.None
+            ) =>
+                m_Inventive = inventive;
+
+            protected override void OnTarget(Mobile from, object targeted)
+            {
+                if (targeted is AutomatonConstruct automaton)
+                {
+                    if (automaton.Hits < automaton.HitsMax)
+                    {
+                        automaton.Heal(Utility.Random(m_Inventive.ModifySpellMultiplier()));
+                        from.PlaySound(0x241);
+                    }
+                    else
+                    {
+                        from.SendMessage("The automaton is not damaged");
+                    }
+                }
+                else
+                {
+                    from.SendMessage("You cannot use these clock parts on this");
+                }
+            }
         }
     }
 }

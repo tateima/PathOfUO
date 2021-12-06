@@ -64,7 +64,7 @@ namespace Server.Spells.First
                     }
                     BaseTalent frostFire = player.GetTalent(typeof(FrostFire));
                     if (frostFire != null && fire > 0) {
-                        ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, m, ref hue);
+                        ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, m, hue: ref hue);
                     }
                 }
                 source.MovingParticles(m, 0x36D4, 5, 0, false, false, hue, 0, 3006, 0, 0, 0);

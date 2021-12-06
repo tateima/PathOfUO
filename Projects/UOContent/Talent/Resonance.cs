@@ -1,25 +1,24 @@
-using Server.Gumps;
+using System;
 using Server.Items;
 using Server.Mobiles;
-using System;
 
 namespace Server.Talent
 {
-    public class Resonance : BaseTalent, ITalent
+    public class Resonance : BaseTalent
     {
-        public Resonance() : base()
+        public Resonance()
         {
             TalentDependency = typeof(SonicAffinity);
             DisplayName = "Resonance";
-            CanBeUsed = true; 
-            Description = "Chance on barding success that target is damaged by sonic energy. AOE damage effect on use - 1m cooldown. Requires 60+ music.";
+            CanBeUsed = true;
+            Description =
+                "Chance on barding success that target is damaged by sonic energy. AOE damage effect on use - 1m cooldown. Requires 60+ music.";
             ImageID = 180;
             AddEndY = 125;
         }
-        public override bool HasSkillRequirement(Mobile mobile)
-        {
-            return (mobile.Skills.Musicianship.Value >= 60.0);
-        }
+
+        public override bool HasSkillRequirement(Mobile mobile) => mobile.Skills.Musicianship.Value >= 60.0;
+
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
             target.Damage(Level * 2, attacker);
@@ -29,29 +28,28 @@ namespace Server.Talent
         {
             if (!OnCooldown)
             {
-                BaseTalent sonicAffinity = ((PlayerMobile)from).GetTalent(typeof(SonicAffinity));
+                var sonicAffinity = ((PlayerMobile)from).GetTalent(typeof(SonicAffinity));
                 BaseInstrument instrument = null;
-                if (from.Backpack != null)
-                {
-                    from.Backpack.FindItemsByType<BaseInstrument>(true).ForEach(
-                    packInstrument =>
-                    {
-                        if (packInstrument.UsesRemaining > 0)
+                from.Backpack?.FindItemsByType<BaseInstrument>()
+                    .ForEach(
+                        packInstrument =>
                         {
-                            instrument = packInstrument;
-                            return;
+                            if (packInstrument.UsesRemaining > 0)
+                            {
+                                instrument = packInstrument;
+                            }
                         }
-                    }
                     );
-                }
-                if (from.Mana < 20) {
-                    from.SendMessage("You require atleast 20 mana to use this talent");
+
+                if (from.Mana < 20)
+                {
+                    from.SendMessage("You require at least 20 mana to use this talent");
                 }
                 else if (instrument != null)
                 {
                     from.Mana -= 20;
                     OnCooldown = true;
-                    bool success = false;
+                    var success = false;
                     foreach (var other in from.GetMobilesInRange(Level + 3))
                     {
                         if (other == from || !other.CanBeHarmful(from, false) ||
@@ -59,11 +57,7 @@ namespace Server.Talent
                         {
                             continue;
                         }
-                        var diff = instrument.GetDifficultyFor(other) - 10.0;
-                        if (from.Skills.Musicianship.Value > 100.0)
-                        {
-                            diff -= (from.Skills.Musicianship.Value - 100.0) * 0.5;
-                        }
+
                         if (!BaseInstrument.CheckMusicianship(from))
                         {
                             from.SendLocalizedMessage(500612); // You play poorly, and there is no effect.
@@ -71,33 +65,39 @@ namespace Server.Talent
                         else
                         {
                             success = true;
-                            int baseDamage = Level;
+                            var baseDamage = Level;
                             if (sonicAffinity != null)
                             {
                                 // increase damage further by 3 points per level of sonic affinity
                                 baseDamage += sonicAffinity.Level * 3;
                             }
-                            double scalar = (from.Skills.Musicianship.Value / 200);
-                            int amount = AOS.Scale(baseDamage, 100 + (int)(scalar * 10));
+
+                            var scalar = from.Skills.Musicianship.Value / 200;
+                            AOS.Scale(baseDamage, 100 + (int)(scalar * 10));
                             if (Core.AOS)
                             {
                                 AOS.Damage(other, baseDamage, 0, 0, 0, 0, 100);
-                            } else
+                            }
+                            else
                             {
                                 other.Damage(baseDamage, from);
                             }
+
                             other.FixedParticles(0x376A, 9, 32, 5007, EffectLayer.Waist);
                         }
                     }
+
                     from.RevealingAction();
                     if (success)
                     {
                         instrument.PlayInstrumentWell(from);
-                    } else
+                    }
+                    else
                     {
                         instrument.PlayInstrumentBadly(from);
                     }
-                    instrument.ConsumeUse(from);                    
+
+                    instrument.ConsumeUse(from);
                     Timer.StartTimer(TimeSpan.FromSeconds(60), ExpireTalentCooldown, out _talentTimerToken);
                 }
                 else

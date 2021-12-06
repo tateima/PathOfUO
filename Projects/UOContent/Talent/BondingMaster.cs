@@ -1,12 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class BondingMaster : BaseTalent, ITalent
+    public class BondingMaster : BaseTalent
     {
-
-        public BondingMaster() : base()
+        public BondingMaster()
         {
             TalentDependency = typeof(RangerCommand);
             DisplayName = "Bonding master";
@@ -15,11 +11,11 @@ namespace Server.Talent
             AddEndY = 85;
             MaxLevel = 7;
         }
+
         public override void UpdateMobile(Mobile mobile)
         {
             mobile.FollowersMax = CalculateResetValue(mobile.FollowersMax);
             mobile.FollowersMax = CalculateNewValue(mobile.FollowersMax);
         }
-
     }
 }

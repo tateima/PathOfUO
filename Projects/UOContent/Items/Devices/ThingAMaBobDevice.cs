@@ -1,5 +1,3 @@
-using System;
-using Server;
 using Server.Mobiles;
 using Server.Spells.Fourth;
 using Server.Spells.Seventh;
@@ -14,16 +12,14 @@ namespace Server.Items
     [Serializable(0, false)]
     public partial class ThingAMaBobDevice : BaseDevice
     {
-        public override double DefaultWeight
-        {
-            get { return 0.1; }
-        }
+        public override double DefaultWeight => 0.1;
 
-        public override int LabelNumber { get { return 1061183; } } // A glitchy device
+        public override int LabelNumber => 1061183; // A glitchy device
 
         [Constructible]
         public ThingAMaBobDevice() : base(WandEffect.Device, 10, 10)
         {
+            Name = "Thing-a-ma-bob Device";
             Stackable = false;
             Light = LightType.Circle150;
             Hue = 1992;

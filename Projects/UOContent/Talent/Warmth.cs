@@ -1,11 +1,8 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class Warmth : BaseTalent, ITalent
+    public class Warmth : BaseTalent
     {
-        public Warmth() : base()
+        public Warmth()
         {
             TalentDependency = typeof(DragonAspect);
             DisplayName = "Warmth";
@@ -15,8 +12,6 @@ namespace Server.Talent
             AddEndY = 80;
         }
 
-        public override int ModifySpellMultiplier() {
-            return Level * 15;
-        }
+        public override int ModifySpellMultiplier() => Level * 15;
     }
 }

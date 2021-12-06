@@ -42,23 +42,23 @@ namespace Server.Mobiles
                 string speech = e.Speech.ToLower();
                 PlayerMobile player = (PlayerMobile)e.Mobile;
                 Detective detective = player.GetTalent(typeof(Detective)) as Detective;
-                CaseNote note = detective.GetPlayerCaseNote(player);
+                CaseNote note = Detective.GetPlayerCaseNote(player);
                 if (!e.Handled) {
                     if (string.Equals(speech, "give me a case")) {
                         e.Handled = true;
                         if (detective != null) {
                             if (note != null) {
-                                SayTo(player, "Thy already have an active case");    
+                                SayTo(player, "Thy already have an active case");
                             } else {
-                                detective.GiveCaseNote(player);
-                                SayTo(player, "Here is a new active case");    
+                                Detective.GiveCaseNote(player);
+                                SayTo(player, "Here is a new active case");
                             }
                         } else {
                             SayTo(player, "Thou art not talented enough for this operation");
                         }
-                    } else if (string.Equals(speech, "here is my case notes")) {
+                    } else if (string.Equals(speech, "here are my case notes")) {
                         e.Handled = true;
-                        if (note != null && detective.GiveRewards(player, note)) {
+                        if (detective != null && note != null && detective.GiveRewards(player, note)) {
                             SayTo(player, "Thank thee for your assistance, here is your reward");
                         } else {
                             SayTo(player, "Thou has no case notes to show me");
@@ -72,7 +72,7 @@ namespace Server.Mobiles
                 {
                     base.OnSpeech(e);
                 }
-            }            
+            }
         }
 
         public static void Spawn(Mobile caller, Mobile target, int amount = 1, bool onlyAdditional = false)

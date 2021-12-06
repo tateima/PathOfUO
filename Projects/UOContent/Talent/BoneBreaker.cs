@@ -1,11 +1,10 @@
-using Server.Mobiles;
 using System;
 
 namespace Server.Talent
 {
-    public class BoneBreaker : BaseTalent, ITalent
+    public class BoneBreaker : BaseTalent
     {
-        public BoneBreaker() : base()
+        public BoneBreaker()
         {
             TalentDependency = typeof(IronSkin);
             DisplayName = "Bone breaker";
@@ -15,6 +14,7 @@ namespace Server.Talent
             GumpHeight = 75;
             AddEndY = 100;
         }
+
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
             if (Activated)
@@ -23,7 +23,7 @@ namespace Server.Talent
                 OnCooldown = true;
                 attacker.SendSound(0x125);
                 target.Paralyze(TimeSpan.FromSeconds(Level * 3));
-                Timer.StartTimer(TimeSpan.FromSeconds(120-(Level*10)), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(120 - Level * 10), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
     }

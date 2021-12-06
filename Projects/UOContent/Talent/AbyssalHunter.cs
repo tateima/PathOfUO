@@ -1,16 +1,13 @@
-using Server.Mobiles;
-using System;
-
 namespace Server.Talent
 {
-    public class AbyssalHunter : BaseTalent, ITalent
+    public class AbyssalHunter : BaseTalent
     {
-        public AbyssalHunter() : base()
+        public AbyssalHunter()
         {
-            BlockedBy = new Type[] { typeof(UndeadHunter) };
+            BlockedBy = new[] { typeof(UndeadHunter) };
             TalentDependency = typeof(ExperiencedHunter);
             DisplayName = "Abyssal hunter";
-            Description = "Increases damage to abyssals and heals damage from them.";
+            Description = "Increases damage to abyssal and heals damage from them.";
             ImageID = 297;
             AddEndY = 90;
         }
@@ -30,6 +27,5 @@ namespace Server.Talent
                 target.Damage(Level, attacker);
             }
         }
-
     }
 }
