@@ -302,13 +302,13 @@
     "name": "Spawner (225)",
     "location": [1470, 1765, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": 5,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -928,7 +928,7 @@
     "name": "Spawner (225)",
     "location": [1438, 1761, -2],
     "map": "Felucca",
-    "count": 4,
+    "count": 5,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
@@ -937,6 +937,7 @@
     "entries": [
       { "name": "hiresailor", "maxCount": 1, "probability": 100 },
       { "name": "Fisherman", "maxCount": 1, "probability": 100 },
+      { "name": "GypsyLord", "maxCount": 1, "probability": 100 },
       { "name": "Rat", "maxCount": 2, "probability": 100 }
     ]
   },
@@ -1136,13 +1137,13 @@
     "name": "Spawner (225)",
     "location": [2752, 2155, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": 5,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -1218,13 +1219,13 @@
     "name": "Spawner (225)",
     "location": [2256, 1181, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": 5,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -1266,13 +1267,13 @@
     "name": "Spawner (225)",
     "location": [1512, 3989, -3],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": 5,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -1280,13 +1281,13 @@
     "name": "Spawner (225)",
     "location": [1504, 3693, -3],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": 5,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -1294,13 +1295,13 @@
     "name": "Spawner (225)",
     "location": [1125, 3687, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": 5,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -1575,13 +1576,13 @@
     "name": "Spawner (225)",
     "location": [1372, 3908, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": 5,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -1876,13 +1877,13 @@
     "name": "Spawner (225)",
     "location": [3674, 2289, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": 5,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -2415,13 +2416,13 @@
     "name": "Spawner (225)",
     "location": [4406, 1038, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": 5,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -2718,13 +2719,13 @@
     "name": "Spawner (225)",
     "location": [3647, 2681, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": 5,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -3125,13 +3126,13 @@
     "name": "Spawner (225)",
     "location": [2992, 3451, 16],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": 5,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -3274,13 +3275,13 @@
     "name": "Spawner (225)",
     "location": [2940, 3410, 1],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": 5,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -3351,13 +3352,13 @@
     "name": "Spawner (225)",
     "location": [656, 2235, -3],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": 5,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -3715,13 +3716,13 @@
     "name": "Spawner (225)",
     "location": [2072, 2856, -3],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": 5,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -4079,13 +4080,13 @@
     "name": "Spawner (225)",
     "location": [3034, 827, -3],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": 5,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -5114,13 +5115,13 @@
     "name": "Spawner (225)",
     "location": [5839, 3256, 2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": 5,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -5208,13 +5209,13 @@
     "name": "Spawner (225)",
     "location": [4571, 2303, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 0,
     "walkingRange": -1,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -5253,13 +5254,13 @@
     "name": "Spawner (225)",
     "location": [4557, 2307, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 1,
     "walkingRange": -1,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -5312,13 +5313,13 @@
     "name": "Spawner (225)",
     "location": [4556, 2330, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 1,
     "walkingRange": -1,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -5326,7 +5327,7 @@
     "name": "Spawner (225)",
     "location": [4533, 2333, -2],
     "map": "Felucca",
-    "count": 3,
+    "count": 4,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
@@ -5335,7 +5336,8 @@
     "entries": [
       { "name": "Tailor", "maxCount": 1, "probability": 100 },
       { "name": "Provisioner", "maxCount": 1, "probability": 100 },
-      { "name": "Fisherman", "maxCount": 1, "probability": 100 }
+      { "name": "Fisherman", "maxCount": 1, "probability": 100},
+      { "name": "GypsyLord", "maxCount": 1, "probability": 100 }
     ]
   },
   {
@@ -5358,13 +5360,13 @@
     "name": "Spawner (225)",
     "location": [4549, 2346, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 1,
     "walkingRange": -1,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -5386,7 +5388,7 @@
     "name": "Spawner (225)",
     "location": [4570, 2400, -2],
     "map": "Felucca",
-    "count": 2,
+    "count": 3,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
@@ -5394,6 +5396,7 @@
     "walkingRange": 7,
     "entries": [
       { "name": "Fisherman", "maxCount": 1, "probability": 100 },
+      { "name": "GypsyLord", "maxCount": 1, "probability": 100 },
       { "name": "hiresailor", "maxCount": 1, "probability": 100 }
     ]
   },
@@ -5417,13 +5420,13 @@
     "name": "Spawner (225)",
     "location": [4530, 2382, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 1,
     "walkingRange": -1,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -5445,13 +5448,13 @@
     "name": "Spawner (225)",
     "location": [4573, 2364, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 1,
     "walkingRange": -1,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -5459,13 +5462,13 @@
     "name": "Spawner (225)",
     "location": [4553, 2351, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 1,
     "walkingRange": -1,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -5473,13 +5476,13 @@
     "name": "Spawner (225)",
     "location": [4537, 2348, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 1,
     "walkingRange": -1,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -5501,13 +5504,13 @@
     "name": "Spawner (225)",
     "location": [4553, 2343, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 1,
     "walkingRange": -1,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -5630,13 +5633,13 @@
     "name": "Spawner (225)",
     "location": [4547, 2376, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 1,
     "walkingRange": -1,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
@@ -5658,13 +5661,13 @@
     "name": "Spawner (225)",
     "location": [4554, 2389, -2],
     "map": "Felucca",
-    "count": 1,
+    "count": 2,
     "minDelay": "00:05:00",
     "maxDelay": "00:10:00",
     "team": 0,
     "homeRange": 1,
     "walkingRange": -1,
-    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "Fisherman", "maxCount": 1, "probability": 100 }, { "name": "GypsyLord", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",
