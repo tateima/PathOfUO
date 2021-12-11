@@ -82,6 +82,7 @@ namespace Server.Items
             }
 
             ScissorHelper(from, item, 1, false);
+            item.Amount += Board.CheckEfficientCarver(from, item.Amount);
             return true;
         }
     }

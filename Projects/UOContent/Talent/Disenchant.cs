@@ -16,7 +16,7 @@ namespace Server.Talent
             CanBeUsed = true;
             MaxLevel = 3;
             GumpHeight = 90;
-            AddEndY = 135;
+            AddEndY = 125;
         }
 
         public override bool HasSkillRequirement(Mobile mobile) => CanDisenchant(mobile, 70 + Level * 5);

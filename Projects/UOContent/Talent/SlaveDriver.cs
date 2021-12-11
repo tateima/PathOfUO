@@ -9,15 +9,15 @@ namespace Server.Talent
         {
             TalentDependency = typeof(ResourcefulHarvester);
             DisplayName = "Slave driver";
-            Description = "Summon a slave to harvest resources for you, 6m cooldown";
+            Description = "Summon a slave to harvest resources for you, 10m cooldown";
             ImageID = 360;
-            MaxLevel = 6;
+            CanBeUsed = true;
+            MaxLevel = 10;
             GumpHeight = 85;
             AddEndY = 80;
-            MaxLevel = 10;
         }
 
-        public virtual void OnUse(Mobile mobile)
+        public override void OnUse(Mobile mobile)
         {
             if (!OnCooldown)
             {
@@ -38,7 +38,7 @@ namespace Server.Talent
                 slave.Say("I am here to serve thee!");
                 slave.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
                 slave.PlaySound(0x1FE);
-                Timer.StartTimer(TimeSpan.FromMinutes(6), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireTalentCooldown, out _talentTimerToken);
                 OnCooldown = true;
             }
         }

@@ -147,7 +147,6 @@ namespace Server.Gumps
                 int lastTalentIndex = m_LastTalentIndex;
                 if (info.ButtonID == 1000)
                 {
-                    lastTalentIndex += 1;
                     // next page
                     page = (m_LastPage + 1);
                     player.SendGump(new TalentGump(player, page, lastTalentIndex, m_TalentGumpPages));

@@ -146,10 +146,10 @@ namespace Server.Engines.Harvest
             // double skillValue = from.Skills[def.Skill].Value;
 
             Type type = null;
-            BaseTalent resourceful = null;
+            ResourcefulHarvester resourceful = null;
             if (from is PlayerMobile player)
             {
-                resourceful = player.GetTalent(typeof(ResourcefulHarvester));
+                resourceful = player.GetTalent(typeof(ResourcefulHarvester)) as ResourcefulHarvester;
             }
 
             if (skillBase >= resource.ReqSkill && from.CheckSkill(def.Skill, resource.MinSkill, resource.MaxSkill))
@@ -200,10 +200,10 @@ namespace Server.Engines.Harvest
                             {
                                 item.Amount = amount;
                             }
-                            if (resourceful != null && Utility.RandomDouble() < resourceful.Level/10.0) // 1% per point
+
+                            if (resourceful != null)
                             {
-                                int resourcefulAmount = Utility.Random(amount);
-                                item.Amount += resourcefulAmount;
+                                item.Amount += resourceful.GetExtraResourceCheck(item.Amount);
                             }
                         }
 

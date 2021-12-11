@@ -12,6 +12,7 @@ namespace Server.Items
         public Board(int amount = 1)
             : this(CraftResource.RegularWood, amount)
         {
+            Amount += CheckEfficientCarver((Mobile)Parent, amount);
         }
 
         public Board(Serial serial)
@@ -19,7 +20,7 @@ namespace Server.Items
         {
         }
 
-        public static int CheckEfficientCarver(Mobile from)
+        public static int CheckEfficientCarver(Mobile from, int amount)
         {
             BaseTalent carver;
             if (from is PlayerMobile player)
@@ -27,7 +28,7 @@ namespace Server.Items
                 carver = player.GetTalent(typeof(EfficientCarver));
                 if (carver != null)
                 {
-                    return carver.GetExtraResourceCheck();
+                    return carver.GetExtraResourceCheck(amount);
                 }
             }
             return 0;
@@ -39,7 +40,7 @@ namespace Server.Items
         {
             Stackable = true;
             Amount = amount;
-            Amount += CheckEfficientCarver((Mobile)Parent);
+            Amount += CheckEfficientCarver((Mobile)Parent, amount);
 
             m_Resource = resource;
             Hue = CraftResources.GetHue(resource);

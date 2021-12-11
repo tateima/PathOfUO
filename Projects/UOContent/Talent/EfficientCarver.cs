@@ -6,12 +6,14 @@ namespace Server.Talent
         {
             TalentDependency = typeof(ResourcefulHarvester);
             DisplayName = "Carver";
-            Description = "1% Chance per level to receive extra plank materials when carving.";
+            Description = "3% Chance per level to receive extra plank materials when carving.";
             ImageID = 357;
             MaxLevel = 6;
             GumpHeight = 85;
             AddEndY = 80;
             MaxLevel = 10;
         }
+
+        public override int ModifySpellMultiplier() => Level * 3;
     }
 }

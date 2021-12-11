@@ -114,7 +114,7 @@ namespace Server.Mobiles
                 }
             }
         }
-        
+
         public Timer m_Timer;
 
         public BaseAI(BaseCreature m)
@@ -315,6 +315,11 @@ namespace Server.Mobiles
                 {
                     m_Mobile.SayTo(from, "Your pet refuses to attack the guard.");
                     return;
+                }
+
+                if (m_Mobile is Henchman)
+                {
+                    m_Mobile.SayTo(from, "Consider it done.");
                 }
             }
 

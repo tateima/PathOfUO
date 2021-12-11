@@ -18,7 +18,7 @@ namespace Server.Talent
             CanBeUsed = true;
             MaxLevel = 6;
             GumpHeight = 115;
-            AddEndY = 145;
+            AddEndY = 130;
         }
 
         public override bool HasSkillRequirement(Mobile mobile) => CanSocketOrPocket(mobile, Level);

@@ -12,7 +12,8 @@ namespace Server.Mobiles
             Title = "the slave";
             InitStats(31, 41, 51);
             SpeechHue = Utility.RandomDyedHue();
-            if (Female = Utility.RandomBool())
+            Female = Utility.RandomBool();
+            if (Female)
             {
                 Body = 0x191;
                 Name = NameList.RandomName("female");
@@ -31,7 +32,7 @@ namespace Server.Mobiles
             pack.Movable = false;
             AddItem(pack);
         }
-            
+
 
         public Slave(Serial serial) : base(serial)
         {
@@ -76,10 +77,9 @@ namespace Server.Mobiles
                 location.Y = 0;
                 location.Z = 0;
                 MoveToWorld(location, Map);
-                // 1 minute for test
-                Timer.StartTimer(TimeSpan.FromMinutes(1), ReturnWithResources, out _slaveTimerToken);
+                Timer.StartTimer(TimeSpan.FromMinutes(10), ReturnWithResources, out _slaveTimerToken);
             }
-            else 
+            else
             {
                 Say("I don't understand what you mean. Does master want ore, logs, cloth or hide?");
             }
@@ -102,44 +102,28 @@ namespace Server.Mobiles
                 Item item = null;
                 if (MasterSpeech.Contains("ore"))
                 {
-                    switch (Utility.Random(1, 5))
+                    item = Utility.Random(1, 5) switch
                     {
-                        case 1:
-                            item = new IronOre();
-                            break;
-                        case 2:
-                            item = new ShadowIronOre();
-                            break;
-                        case 3:
-                            item = new CopperOre();
-                            break;
-                        case 4:
-                            item = new BronzeOre();
-                            break;
-                        case 5:
-                            item = new DullCopperOre();
-                            break;
-                    }
+                        1 => new IronOre(),
+                        2 => new ShadowIronOre(),
+                        3 => new CopperOre(),
+                        4 => new BronzeOre(),
+                        5 => new DullCopperOre(),
+                        _ => null
+                    };
                 }
                 else if (MasterSpeech.Contains("log"))
                 {
                     if (Core.AOS)
                     {
-                        switch (Utility.Random(1, 4))
+                        item = Utility.Random(1, 4) switch
                         {
-                            case 1:
-                                item = new Log();
-                                break;
-                            case 2:
-                                item = new AshLog();
-                                break;
-                            case 3:
-                                item = new OakLog();
-                                break;
-                            case 4:
-                                item = new HeartwoodLog();
-                                break;
-                        }
+                            1 => new Log(),
+                            2 => new AshLog(),
+                            3 => new OakLog(),
+                            4 => new HeartwoodLog(),
+                            _ => null
+                        };
                     } else
                     {
                         item = new Log();
@@ -147,40 +131,35 @@ namespace Server.Mobiles
                 }
                 else if (MasterSpeech.Contains("cloth"))
                 {
-                    switch (Utility.Random(1, 3))
+                    item = Utility.Random(1, 3) switch
                     {
-                        case 1:
-                            item = new Wool();
-                            break;
-                        case 2:
-                            item = new Flax();
-                            break;
-                        case 3:
-                            item = new Cotton();
-                            break;
-                    }
+                        1 => new Wool(),
+                        2 => new Flax(),
+                        3 => new Cotton(),
+                        _ => null
+                    };
                 }
                 else
                 {
-                    switch (Utility.Random(1, 3))
+                    item = Utility.Random(1, 3) switch
                     {
-                        case 1:
-                            item = new Hides();
-                            break;
-                        case 2:
-                            item = new HornedHides();
-                            break;
-                        case 3:
-                            item = new SpinedHides();
-                            break;
-                    }
+                        1 => new Hides(),
+                        2 => new HornedHides(),
+                        3 => new SpinedHides(),
+                        _ => null
+                    };
                 }
-                item.Amount = randomAmount;
-                AddToBackpack(item);
+
+                if (item != null)
+                {
+                    item.Amount = randomAmount;
+                    AddToBackpack(item);
+                }
             }
+
+            Master.Karma -= 50;
             Kill();
         }
-
         public override void Serialize(IGenericWriter writer)
         {
             base.Serialize(writer);

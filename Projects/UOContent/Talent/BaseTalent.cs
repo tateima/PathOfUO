@@ -107,13 +107,12 @@ namespace Server.Talent
             typeof(ResourcefulCrafter),
             typeof(OptimisedConsumption),
             typeof(TycoonCrafter),
-            typeof(StrongTools),
+            typeof(StrongTools), // up to here testing
             typeof(ResourcefulHarvester),
             typeof(EfficientCarver),
             typeof(EfficientSkinner),
             typeof(EfficientSmelter),
             typeof(EfficientSpinner),
-            typeof(EfficientCarver),
             typeof(SlaveDriver),
             typeof(SmoothTalker),
             typeof(TaxCollector),
@@ -378,7 +377,7 @@ namespace Server.Talent
             return contains;
         }
 
-        public int GetExtraResourceCheck() => Utility.RandomDouble() < Level / 10.0 ? Level : 0;
+        public int GetExtraResourceCheck(int amount) => Utility.Random(100) < ModifySpellMultiplier() ? AOS.Scale(amount, Level * 2): 0;
 
         public virtual bool CanAffordLoss(PlayerMobile player, int amount)
         {

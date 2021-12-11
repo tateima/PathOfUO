@@ -14,7 +14,7 @@ namespace Server.Talent
             MobilePercentagePerPoint = 3;
             CanBeUsed = true;
             Description =
-                "Hire a henchman to protect you. At least 2500 gold is required in your bank during hire. Stats scale 1-250%, skills 1-100%.";
+                "Hire a henchman to protect you. At least 6000 gold is required in your bank during hire. Stats and skills scale 12% per level.";
             ImageID = 365;
             GumpHeight = 230;
             AddEndY = 125;
@@ -30,40 +30,37 @@ namespace Server.Talent
                     if (player.Henchmen.Count + player.RestedHenchmen.Count < 2)
                     {
                         Container bank = from.FindBankNoCreate();
-                        if (Banker.GetBalance(from) >= 2500)
+                        int totalPlayerGold = Banker.GetBalance(from);
+                        if (totalPlayerGold >= 6000)
                         {
                             int goldToUse;
-                            var gold = (Gold)bank.FindItemByType(typeof(Gold));
-                            var totalGold = gold.Amount;
-                            if (totalGold > 50000)
+                            if (totalPlayerGold >= 75000)
                             {
-                                goldToUse = 50000;
+                                goldToUse = 75000;
                             }
                             else
                             {
-                                goldToUse = totalGold % 1000 >= 500
-                                    ? totalGold + 1000 - totalGold % 1000
-                                    : totalGold - totalGold % 1000;
+                                goldToUse = totalPlayerGold % 6000 >= 500
+                                    ? totalPlayerGold + 6000 - totalPlayerGold % 6000
+                                    : totalPlayerGold - totalPlayerGold % 6000;
                             }
 
                             Banker.Withdraw(from, goldToUse);
-                            MobilePercentagePerPoint = goldToUse / 1000;
+                            MobilePercentagePerPoint = goldToUse / 6000; // max of 12% per henchmen
                             var hireling = new Henchman();
                             hireling = (Henchman)ScaleMobileStats(hireling);
-                            // needs to be 20 max now to make 100% skill bonus
-                            MobilePercentagePerPoint = goldToUse / 2500;
                             hireling = (Henchman)ScaleMobileSkills(hireling, "Magical");
                             hireling = (Henchman)ScaleMobileSkills(hireling, "Combat Ratings");
                             hireling = (Henchman)ScaleMobileSkills(hireling, "Lore & Knowledge");
+                            hireling.Hits = hireling.HitsMax;
                             from.RevealingAction();
                             hireling.MoveToWorld(from.Location, from.Map);
                             hireling.Owners.Add(from);
-                            hireling.ControlMaster = from;
-                            hireling.ControlTarget = from;
+                            hireling.SetControlMaster(from);
                         }
                         else
                         {
-                            keeper.Say("Thou cannot afford to hire a henchman. You need at least 2500 gold.");
+                            keeper.Say("Thou cannot afford to hire a henchman. You need at least 6000 gold.");
                         }
                     }
                     else

@@ -17,6 +17,7 @@ namespace Server.Talent
             DisplayName = "Mace specialist";
             Description = "Increases damage to one handed macefighting weapons.";
             ImageID = 181;
+            AddEndY = 90;
         }
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)

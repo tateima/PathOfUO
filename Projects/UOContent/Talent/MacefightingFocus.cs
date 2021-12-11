@@ -9,7 +9,7 @@ namespace Server.Talent
             DisplayName = "Macefighting focus";
             Description = "Chance of getting a critical strike with macing weapons.";
             ImageID = 172;
-            GumpHeight = 85;
+            GumpHeight = 80;
             AddEndY = 80;
         }
 

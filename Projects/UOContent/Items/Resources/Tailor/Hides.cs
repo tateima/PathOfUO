@@ -16,13 +16,12 @@ namespace Server.Items
             Stackable = true;
             Weight = 5.0;
             Amount = amount;
-            Amount += CheckEfficientSkinner((Mobile)Parent);
             Hue = CraftResources.GetHue(resource);
 
             _resource = resource;
         }
 
-        public static int CheckEfficientSkinner(Mobile from)
+        public static int CheckEfficientSkinner(Mobile from, int amount)
         {
             BaseTalent skinMaster = null;
             if (from is PlayerMobile player)
@@ -30,7 +29,7 @@ namespace Server.Items
                 skinMaster = player.GetTalent(typeof(EfficientSkinner));
                 if (skinMaster != null)
                 {
-                    return skinMaster.GetExtraResourceCheck();
+                    return skinMaster.GetExtraResourceCheck(amount);
                 }
             }
             return 0;

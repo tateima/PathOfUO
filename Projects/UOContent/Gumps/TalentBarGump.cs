@@ -37,7 +37,7 @@ namespace Server.Gumps
                 }
             }
             m_UseableTalents.Sort((x, y) => string.Compare(x.DisplayName, y.DisplayName));
-            int barWidth = (m_UseableTalents.Count * 60);
+            int barWidth = (m_UseableTalents.Count * 70);
             barWidth = barWidth switch
             {
                 > 1100 => 1100,

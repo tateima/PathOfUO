@@ -258,7 +258,7 @@ namespace Server.Items
                             ingotMaster = player.GetTalent(typeof(EfficientSmelter));
                             if (ingotMaster != null)
                             {
-                                ingotAmount += ingotMaster.GetExtraResourceCheck();
+                                ingotAmount += ingotMaster.GetExtraResourceCheck(ingotAmount);
                             }
                         }
 

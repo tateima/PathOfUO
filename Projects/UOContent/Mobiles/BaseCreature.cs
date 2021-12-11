@@ -2143,6 +2143,13 @@ namespace Server.Mobiles
             var meat = Meat;
             var hides = Hides;
             var scales = Scales;
+            ResourcefulHarvester resourceful = null;
+            EfficientSkinner skinner = null;
+            if (from is PlayerMobile player)
+            {
+                resourceful = player.GetTalent(typeof(ResourcefulHarvester)) as ResourcefulHarvester;
+                skinner = player.GetTalent(typeof(EfficientSkinner)) as EfficientSkinner;
+            }
 
             if (feathers == 0 && wool == 0 && meat == 0 && hides == 0 && scales == 0 || Summoned || IsBonded ||
                 corpse.Animated)
@@ -2162,6 +2169,20 @@ namespace Server.Mobiles
                 {
                     hides = (int)Math.Ceiling(hides * 1.1); // 10% bonus only applies to hides, ore & logs
                 }
+
+                if (resourceful != null)
+                {
+                    hides += resourceful.GetExtraResourceCheck(hides);
+                    meat += resourceful.GetExtraResourceCheck(meat);
+                    wool += resourceful.GetExtraResourceCheck(wool);
+                    feathers += resourceful.GetExtraResourceCheck(feathers);
+                    scales += resourceful.GetExtraResourceCheck(scales);
+                }
+                hides += BaseHides.CheckEfficientSkinner(from, hides);
+                meat += BaseHides.CheckEfficientSkinner(from, meat);
+                wool += BaseHides.CheckEfficientSkinner(from, wool);
+                scales += BaseHides.CheckEfficientSkinner(from, scales);
+                feathers += BaseHides.CheckEfficientSkinner(from, feathers);
 
                 if (corpse.Map == Map.Felucca)
                 {

@@ -12,10 +12,9 @@ namespace Server.Items
             Stackable = true;
             Weight = 1.0;
             Amount = amount;
-            Amount += CheckEfficientSpinner((Mobile)Parent);
         }
 
-        public static int CheckEfficientSpinner(Mobile from)
+        public static int CheckEfficientSpinner(Mobile from, int amount)
         {
             BaseTalent spinMaster = null;
             if (from is PlayerMobile player)
@@ -23,9 +22,9 @@ namespace Server.Items
                 spinMaster = player.GetTalent(typeof(EfficientSpinner));
                 if (spinMaster != null)
                 {
-                   return spinMaster.GetExtraResourceCheck();
+                    return spinMaster.GetExtraResourceCheck(amount);
                 }
-           }
+            }
             return 0;
         }
 
@@ -93,7 +92,10 @@ namespace Server.Items
                     {
                         Item create = new BoltOfCloth();
                         create.Hue = m_Material.Hue;
-
+                        if (CheckEfficientSpinner(from, 10) > 0)
+                        {
+                            create.Amount++;
+                        }
                         m_Material.Consume();
                         loom.Phase = 0;
                         from.SendLocalizedMessage(500368); // You create some cloth and put it in your backpack.
@@ -140,7 +142,7 @@ namespace Server.Items
     {
         [Constructible]
         public SpoolOfThread(int amount = 1) : base(0xFA0, amount)
-        { 
+        {
         }
     }
 }

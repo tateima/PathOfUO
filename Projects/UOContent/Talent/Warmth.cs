@@ -7,7 +7,7 @@ namespace Server.Talent
             TalentDependency = typeof(DragonAspect);
             DisplayName = "Warmth";
             Description = "Reduces chance to be frozen by 15% per level.";
-            ImageID = 387;
+            ImageID = 141;
             GumpHeight = 85;
             AddEndY = 80;
         }

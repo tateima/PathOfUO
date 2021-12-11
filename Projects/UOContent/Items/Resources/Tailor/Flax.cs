@@ -30,7 +30,7 @@ namespace Server.Items
         {
             Item item = new SpoolOfThread(6);
             item.Hue = hue;
-
+            item.Amount += BaseClothMaterial.CheckEfficientSpinner(from, item.Amount);
             from.AddToBackpack(item);
             from.SendLocalizedMessage(1010577); // You put the spools of thread in your backpack.
         }

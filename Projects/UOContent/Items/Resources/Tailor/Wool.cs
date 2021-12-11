@@ -48,7 +48,7 @@ namespace Server.Items
         {
             Item item = new DarkYarn(3);
             item.Hue = hue;
-
+            item.Amount += BaseClothMaterial.CheckEfficientSpinner(from, item.Amount);
             from.AddToBackpack(item);
             from.SendLocalizedMessage(1010576); // You put the balls of yarn in your backpack.
         }

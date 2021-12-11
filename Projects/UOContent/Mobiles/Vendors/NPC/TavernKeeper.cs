@@ -55,7 +55,7 @@ namespace Server.Mobiles
                         ((Henchman)henchman).ControlTarget = player;
                     }
                 }
-                
+
             } else
             {
                 e.Handled = true;
@@ -76,7 +76,7 @@ namespace Server.Mobiles
             }
             else
             {
-                from.SendMessage("Which person wouldst thou like to rest here?");
+                SayTo(from, "Which person wouldst thou like to rest here?");
                 from.Target = new BedTarget(this);
             }
         }
@@ -156,7 +156,7 @@ namespace Server.Mobiles
                 }
                 else
                 {
-                    m_TavernKeeper.Say("I cannot find a bed for them."); 
+                    m_TavernKeeper.Say("I cannot find a bed for them.");
                 }
             }
         }

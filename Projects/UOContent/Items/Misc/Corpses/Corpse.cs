@@ -8,6 +8,7 @@ using Server.Guilds;
 using Server.Misc;
 using Server.Mobiles;
 using Server.Network;
+using Server.Talent;
 
 namespace Server.Items
 {
@@ -824,6 +825,16 @@ namespace Server.Items
                 var pmi = p[Owner];
 
                 if (pmi?.CanLoot == true)
+                {
+                    return false;
+                }
+            }
+
+            SlaveDriver slaveDriver = null;
+            if (from is PlayerMobile player)
+            {
+                slaveDriver = player.GetTalent(typeof(SlaveDriver)) as SlaveDriver;
+                if (slaveDriver != null && Owner is Slave)
                 {
                     return false;
                 }

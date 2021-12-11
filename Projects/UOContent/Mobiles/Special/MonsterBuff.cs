@@ -75,7 +75,7 @@ namespace Server.Mobiles
             {
                 bc.Hue = RegenerativeHue;
             }
-            else if (bc.IsMagicResistant) 
+            else if (bc.IsMagicResistant)
             {
                 bc.Hue = MagicResistantHue;
             } else if (bc.IsEthereal)
@@ -199,25 +199,30 @@ namespace Server.Mobiles
         public static void AddIllusion(BaseCreature bc, Mobile from)
         {
             BaseCreature illusion = Activator.CreateInstance(bc.GetType()) as BaseCreature;
-            illusion.MoveToWorld(bc.Location, bc.Map);
-            illusion.Attack(from);
-            illusion.SetHits(Utility.Random(5, 15));
-            illusion.ExperienceValue = 0;
-            illusion.Hue = IllusionistHue;
-            if (illusion.Backpack != null)
+            if (illusion != null)
             {
-                foreach(Item item in illusion.Backpack.Items.ToArray())
+                illusion.MoveToWorld(bc.Location, bc.Map);
+                illusion.Attack(@from);
+                illusion.SetHits(Utility.Random(5, 15));
+                illusion.ExperienceValue = 0;
+                illusion.Hue = IllusionistHue;
+                if (illusion.Backpack != null)
                 {
-                    item.Delete();
+                    foreach (Item item in illusion.Backpack.Items.ToArray())
+                    {
+                        item.Delete();
+                    }
+
+                    illusion.Name = bc.Name;
                 }
-                illusion.Name = bc.Name;
             }
+
             bc.PublicOverheadMessage(
                 MessageType.Regular,
                 0x3B2,
                 false,
                 "* The creature creates an illusion *"
-                );
+            );
         }
 
         public static void AddIllusionist(BaseCreature bc)
@@ -304,13 +309,29 @@ namespace Server.Mobiles
                     }
                     attempts--;
                 }
-                minion.MoveToWorld(point, bc.Map);
-                minion.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
-                minion.PlaySound(0x1FE);
-                minion.IsMinion = true;
-                Convert(minion, MinionGoldBuff, MinionHitsBuff, MinionStrBuff, MinionIntBuff, MinionDexBuff, MinionSkillsBuff, MinionSpeedBuff, MinionFameBuff, MinionKarmaBuff, MinionDamageBuff);
-                AddLoot(minion, 1);
-                minions.Add(minion);
+
+                if (minion != null)
+                {
+                    minion.MoveToWorld(point, bc.Map);
+                    minion.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
+                    minion.PlaySound(0x1FE);
+                    minion.IsMinion = true;
+                    Convert(
+                        minion,
+                        MinionGoldBuff,
+                        MinionHitsBuff,
+                        MinionStrBuff,
+                        MinionIntBuff,
+                        MinionDexBuff,
+                        MinionSkillsBuff,
+                        MinionSpeedBuff,
+                        MinionFameBuff,
+                        MinionKarmaBuff,
+                        MinionDamageBuff
+                    );
+                    AddLoot(minion, 1);
+                    minions.Add(minion);
+                }
             }
             bc.Minions = minions;
         }
@@ -379,7 +400,7 @@ namespace Server.Mobiles
                 {
                     ((Gold)gold).Amount = (int)(((Gold)gold).Amount * goldBuff);
                 }
-            }            
+            }
 
             if (bc.HitsMaxSeed >= 0)
             {
@@ -537,7 +558,7 @@ namespace Server.Mobiles
                if (CheckElementalEffect())
                 {
                     Blindness.BlindTarget(mobile, Utility.Random(5, 7), "* Blinded by electrical shock *");
-                } 
+                }
             }
             else if (owner.IsBurning)
             {
@@ -571,7 +592,7 @@ namespace Server.Mobiles
                         frozenAvoidanceChance = warmth.ModifySpellMultiplier();
                     }
                 }
-                
+
                 if (CheckElementalEffect() && !(Utility.Random(100) < frozenAvoidanceChance))
                 {
                     mobile.Freeze(TimeSpan.FromSeconds(Utility.Random(5, 7)));
@@ -717,7 +738,7 @@ namespace Server.Mobiles
                                 continue;
                             }
                             creature.IsCorrupted = true;
-                        } else if (mobile is PlayerMobile player) {                            
+                        } else if (mobile is PlayerMobile player) {
                             if (CheckElementalEffect(5)) {
                                 player.Fear(Utility.Random(10));
                             }

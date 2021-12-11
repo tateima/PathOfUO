@@ -6,9 +6,9 @@ namespace Server.Talent
         {
             DisplayName = "Fearless";
             Description = "Decreases chance to be feared by 2% per point. Requires at least 80+ melee skill.";
-            ImageID = 401;
+            ImageID = 411;
             GumpHeight = 85;
-            AddEndY = 90;
+            AddEndY = 80;
         }
 
         public override bool HasSkillRequirement(Mobile mobile) =>
