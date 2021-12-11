@@ -40,7 +40,7 @@
         <PackageReference Include="Microsoft.NETCore.Jit" Version="2.0.8" />
         <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.1.2" />
         <PackageReference Include="PollGroup" Version="1.1.0" />
-        <PackageReference Include="Zlib.Bindings" Version="1.6.0" />
+        <PackageReference Include="Zlib.Bindings" Version="1.7.2" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\SerializationGenerator\SerializationGenerator.csproj">
