@@ -16,26 +16,26 @@ namespace Server.Mobiles
 
         public static readonly int CorruptionRange = 12;
 
-        public static double BossGoldBuff = 1.11;
+        public static double BossGoldBuff = 1.15;
         public static double BossHitsBuff = 1.51;
-        public static double BossStrBuff = 1.11;
-        public static double BossIntBuff = 1.11;
-        public static double BossDexBuff = 1.11;
-        public static double BossSkillsBuff = 1.04;
-        public static double BossSpeedBuff = 1.04;
-        public static double BossFameBuff = 1.11;
-        public static double BossKarmaBuff = 1.12;
+        public static double BossStrBuff = 1.15;
+        public static double BossIntBuff = 1.15;
+        public static double BossDexBuff = 1.15;
+        public static double BossSkillsBuff = 1.09;
+        public static double BossSpeedBuff = 1.09;
+        public static double BossFameBuff = 1.15;
+        public static double BossKarmaBuff = 1.17;
         public static int BossDamageBuff = 2;
 
-        public static double MinionGoldBuff = 1.02;
-        public static double MinionHitsBuff = 1.05;
-        public static double MinionStrBuff = 1.02;
-        public static double MinionIntBuff = 1.02;
-        public static double MinionDexBuff = 1.02;
-        public static double MinionSkillsBuff = 1.02;
-        public static double MinionSpeedBuff = 1.02;
-        public static double MinionFameBuff = 1.04;
-        public static double MinionKarmaBuff = 1.04;
+        public static double MinionGoldBuff = 1.07;
+        public static double MinionHitsBuff = 1.08;
+        public static double MinionStrBuff = 1.07;
+        public static double MinionIntBuff = 1.07;
+        public static double MinionDexBuff = 1.07;
+        public static double MinionSkillsBuff = 1.07;
+        public static double MinionSpeedBuff = 1.07;
+        public static double MinionFameBuff = 1.09;
+        public static double MinionKarmaBuff = 1.09;
         public static int MinionDamageBuff = 1;
 
         public static double NoBuff = 1.0;

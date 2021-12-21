@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Server.Collections;
 using Server.Targeting;
 using Server.Mobiles;
 using Server.Talent;
@@ -66,21 +67,21 @@ namespace Server.Spells.Seventh
 
                     eable.Free();
 
-                double damage = Core.AOS
-                    ? GetNewAosDamage(51, 1, 5, playerVsPlayer)
-                    : Utility.Random(27, 22);
-                int fire = 100;
-                int cold = 0;
-                int hue = 0;
-                BaseTalent frostFire = null;
-                if (Caster is PlayerMobile playerCaster) {
-                    BaseTalent fireAffinity = playerCaster.GetTalent(typeof(FireAffinity));
-                    if (fireAffinity != null)
-                    {
-                        damage += (double)fireAffinity.ModifySpellMultiplier();
+                    double damage = Core.AOS
+                        ? GetNewAosDamage(51, 1, 5, playerVsPlayer)
+                        : Utility.Random(27, 22);
+                    int fire = 100;
+                    int cold = 0;
+                    int hue = 0;
+                    BaseTalent frostFire = null;
+                    if (Caster is PlayerMobile playerCaster) {
+                        BaseTalent fireAffinity = playerCaster.GetTalent(typeof(FireAffinity));
+                        if (fireAffinity != null)
+                        {
+                            damage += (double)fireAffinity.ModifySpellMultiplier();
+                        }
+                        frostFire = playerCaster.GetTalent(typeof(FrostFire));
                     }
-                    frostFire = playerCaster.GetTalent(typeof(FrostFire));
-                }
 
                     int count = queue.Count;
 
@@ -111,7 +112,7 @@ namespace Server.Spells.Seventh
                             }
 
                             toDeal *= GetDamageScalar(m);
-                            Caster.DoHarmful(m);    
+                            Caster.DoHarmful(m);
                             if (frostFire != null && fire > 0) {
                                 ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, m, hue: ref hue);
                             }

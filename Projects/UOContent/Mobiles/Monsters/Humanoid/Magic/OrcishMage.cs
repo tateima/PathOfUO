@@ -5,36 +5,53 @@ namespace Server.Mobiles
 {
     public class OrcishMage : BaseCreature
     {
+        private bool IsNecromancer { get; set; }
         [Constructible]
         public OrcishMage() : base(AIType.AI_Mage, FightMode.Closest, 10, 1, 0.2, 0.4)
         {
             Body = 140;
             BaseSoundID = 0x45A;
-
-            SetStr(116, 150);
+            IsNecromancer = Utility.RandomBool();
+            int resistanceBuffs = 0;
+            int skillBuffs = 0;
+            int fameBuff = 0;
             SetDex(91, 115);
-            SetInt(161, 185);
-
-            SetHits(70, 90);
+            SetStr(116, 150);
+            if (IsNecromancer)
+            {
+                Hue = 0x322;
+                SetInt(181, 255);
+                SetHits(170, 190);
+                SetDamageType(ResistanceType.Cold, 100);
+                SetSkill(SkillName.Necromancy, 90.1, 95.5);
+                resistanceBuffs = 20;
+                skillBuffs = 10;
+                fameBuff = 2000;
+                PackItem(new BagOfNecroReagents());
+            }
+            else
+            {
+                SetInt(161, 185);
+                SetHits(70, 90);
+                SetDamageType(ResistanceType.Physical, 100);
+                SetSkill(SkillName.Magery, 60.1, 72.5);
+            }
 
             SetDamage(4, 14);
 
-            SetDamageType(ResistanceType.Physical, 100);
+            SetResistance(ResistanceType.Physical, 25, 35 + resistanceBuffs);
+            SetResistance(ResistanceType.Fire, 30, 40 + resistanceBuffs);
+            SetResistance(ResistanceType.Cold, 20, 30 + resistanceBuffs);
+            SetResistance(ResistanceType.Poison, 30, 40 + resistanceBuffs);
+            SetResistance(ResistanceType.Energy, 30, 40 + resistanceBuffs);
 
-            SetResistance(ResistanceType.Physical, 25, 35);
-            SetResistance(ResistanceType.Fire, 30, 40);
-            SetResistance(ResistanceType.Cold, 20, 30);
-            SetResistance(ResistanceType.Poison, 30, 40);
-            SetResistance(ResistanceType.Energy, 30, 40);
+            SetSkill(SkillName.EvalInt, 60.1 + skillBuffs, 72.5 + skillBuffs);
+            SetSkill(SkillName.MagicResist, 60.1 + skillBuffs, 75.0 + skillBuffs);
+            SetSkill(SkillName.Tactics, 50.1 + skillBuffs, 65.0 + skillBuffs);
+            SetSkill(SkillName.Wrestling, 40.1 + skillBuffs, 50.0 + skillBuffs);
 
-            SetSkill(SkillName.EvalInt, 60.1, 72.5);
-            SetSkill(SkillName.Magery, 60.1, 72.5);
-            SetSkill(SkillName.MagicResist, 60.1, 75.0);
-            SetSkill(SkillName.Tactics, 50.1, 65.0);
-            SetSkill(SkillName.Wrestling, 40.1, 50.0);
-
-            Fame = 3000;
-            Karma = -3000;
+            Fame = 3000 + fameBuff;
+            Karma = -3000 - fameBuff;
 
             VirtualArmor = 30;
 
@@ -50,10 +67,10 @@ namespace Server.Mobiles
         {
         }
 
-        public override string CorpseName => "a glowing orc corpse";
+        public override string CorpseName => IsNecromancer ? "a dark orc corpse" : "a glowing orc corpse";
         public override InhumanSpeech SpeechType => InhumanSpeech.Orc;
 
-        public override string DefaultName => "an orcish mage";
+        public override string DefaultName => IsNecromancer ? "an orcish necromancer" : "an orcish mage";
 
         public override bool CanRummageCorpses => true;
         public override int TreasureMapLevel => 1;

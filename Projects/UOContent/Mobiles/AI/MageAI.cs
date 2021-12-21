@@ -1,5 +1,7 @@
 using System;
+using Server.Items;
 using Server.Spells;
+using Server.Spells.Eighth;
 using Server.Spells.Fifth;
 using Server.Spells.First;
 using Server.Spells.Fourth;
@@ -8,6 +10,7 @@ using Server.Spells.Second;
 using Server.Spells.Seventh;
 using Server.Spells.Sixth;
 using Server.Spells.Third;
+using Server.Talent;
 using Server.Targeting;
 
 namespace Server.Mobiles
@@ -64,6 +67,8 @@ namespace Server.Mobiles
         public virtual bool SmartAI => m_Mobile is BaseVendor || m_Mobile is BaseEscortable || m_Mobile is Changeling;
 
         public virtual bool IsNecromancer => Core.AOS && m_Mobile.Skills.Necromancy.Value > 50;
+
+        public virtual bool IsMasterNecromancer => Core.AOS && m_Mobile.Skills.Necromancy.Value > 90;
 
         public override bool Think()
         {
@@ -538,6 +543,35 @@ namespace Server.Mobiles
                     {
                         spell = GetRandomDamageSpell();
 
+                        break;
+                    }
+                case 2:
+                    {
+                        if (!m_Mobile.Controlled && !m_Mobile.Summoned && m_Mobile.Mana >= 40 && IsMasterNecromancer)
+                        {
+                            m_Mobile.DebugSay("Attempting to summon something");
+                            m_Mobile.Mana -= 40;
+                            BaseCreature creature = MasterOfDeath.RandomUndead(true);
+                            Point3D combatantLocation = m_Mobile.Combatant.Location;
+                            combatantLocation.X += Utility.RandomMinMax(1, 3);
+                            combatantLocation.Y += Utility.RandomMinMax(1, 3);
+                            creature.MoveToWorld(combatantLocation, m_Mobile.Map);
+                            Effects.PlaySound(m_Mobile.Location, m_Mobile.Map, 0x1FB);
+                            Effects.SendLocationParticles(
+                                EffectItem.Create(creature.Location, creature.Map, EffectItem.DefaultDuration),
+                                0x37CC,
+                                1,
+                                40,
+                                97,
+                                3,
+                                9917,
+                                0
+                            );
+                        }
+                        else
+                        {
+                            goto default;
+                        }
                         break;
                     }
                 default: // Set up a combo

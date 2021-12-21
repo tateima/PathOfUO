@@ -97,17 +97,15 @@ namespace Server.Spells.Sixth
                     int fire = 100;
                     int cold = 0;
                     int hue = 0;
-                    
-                    if (m_Attacker is PlayerMobile playerCaster) {
+
+                    if (_attacker is PlayerMobile playerCaster) {
                         BaseTalent fireAffinity = playerCaster.GetTalent(typeof(FireAffinity));
                         if (fireAffinity != null)
                         {
                             damage += fireAffinity.ModifySpellMultiplier();
                         }
                         BaseTalent frostFire = playerCaster.GetTalent(typeof(FrostFire));
-                        if (frostFire != null && fire > 0) {
-                            ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, _target, hue: ref hue);
-                        }
+                        ((FrostFire)frostFire)?.ModifyFireSpell(ref fire, ref cold, _target, hue: ref hue);
                     }
 
                     _target.FixedParticles(0x36BD, 20, 10, 5044, hue, 0, EffectLayer.Head, 0);

@@ -46,29 +46,47 @@ namespace Server.Talent
             return destination;
         }
 
-        public static BaseCreature RandomUndead()
+        public static BaseCreature RandomUndead(bool meleeOnly = false)
         {
-            BaseCreature undead = Utility.RandomMinMax(1, 16) switch
+            BaseCreature undead;
+            if (meleeOnly)
             {
-                1  => new AncientLich(),
-                2  => new Bogle(),
-                3  => new LichLord(),
-                4  => new Shade(),
-                5  => new Spectre(),
-                6  => new Wraith(),
-                7  => new BoneKnight(),
-                8  => new Ghoul(),
-                9  => new Mummy(),
-                10 => new SkeletalKnight(),
-                11 => new Skeleton(),
-                12 => new Zombie(),
-                13 => new BoneMagi(),
-                14 => new SkeletalMage(),
-                15 => new RottingCorpse(),
-                16 => new Lich(),
-                _  => null
-            };
-
+                undead = Utility.RandomMinMax(1, 8) switch
+                {
+                    1  => new Spectre(),
+                    2  => new BoneKnight(),
+                    3  => new Ghoul(),
+                    4  => new Mummy(),
+                    5 => new SkeletalKnight(),
+                    6 => new Skeleton(),
+                    7 => new Zombie(),
+                    8 => new RottingCorpse(),
+                    _  => null
+                };
+            }
+            else
+            {
+                undead = Utility.RandomMinMax(1, 16) switch
+                {
+                    1  => new AncientLich(),
+                    2  => new Bogle(),
+                    3  => new LichLord(),
+                    4  => new Shade(),
+                    5  => new Spectre(),
+                    6  => new Wraith(),
+                    7  => new BoneKnight(),
+                    8  => new Ghoul(),
+                    9  => new Mummy(),
+                    10 => new SkeletalKnight(),
+                    11 => new Skeleton(),
+                    12 => new Zombie(),
+                    13 => new BoneMagi(),
+                    14 => new SkeletalMage(),
+                    15 => new RottingCorpse(),
+                    16 => new Lich(),
+                    _  => null
+                };
+            }
             return undead;
         }
 

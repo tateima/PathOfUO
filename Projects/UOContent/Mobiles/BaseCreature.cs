@@ -1954,52 +1954,63 @@ namespace Server.Mobiles
             Type type = GetType();
             if (type != typeof(BaseVendor) && type != typeof(BaseGuard) && type != typeof(BaseFamiliar) && !Region.IsPartOf<TownRegion>())
             {
+                // everything gets a base minion buff
+                MonsterBuff.Convert(this,
+                    MonsterBuff.NoBuff,
+                    MonsterBuff.MinionHitsBuff,
+                    MonsterBuff.MinionStrBuff,
+                    MonsterBuff.MinionIntBuff,
+                    MonsterBuff.MinionDexBuff,
+                    MonsterBuff.MinionSkillsBuff,
+                    MonsterBuff.MinionSpeedBuff,
+                    MonsterBuff.MinionFameBuff,
+                    MonsterBuff.MinionKarmaBuff,
+                    MonsterBuff.MinionDamageBuff);
+
                 // 5% chance in Dungeons 1% chance everywhere else
                 int chance = Region.IsPartOf<DungeonRegion>() ? 500 : 100;
 
-                IsHeroic = (Utility.Random(1, 10000) < chance);
+                IsHeroic = (Utility.Random( 10000) < chance);
 
                 if (!IsHeroic)
                 {
                     chance = Region.IsPartOf<DungeonRegion>() ? 2000 : 1000;
-                    IsVeteran = (Utility.Random(1, 10000) < chance);
+                    IsVeteran = (Utility.Random(10000) < chance);
                 }
 
                 if (DynamicExperienceValue() >= 475) // skeleton strength and up
                 {
                     chance = 350;
-                    IsIllusionist = (Utility.Random(1, 10000) < chance);
-                    IsCorruptor = (Utility.Random(1, 10000) < chance);
-                    IsEthereal = (Utility.Random(1, 10000) < chance);
+                    IsIllusionist = (Utility.Random(10000) < chance);
+                    IsCorruptor = (Utility.Random(10000) < chance);
+                    IsEthereal = (Utility.Random(10000) < chance);
 
                     if (DynamicExperienceValue() <= 1700)
                     {
                         chance = 350;
-                        IsBoss = (Utility.Random(1, 10000) < chance);
+                        IsBoss = (Utility.Random(10000) < chance);
                     }
                     chance = 500;
-                    IsMagicResistant = (Utility.Random(1, 10000) < chance);
+                    IsMagicResistant = (Utility.Random(10000) < chance);
                     switch (Utility.Random(4))
                     {
                         case 1:
-                            IsFrozen = (Utility.Random(1, 10000) < chance);
+                            IsFrozen = (Utility.Random(10000) < chance);
                             break;
                         case 2:
-                            IsBurning = (Utility.Random(1, 10000) < chance);
+                            IsBurning = (Utility.Random(10000) < chance);
                             break;
                         case 3:
-                            IsElectrified = (Utility.Random(1, 10000) < chance);
+                            IsElectrified = (Utility.Random(10000) < chance);
                             break;
                         case 4:
-                            IsToxic = (Utility.Random(1, 10000) < chance);
+                            IsToxic = (Utility.Random(10000) < chance);
                             break;
                     }
 
                     chance = 1000;
-                    IsReflective = (Utility.Random(1, 10000) < chance);
-                    IsRegenerative = (Utility.Random(1, 10000) < chance);
-
-
+                    IsReflective = (Utility.Random(10000) < chance);
+                    IsRegenerative = (Utility.Random(10000) < chance);
                 }
             }
         }
