@@ -56,7 +56,7 @@ namespace Server.Mobiles
         public static void CheckHues(BaseCreature bc)
         {
             bc.Hue = 0;
-            if (bc.IsCorruptor)
+            if (bc.IsCorruptor || bc.IsSoulFeeder)
             {
                 bc.Hue = CorruptorHue;
             } else if (bc.IsBoss)
@@ -105,6 +105,28 @@ namespace Server.Mobiles
             else if (bc.IsToxic)
             {
                 bc.Hue = ToxicHue;
+            }
+        }
+
+        public static void AddFeederStats(BaseCreature bc)
+        {
+            if (bc.SoulFeeds < 10)
+            {
+                bc.SoulFeeds++;
+                Convert(
+                    bc,
+                    MinionGoldBuff,
+                    MinionHitsBuff,
+                    MinionStrBuff,
+                    MinionIntBuff,
+                    MinionDexBuff,
+                    MinionSkillsBuff,
+                    MinionSpeedBuff,
+                    MinionFameBuff,
+                    MinionKarmaBuff,
+                    MinionDamageBuff
+                );
+                bc.PublicOverheadMessage(MessageType.Regular, 0x0481, false, "* This creature grows in strength *");
             }
         }
 
@@ -157,7 +179,6 @@ namespace Server.Mobiles
                 bc.SetResistance(ResistanceType.Cold, 0);
             }
         }
-
 
         public static void AddEthereal(BaseCreature bc)
         {

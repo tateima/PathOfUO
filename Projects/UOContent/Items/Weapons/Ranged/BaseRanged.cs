@@ -79,15 +79,6 @@ namespace Server.Items
                             OnMiss(attacker, defender);
                         }
                     }
-                    MultiShot multiShot = null;
-                    if (attacker is PlayerMobile attackingPlayer)
-                    {
-                        multiShot = (MultiShot)attackingPlayer.GetTalent(typeof(MultiShot));
-                    }
-                    if (multiShot != null && multiShot.Activated)
-                    {
-                        multiShot.DoShot(attacker, defender);
-                    }
                 }
 
                 attacker.RevealingAction();
@@ -139,32 +130,29 @@ namespace Server.Items
                 BaseTalent carefulShooter = ((PlayerMobile)attacker).GetTalent(typeof(CarefulShooter));
                 if (carefulShooter != null)
                 {
-                    modifier += (double)carefulShooter.Level/2;
+                    modifier += (double)carefulShooter.Level/20;
                 }
                 if (Utility.RandomDouble() <= modifier)
                 {
-                    if (Core.SE)
+                    if (Core.SE && attacker is PlayerMobile { Warmode: false } pm)
                     {
-                        if (attacker is PlayerMobile pm)
+                        var ammo = AmmoType;
+
+                        pm.RecoverableAmmo.TryGetValue(ammo, out var result);
+                        pm.RecoverableAmmo[ammo] = result + 1;
+
+                        if (!pm.Warmode)
                         {
-                            var ammo = AmmoType;
-
-                            pm.RecoverableAmmo.TryGetValue(ammo, out var result);
-                            pm.RecoverableAmmo[ammo] = result + 1;
-
-                            if (!pm.Warmode)
+                            if (!_recoveryTimerToken.Running)
                             {
-                                if (!_recoveryTimerToken.Running)
-                                {
-                                    Timer.StartTimer(TimeSpan.FromSeconds(10),
-                                        () =>
-                                        {
-                                            _recoveryTimerToken.Cancel();
-                                            pm.RecoverAmmo();
-                                        },
-                                        out _recoveryTimerToken
-                                    );
-                                }
+                                Timer.StartTimer(TimeSpan.FromSeconds(10),
+                                    () =>
+                                    {
+                                        _recoveryTimerToken.Cancel();
+                                        pm.RecoverAmmo();
+                                    },
+                                    out _recoveryTimerToken
+                                );
                             }
                         }
                     }

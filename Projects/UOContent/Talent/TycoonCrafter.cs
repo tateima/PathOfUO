@@ -12,6 +12,6 @@ namespace Server.Talent
             AddEndY = 80;
         }
 
-        public override double ModifySpellScalar() => Level / 100 * 2; // 2% per point
+        public override int ModifySpellMultiplier() => Level * 2;
     }
 }

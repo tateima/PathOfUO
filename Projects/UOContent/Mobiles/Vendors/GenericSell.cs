@@ -13,16 +13,6 @@ namespace Server.Mobiles
         public int GetSellPriceFor(Item item)
         {
             m_Table.TryGetValue(item.GetType(), out var price);
-            double tycoonScalar = 0.0;
-            double tycoonValue = 0.0;
-            if (item.RootParent is PlayerMobile seller)
-            {
-                BaseTalent tycoon = seller.GetTalent(typeof(TycoonCrafter));
-                if (tycoon != null)
-                {
-                    tycoonScalar = tycoon.ModifySpellScalar();
-                }
-            }
 
             if (item is BaseArmor armor)
             {
@@ -35,12 +25,6 @@ namespace Server.Mobiles
 
                 price += 100 * (int)armor.Durability;
                 price += 100 * (int)armor.ProtectionLevel;
-
-                if (armor.Crafter != null && armor.Crafter == item.RootParent)
-                {
-                    tycoonValue *= (1.0 + tycoonScalar);
-                    price += (int)tycoonValue;
-                }
 
                 if (price < 1)
                 {
@@ -58,12 +42,6 @@ namespace Server.Mobiles
 
                 price += 100 * (int)weapon.DurabilityLevel;
                 price += 100 * (int)weapon.DamageLevel;
-
-                if (weapon.Crafter != null && weapon.Crafter == item.RootParent)
-                {
-                    tycoonValue *= (1.0 + tycoonScalar);
-                    price += (int)tycoonValue;
-                }
 
                 if (price < 1)
                 {

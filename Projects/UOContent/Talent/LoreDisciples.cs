@@ -13,9 +13,9 @@ namespace Server.Talent
         {
             TalentDependency = typeof(LoreSeeker);
             CanBeUsed = true;
-            MobilePercentagePerPoint = 5;
             DisplayName = "Lore disciples";
             Description = "Summon random humanoids to fight alongside you for 2m (5m cooldown).";
+            MaxLevel = 4;
             ImageID = 158;
             GumpHeight = 75;
             AddEndY = 90;
@@ -50,25 +50,27 @@ namespace Server.Talent
                     {
                         BaseCreature disciple = null;
                         var loreTeacher = ((PlayerMobile)from).GetTalent(typeof(LoreTeacher));
-                        var skillIncrease = loreTeacher != null ? loreTeacher.Level * 3 : 0.0;
-                        switch (Utility.Random(1, 4))
+                        MobilePercentagePerPoint += loreTeacher?.Level > Level ? loreTeacher.Level : 0;
+                        var skillIncrease = loreTeacher != null ? loreTeacher.Level * 2 : 0.0;
+                        switch (Utility.RandomMinMax(1, 6))
                         {
                             case 1:
+                            case 2:
+                            case 3:
                                 disciple = new Brigand();
                                 disciple.Skills.Fencing.Base += skillIncrease;
+                                disciple.Skills.Archery.Base += skillIncrease;
                                 disciple.Skills.Macing.Base += skillIncrease;
                                 disciple.Skills.MagicResist.Base += skillIncrease;
                                 disciple.Skills.Swords.Base += skillIncrease;
                                 disciple.Skills.Tactics.Base += skillIncrease;
                                 disciple.Skills.Wrestling.Base += skillIncrease;
                                 break;
-                            case 2:
+                            case 4:
+                            case 5:
                                 disciple = new EvilMage();
                                 break;
-                            case 3:
-                                disciple = new EvilMageLord();
-                                break;
-                            case 4:
+                            case 6:
                                 disciple = new EvilHealer();
                                 disciple.Skills.Forensics.Base += skillIncrease;
                                 disciple.Skills.SpiritSpeak.Base += skillIncrease;
@@ -76,7 +78,7 @@ namespace Server.Talent
                                 break;
                         }
 
-                        if (disciple is EvilMage or EvilMageLord)
+                        if (disciple is EvilMage)
                         {
                             disciple.Skills.EvalInt.Base += skillIncrease;
                             disciple.Skills.Magery.Base += skillIncrease;
@@ -96,8 +98,8 @@ namespace Server.Talent
                                     item.Delete();
                                 }
                             }
-
                             SpellHelper.Summon(disciple, from, 0x1FE, TimeSpan.FromMinutes(2), false, false);
+                            disciple.OverrideDispellable = true;
                             disciple.Say("I am here to serve thee!");
                             disciple.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
                             disciple.PlaySound(0x1FE);

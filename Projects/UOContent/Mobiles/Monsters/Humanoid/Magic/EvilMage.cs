@@ -12,9 +12,9 @@ namespace Server.Mobiles
             Title = "the evil mage";
             Body = Core.UOR ? 124 : 0x190;
 
-            SetStr(81, 105);
+            SetStr(81, 205);
             SetDex(91, 115);
-            SetInt(96, 120);
+            SetInt(96, 220);
 
             SetHits(49, 63);
 

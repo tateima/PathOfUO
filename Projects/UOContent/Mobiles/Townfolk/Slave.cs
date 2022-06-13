@@ -83,8 +83,6 @@ namespace Server.Mobiles
             {
                 Say("I don't understand what you mean. Does master want ore, logs, cloth or hide?");
             }
-            return;
-
         }
 
         public void ReturnWithResources()

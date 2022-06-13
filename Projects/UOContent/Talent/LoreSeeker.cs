@@ -10,7 +10,7 @@ namespace Server.Talent
 
         public LoreSeeker()
         {
-            DisplayName = "Lore giver";
+            DisplayName = "Lore seeker";
             Description = "Expose weaknesses in enemies on hit. Need 70 or above in two lore skills.";
             ImageID = 127;
             GumpHeight = 85;

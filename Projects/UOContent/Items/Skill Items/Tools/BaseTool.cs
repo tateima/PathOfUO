@@ -69,10 +69,7 @@ namespace Server.Items
         {
             Quality = (ToolQuality)quality;
 
-            if (makersMark)
-            {
-                Crafter = from;
-            }
+            Crafter = from;
 
             return quality;
         }

@@ -23,5 +23,15 @@ namespace Server.Talent
                 mobile.AddStatMod(new StatMod(StatType.Dex, "LeatherWarmaster", Level * 2, TimeSpan.Zero));
             }
         }
+
+        public override int CheckDamageAbsorptionEffect(Mobile defender, Mobile attacker, int damage)
+        {
+            if (BaseArmor.FullLeather(defender))
+            {
+                damage -= Level;
+            }
+
+            return damage;
+        }
     }
 }

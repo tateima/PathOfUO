@@ -2121,7 +2121,7 @@ namespace Server.Items
                     {
                         if (!ContainsAlchohol && from.Mana < from.ManaMax)
                         {
-                            from.Mana += optimisedConsumption.Level;
+                            from.Mana += optimisedConsumption.Level * 2;
                         }
                     }
                 }

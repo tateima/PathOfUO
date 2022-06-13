@@ -132,12 +132,7 @@ namespace Server.Items
             }
 
             MaxCharges = Core.SE ? charges * 2 : charges;
-
-            if (makersMark)
-            {
-                Crafter = from;
-            }
-
+            Crafter = from;
             m_Quality = (BookQuality)(quality - 1);
 
             return quality;

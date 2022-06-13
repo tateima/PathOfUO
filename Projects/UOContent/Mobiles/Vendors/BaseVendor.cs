@@ -474,6 +474,17 @@ namespace Server.Mobiles
                 return true;
             }
 
+            int tycoonModifier = 0;
+            BaseTalent tycoon = null;
+            if (seller is PlayerMobile player)
+            {
+                tycoon = player.GetTalent(typeof(TycoonCrafter));
+                if (tycoon != null)
+                {
+                    tycoonModifier = tycoon.ModifySpellMultiplier();
+                }
+            }
+
             foreach (var resp in list)
             {
                 if (resp.Item.RootParent != seller || resp.Amount <= 0 || !resp.Item.IsStandardLoot() ||
@@ -549,7 +560,21 @@ namespace Server.Mobiles
                         }
                     }
 
-                    GiveGold += ssi.GetSellPriceFor(resp.Item) * amount;
+                    int sellPrice = ssi.GetSellPriceFor(resp.Item);
+                    if (tycoon != null)
+                    {
+                        if (
+                            resp.Item is BaseWeapon { Crafter: { } } baseWeapon && baseWeapon.Crafter == seller
+                            ||
+                            resp.Item is BaseArmor { Crafter: { } } baseArmor && baseArmor.Crafter == seller
+                            ||
+                            resp.Item is BaseJewel { Crafter: { } } baseJewel && baseJewel.Crafter == seller
+                        )
+                        {
+                            sellPrice += AOS.Scale(sellPrice, tycoonModifier);
+                        }
+                    }
+                    GiveGold += sellPrice * amount;
                     break;
                 }
             }

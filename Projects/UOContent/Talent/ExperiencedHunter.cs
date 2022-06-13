@@ -14,7 +14,7 @@ namespace Server.Talent
         {
             if (IsMobileType(OppositionGroup.AnimalGroup, target.GetType()))
             {
-                target.Damage(Level, attacker);
+                target.Damage(Utility.RandomMinMax(1, Level), attacker);
             }
         }
     }

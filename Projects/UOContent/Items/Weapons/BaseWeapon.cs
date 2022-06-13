@@ -33,6 +33,7 @@ namespace Server.Items
         private int m_SocketAmount;
         private string m_Sockets;
         private bool m_Enchanted;
+        private bool m_WarForged;
 
         /* Weapon internals work differently now (Mar 13 2003)
          *
@@ -88,6 +89,7 @@ namespace Server.Items
             m_ShardPower = 0;
             m_SocketAmount = 0;
             m_Enchanted = false;
+            m_WarForged = false;
             m_Sockets = "";
             m_Haunted = false;
             m_Electrified = false;
@@ -239,6 +241,18 @@ namespace Server.Items
                 InvalidateProperties();
             }
         }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool Warforged
+        {
+            get => m_WarForged;
+            set
+            {
+                m_WarForged = value;
+                InvalidateProperties();
+            }
+        }
+
         public string[] SocketArray => string.IsNullOrEmpty(Sockets) ? new string[] {} : m_Sockets.Split(',');
 
         [CommandProperty(AccessLevel.GameMaster)]
@@ -570,10 +584,7 @@ namespace Server.Items
         {
             Quality = (WeaponQuality)quality;
 
-            if (makersMark)
-            {
-                Crafter = from;
-            }
+            Crafter = from;
 
             PlayerConstructed = true;
 
@@ -1655,31 +1666,14 @@ namespace Server.Items
             return aosChance > Utility.RandomDouble();
         }
 
-        public int AbsorbDamageByTalent(Mobile defender, int damage) {
+        public int AbsorbDamageByTalent(Mobile defender, Mobile attacker, int damage) {
             if (defender is PlayerMobile player) {
-                BaseTalent leatherWarmaster = player.GetTalent(typeof(LeatherWarmaster));
-                if (leatherWarmaster != null && BaseArmor.FullLeather(defender)) {
-                    damage -= leatherWarmaster.Level;
-                }
-                BaseTalent boneWarmaster = player.GetTalent(typeof(BoneWarmaster));
-                if (boneWarmaster != null && BaseArmor.FullBone(defender)) {
-                    damage -= boneWarmaster.Level;
-                }
-                BaseTalent clothWarMaster = player.GetTalent(typeof(ClothWarmaster));
-                if (clothWarMaster != null && BaseArmor.FullCloth(defender)) {
-                    damage -= clothWarMaster.Level;
-                }
-                BaseTalent plateWarmaster = player.GetTalent(typeof(PlateWarmaster));
-                if (plateWarmaster != null && BaseArmor.FullPlate(defender)) {
-                    damage -= plateWarmaster.Level;
-                }
-                BaseTalent chainWarmaster = player.GetTalent(typeof(ChainWarmaster));
-                if (chainWarmaster != null && (BaseArmor.FullChain(defender) || BaseArmor.FullRing(defender))) {
-                    damage -= chainWarmaster.Level;
-                }
-                BaseTalent dragonWarmaster = player.GetTalent(typeof(DragonWarmaster));
-                if (dragonWarmaster != null && BaseArmor.FullDragon(defender)) {
-                    damage -= dragonWarmaster.Level;
+                foreach (var (_, value) in player.Talents)
+                {
+                    if (value.HasDamageAbsorptionEffect)
+                    {
+                        value.CheckDamageAbsorptionEffect(player, attacker, damage);
+                    }
                 }
             }
             if (damage < 0) {
@@ -1750,7 +1744,7 @@ namespace Server.Items
                     armor.OnHit(this, damage); // call OnHit to lose durability
                 }
             }
-            damage = AbsorbDamageByTalent(defender, damage);
+            damage = AbsorbDamageByTalent(defender, attacker, damage);
             return damage;
         }
 
@@ -1801,7 +1795,7 @@ namespace Server.Items
 
                 damage -= Utility.Random(from, to - from + 1);
             }
-            damage = AbsorbDamageByTalent(defender, damage);
+            damage = AbsorbDamageByTalent(defender, attacker, damage);
             return damage;
         }
 
@@ -2421,15 +2415,6 @@ namespace Server.Items
                             elementalDamage *= 2;
                         }
                     }
-                    if (Frozen || Toxic)
-                    {
-                        damage /= 2;
-                    }
-                    if (damage < 1)
-                    {
-                        damage = 1;
-                    }
-
                     if (Burning)
                     {
                         fireDam = 100;
@@ -3232,6 +3217,13 @@ namespace Server.Items
         public override void GetProperties(ObjectPropertyList list)
         {
             base.GetProperties(list);
+            if (m_WarForged)
+            {
+                list.Add(
+                    1060847,
+                    "Warforged"
+                );
+            }
             if (m_Enchanted)
             {
                 list.Add(
@@ -4025,7 +4017,8 @@ namespace Server.Items
         {
             base.Serialize(writer);
 
-            writer.Write(14); // version
+            writer.Write(15); // version
+            writer.Write(m_WarForged);
             writer.Write(m_Enchanted);
             writer.Write(m_SocketAmount);
             writer.Write(m_Sockets);
@@ -4228,6 +4221,9 @@ namespace Server.Items
 
             switch (version)
             {
+                case 15:
+                    m_WarForged = reader.ReadBool();
+                    goto case 14;
                 case 14:
                     m_Enchanted = reader.ReadBool();
                     goto case 13;

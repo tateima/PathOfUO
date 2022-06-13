@@ -115,12 +115,7 @@ namespace Server.Items
         )
         {
             Quality = (ClothingQuality)quality;
-
-            if (makersMark)
-            {
-                Crafter = from;
-            }
-
+            Crafter = from;
             return quality;
         }
 

@@ -19,6 +19,16 @@ namespace Server.Talent
             MaxLevel = 10;
         }
 
+        public override void UpdateMobile(Mobile mobile)
+        {
+            var manual = mobile.Backpack?.FindItemByType<GamblersGuide>() ?? mobile.BankBox?.FindItemByType<GamblersGuide>();
+            if (manual is null)
+            {
+                mobile.Backpack?.AddItem(new GamblersGuide());
+                mobile.SendMessage("A gamblers guide has been placed in your backpack.");
+            }
+        }
+
         public override void OnUse(Mobile from)
         {
             if (!OnCooldown)

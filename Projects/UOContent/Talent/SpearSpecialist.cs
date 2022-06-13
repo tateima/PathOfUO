@@ -20,7 +20,7 @@ namespace Server.Talent
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
             // 2 damage per point because 2H
-            target.Damage(Level * 2, attacker);
+            target.Damage(Utility.RandomMinMax(1, Level) * 2, attacker);
         }
     }
 }

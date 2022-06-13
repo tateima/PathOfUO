@@ -58,6 +58,7 @@ namespace Server.Mobiles
         private long m_NextHealTime;
 
         private LandTarget m_RevealTarget;
+        private bool _summonCooldown;
 
         public MageAI(BaseCreature m)
             : base(m)
@@ -440,7 +441,6 @@ namespace Server.Mobiles
                     var psDamage =
                         (m_Mobile.Skills.SpiritSpeak.Value - c.Skills.MagicResist.Value) / 10 +
                         (c.Player ? 18 : 30);
-
                     if (psDamage > c.Hits)
                     {
                         return new PainSpikeSpell(m_Mobile);
@@ -545,35 +545,6 @@ namespace Server.Mobiles
 
                         break;
                     }
-                case 2:
-                    {
-                        if (!m_Mobile.Controlled && !m_Mobile.Summoned && m_Mobile.Mana >= 40 && IsMasterNecromancer)
-                        {
-                            m_Mobile.DebugSay("Attempting to summon something");
-                            m_Mobile.Mana -= 40;
-                            BaseCreature creature = MasterOfDeath.RandomUndead(true);
-                            Point3D combatantLocation = m_Mobile.Combatant.Location;
-                            combatantLocation.X += Utility.RandomMinMax(1, 3);
-                            combatantLocation.Y += Utility.RandomMinMax(1, 3);
-                            creature.MoveToWorld(combatantLocation, m_Mobile.Map);
-                            Effects.PlaySound(m_Mobile.Location, m_Mobile.Map, 0x1FB);
-                            Effects.SendLocationParticles(
-                                EffectItem.Create(creature.Location, creature.Map, EffectItem.DefaultDuration),
-                                0x37CC,
-                                1,
-                                40,
-                                97,
-                                3,
-                                9917,
-                                0
-                            );
-                        }
-                        else
-                        {
-                            goto default;
-                        }
-                        break;
-                    }
                 default: // Set up a combo
                     {
                         if (m_Mobile.Mana > 15 && m_Mobile.Mana < 40)
@@ -608,6 +579,41 @@ namespace Server.Mobiles
             }
 
             return spell;
+        }
+
+        public bool CheckSummon()
+        {
+            if (!m_Mobile.Controlled && !m_Mobile.Summoned && m_Mobile.Mana >= 40 && IsMasterNecromancer && !_summonCooldown)
+            {
+                m_Mobile.DebugSay("Attempting to summon something");
+                m_Mobile.Mana -= 40;
+                BaseCreature creature = MasterOfDeath.RandomUndead(true);
+                Point3D combatantLocation = m_Mobile.Combatant.Location;
+                combatantLocation.X += Utility.RandomMinMax(1, 3);
+                combatantLocation.Y += Utility.RandomMinMax(1, 3);
+                creature.MoveToWorld(combatantLocation, m_Mobile.Map);
+                Effects.PlaySound(m_Mobile.Location, m_Mobile.Map, 0x1FB);
+                Effects.SendLocationParticles(
+                    EffectItem.Create(creature.Location, creature.Map, EffectItem.DefaultDuration),
+                    0x37CC,
+                    1,
+                    40,
+                    97,
+                    3,
+                    9917,
+                    0
+                );
+                _summonCooldown = true;
+                Timer.StartTimer(TimeSpan.FromSeconds(30), ExpireSummonCooldown);
+                return true;
+            }
+
+            return false;
+        }
+
+        public void ExpireSummonCooldown()
+        {
+            _summonCooldown = false;
         }
 
         public virtual Spell DoCombo(Mobile c)
@@ -801,6 +807,11 @@ namespace Server.Mobiles
                         return true;
                     }
                 }
+            }
+
+            if (CheckSummon())
+            {
+                return true;
             }
 
             if (m_Mobile.Spell == null && Core.TickCount - m_NextCastTime >= 0 && m_Mobile.InRange(c, Core.ML ? 10 : 12))

@@ -1661,7 +1661,7 @@ namespace Server.Mobiles
             if (from is PlayerMobile mobile)
             {
                 mobile.ClaimAutoStabledPets();
-                mobile.HungerHarmCheck();
+                mobile.HungerHarmCheck(true);
                 foreach (KeyValuePair<Type, BaseTalent> entry in mobile.Talents)
                 {
                     if (entry.Value.Level > 0)
@@ -1673,39 +1673,47 @@ namespace Server.Mobiles
             }
         }
 
-        public void HungerHarmCheck()
+        public void HungerHarmCheck(bool startTimerOnly)
         {
-            int damage = Utility.RandomMinMax(11, 30 - (int)(Skills.Cooking.Value / 10)); // cooking helps save hunger death!
-            if (Hunger < 10)
+            if (!startTimerOnly)
             {
-                string message = "Thou need food or else thy will die!";
-                BaseTalent fortitude = GetTalent(typeof(Fortitude));
-                if (fortitude != null && Hits - damage <= 0) {
-                    damage = 0;
-                    message = "Thou need food but thy talents spared thee!";
-                }
-                SendMessage(0x21, message);
-                Damage(damage - Hunger, this);
-                Stam -= (damage - Hunger);
-            }
-            if (Thirst < 10)
-            {
-                Damage(damage - Thirst, this);
-                Mana -= (damage - Thirst);
-                SendMessage(0x21, "Thou need water or else thy will die!");
-            }
-            if (Hunger < 10 || Thirst < 10)
-            {
-                if (Female)
-                {
-                    SendSound(0x14B);
-                }
-                else
-                {
-                    SendSound(0x157);
-                }
+                int damage = Utility.RandomMinMax(11, 30 - (int)(Skills.Cooking.Value / 10)); // cooking helps save hunger death!
+                            if (Hunger < 10)
+                            {
+                                string message = "Thou need food or else thy will die!";
+                                BaseTalent fortitude = GetTalent(typeof(Fortitude));
+                                if (fortitude != null && Hits - damage <= 0) {
+                                    damage = 0;
+                                    message = "Thou need food but thy talents spared thee!";
+                                }
+                                SendMessage(0x21, message);
+                                Damage(damage - Hunger, this);
+                                Stam -= (damage - Hunger);
+                            }
+                            if (Thirst < 10)
+                            {
+                                Damage(damage - Thirst, this);
+                                Mana -= (damage - Thirst);
+                                SendMessage(0x21, "Thou need water or else thy will die!");
+                            }
+                            if (Hunger < 10 || Thirst < 10)
+                            {
+                                if (Female)
+                                {
+                                    SendSound(0x14B);
+                                }
+                                else
+                                {
+                                    SendSound(0x157);
+                                }
+                            }
             }
             Timer.StartTimer(TimeSpan.FromMinutes(5), HungerHarmCheck, out _hungerTimerToken);
+        }
+
+        private void HungerHarmCheck()
+        {
+            HungerHarmCheck(false);
         }
 
         public void ValidateEquipment()
@@ -3256,7 +3264,10 @@ namespace Server.Mobiles
             }
 
             base.OnDeath(c);
-
+            if (LastKiller is BaseCreature { IsSoulFeeder: true } creatureThatKilled)
+            {
+                MonsterBuff.AddFeederStats(creatureThatKilled);
+            }
             Point3D point = new Point3D(1602, 1591, 20); // teleport back to Britain
             MoveToWorld(point, Map.Trammel);
             string broadcastMessage = $"{Name} has died at the hands of {LastKiller.Name}. At level {Level}, their deeds will be remembered.";
@@ -3535,6 +3546,7 @@ namespace Server.Mobiles
                 case 31:
                     // reset followers to default
                     FollowersMax = 5;
+                    int talentPointReturn = 0;
                     var talentCount = reader.ReadInt();
                     for (var i = 0; i < talentCount; ++i)
                     {
@@ -3544,6 +3556,11 @@ namespace Server.Mobiles
                         if (baseTalent != null)
                         {
                             baseTalent.Level = reader.ReadInt();
+                            if (baseTalent.Level > baseTalent.MaxLevel)
+                            {
+                                talentPointReturn += baseTalent.Level - baseTalent.MaxLevel;
+                                baseTalent.Level = baseTalent.MaxLevel;
+                            }
                             Talents.AddOrUpdate(type, baseTalent, (t, bt) => baseTalent);
                         }
                         else
@@ -3552,6 +3569,7 @@ namespace Server.Mobiles
                         }
                     }
                     TalentPoints = reader.ReadInt();
+                    TalentPoints += talentPointReturn;
                     StatPoints = reader.ReadInt();
                     AllottedCraftSkillPoints = reader.ReadInt();
                     CraftSkillPoints = reader.ReadInt();

@@ -24,7 +24,7 @@ namespace Server.Talent
                 var group = SkillsGumpGroup.Groups.FirstOrDefault(group => group.Name == "Combat Ratings");
                 if (group != null)
                 {
-                    Timer drunkTimer = new DrunkTimer(mobile, group.Skills.Select(skill => new DefaultSkillMod(skill, true, Level * 3)).Cast<SkillMod>().ToArray());
+                    Timer drunkTimer = new DrunkTimer(mobile, group.Skills.Select(skill => new DefaultSkillMod(skill, true, Level * 2)).Cast<SkillMod>().ToArray());
                     drunkTimer.Start();
                 }
             }
@@ -40,6 +40,10 @@ namespace Server.Talent
             {
                 m_Drunk = drunk;
                 m_SkillMods = skillMods;
+                foreach (SkillMod skillMod in skillMods)
+                {
+                    m_Drunk.AddSkillMod(skillMod);
+                }
             }
 
             protected override void OnTick()

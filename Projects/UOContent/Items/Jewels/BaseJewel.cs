@@ -185,11 +185,7 @@ namespace Server.Items
             CraftItem craftItem, int resHue
         )
         {
-            if (makersMark)
-            {
-                Crafter = from;
-            }
-
+            Crafter = from;
             var resourceType = typeRes ?? craftItem.Resources[0].ItemType;
 
             Resource = CraftResources.GetFromType(resourceType);

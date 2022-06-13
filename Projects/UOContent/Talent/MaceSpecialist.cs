@@ -22,7 +22,7 @@ namespace Server.Talent
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
-            target.Damage(Level, attacker);
+            target.Damage(Utility.RandomMinMax(1, Level), attacker);
         }
     }
 }

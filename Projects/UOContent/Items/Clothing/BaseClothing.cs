@@ -238,11 +238,7 @@ namespace Server.Items
         )
         {
             Quality = (ClothingQuality)quality;
-
-            if (makersMark)
-            {
-                Crafter = from;
-            }
+            Crafter = from;
 
             if (DefaultResource != CraftResource.None)
             {

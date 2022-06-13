@@ -10,5 +10,7 @@ namespace Server.Talent
             ImageID = 199;
             AddEndY = 85;
         }
+
+        public bool CheckSave() => Utility.Random(100) < Level * 5;
     }
 }

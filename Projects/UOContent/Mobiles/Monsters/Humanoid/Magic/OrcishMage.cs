@@ -11,7 +11,7 @@ namespace Server.Mobiles
         {
             Body = 140;
             BaseSoundID = 0x45A;
-            IsNecromancer = Utility.RandomBool();
+            IsNecromancer = Utility.Random(100) < 10;
             int resistanceBuffs = 0;
             int skillBuffs = 0;
             int fameBuff = 0;
@@ -20,13 +20,14 @@ namespace Server.Mobiles
             if (IsNecromancer)
             {
                 Hue = 0x322;
-                SetInt(181, 255);
+                SetInt(181, 1055);
                 SetHits(170, 190);
                 SetDamageType(ResistanceType.Cold, 100);
                 SetSkill(SkillName.Necromancy, 90.1, 95.5);
                 resistanceBuffs = 20;
                 skillBuffs = 10;
                 fameBuff = 2000;
+                SetDamage(3, 6);
                 PackItem(new BagOfNecroReagents());
             }
             else
@@ -35,9 +36,8 @@ namespace Server.Mobiles
                 SetHits(70, 90);
                 SetDamageType(ResistanceType.Physical, 100);
                 SetSkill(SkillName.Magery, 60.1, 72.5);
+                SetDamage(4, 14);
             }
-
-            SetDamage(4, 14);
 
             SetResistance(ResistanceType.Physical, 25, 35 + resistanceBuffs);
             SetResistance(ResistanceType.Fire, 30, 40 + resistanceBuffs);

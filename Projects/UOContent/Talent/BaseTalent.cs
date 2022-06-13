@@ -91,11 +91,11 @@ namespace Server.Talent
             typeof(CrossbowSpecialist),
             typeof(IceBolt),
             typeof(BowSpecialist),
-            typeof(MultiShot),
+            typeof(MultiShot), // up to here test
             typeof(CarefulShooter),
             typeof(LoreSeeker),
-            typeof(LoreTeacher),
             typeof(LoreDisciples),
+            typeof(LoreTeacher),
             typeof(ExperiencedHunter),
             typeof(AbyssalHunter),
             typeof(ArachnidHunter),
@@ -107,7 +107,7 @@ namespace Server.Talent
             typeof(ResourcefulCrafter),
             typeof(OptimisedConsumption),
             typeof(TycoonCrafter),
-            typeof(StrongTools), // up to here testing
+            typeof(StrongTools),
             typeof(ResourcefulHarvester),
             typeof(EfficientCarver),
             typeof(EfficientSkinner),
@@ -151,6 +151,7 @@ namespace Server.Talent
             Activated = false;
             OnCooldown = false;
             CanBeUsed = false;
+            HasDamageAbsorptionEffect = false;
             HasDefenseEffect = false;
             HasDeathEffect = false;
             HasKillEffect = false;
@@ -182,6 +183,8 @@ namespace Server.Talent
         public bool HasKillEffect { get; set; }
 
         public bool HasDefenseEffect { get; set; }
+
+        public bool HasDamageAbsorptionEffect { get; set; }
 
         public bool HasDeathEffect { get; set; }
 
@@ -277,9 +280,16 @@ namespace Server.Talent
         {
         }
 
+        public virtual int CheckDamageAbsorptionEffect(Mobile defender, Mobile attacker, int damage) => damage;
+
         public virtual void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
         {
         }
+
+        public virtual void CheckDamageEffect(Mobile defender, Mobile target, int damage)
+        {
+        }
+
 
         public virtual void CheckDeathEffect(Mobile target)
         {

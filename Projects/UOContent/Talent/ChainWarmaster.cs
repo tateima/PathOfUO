@@ -25,5 +25,14 @@ namespace Server.Talent
                 mobile.AddStatMod(new StatMod(StatType.Dex, "ChainWarmasterDex", Level, TimeSpan.Zero));
             }
         }
+
+        public override int CheckDamageAbsorptionEffect(Mobile defender, Mobile attacker, int damage)
+        {
+            if (BaseArmor.FullChain(defender) || BaseArmor.FullRing(defender))
+            {
+                damage -= Level;
+            }
+            return damage;
+        }
     }
 }

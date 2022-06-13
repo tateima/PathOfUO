@@ -260,6 +260,24 @@ namespace Server.Items
         [SerializableFieldSaveFlag(28)]
         private bool ShouldSerializeEnchanted() => _enchanted;
 
+        private bool _warforged;
+
+        [SerializableField(29)]
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool Warforged
+        {
+            get => _warforged;
+            set
+            {
+                _warforged = value;
+                InvalidateProperties();
+                this.MarkDirty();
+            }
+        }
+
+        [SerializableFieldSaveFlag(29)]
+        private bool ShouldSerializeWarforged() => _warforged;
+
 
         private FactionItem m_FactionState;
 
@@ -280,6 +298,7 @@ namespace Server.Items
             _socketAmount = 0;
             _sockets = "";
             _enchanted = false;
+            _warforged = false;
         }
 
         public virtual bool AllowMaleWearer => true;
@@ -672,11 +691,7 @@ namespace Server.Items
         )
         {
             Quality = (ArmorQuality)quality;
-
-            if (makersMark)
-            {
-                Crafter = from;
-            }
+            Crafter = from;
 
             var resourceType = typeRes ?? craftItem.Resources[0].ItemType;
 
@@ -1184,6 +1199,11 @@ namespace Server.Items
             var flags = (OldSaveFlag)reader.ReadEncodedInt();
 
             Attributes = new AosAttributes(this);
+
+            if (GetSaveFlag(flags, OldSaveFlag.Warforged))
+            {
+                _warforged = reader.ReadBool();
+            }
 
             if (GetSaveFlag(flags, OldSaveFlag.Enchanted))
             {
@@ -1775,7 +1795,13 @@ namespace Server.Items
         public override void GetProperties(ObjectPropertyList list)
         {
             base.GetProperties(list);
-
+            if (_warforged)
+            {
+                list.Add(
+                    1060847,
+                    "Warforged"
+                );
+            }
             if (_enchanted)
             {
                 list.Add(
@@ -2084,7 +2110,8 @@ namespace Server.Items
             ShardPower = 0x02000000,
             SocketAmount = 0x03000000,
             Sockets = 0x04000000,
-            Enchanted = 0x05000000
+            Enchanted = 0x05000000,
+            Warforged = 0x06000000
         }
     }
 }

@@ -220,10 +220,7 @@ namespace Server.Items
                 BaseRunicTool.ApplyAttributesTo(this, true, 0, propertyCount, minIntensity, maxIntensity);
             }
 
-            if (makersMark)
-            {
-                Crafter = from;
-            }
+            Crafter = from;
 
             m_Quality = (BookQuality)(quality - 1);
 

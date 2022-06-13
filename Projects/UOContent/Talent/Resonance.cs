@@ -21,7 +21,7 @@ namespace Server.Talent
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
-            target.Damage(Level * 2, attacker);
+            target.Damage(Utility.RandomMinMax(1, Level) * 2, attacker);
         }
 
         public override void OnUse(Mobile from)

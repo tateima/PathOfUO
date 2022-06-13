@@ -6,10 +6,11 @@ namespace Server.Talent
         {
             TalentDependency = typeof(LoreDisciples);
             DisplayName = "Lore teacher";
-            Description = "Increases skill levels for disciple followers.";
+            Description = "Increases skill and stat levels for disciple followers.";
             ImageID = 185;
             GumpHeight = 85;
             AddEndY = 80;
+            MaxLevel = 7;
         }
     }
 }

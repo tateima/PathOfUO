@@ -10,7 +10,7 @@ namespace Server.Mobiles
         {
             SpeechHue = Utility.RandomDyedHue();
 
-            SetStr(86, 150);
+            SetStr(125, 150);
             SetDex(81, 95);
             SetInt(61, 75);
 
@@ -24,9 +24,9 @@ namespace Server.Mobiles
             SetSkill(SkillName.Healing, 60.0, 60.0);
 
             Hue = Race.Human.RandomSkinHue();
-            Title = "the henchman";
             if (Female == Utility.RandomBool())
             {
+                Title = "the hench woman";
                 Body = 0x191;
                 Name = NameList.RandomName("female");
                 AddItem(
@@ -44,6 +44,7 @@ namespace Server.Mobiles
             }
             else
             {
+                Title = "the henchman";
                 Body = 0x190;
                 Name = NameList.RandomName("male");
                 if (Utility.Random(2) < 1)
@@ -93,15 +94,16 @@ namespace Server.Mobiles
         {
         }
 
-        public override bool CanTeach => true;
+        public override bool CanHeal => true;
+        public override bool CanTeach => false;
         public override bool ClickTitle => false;
 
         public override bool CheckGold(Mobile from, Item dropped) => dropped is Gold gold && OnGoldGiven(from, gold);
         public override bool OnGoldGiven(Mobile from, Gold dropped)
         {
-            if (Controlled && (ControlMaster == from) & dropped.Amount >= 100)
+            if (Controlled && (ControlMaster == from) & dropped.Amount >= 1000)
             {
-                Loyalty += dropped.Amount / 100;
+                Loyalty += dropped.Amount / 1000;
                 SayTo(from, "Thanks for the gold, I'll hang around");
                 if (Body == 0x191) // female
                 {
@@ -151,7 +153,7 @@ namespace Server.Mobiles
                     from.SendSound(0x42D);
                 }
 
-                SayTo(from, "Give me 100 gold or more and we'll talk");
+                SayTo(from, "Give me 1000 gold or more and we'll talk");
             }
             if (Loyalty > MaxLoyalty)
             {

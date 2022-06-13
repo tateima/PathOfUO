@@ -6,6 +6,7 @@ namespace Server.Talent
         {
             BlockedBy = new[] { typeof(ArachnidHunter) };
             TalentDependency = typeof(ExperiencedHunter);
+            HasDamageAbsorptionEffect = true;
             DisplayName = "Reptilian hunter";
             Description = "Increases damage to reptiles and heals damage from them.";
             ImageID = 187;
@@ -16,16 +17,17 @@ namespace Server.Talent
         {
             if (IsMobileType(OppositionGroup.ReptilianGroup, target.GetType()))
             {
-                target.Damage(Level, attacker);
+                target.Damage(Utility.RandomMinMax(1, Level), attacker);
             }
         }
 
-        public override void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
+        public override int CheckDamageAbsorptionEffect(Mobile defender, Mobile attacker, int damage)
         {
-            if (IsMobileType(OppositionGroup.ReptilianGroup, target.GetType()))
+            if (IsMobileType(OppositionGroup.ReptilianGroup, attacker.GetType()))
             {
-                defender.Heal(AOS.Scale(damage, Level));
+                damage -= AOS.Scale(damage, Level * 5);
             }
+            return damage;
         }
     }
 }

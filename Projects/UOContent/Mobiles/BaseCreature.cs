@@ -364,6 +364,7 @@ namespace Server.Mobiles
         private bool m_Burning;
         private bool m_Frozen;
         private bool m_Toxic;
+        private bool m_SoulFeeder;
 
         private int m_PhysicalResistance;
         private int m_PoisonResistance;
@@ -605,6 +606,31 @@ namespace Server.Mobiles
                     return;
                 }
                 m_Corrupted = value;
+                if (value)
+                {
+                    MonsterBuff.AddCorrupted(this);
+                }
+                else
+                {
+                    MonsterBuff.RemoveCorrupted(this);
+                }
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int SoulFeeds { get; set; }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsSoulFeeder
+        {
+            get => m_SoulFeeder;
+            set
+            {
+                if (m_SoulFeeder == value)
+                {
+                    return;
+                }
+                m_SoulFeeder = value;
                 if (value)
                 {
                     MonsterBuff.AddCorrupted(this);
@@ -1384,7 +1410,9 @@ namespace Server.Mobiles
         public static bool Summoning { get; set; }
 
         public virtual bool CanBreath => HasBreath && !Summoned;
-        public virtual bool IsDispellable => Summoned && !IsAnimatedDead;
+        public virtual bool IsDispellable => Summoned && !IsAnimatedDead && !OverrideDispellable;
+
+        public virtual bool OverrideDispellable { get; set; }
 
         // If they are following a waypoint, they'll continue to follow it even if players aren't around
         public virtual bool PlayerRangeSensitive => CurrentWayPoint == null;
@@ -1970,47 +1998,49 @@ namespace Server.Mobiles
                 // 5% chance in Dungeons 1% chance everywhere else
                 int chance = Region.IsPartOf<DungeonRegion>() ? 500 : 100;
 
-                IsHeroic = (Utility.Random( 10000) < chance);
+                IsHeroic = Utility.Random(10000) < chance;
 
                 if (!IsHeroic)
                 {
                     chance = Region.IsPartOf<DungeonRegion>() ? 2000 : 1000;
-                    IsVeteran = (Utility.Random(10000) < chance);
+                    IsVeteran = Utility.Random(10000) < chance;
                 }
 
                 if (DynamicExperienceValue() >= 475) // skeleton strength and up
                 {
                     chance = 350;
-                    IsIllusionist = (Utility.Random(10000) < chance);
-                    IsCorruptor = (Utility.Random(10000) < chance);
-                    IsEthereal = (Utility.Random(10000) < chance);
+                    IsIllusionist = Utility.Random(10000) < chance;
+                    IsCorruptor = Utility.Random(10000) < chance;
+                    IsEthereal = Utility.Random(10000) < chance;
 
                     if (DynamicExperienceValue() <= 1700)
                     {
                         chance = 350;
-                        IsBoss = (Utility.Random(10000) < chance);
+                        IsBoss = Utility.Random(10000) < chance;
                     }
+
                     chance = 500;
-                    IsMagicResistant = (Utility.Random(10000) < chance);
+                    IsMagicResistant = Utility.Random(10000) < chance;
                     switch (Utility.Random(4))
                     {
                         case 1:
-                            IsFrozen = (Utility.Random(10000) < chance);
+                            IsFrozen = Utility.Random(10000) < chance;
                             break;
                         case 2:
-                            IsBurning = (Utility.Random(10000) < chance);
+                            IsBurning = Utility.Random(10000) < chance;
                             break;
                         case 3:
-                            IsElectrified = (Utility.Random(10000) < chance);
+                            IsElectrified = Utility.Random(10000) < chance;
                             break;
                         case 4:
-                            IsToxic = (Utility.Random(10000) < chance);
+                            IsToxic = Utility.Random(10000) < chance;
                             break;
                     }
 
                     chance = 1000;
-                    IsReflective = (Utility.Random(10000) < chance);
-                    IsRegenerative = (Utility.Random(10000) < chance);
+                    IsReflective = Utility.Random(10000) < chance;
+                    IsRegenerative = Utility.Random(10000) < chance;
+                    IsSoulFeeder = Utility.Random(10000) < chance;
                 }
             }
         }
@@ -2345,7 +2375,10 @@ namespace Server.Mobiles
         {
             base.Serialize(writer);
 
-            writer.Write(28); // version
+            writer.Write(29); // version
+            // version 29
+            writer.Write(SoulFeeds);
+            writer.Write(m_SoulFeeder);
             // version 28
             writer.Write(m_NextGambleTime);
             writer.Write(m_GambleLosses);
@@ -2516,6 +2549,11 @@ namespace Server.Mobiles
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+            if (version >= 29)
+            {
+                SoulFeeds = reader.ReadInt();
+                m_SoulFeeder = reader.ReadBool();
+            }
             if (version >= 28)
             {
                 m_NextGambleTime = reader.ReadDateTime();
@@ -3673,106 +3711,124 @@ namespace Server.Mobiles
         {
             base.AddNameProperties(list);
 
+            if (IsSoulFeeder)
+            {
+                list.Add(
+                    1060847,
+                    "Soul Feeder\t{0}",
+                    arg0: ""
+                ); // ~1_val~ ~2_val~
+            }
             if (IsBoss)
             {
                 list.Add(
-                   1060847,
-                   "Boss\t{0}",
-                   ""
-               ); // ~1_val~ ~2_val~
+                    1060847,
+                    "Boss\t{0}",
+                    arg0: ""
+                ); // ~1_val~ ~2_val~
             }
             else if (IsMinion)
             {
                 list.Add(
-                   1060847,
-                   "Minion\t{0}",
-                   ""
-               );
+                    1060847,
+                    "Minion\t{0}",
+                    ""
+                );
             }
+
             if (IsMagicResistant)
             {
                 list.Add(
-                   1060847,
-                   "Magic Resistant\t{0}",
-                   ""
-               );
+                    1060847,
+                    "Magic Resistant\t{0}",
+                    ""
+                );
             }
+
             if (IsReflective)
             {
                 list.Add(
-                   1060847,
-                   "Reflective\t{0}",
-                   ""
-               );
+                    1060847,
+                    "Reflective\t{0}",
+                    ""
+                );
             }
+
             if (IsRegenerative)
             {
                 list.Add(
-                   1060847,
-                   "Regenerative\t{0}",
-                   ""
-               );
+                    1060847,
+                    "Regenerative\t{0}",
+                    ""
+                );
             }
+
             if (IsIllusionist)
             {
                 list.Add(
-                   1060847,
-                   "Illusionist\t{0}",
-                   ""
-               );
+                    1060847,
+                    "Illusionist\t{0}",
+                    ""
+                );
             }
+
             if (IsCorruptor)
             {
                 list.Add(
-                   1060847,
-                   "Corruptor\t{0}",
-                   ""
-               );
+                    1060847,
+                    "Corruptor\t{0}",
+                    ""
+                );
             }
             else if (IsCorrupted)
             {
                 list.Add(
-                   1060847,
-                   "Corrupted\t{0}",
-                   ""
-               );
+                    1060847,
+                    "Corrupted\t{0}",
+                    ""
+                );
             }
+
             if (IsEthereal)
             {
                 list.Add(
-                   1060847,
-                   "Ethereal\t{0}",
-                   ""
-               );
+                    1060847,
+                    "Ethereal\t{0}",
+                    ""
+                );
             }
+
             if (IsBurning)
             {
                 list.Add(
-                   1060847,
-                   "Burning\t{0}",
-                   ""
-               );
-            } else if (IsFrozen)
+                    1060847,
+                    "Burning\t{0}",
+                    ""
+                );
+            }
+            else if (IsFrozen)
             {
                 list.Add(
-                   1060847,
-                   "Frozen\t{0}",
-                   ""
-               );
-            } else if (IsElectrified)
+                    1060847,
+                    "Frozen\t{0}",
+                    ""
+                );
+            }
+            else if (IsElectrified)
             {
                 list.Add(
-                   1060847,
-                   "Electrified\t{0}",
-                   ""
-               );
-            } else if (IsToxic)
+                    1060847,
+                    "Electrified\t{0}",
+                    ""
+                );
+            }
+            else if (IsToxic)
             {
                 list.Add(
-                   1060847,
-                   "Toxic\t{0}",
-                   ""
-               );
+                    1060847,
+                    "Toxic\t{0}",
+                    ""
+                );
             }
 
             if (MLQuestSystem.Enabled && CanGiveMLQuest)
@@ -4483,6 +4539,9 @@ namespace Server.Mobiles
                         entry.Value.CheckKillEffect(this, LastKiller);
                     }
                 }
+            } else if (LastKiller is BaseCreature { IsSoulFeeder: true } creatureThatKilled)
+            {
+                MonsterBuff.AddFeederStats(creatureThatKilled);
             }
 
             MonsterBuff.CheckElementalAoe(this);

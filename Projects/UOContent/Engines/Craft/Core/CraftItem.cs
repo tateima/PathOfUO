@@ -1111,7 +1111,7 @@ namespace Server.Engines.Craft
                 canGainExperience = (craftLevel < maxSkill / 14);
             }
 
-            // 0.5% chance to allow it regardless of craft level 
+            // 0.5% chance to allow it regardless of craft level
             if (Utility.Random(1000) < 5)
             {
                 canGainExperience = true;
@@ -1177,6 +1177,17 @@ namespace Server.Engines.Craft
             var ignored = 1;
             var endquality = 1;
 
+            bool saveUse = false;
+            if (from is PlayerMobile crafter)
+            {
+                StrongTools strongTools = crafter.GetTalent(typeof(StrongTools)) as StrongTools;
+                if (strongTools != null)
+                {
+                    // max % chance to save use 5% per point in Strong Tools
+                    saveUse = strongTools.CheckSave();
+                }
+            }
+
             if (CheckSkills(from, typeRes, craftSystem, ref ignored, out var allRequiredSkills))
             {
                 // Resource
@@ -1205,13 +1216,19 @@ namespace Server.Engines.Craft
                     return;
                 }
 
-                tool.UsesRemaining--;
+                if (!saveUse)
+                {
+                    tool.UsesRemaining--;
+                }
 
                 if (craftSystem is DefBlacksmithy)
                 {
                     if (from.FindItemOnLayer(Layer.OneHanded) is AncientSmithyHammer hammer && hammer != tool)
                     {
-                        hammer.UsesRemaining--;
+                        if (!saveUse)
+                        {
+                            hammer.UsesRemaining--;
+                        }
                         if (hammer.UsesRemaining < 1)
                         {
                             hammer.Delete();
@@ -1268,19 +1285,20 @@ namespace Server.Engines.Craft
                             item.Amount = maxAmount;
                         }
                     }
-                    BaseTalent warcraftFocus = ((PlayerMobile)from).GetTalent(typeof(WarCraftFocus));
-                    if (warcraftFocus != null)
+                    WarCraftFocus warcraftFocus = ((PlayerMobile)from).GetTalent(typeof(WarCraftFocus)) as WarCraftFocus;
+                    if (warcraftFocus?.CheckSuccess() == true)
                     {
-                        item.Name = "Warforged " + item.Name;
-                        if (item is BaseWeapon)
+                        if (item is BaseWeapon weapon)
                         {
-                            ((BaseWeapon)item).MaxDamage += warcraftFocus.Level;
-                            ((BaseWeapon)item).MinDamage += warcraftFocus.Level;
-                            ((BaseWeapon)item).DurabilityLevel += warcraftFocus.Level;
-                        } else if (item is BaseArmor)
+                            weapon.Warforged = true;
+                            weapon.MaxDamage += Utility.Random(warcraftFocus.Level);
+                            weapon.MinDamage += Utility.Random(warcraftFocus.Level);
+                            weapon.DurabilityLevel += Utility.Random(warcraftFocus.Level);
+                        } else if (item is BaseArmor armor)
                         {
-                            ((BaseArmor)item).BaseArmorRating += warcraftFocus.Level;
-                            ((BaseArmor)item).Durability += warcraftFocus.Level;
+                            armor.Warforged = true;
+                            armor.BaseArmorRating += Utility.Random(warcraftFocus.Level);
+                            armor.Durability += Utility.Random(warcraftFocus.Level);
                         }
                     }
 
@@ -1417,17 +1435,6 @@ namespace Server.Engines.Craft
                     return;
                 }
 
-                bool saveUse = false;
-                if (from is PlayerMobile crafter)
-                {
-                    BaseTalent strongTools = crafter.GetTalent(typeof(StrongTools));
-                    if (strongTools != null)
-                    {
-                        // max 10% chance to save use 2% per point in Strong Tools
-                        saveUse = Utility.Random(100) < (strongTools.Level * 2);
-                    }
-                }
-                
                 if (!saveUse)
                 {
                     tool.UsesRemaining--;

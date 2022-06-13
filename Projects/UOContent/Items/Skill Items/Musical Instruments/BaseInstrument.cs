@@ -122,10 +122,7 @@ namespace Server.Items
         {
             Quality = (InstrumentQuality)quality;
 
-            if (makersMark)
-            {
-                Crafter = from;
-            }
+            Crafter = from;
 
             return quality;
         }

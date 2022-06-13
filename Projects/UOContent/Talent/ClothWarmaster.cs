@@ -23,5 +23,12 @@ namespace Server.Talent
                 mobile.AddStatMod(new StatMod(StatType.Int, "ClothWarmaster", Level * 2, TimeSpan.Zero));
             }
         }
+        public override int CheckDamageAbsorptionEffect(Mobile defender, Mobile attacker, int damage)
+        {
+            if (BaseArmor.FullCloth(defender)) {
+                damage -= Level;
+            }
+            return damage;
+        }
     }
 }

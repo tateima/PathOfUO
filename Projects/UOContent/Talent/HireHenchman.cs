@@ -31,22 +31,22 @@ namespace Server.Talent
                     {
                         Container bank = from.FindBankNoCreate();
                         int totalPlayerGold = Banker.GetBalance(from);
-                        if (totalPlayerGold >= 6000)
+                        if (totalPlayerGold >= 5000)
                         {
                             int goldToUse;
-                            if (totalPlayerGold >= 75000)
+                            if (totalPlayerGold >= 100000)
                             {
-                                goldToUse = 75000;
+                                goldToUse = 100000;
                             }
                             else
                             {
-                                goldToUse = totalPlayerGold % 6000 >= 500
-                                    ? totalPlayerGold + 6000 - totalPlayerGold % 6000
-                                    : totalPlayerGold - totalPlayerGold % 6000;
+                                goldToUse = totalPlayerGold % 5000 >= 500
+                                    ? totalPlayerGold + 5000 - totalPlayerGold % 5000
+                                    : totalPlayerGold - totalPlayerGold % 5000;
                             }
 
                             Banker.Withdraw(from, goldToUse);
-                            MobilePercentagePerPoint = goldToUse / 6000; // max of 12% per henchmen
+                            MobilePercentagePerPoint = goldToUse / 5000; // max of 20% per henchmen
                             var hireling = new Henchman();
                             hireling = (Henchman)ScaleMobileStats(hireling);
                             hireling = (Henchman)ScaleMobileSkills(hireling, "Magical");

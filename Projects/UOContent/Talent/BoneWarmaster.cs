@@ -25,5 +25,13 @@ namespace Server.Talent
                 mobile.AddStatMod(new StatMod(StatType.Int, "BoneWarmasterInt", Level, TimeSpan.Zero));
             }
         }
+
+        public override int CheckDamageAbsorptionEffect(Mobile defender, Mobile attacker, int damage)
+        {
+            if (BaseArmor.FullBone(defender)) {
+                damage -= Level;
+            }
+            return damage;
+        }
     }
 }

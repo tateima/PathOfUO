@@ -23,5 +23,12 @@ namespace Server.Talent
                 mobile.AddStatMod(new StatMod(StatType.Str, "PlateWarmaster", Level * 2, TimeSpan.Zero));
             }
         }
+        public override int CheckDamageAbsorptionEffect(Mobile defender, Mobile attacker, int damage)
+        {
+            if (BaseArmor.FullPlate(defender)) {
+                damage -= Level;
+            }
+            return damage;
+        }
     }
 }
