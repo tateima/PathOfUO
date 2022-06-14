@@ -1378,12 +1378,13 @@ namespace Server.Engines.Craft
                     }
                 }
 
-                if (!saveUse)
-                {
-                    tool.UsesRemaining--;
-                }
+                return;
+            }
 
-            tool.UsesRemaining--;
+            if (!saveUse)
+            {
+                tool.UsesRemaining--;
+            }
 
             if (tool.UsesRemaining < 1 && tool.BreakOnDepletion)
             {
