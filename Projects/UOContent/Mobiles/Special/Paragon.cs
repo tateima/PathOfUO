@@ -6,15 +6,15 @@ namespace Server.Mobiles
 {
     public static class Paragon
     {
-        public static double ChestChance = .10;               // Chance that a paragon will carry a paragon chest
-        public static double ChocolateIngredientChance = .20; // Chance that a paragon will drop a chocolatiering ingredient
+        public const double ChestChance = 0.10;               // Chance that a paragon will carry a paragon chest
+        public const double ChocolateIngredientChance = 0.20; // Chance that a paragon will drop a chocolatiering ingredient
 
         public static Map[] Maps =
         {
             Map.Ilshenar
         };
 
-        private static readonly TimeSpan FastRegenRate = TimeSpan.FromSeconds(.5);
+        private static readonly TimeSpan FastRegenRate = TimeSpan.FromSeconds(0.5);
         private static readonly TimeSpan CPUSaverRate = TimeSpan.FromSeconds(2);
 
         public static Type[] Artifacts =
@@ -87,8 +87,7 @@ namespace Server.Mobiles
                 return false;
             }
 
-            if (bc is BaseChampion || bc is Harrower || bc is BaseVendor || bc is BaseEscortable || bc is Clone ||
-                bc.IsParagon)
+            if (bc is BaseChampion or Harrower or BaseVendor or BaseEscortable or Clone || bc.IsParagon)
             {
                 return false;
             }
@@ -100,7 +99,7 @@ namespace Server.Mobiles
                 fame = 32000;
             }
 
-            var chance = 1 / Math.Round(20.0 - fame / 3200);
+            var chance = 1 / Math.Round(20.0 - fame / 3200.0);
 
             return chance > Utility.RandomDouble();
         }

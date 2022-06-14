@@ -1,6 +1,8 @@
+using ModernUO.Serialization;
+
 namespace Server.Items
 {
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public abstract partial class BasePants : BaseClothing
     {
         public BasePants(int itemID, int hue = 0) : base(itemID, Layer.Pants, hue)
@@ -9,7 +11,7 @@ namespace Server.Items
     }
 
     [Flippable(0x152e, 0x152f)]
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class ShortPants : BasePants
     {
         [Constructible]
@@ -20,7 +22,7 @@ namespace Server.Items
     }
 
     [Flippable(0x1539, 0x153a)]
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class LongPants : BasePants
     {
         [Constructible]
@@ -31,7 +33,7 @@ namespace Server.Items
     }
 
     [Flippable(0x279B, 0x27E6)]
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class TattsukeHakama : BasePants
     {
         [Constructible]
@@ -39,7 +41,7 @@ namespace Server.Items
     }
 
     [Flippable(0x2FC3, 0x3179)]
-    [Serializable(0)]
+    [SerializationGenerator(0)]
     public partial class ElvenPants : BasePants
     {
         [Constructible]

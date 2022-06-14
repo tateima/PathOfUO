@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using Server.Collections;
 using Server.Items;
 using Server.Mobiles;
 using Server.Spells.Necromancy;
@@ -46,15 +46,24 @@ namespace Server.Spells.Chivalry
 
                 var chiv = Caster.Skills.Chivalry.Value;
 
-                var targets = Caster.GetMobilesInRange(8)
-                    .Where(m => Caster != m && SpellHelper.ValidIndirectTarget(Caster, m) && Caster.CanBeHarmful(m, false));
-
-
+                var eable = Caster.GetMobilesInRange(8);
                 int lightPower = 0;
                 LightAffinityPower(ref lightPower);
-
-                foreach (var m in targets)
+                
+                using var queue = PooledRefQueue<Mobile>.Create();
+                foreach (var m in eable)
                 {
+                    if (Caster != m && SpellHelper.ValidIndirectTarget(Caster, m) && Caster.CanBeHarmful(m, false))
+                    {
+                        queue.Enqueue(m);
+                    }
+                }
+                eable.Free();
+
+                while (queue.Count > 0)
+                {
+                    var m = queue.Dequeue();
+
                     if (m is BaseCreature bc)
                     {
                         if (bc.Summoned && !bc.IsAnimatedDead)

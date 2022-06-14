@@ -31,6 +31,10 @@ namespace Server.Spells.Fourth
         ) {
         } 
 
+        public RecallSpell(Mobile caster, Item scroll) : base(caster, scroll, _info)
+        {
+        }
+
         public RecallSpell(Mobile caster, RunebookEntry entry = null, Runebook book = null, Item scroll = null) : base(
             caster,
             scroll,

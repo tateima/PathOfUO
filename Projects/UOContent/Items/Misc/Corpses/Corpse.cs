@@ -790,7 +790,7 @@ namespace Server.Items
 
         public bool DevourCorpse()
         {
-            if (Devoured || Deleted || Killer?.Deleted != false || !Killer.Alive || !(Killer is IDevourer devourer) ||
+            if (Devoured || Deleted || Killer?.Deleted != false || !Killer.Alive || Killer is not IDevourer devourer ||
                 Owner?.Deleted != false)
             {
                 return false;
@@ -800,9 +800,9 @@ namespace Server.Items
             return m_Devourer.Devour(this); // Devour the corpse if it hasn't
         }
 
-        public override void SendInfoTo(NetState ns, ReadOnlySpan<byte> world = default, Span<byte> opl = default)
+        public override void SendInfoTo(NetState ns, ReadOnlySpan<byte> world = default)
         {
-            base.SendInfoTo(ns, world, opl);
+            base.SendInfoTo(ns, world);
 
             if (((Body)Amount).IsHuman && ItemID == 0x2006)
             {
@@ -1014,8 +1014,7 @@ namespace Server.Items
                     var item = items[i];
                     var loc = item.Location;
 
-                    if (item.Layer == Layer.Hair || item.Layer == Layer.FacialHair || !item.Movable ||
-                        !GetRestoreInfo(item, ref loc))
+                    if (item.Layer is Layer.Hair or Layer.FacialHair || !item.Movable || !GetRestoreInfo(item, ref loc))
                     {
                         continue;
                     }
@@ -1066,7 +1065,7 @@ namespace Server.Items
                 return;
             }
 
-            if (!(from is PlayerMobile player))
+            if (from is not PlayerMobile player)
             {
                 return;
             }
@@ -1142,7 +1141,7 @@ namespace Server.Items
 
         public override bool CheckContentDisplay(Mobile from) => false;
 
-        public override void AddNameProperty(ObjectPropertyList list)
+        public override void AddNameProperty(IPropertyList list)
         {
             if (ItemID == 0x2006) // Corpse form
             {

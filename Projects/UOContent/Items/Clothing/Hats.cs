@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using ModernUO.Serialization;
 using Server.Engines.Craft;
 using Server.Misc;
 using Server.Network;
 
 namespace Server.Items
 {
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public abstract partial class BaseHat : BaseClothing, IShipwreckedItem
     {
         [SerializableField(0)]
@@ -28,7 +29,7 @@ namespace Server.Items
             }
         }
 
-        public override void AddNameProperties(ObjectPropertyList list)
+        public override void AddNameProperties(IPropertyList list)
         {
             base.AddNameProperties(list);
 
@@ -57,7 +58,7 @@ namespace Server.Items
     }
 
     [Flippable(0x2798, 0x27E3)]
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class Kasa : BaseHat
     {
         [Constructible]
@@ -74,7 +75,7 @@ namespace Server.Items
     }
 
     [Flippable(0x278F, 0x27DA)]
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class ClothNinjaHood : BaseHat
     {
         [Constructible]
@@ -91,7 +92,7 @@ namespace Server.Items
     }
 
     [Flippable(0x2306, 0x2305)]
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class FlowerGarland : BaseHat
     {
         [Constructible]
@@ -107,7 +108,7 @@ namespace Server.Items
         public override int InitMaxHits => 30;
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class FloppyHat : BaseHat
     {
         [Constructible]
@@ -123,7 +124,7 @@ namespace Server.Items
         public override int InitMaxHits => 30;
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class WideBrimHat : BaseHat
     {
         [Constructible]
@@ -139,7 +140,7 @@ namespace Server.Items
         public override int InitMaxHits => 30;
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class Cap : BaseHat
     {
         [Constructible]
@@ -155,7 +156,7 @@ namespace Server.Items
         public override int InitMaxHits => 30;
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class SkullCap : BaseHat
     {
         [Constructible]
@@ -171,7 +172,7 @@ namespace Server.Items
         public override int InitMaxHits => Core.ML ? 28 : 12;
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class Bandana : BaseHat
     {
         [Constructible]
@@ -190,7 +191,7 @@ namespace Server.Items
         public override int InitMaxHits => 30;
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class BearMask : BaseHat
     {
         [Constructible]
@@ -212,7 +213,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class DeerMask : BaseHat
     {
         [Constructible]
@@ -234,7 +235,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class HornedTribalMask : BaseHat
     {
         [Constructible]
@@ -256,7 +257,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class TribalMask : BaseHat
     {
         [Constructible]
@@ -278,7 +279,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class TallStrawHat : BaseHat
     {
         [Constructible]
@@ -294,7 +295,7 @@ namespace Server.Items
         public override int InitMaxHits => 30;
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class StrawHat : BaseHat
     {
         [Constructible]
@@ -310,7 +311,7 @@ namespace Server.Items
         public override int InitMaxHits => 30;
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class OrcishKinMask : BaseHat
     {
         [Constructible]
@@ -360,7 +361,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class SavageMask : BaseHat
     {
         [Constructible]
@@ -399,7 +400,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class WizardsHat : BaseHat
     {
         [Constructible]
@@ -418,7 +419,7 @@ namespace Server.Items
         public override int InitMaxHits => 30;
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class MagicWizardsHat : BaseHat
     {
         [Constructible]
@@ -440,7 +441,7 @@ namespace Server.Items
         public override int BaseIntBonus => +5;
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class Bonnet : BaseHat
     {
         [Constructible]
@@ -456,7 +457,7 @@ namespace Server.Items
         public override int InitMaxHits => 30;
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class FeatheredHat : BaseHat
     {
         [Constructible]
@@ -472,7 +473,7 @@ namespace Server.Items
         public override int InitMaxHits => 30;
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class TricorneHat : BaseHat
     {
         [Constructible]
@@ -488,7 +489,7 @@ namespace Server.Items
         public override int InitMaxHits => 30;
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class JesterHat : BaseHat
     {
         [Constructible]

@@ -261,7 +261,7 @@ namespace Server.Mobiles
         private DateTime m_LastYoungMessage = DateTime.MinValue;
         private TimeSpan m_LongTermElapse;
 
-        private MountBlock m_MountBlock;
+        private MountBlock _mountBlock;
 
         private DateTime m_NextJustAward;
 
@@ -504,7 +504,7 @@ namespace Server.Mobiles
 
         public DesignContext DesignContext { get; set; }
 
-        public BlockMountType MountBlockReason => CheckBlock(m_MountBlock) ? m_MountBlock.m_Type : BlockMountType.None;
+        public BlockMountType MountBlockReason => _mountBlock?.MountBlockReason ?? BlockMountType.None;
 
         public override int MaxWeight => (Core.ML && Race == Race.Human ? 100 : 40) + (int)(3.5 * Str);
 
@@ -681,10 +681,10 @@ namespace Server.Mobiles
 
         public bool NinjaWepCooldown { get; set; }
 
-        public List<Mobile> AllDebtees => m_AllDebtees ?? (m_AllDebtees = new List<Mobile>());
-        public List<Mobile> Henchmen => m_Henchmen ?? (m_Henchmen = new List<Mobile>());
-        public List<Mobile> RestedHenchmen => m_RestedHenchmen ?? (m_RestedHenchmen = new List<Mobile>());
-        public List<Mobile> AllFollowers => m_AllFollowers ?? (m_AllFollowers = new List<Mobile>());
+        public List<Mobile> AllDebtees => m_AllDebtees ??= new List<Mobile>();
+        public List<Mobile> Henchmen => m_Henchmen ??= new List<Mobile>();
+        public List<Mobile> RestedHenchmen => m_RestedHenchmen ??= new List<Mobile>();
+        public List<Mobile> AllFollowers => m_AllFollowers ??= new List<Mobile>();
 
         public RankDefinition GuildRank
         {
@@ -1477,8 +1477,8 @@ namespace Server.Mobiles
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool CheckBlock(MountBlock block) => block?._timerToken.Running == true;
+        public void SetMountBlock(BlockMountType type, bool dismount) =>
+            SetMountBlock(type, TimeSpan.MaxValue, dismount);
 
         public void SetMountBlock(BlockMountType type, TimeSpan duration, bool dismount)
         {
@@ -1494,9 +1494,10 @@ namespace Server.Mobiles
                 }
             }
 
-            if (!CheckBlock(m_MountBlock) || m_MountBlock._timerToken.Next < Core.Now + duration)
+            if (!_mountBlock.CheckBlock() || _mountBlock.Expiration < Core.Now + duration)
             {
-                m_MountBlock = new MountBlock(duration, type, this);
+                _mountBlock?.RemoveBlock(this);
+                _mountBlock = new MountBlock(duration, type, this);
             }
         }
 
@@ -1627,7 +1628,7 @@ namespace Server.Mobiles
             {
                 string notice;
 
-                if (!(from.Account is Account acct) || !acct.HasAccess(from.NetState))
+                if (from.Account is not Account acct || !acct.HasAccess(from.NetState))
                 {
                     if (from.AccessLevel == AccessLevel.Player)
                     {
@@ -2092,7 +2093,7 @@ namespace Server.Mobiles
                 return false;
             }
 
-            if (target is BaseCreature creature && creature.IsInvulnerable || target is PlayerVendor || target is TownCrier)
+            if (target is BaseCreature creature && creature.IsInvulnerable || target is PlayerVendor or TownCrier)
             {
                 if (message)
                 {
@@ -2133,7 +2134,7 @@ namespace Server.Mobiles
         {
             base.OnItemAdded(item);
 
-            if (item is BaseArmor || item is BaseWeapon)
+            if (item is BaseArmor or BaseWeapon)
             {
                 CheckStatTimers();
             }
@@ -2148,7 +2149,7 @@ namespace Server.Mobiles
         {
             base.OnItemRemoved(item);
 
-            if (item is BaseArmor || item is BaseWeapon)
+            if (item is BaseArmor or BaseWeapon)
             {
                 CheckStatTimers();
             }
@@ -3304,9 +3305,9 @@ namespace Server.Mobiles
 
         public override void DoSpeech(string text, int[] keywords, MessageType type, int hue)
         {
-            if (Guilds.Guild.NewGuildSystem && (type == MessageType.Guild || type == MessageType.Alliance))
+            if (Guilds.Guild.NewGuildSystem && type is MessageType.Guild or MessageType.Alliance)
             {
-                if (!(Guild is Guild g))
+                if (Guild is not Guild g)
                 {
                     SendLocalizedMessage(1063142); // You are not in a guild!
                 }
@@ -4173,7 +4174,7 @@ namespace Server.Mobiles
             DisguiseTimers.RemoveTimer(this);
         }
 
-        public override void GetProperties(ObjectPropertyList list)
+        public override void GetProperties(IPropertyList list)
         {
             base.GetProperties(list);
 
@@ -4207,38 +4208,33 @@ namespace Server.Mobiles
 
                     if (faction.Commander == this)
                     {
-                        list.Add(1042733, faction.Definition.PropName); // Commanding Lord of the ~1_FACTION_NAME~
+                        // Commanding Lord of the ~1_FACTION_NAME~
+                        list.Add(1042733, $"{faction.Definition.PropName}");
                     }
                     else if (pl.Sheriff != null)
                     {
                         list.Add(
-                            1042734,
-                            "{0}\t{1}",
-                            pl.Sheriff.Definition.FriendlyName,
-                            faction.Definition.PropName
-                        ); // The Sheriff of  ~1_CITY~, ~2_FACTION_NAME~
+                            1042734, // The Sheriff of  ~1_CITY~, ~2_FACTION_NAME~
+                            $"{pl.Sheriff.Definition.FriendlyName}\t{faction.Definition.PropName}"
+                        );
                     }
                     else if (pl.Finance != null)
                     {
                         list.Add(
-                            1042735,
-                            "{0}\t{1}",
-                            pl.Finance.Definition.FriendlyName,
-                            faction.Definition.PropName
-                        ); // The Finance Minister of ~1_CITY~, ~2_FACTION_NAME~
+                            1042735, // The Finance Minister of ~1_CITY~, ~2_FACTION_NAME~
+                            $"{pl.Finance.Definition.FriendlyName}\t{faction.Definition.PropName}"
+                        );
                     }
                     else if (pl.MerchantTitle != MerchantTitle.None)
                     {
                         list.Add(
-                            1060776,
-                            "{0}\t{1}",
-                            MerchantTitles.GetInfo(pl.MerchantTitle).Title,
-                            faction.Definition.PropName
-                        ); // ~1_val~, ~2_val~
+                            1060776, // ~1_val~, ~2_val~
+                            $"{MerchantTitles.GetInfo(pl.MerchantTitle).Title}\t{faction.Definition.PropName}"
+                        );
                     }
                     else
                     {
-                        list.Add(1060776, "{0}\t{1}", pl.Rank.Title, faction.Definition.PropName); // ~1_val~, ~2_val~
+                        list.Add(1060776, $"{pl.Rank.Title}\t{faction.Definition.PropName}"); // ~1_val~, ~2_val~
                     }
                 }
             }
@@ -4345,7 +4341,7 @@ namespace Server.Mobiles
             {
                 for (var i = m_AllFollowers.Count - 1; i >= 0; --i)
                 {
-                    if (!(AllFollowers[i] is BaseCreature pet) || pet.ControlMaster == null)
+                    if (AllFollowers[i] is not BaseCreature pet || pet.ControlMaster == null)
                     {
                         continue;
                     }
@@ -4366,7 +4362,7 @@ namespace Server.Mobiles
                         continue;
                     }
 
-                    if ((pet is PackLlama || pet is PackHorse || pet is Beetle) && pet.Backpack?.Items.Count > 0)
+                    if (pet is PackLlama or PackHorse or Beetle && pet.Backpack?.Items.Count > 0)
                     {
                         continue;
                     }
@@ -4411,7 +4407,7 @@ namespace Server.Mobiles
 
             for (var i = AutoStabled.Count - 1; i >= 0; --i)
             {
-                if (!(AutoStabled[i] is BaseCreature pet))
+                if (AutoStabled[i] is not BaseCreature pet)
                 {
                     continue;
                 }
@@ -4524,8 +4520,7 @@ namespace Server.Mobiles
 
         private bool CanInsure(Item item)
         {
-            if (item is Container && !(item is BaseQuiver) || item is BagOfSending || item is KeyRing || item is PotionKeg ||
-                item is Sigil)
+            if (item is Container && item is not BaseQuiver || item is BagOfSending or KeyRing or PotionKeg or Sigil)
             {
                 return false;
             }
@@ -4751,7 +4746,7 @@ namespace Server.Mobiles
                 return;
             }
 
-            if (!(obj is Item item))
+            if (obj is not Item item)
             {
                 return;
             }
@@ -5316,21 +5311,30 @@ namespace Server.Mobiles
 
         private class MountBlock
         {
-            public TimerExecutionToken _timerToken;
-            public readonly BlockMountType m_Type;
+            private TimerExecutionToken _timerToken;
+            private BlockMountType _type;
 
             public MountBlock(TimeSpan duration, BlockMountType type, Mobile mobile)
             {
-                m_Type = type;
+                _type = type;
 
-                Timer.StartTimer(duration, () => RemoveBlock(mobile), out _timerToken);
+                if (duration < TimeSpan.MaxValue)
+                {
+                    Timer.StartTimer(duration, () => RemoveBlock(mobile), out _timerToken);
+                }
             }
 
-            private void RemoveBlock(Mobile mobile)
+            public DateTime Expiration => _timerToken.Next;
+
+            public BlockMountType MountBlockReason => CheckBlock() ? _type : BlockMountType.None;
+
+            public bool CheckBlock() => _timerToken.Next == DateTime.MinValue || _timerToken.Running;
+
+            public void RemoveBlock(Mobile mobile)
             {
                 if (mobile is PlayerMobile pm)
                 {
-                    pm.m_MountBlock = null;
+                    pm._mountBlock = null;
                 }
 
                 _timerToken.Cancel();

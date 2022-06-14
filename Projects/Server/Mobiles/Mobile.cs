@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Microsoft.Toolkit.HighPerformance;
 using Server.Accounting;
 using Server.Buffers;
 using Server.ContextMenus;
@@ -9,6 +8,7 @@ using Server.Guilds;
 using Server.Gumps;
 using Server.HuePickers;
 using Server.Items;
+using Server.Logging;
 using Server.Menus;
 using Server.Mobiles;
 using Server.Network;
@@ -403,10 +403,12 @@ namespace Server
     /// <summary>
     ///     Base class representing players, npcs, and creatures.
     /// </summary>
-    public class Mobile : IHued, IComparable<Mobile>, ISpawnable, IPropertyListObject
+    public class Mobile : IHued, IComparable<Mobile>, ISpawnable, IObjectPropertyListEntity
     {
         // Allow four warmode changes in 0.5 seconds, any more will be delay for two seconds
         private const int WarmodeCatchCount = 4;
+
+        private static readonly ILogger logger = LogFactory.GetLogger(typeof(Mobile));
 
         // TODO: Make these configurations
         private static readonly TimeSpan WarmodeSpamCatch = TimeSpan.FromSeconds(Core.SE ? 1.0 : 0.5);
@@ -1462,6 +1464,9 @@ namespace Server
                     box.Close();
                 }
 
+                OnBeforeDisconnected();
+                EventSink.InvokeBeforeDisconnected(this);
+
                 m_NetState = value;
                 _logoutTimerToken.Cancel();
 
@@ -1872,7 +1877,7 @@ namespace Server
 
         public static bool DisableDismountInWarmode { get; set; }
 
-        public static int BodyWeight { get; set; } = 14;
+        public static int BodyWeight { get; set; } = 11; // 11 + 3 for the backpack
 
         [CommandProperty(AccessLevel.GameMaster)]
         public IMount Mount
@@ -1888,7 +1893,7 @@ namespace Server
 
                 item ??= FindItemOnLayer(Layer.Mount);
 
-                if (!(item is IMountItem mountItem))
+                if (item is not IMountItem mountItem)
                 {
                     return null;
                 }
@@ -2471,7 +2476,7 @@ namespace Server
         public virtual int HuedItemID => m_Female ? 0x2107 : 0x2106;
         public ObjectPropertyList PropertyList => m_PropertyList ??= InitializePropertyList(new ObjectPropertyList(this));
 
-        public virtual void GetProperties(ObjectPropertyList list)
+        public virtual void GetProperties(IPropertyList list)
         {
             AddNameProperties(list);
         }
@@ -2568,8 +2573,6 @@ namespace Server
 
             writer.Write(DisarmReady);
             writer.Write(StunReady);
-
-            // Poison.Serialize( m_Poison, writer );
 
             writer.Write(m_StatCap);
 
@@ -2958,13 +2961,12 @@ namespace Server
                 ? OutgoingVirtualHairPackets.RemovePacketLength
                 : OutgoingVirtualHairPackets.EquipUpdatePacketLength;
 
-            Span<byte> facialhairPacket = stackalloc byte[facialHairLength].InitializePacket();
+            Span<byte> facialHairPacket = stackalloc byte[facialHairLength].InitializePacket();
 
             const int cacheLength = OutgoingMobilePackets.MobileMovingPacketCacheByteLength;
             const int width = OutgoingMobilePackets.MobileMovingPacketLength;
-            const int height = OutgoingMobilePackets.MobileMovingPacketCacheHeight;
 
-            var mobileMovingCache = stackalloc byte[cacheLength].AsSpan2D(height, width).InitializePackets();
+            var mobileMovingCache = stackalloc byte[cacheLength].InitializePackets(width);
 
             var ourState = m_NetState;
 
@@ -3066,12 +3068,12 @@ namespace Server
                 {
                     if (removeFacialHair)
                     {
-                        OutgoingVirtualHairPackets.CreateRemoveHairPacket(facialhairPacket, facialHairSerial);
+                        OutgoingVirtualHairPackets.CreateRemoveHairPacket(facialHairPacket, facialHairSerial);
                     }
                     else
                     {
                         OutgoingVirtualHairPackets.CreateHairEquipUpdatePacket(
-                            facialhairPacket,
+                            facialHairPacket,
                             this,
                             facialHairSerial,
                             FacialHairItemID,
@@ -3079,7 +3081,7 @@ namespace Server
                             Layer.FacialHair
                         );
                     }
-                    ourState.Send(facialhairPacket);
+                    ourState.Send(facialHairPacket);
                 }
 
                 if (sendOPLUpdate)
@@ -3205,12 +3207,12 @@ namespace Server
                 {
                     if (removeFacialHair)
                     {
-                        OutgoingVirtualHairPackets.CreateRemoveHairPacket(facialhairPacket, facialHairSerial);
+                        OutgoingVirtualHairPackets.CreateRemoveHairPacket(facialHairPacket, facialHairSerial);
                     }
                     else
                     {
                         OutgoingVirtualHairPackets.CreateHairEquipUpdatePacket(
-                            facialhairPacket,
+                            facialHairPacket,
                             this,
                             facialHairSerial,
                             FacialHairItemID,
@@ -3218,7 +3220,7 @@ namespace Server
                             Layer.FacialHair
                         );
                     }
-                    state.Send(facialhairPacket);
+                    state.Send(facialHairPacket);
                 }
 
                 SendOPLPacketTo(state);
@@ -3411,9 +3413,9 @@ namespace Server
 
         public int GetAOSStatus(int index) => AOSStatusHandler?.Invoke(this, index) ?? 0;
 
-        public virtual void SendPropertiesTo(Mobile from)
+        public virtual void SendPropertiesTo(NetState ns)
         {
-            from.NetState?.Send(PropertyList.Buffer);
+            ns?.Send(PropertyList.Buffer);
         }
 
         public virtual void OnAosSingleClick(Mobile from)
@@ -3443,56 +3445,53 @@ namespace Server
 
         public virtual string ApplyNameSuffix(string suffix) => suffix;
 
-        public virtual void AddNameProperties(ObjectPropertyList list)
+        public virtual void AddNameProperties(IPropertyList list)
         {
-            var name = Name ?? "";
+            var name = Name ?? " ";
 
             string prefix;
 
             if (ShowFameTitle && (m_Player || m_Body.IsHuman) && m_Fame >= 10000)
             {
-                prefix = m_Female ? "Lady" : "Lord";
+                prefix = m_Female ? "Lady " : "Lord ";
             }
             else
             {
-                prefix = "";
+                prefix = " ";
             }
 
-            var suffix = "";
+            var title = PropertyTitle && !string.IsNullOrEmpty(Title) ? Title : "";
 
-            if (PropertyTitle && !string.IsNullOrEmpty(Title))
-            {
-                suffix = Title;
-            }
-
+            string suffix;
             var guild = m_Guild;
-
             if (guild != null && (m_Player || m_DisplayGuildTitle))
             {
-                suffix = suffix.Length > 0
-                    ? $"{suffix} [{Utility.FixHtml(guild.Abbreviation)}]"
+                suffix = title.Length > 0
+                    ? $"{title} [{Utility.FixHtml(guild.Abbreviation)}]"
                     : $"[{Utility.FixHtml(guild.Abbreviation)}]";
             }
+            else
+            {
+                suffix = " ";
+            }
 
-            suffix = ApplyNameSuffix(suffix);
-
-            list.Add(1050045, "{0} \t{1}\t {2}", prefix, name, suffix); // ~1_PREFIX~~2_NAME~~3_SUFFIX~
+            list.Add(1050045, $"{prefix}\t{name}\t{ApplyNameSuffix(suffix)}"); // ~1_PREFIX~~2_NAME~~3_SUFFIX~
 
             if (guild != null && (m_DisplayGuildTitle || m_Player && guild.Type != GuildType.Regular))
             {
                 var type = guild.Type >= 0 && (int)guild.Type < m_GuildTypes.Length ? m_GuildTypes[(int)guild.Type] : "";
 
-                var title = GuildTitle?.Trim() ?? "";
+                var guildTitle = GuildTitle?.Trim() ?? "";
 
-                if (title.Length > 0)
+                if (guildTitle.Length > 0)
                 {
                     if (NewGuildDisplay)
                     {
-                        list.Add("{0}, {1}", Utility.FixHtml(title), Utility.FixHtml(guild.Name));
+                        list.Add($"{Utility.FixHtml(guildTitle)}, {Utility.FixHtml(guild.Name)}");
                     }
                     else
                     {
-                        list.Add("{0}, {1} Guild{2}", Utility.FixHtml(title), Utility.FixHtml(guild.Name), type);
+                        list.Add($"{Utility.FixHtml(guildTitle)}, {Utility.FixHtml(guild.Name)} Guild{type}");
                     }
                 }
                 else
@@ -3502,11 +3501,11 @@ namespace Server
             }
         }
 
-        public virtual void GetChildProperties(ObjectPropertyList list, Item item)
+        public virtual void GetChildProperties(IPropertyList list, Item item)
         {
         }
 
-        public virtual void GetChildNameProperties(ObjectPropertyList list, Item item)
+        public virtual void GetChildNameProperties(IPropertyList list, Item item)
         {
         }
 
@@ -4107,19 +4106,25 @@ namespace Server
             switch (type)
             {
                 default:
-                    m_TotalGold += delta;
-                    Delta(MobileDelta.Gold);
-                    break;
+                    {
+                        m_TotalGold += delta;
+                        Delta(MobileDelta.Gold);
+                        break;
+                    }
 
                 case TotalType.Items:
-                    m_TotalItems += delta;
-                    break;
+                    {
+                        m_TotalItems += delta;
+                        break;
+                    }
 
                 case TotalType.Weight:
-                    m_TotalWeight += delta;
-                    Delta(MobileDelta.Weight);
-                    OnWeightChange(m_TotalWeight - delta);
-                    break;
+                    {
+                        m_TotalWeight += delta;
+                        Delta(MobileDelta.Weight);
+                        OnWeightChange(m_TotalWeight - delta);
+                        break;
+                    }
             }
         }
 
@@ -4463,10 +4468,9 @@ namespace Server
                 eable.Free();
 
                 const int cacheLength = OutgoingMobilePackets.MobileMovingPacketCacheByteLength;
-                var width = OutgoingMobilePackets.MobileMovingPacketLength;
-                var height = OutgoingMobilePackets.MobileMovingPacketCacheHeight;
+                const int width = OutgoingMobilePackets.MobileMovingPacketLength;
 
-                var mobileMovingCache = stackalloc byte[cacheLength].AsSpan2D(height, width).InitializePackets();
+                var mobileMovingCache = stackalloc byte[cacheLength].InitializePackets(width);
 
                 foreach (var m in m_MoveClientList)
                 {
@@ -5185,13 +5189,25 @@ namespace Server
                                 item.Spawner = null;
                             }
 
-                            amount = Math.Clamp(amount, 1, item.Amount);
-
                             var oldAmount = item.Amount;
 
-                            if (amount < oldAmount)
+                            if (oldAmount <= 0)
                             {
-                                LiftItemDupe(item, amount);
+                                logger.Error(
+                                    "Item {Type} ({Serial}) has amount of {OldAmount}, but must be at least 1",
+                                    item.GetType(),
+                                    item.Serial,
+                                    oldAmount
+                                );
+                            }
+                            else
+                            {
+                                amount = Math.Clamp(amount, 1, oldAmount);
+
+                                if (amount < oldAmount)
+                                {
+                                    LiftItemDupe(item, amount);
+                                }
                             }
 
                             var map = from.Map;
@@ -6373,7 +6389,7 @@ namespace Server
                     {
                         if (version <= 25)
                         {
-                            Poison.Deserialize(reader);
+                            reader.ReadPoison();
                         }
 
                         goto case 3;
@@ -6876,19 +6892,12 @@ namespace Server
             eable.Free();
         }
 
-        public void SendOPLPacketTo(NetState state) => SendOPLPacketTo(state, ObjectPropertyList.Enabled);
-
-        protected virtual void SendOPLPacketTo(NetState ns, bool sendOplPacket)
+        public virtual void SendOPLPacketTo(NetState ns)
         {
-            if (sendOplPacket)
+            if (ObjectPropertyList.Enabled)
             {
                 ns.SendOPLInfo(this);
             }
-        }
-
-        public virtual void SendOPLPacketTo(NetState ns, ReadOnlySpan<byte> opl)
-        {
-            ns?.Send(opl);
         }
 
         public virtual void OnAccessLevelChanged(AccessLevel oldLevel)
@@ -7181,6 +7190,10 @@ namespace Server
         }
 
         public virtual void OnConnected()
+        {
+        }
+
+        public virtual void OnBeforeDisconnected()
         {
         }
 
@@ -7890,9 +7903,7 @@ namespace Server
                 }
                 catch (Exception ex)
                 {
-#if DEBUG
-                    Console.WriteLine("Process Delta Queue for {0} failed: {1}", mob, ex);
-#endif
+                    logger.Debug(ex, "Process Delta Queue for {Mobile} failed", mob);
                 }
             }
 
@@ -8301,7 +8312,7 @@ namespace Server
         {
             var ns = m_NetState;
 
-            if (ns == null)
+            if (ns.CannotSendPackets())
             {
                 return false;
             }
@@ -8397,7 +8408,7 @@ namespace Server
 
             var n = Notoriety.Compute(this, target);
 
-            return n == Notoriety.Criminal || n == Notoriety.Murderer;
+            return n is Notoriety.Criminal or Notoriety.Murderer;
         }
 
         /// <summary>
@@ -9013,7 +9024,10 @@ namespace Server
         public Direction GetDirectionTo(IPoint2D p, bool run = false) =>
             p == null ? Direction.North | (run ? Direction.Running : 0) : GetDirectionTo(p.X, p.Y, run);
 
-        public void PublicOverheadMessage(MessageType type, int hue, bool ascii, string text, bool noLineOfSight = true)
+        public void PublicOverheadMessage(
+            MessageType type, int hue, bool ascii, string text, bool noLineOfSight = true,
+            AccessLevel accessLevel = AccessLevel.Player
+        )
         {
             if (m_Map == null)
             {
@@ -9026,7 +9040,11 @@ namespace Server
 
             foreach (var state in eable)
             {
-                if (state.Mobile.CanSee(this) && (noLineOfSight || state.Mobile.InLOS(this)))
+                if (
+                    state.Mobile.AccessLevel >= accessLevel &&
+                    state.Mobile.CanSee(this) &&
+                    (noLineOfSight || state.Mobile.InLOS(this))
+                )
                 {
                     var length = OutgoingMessagePackets.CreateMessage(
                         buffer, Serial, Body, type, hue, 3, ascii, Language, Name, text
@@ -9077,7 +9095,8 @@ namespace Server
 
         public void PublicOverheadMessage(
             MessageType type, int hue, int number, AffixType affixType, string affix,
-            string args = "", bool noLineOfSight = false
+            string args = "", bool noLineOfSight = false,
+            AccessLevel accessLevel = AccessLevel.Player
         )
         {
             if (m_Map == null)
@@ -9091,7 +9110,11 @@ namespace Server
 
             foreach (var state in eable)
             {
-                if (state.Mobile.CanSee(this) && (noLineOfSight || state.Mobile.InLOS(this)))
+                if (
+                    state.Mobile.AccessLevel >= accessLevel &&
+                    state.Mobile.CanSee(this) &&
+                    (noLineOfSight || state.Mobile.InLOS(this))
+                )
                 {
                     var length = OutgoingMessagePackets.CreateMessageLocalizedAffix(
                         buffer, Serial, Body, type, hue, 3, number, Name, affixType, affix, args

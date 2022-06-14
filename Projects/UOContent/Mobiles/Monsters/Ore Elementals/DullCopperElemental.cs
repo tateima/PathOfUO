@@ -9,7 +9,7 @@ namespace Server.Mobiles
 
         }
         [Constructible]
-        public DullCopperElemental(int oreAmount = 2) : base(AIType.AI_Melee, FightMode.Closest, 10, 1, 0.2, 0.4)
+        public DullCopperElemental(int oreAmount = 2) : base(AIType.AI_Melee)
         {
             Body = 110;
             BaseSoundID = 268;

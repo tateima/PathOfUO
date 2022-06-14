@@ -1,4 +1,5 @@
 using System;
+using ModernUO.Serialization;
 using Server.Mobiles;
 using Server.Network;
 using Server.Spells;
@@ -6,7 +7,7 @@ using Server.Talent;
 
 namespace Server.Items
 {
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public abstract partial class BaseRanged : BaseMeleeWeapon
     {
         [SerializableField(0)]
@@ -54,7 +55,7 @@ namespace Server.Items
 
                     if (canSwing)
                     {
-                        canSwing = !(attacker.Spell is Spell sp) || !sp.IsCasting || !sp.BlocksMovement;
+                        canSwing = attacker.Spell is not Spell sp || !sp.IsCasting || !sp.BlocksMovement;
                     }
                 }
 

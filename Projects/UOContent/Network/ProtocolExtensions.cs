@@ -21,11 +21,11 @@ namespace Server.Network
         {
             var packetHandlers = new PacketHandler[0x100];
 
-            void DecodeBundledPacket(NetState state, CircularBufferReader reader, ref int packetLength)
+            void DecodeBundledPacket(NetState state, CircularBufferReader reader, int packetLength)
             {
                 int cmd = reader.ReadByte();
 
-                PacketHandler ph = cmd >= 0 && cmd < packetHandlers.Length ? packetHandlers[cmd] : null;
+                PacketHandler ph = packetHandlers[cmd];
 
                 if (ph == null)
                 {
@@ -34,7 +34,7 @@ namespace Server.Network
 
                 if (ph.Ingame && state.Mobile == null)
                 {
-                    state.LogInfo("Sent in-game packet (0x{0:X2}x{1:X2}) before having been attached to a mobile", packetId, cmd);
+                    state.LogInfo($"Sent in-game packet (0x{packetId:X2}x{cmd:X2}) before having been attached to a mobile");
                     state.Disconnect("Sent in-game packet before being attached to a mobile.");
                 }
                 else if (ph.Ingame && state.Mobile.Deleted)
@@ -43,7 +43,7 @@ namespace Server.Network
                 }
                 else
                 {
-                    ph.OnReceive(state, reader, ref packetLength);
+                    ph.OnReceive(state, reader, packetLength);
                 }
             }
 

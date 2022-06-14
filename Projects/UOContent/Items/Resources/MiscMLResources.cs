@@ -1,6 +1,8 @@
+using ModernUO.Serialization;
+
 namespace Server.Items
 {
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class Blight : Item
     {
         [Constructible]
@@ -11,7 +13,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class LuminescentFungi : Item
     {
         [Constructible]
@@ -22,7 +24,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class CapturedEssence : Item
     {
         [Constructible]
@@ -33,7 +35,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class EyeOfTheTravesty : Item
     {
         [Constructible]
@@ -49,7 +51,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class Corruption : Item
     {
         [Constructible]
@@ -65,7 +67,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class DreadHornMane : Item
     {
         [Constructible]
@@ -81,7 +83,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class ParasiticPlant : Item
     {
         [Constructible]
@@ -97,7 +99,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class Muculent : Item
     {
         [Constructible]
@@ -113,7 +115,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class DiseasedBark : Item
     {
         [Constructible]
@@ -129,7 +131,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class BarkFragment : Item
     {
         [Constructible]
@@ -145,7 +147,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class GrizzledBones : Item
     {
         [Constructible]
@@ -161,7 +163,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class LardOfParoxysmus : Item
     {
         [Constructible]
@@ -177,7 +179,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class PerfectEmerald : Item
     {
         [Constructible]
@@ -193,8 +195,8 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
-    public partial class DarkSapphire : Item 
+    [SerializationGenerator(0, false)]
+    public partial class DarkSapphire : Item
     {
         [Constructible]
         public DarkSapphire(int amountFrom, int amountTo) : this(Utility.RandomMinMax(amountFrom, amountTo))
@@ -209,8 +211,8 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
-    public partial class Turquoise : Item 
+    [SerializationGenerator(0, false)]
+    public partial class Turquoise : Item
     {
         [Constructible]
         public Turquoise(int amountFrom, int amountTo) : this(Utility.RandomMinMax(amountFrom, amountTo))
@@ -225,8 +227,8 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
-    public partial class EcruCitrine : Item 
+    [SerializationGenerator(0, false)]
+    public partial class EcruCitrine : Item
     {
         [Constructible]
         public EcruCitrine(int amountFrom, int amountTo) : this(Utility.RandomMinMax(amountFrom, amountTo))
@@ -241,8 +243,8 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
-    public partial class WhitePearl : Item 
+    [SerializationGenerator(0, false)]
+    public partial class WhitePearl : Item
     {
         [Constructible]
         public WhitePearl(int amountFrom, int amountTo) : this(Utility.RandomMinMax(amountFrom, amountTo))
@@ -257,8 +259,8 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
-    public partial class FireRuby : Item 
+    [SerializationGenerator(0, false)]
+    public partial class FireRuby : Item
     {
         [Constructible]
         public FireRuby(int amountFrom, int amountTo) : this(Utility.RandomMinMax(amountFrom, amountTo))
@@ -273,8 +275,8 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
-    public partial class BlueDiamond : Item 
+    [SerializationGenerator(0, false)]
+    public partial class BlueDiamond : Item
     {
         [Constructible]
         public BlueDiamond(int amountFrom, int amountTo) : this(Utility.RandomMinMax(amountFrom, amountTo))
@@ -289,8 +291,8 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
-    public partial class BrilliantAmber : Item 
+    [SerializationGenerator(0, false)]
+    public partial class BrilliantAmber : Item
     {
         [Constructible]
         public BrilliantAmber(int amountFrom, int amountTo) : this(Utility.RandomMinMax(amountFrom, amountTo))
@@ -305,7 +307,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class Scourge : Item
     {
         [Constructible]
@@ -322,7 +324,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class Putrefication : Item
     {
         [Constructible]
@@ -339,7 +341,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class Taint : Item
     {
         [Constructible]
@@ -356,7 +358,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     [Flippable(0x315A, 0x315B)]
     public partial class PristineDreadHorn : Item
     {
@@ -366,7 +368,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class SwitchItem : Item
     {
         [Constructible]

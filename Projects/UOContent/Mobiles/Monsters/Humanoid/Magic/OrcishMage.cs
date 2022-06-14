@@ -7,7 +7,7 @@ namespace Server.Mobiles
     {
         private bool IsNecromancer { get; set; }
         [Constructible]
-        public OrcishMage() : base(AIType.AI_Mage, FightMode.Closest, 10, 1, 0.2, 0.4)
+        public OrcishMage() : base(AIType.AI_Mage)
         {
             Body = 140;
             BaseSoundID = 0x45A;

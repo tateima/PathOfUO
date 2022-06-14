@@ -549,6 +549,8 @@ namespace Server.Spells
             }
         }
 
+        private static ClientVersion _insufficientManaClientChange = new ClientVersion("7.0.65.4");
+
         public bool Cast()
         {
             StartCastTime = Core.TickCount;
@@ -564,14 +566,18 @@ namespace Server.Spells
             }
             if ((Caster as PlayerMobile)?.Feared == true) {
                 Caster.SendMessage("You cannot cast while feared.");
+                return false;
             }
             if ((Scroll is BaseWand || Scroll is BaseDevice) && Caster.Spell?.IsCasting == true)
             {
-                Caster.SendLocalizedMessage(502643); // You can not cast a spell while frozen.
-            }
-            else if (Caster.Spell?.IsCasting == true)
-            {
-                Caster.SendLocalizedMessage(502642); // You are already casting a spell.
+                if (isWand)
+                {
+                    Caster.SendLocalizedMessage(502643); // You can not cast a spell while frozen.
+                }
+                else
+                {
+                    Caster.SendLocalizedMessage(502642); // You are already casting a spell.
+                }
             }
             else if (BlockedByHorrificBeast &&
                      TransformationSpellHelper.UnderTransformation(Caster, typeof(HorrificBeastSpell)) ||
@@ -579,7 +585,7 @@ namespace Server.Spells
             {
                 Caster.SendLocalizedMessage(1061091); // You cannot cast that spell in this form.
             }
-            else if (Scroll is not BaseWand && (Caster.Paralyzed || Caster.Frozen))
+            else if (!isWand && (Caster.Paralyzed || Caster.Frozen))
             {
                 Caster.SendLocalizedMessage(502643); // You can not cast a spell while frozen.
             }
@@ -594,76 +600,84 @@ namespace Server.Spells
             else if ((Caster as PlayerMobile)?.DuelContext?.AllowSpellCast(Caster, this) == false)
             {
             }
-            else if (Caster.Mana >= ScaleMana(GetMana()))
-            {
-                if (Caster.Spell == null && Caster.CheckSpellCast(this) && CheckCast() &&
-                    Caster.Region.OnBeginSpellCast(Caster, this))
-                {
-                    State = SpellState.Casting;
-                    Caster.Spell = this;
-
-                    if (Scroll is not BaseWand && RevealOnCast)
-                    {
-                        Caster.RevealingAction();
-                    }
-
-                    SayMantra();
-
-                    var castDelay = GetCastDelay();
-
-                    if (ShowHandMovement && (Caster.Body.IsHuman || Caster.Player && Caster.Body.IsMonster))
-                    {
-                        var count = (int)Math.Ceiling(castDelay.TotalSeconds / AnimateDelay.TotalSeconds);
-
-                        if (count != 0)
-                        {
-                            _animTimer = new AnimTimer(this, count);
-                            _animTimer.Start();
-                        }
-
-                        if (Info.LeftHandEffect > 0)
-                        {
-                            Caster.FixedParticles(0, 10, 5, Info.LeftHandEffect, EffectLayer.LeftHand);
-                        }
-
-                        if (Info.RightHandEffect > 0)
-                        {
-                            Caster.FixedParticles(0, 10, 5, Info.RightHandEffect, EffectLayer.RightHand);
-                        }
-                    }
-
-                    if (ClearHandsOnCast)
-                    {
-                        Caster.ClearHands();
-                    }
-
-                    if (Core.ML)
-                    {
-                        WeaponAbility.ClearCurrentAbility(Caster);
-                    }
-
-                    _castTimer = new CastTimer(this, castDelay);
-                    // m_CastTimer.Start();
-
-                    OnBeginCast();
-
-                    if (castDelay > TimeSpan.Zero)
-                    {
-                        _castTimer.Start();
-                    }
-                    else
-                    {
-                        _castTimer.Tick();
-                    }
-
-                    return true;
-                }
-
-                return false;
-            }
             else
             {
-                Caster.LocalOverheadMessage(MessageType.Regular, 0x22, 502625); // Insufficient mana
+                var requiredMana = ScaleMana(GetMana());
+
+                if (Caster.Mana >= requiredMana)
+                {
+                    if (Caster.Spell == null && Caster.CheckSpellCast(this) && CheckCast() &&
+                        Caster.Region.OnBeginSpellCast(Caster, this))
+                    {
+                        State = SpellState.Casting;
+                        Caster.Spell = this;
+
+                        if (!isWand && RevealOnCast)
+                        {
+                            Caster.RevealingAction();
+                        }
+
+                        SayMantra();
+
+                        var castDelay = GetCastDelay();
+
+                        if (ShowHandMovement && (Caster.Body.IsHuman || Caster.Player && Caster.Body.IsMonster))
+                        {
+                            var count = (int)Math.Ceiling(castDelay.TotalSeconds / AnimateDelay.TotalSeconds);
+
+                            if (count != 0)
+                            {
+                                _animTimer = new AnimTimer(this, count);
+                                _animTimer.Start();
+                            }
+
+                            if (Info.LeftHandEffect > 0)
+                            {
+                                Caster.FixedParticles(0, 10, 5, Info.LeftHandEffect, EffectLayer.LeftHand);
+                            }
+
+                            if (Info.RightHandEffect > 0)
+                            {
+                                Caster.FixedParticles(0, 10, 5, Info.RightHandEffect, EffectLayer.RightHand);
+                            }
+                        }
+
+                        if (ClearHandsOnCast)
+                        {
+                            Caster.ClearHands();
+                        }
+
+                        if (Core.ML)
+                        {
+                            WeaponAbility.ClearCurrentAbility(Caster);
+                        }
+
+                        _castTimer = new CastTimer(this, castDelay);
+                        // m_CastTimer.Start();
+
+                        OnBeginCast();
+
+                        if (castDelay > TimeSpan.Zero)
+                        {
+                            _castTimer.Start();
+                        }
+                        else
+                        {
+                            _castTimer.Tick();
+                        }
+
+                        return true;
+                    }
+                }
+                else if (Caster.NetState?.Version >= _insufficientManaClientChange)
+                {
+                    // Insufficient mana. You must have at least ~1_MANA_REQUIREMENT~ Mana to use this spell.
+                    Caster.LocalOverheadMessage(MessageType.Regular, 0x22, 502625, requiredMana.ToString());
+                }
+                else
+                {
+                    Caster.LocalOverheadMessage(MessageType.Regular, 0x22, 502625); // Insufficient mana
+                }
             }
 
             return false;

@@ -1,9 +1,10 @@
 using Server.Talent;
 using Server.Mobiles;
+using ModernUO.Serialization;
 
 namespace Server.Items
 {
-    [Serializable(2, false)]
+    [SerializationGenerator(2, false)]
     public abstract partial class BaseHides : Item, ICommodity
     {
         [InvalidateProperties]
@@ -71,11 +72,11 @@ namespace Server.Items
             }
         }
 
-        public override void AddNameProperty(ObjectPropertyList list)
+        public override void AddNameProperty(IPropertyList list)
         {
             if (Amount > 1)
             {
-                list.Add(1050039, "{0}\t#{1}", Amount, 1024216); // ~1_NUMBER~ ~2_ITEMNAME~
+                list.Add(1050039, $"{Amount}\t{1024216:#}"); // ~1_NUMBER~ ~2_ITEMNAME~
             }
             else
             {
@@ -83,7 +84,7 @@ namespace Server.Items
             }
         }
 
-        public override void GetProperties(ObjectPropertyList list)
+        public override void GetProperties(IPropertyList list)
         {
             base.GetProperties(list);
 
@@ -103,7 +104,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     [Flippable(0x1079, 0x1078)]
     public partial class Hides : BaseHides, IScissorable
     {
@@ -131,7 +132,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     [Flippable(0x1079, 0x1078)]
     public partial class SpinedHides : BaseHides, IScissorable
     {
@@ -159,7 +160,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     [Flippable(0x1079, 0x1078)]
     public partial class HornedHides : BaseHides, IScissorable
     {
@@ -187,7 +188,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     [Flippable(0x1079, 0x1078)]
     public partial class BarbedHides : BaseHides, IScissorable
     {

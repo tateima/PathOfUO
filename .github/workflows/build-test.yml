@@ -18,6 +18,8 @@ jobs:
             name: MacOS 10
           - os: macos-11
             name: MacOS 11
+          - os: macos-12
+            name: MacOS 12
 
     steps:
     - uses: actions/checkout@v2
@@ -26,7 +28,7 @@ jobs:
     - name: Setup .NET 6
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.100
+        dotnet-version: 6.0.300
     - name: Build
       run: ./publish.cmd
     - name: Test

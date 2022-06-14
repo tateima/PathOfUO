@@ -28,7 +28,7 @@ namespace Server.Spells.Spellweaving
 
         public override bool CheckCast()
         {
-            if (!(Caster.Weapon is BaseWeapon weapon) || weapon is Fists || weapon is BaseRanged)
+            if (Caster.Weapon is not BaseWeapon weapon || weapon is Fists or BaseRanged)
             {
                 Caster.SendLocalizedMessage(1060179); // You must be wielding a weapon to use this ability!
                 return false;
@@ -39,7 +39,7 @@ namespace Server.Spells.Spellweaving
 
         public override void OnCast()
         {
-            if (!(Caster.Weapon is BaseWeapon weapon) || weapon is Fists || weapon is BaseRanged)
+            if (Caster.Weapon is not BaseWeapon weapon || weapon is Fists or BaseRanged)
             {
                 Caster.SendLocalizedMessage(1060179); // You must be wielding a weapon to use this ability!
             }

@@ -1,9 +1,8 @@
-using System;
-using System.Collections.Generic;
+using ModernUO.Serialization;
 
 namespace Server.Items
 {
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public abstract partial class BaseWaist : BaseClothing
     {
         public BaseWaist(int itemID, int hue = 0) : base(itemID, Layer.Waist, hue)
@@ -12,7 +11,7 @@ namespace Server.Items
     }
 
     [Flippable(0x153b, 0x153c)]
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class HalfApron : BaseWaist
     {
         [Constructible]
@@ -20,7 +19,7 @@ namespace Server.Items
     }
 
     [Flippable(0x27A0, 0x27EB)]
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class Obi : BaseWaist
     {
         [Constructible]
@@ -28,7 +27,7 @@ namespace Server.Items
     }
 
     [Flippable(0x2B68, 0x315F)]
-    [Serializable(0)]
+    [SerializationGenerator(0)]
     public partial class WoodlandBelt : BaseWaist
     {
         [Constructible]

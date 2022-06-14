@@ -1,6 +1,8 @@
+using ModernUO.Serialization;
+
 namespace Server.Items
 {
-    [Serializable(2, false)]
+    [SerializationGenerator(2, false)]
     [Flippable(0x1bdd, 0x1be0)]
     public partial class Log : Item, ICommodity, IAxe
     {
@@ -38,7 +40,7 @@ namespace Server.Items
 
         bool ICommodity.IsDeedable => true;
 
-        public override void GetProperties(ObjectPropertyList list)
+        public override void GetProperties(IPropertyList list)
         {
             base.GetProperties(list);
 
@@ -87,7 +89,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class HeartwoodLog : Log
     {
         [Constructible]
@@ -98,7 +100,7 @@ namespace Server.Items
         public override bool Axe(Mobile from, BaseAxe axe) => TryCreateBoards(from, 100, new HeartwoodBoard());
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class BloodwoodLog : Log
     {
         [Constructible]
@@ -109,7 +111,7 @@ namespace Server.Items
         public override bool Axe(Mobile from, BaseAxe axe) => TryCreateBoards(from, 100, new BloodwoodBoard());
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class FrostwoodLog : Log
     {
         [Constructible]
@@ -120,7 +122,7 @@ namespace Server.Items
         public override bool Axe(Mobile from, BaseAxe axe) => TryCreateBoards(from, 100, new FrostwoodBoard());
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class OakLog : Log
     {
         [Constructible]
@@ -131,7 +133,7 @@ namespace Server.Items
         public override bool Axe(Mobile from, BaseAxe axe) => TryCreateBoards(from, 65, new OakBoard());
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class AshLog : Log
     {
         [Constructible]
@@ -142,7 +144,7 @@ namespace Server.Items
         public override bool Axe(Mobile from, BaseAxe axe) => TryCreateBoards(from, 80, new AshBoard());
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class YewLog : Log
     {
         [Constructible]

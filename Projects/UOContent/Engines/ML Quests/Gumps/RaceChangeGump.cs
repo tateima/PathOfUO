@@ -193,7 +193,7 @@ namespace Server.Engines.MLQuests.Gumps
             return false;
         }
 
-        private static void RaceChangeReply(NetState state, CircularBufferReader reader, ref int packetLength)
+        private static void RaceChangeReply(NetState state, CircularBufferReader reader, int packetLength)
         {
             if (!m_Pending.TryGetValue(state, out var raceChangeState))
             {
@@ -202,7 +202,7 @@ namespace Server.Engines.MLQuests.Gumps
 
             CloseCurrent(state);
 
-            if (!(state.Mobile is PlayerMobile pm))
+            if (state.Mobile is not PlayerMobile pm)
             {
                 return;
             }
@@ -325,7 +325,7 @@ namespace Server.Engines.MLQuests.Gumps
 
         public override void OnDoubleClick(Mobile from)
         {
-            if (!(from is PlayerMobile pm))
+            if (from is not PlayerMobile pm)
             {
                 return;
             }

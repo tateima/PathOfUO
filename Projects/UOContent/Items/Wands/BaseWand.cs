@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ModernUO.Serialization;
 using Server.Network;
 using Server.Spells;
 using Server.Targeting;
@@ -22,7 +23,7 @@ namespace Server.Items
         Device
     }
 
-    [Serializable(1, false)]
+    [SerializationGenerator(1, false)]
     public abstract partial class BaseWand : BaseBashing
     {
         [InvalidateProperties]
@@ -123,44 +124,44 @@ namespace Server.Items
             _charges = reader.ReadInt();
         }
 
-        public override void GetProperties(ObjectPropertyList list)
+        public override void GetProperties(IPropertyList list)
         {
             base.GetProperties(list);
 
             switch (_wandEffect)
             {
                 case WandEffect.Clumsiness:
-                    list.Add(1017326, _charges.ToString());
+                    list.Add(1017326, $"{_charges}");
                     break; // clumsiness charges: ~1_val~
                 case WandEffect.Identification:
-                    list.Add(1017350, _charges.ToString());
+                    list.Add(1017350, $"{_charges}");
                     break; // identification charges: ~1_val~
                 case WandEffect.Healing:
-                    list.Add(1017329, _charges.ToString());
+                    list.Add(1017329, $"{_charges}");
                     break; // healing charges: ~1_val~
                 case WandEffect.Feeblemindedness:
-                    list.Add(1017327, _charges.ToString());
+                    list.Add(1017327, $"{_charges}");
                     break; // feeblemind charges: ~1_val~
                 case WandEffect.Weakness:
-                    list.Add(1017328, _charges.ToString());
+                    list.Add(1017328, $"{_charges}");
                     break; // weakness charges: ~1_val~
                 case WandEffect.MagicArrow:
-                    list.Add(1060492, _charges.ToString());
+                    list.Add(1060492, $"{_charges}");
                     break; // magic arrow charges: ~1_val~
                 case WandEffect.Harming:
-                    list.Add(1017334, _charges.ToString());
+                    list.Add(1017334, $"{_charges}");
                     break; // harm charges: ~1_val~
                 case WandEffect.Fireball:
-                    list.Add(1060487, _charges.ToString());
+                    list.Add(1060487, $"{_charges}");
                     break; // fireball charges: ~1_val~
                 case WandEffect.GreaterHealing:
-                    list.Add(1017330, _charges.ToString());
+                    list.Add(1017330, $"{_charges}");
                     break; // greater healing charges: ~1_val~
                 case WandEffect.Lightning:
-                    list.Add(1060491, _charges.ToString());
+                    list.Add(1060491, $"{_charges}");
                     break; // lightning charges: ~1_val~
                 case WandEffect.ManaDraining:
-                    list.Add(1017339, _charges.ToString());
+                    list.Add(1017339, $"{_charges}");
                     break; // mana drain charges: ~1_val~
                 case WandEffect.Device:
                     list.Add(1060658, "{0}\t{1}", "device charges:", _charges);  // ~1_val~: ~2_val~
@@ -248,7 +249,7 @@ namespace Server.Items
 
         public virtual void DoWandTarget(Mobile from, object o)
         {
-            if (Deleted || _charges <= 0 || Parent != from || o is StaticTarget || o is LandTarget)
+            if (Deleted || _charges <= 0 || Parent != from || o is StaticTarget or LandTarget)
             {
                 return;
             }

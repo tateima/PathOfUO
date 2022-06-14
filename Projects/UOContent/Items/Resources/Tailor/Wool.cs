@@ -1,10 +1,11 @@
+using ModernUO.Serialization;
 using Server.Targeting;
 using Server.Talent;
 using Server.Mobiles;
 
 namespace Server.Items
 {
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class Wool : Item, IDyable
     {
         [Constructible]
@@ -97,7 +98,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class TaintedWool : Wool
     {
         [Constructible]

@@ -1,6 +1,8 @@
+using ModernUO.Serialization;
+
 namespace Server.Items
 {
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public abstract partial class BaseShirt : BaseClothing
     {
         public BaseShirt(int itemID, int hue = 0) : base(itemID, Layer.Shirt, hue)
@@ -9,7 +11,7 @@ namespace Server.Items
     }
 
     [Flippable(0x1efd, 0x1efe)]
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class FancyShirt : BaseShirt
     {
         [Constructible]
@@ -17,7 +19,7 @@ namespace Server.Items
     }
 
     [Flippable(0x1517, 0x1518)]
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class Shirt : BaseShirt
     {
         [Constructible]
@@ -28,7 +30,7 @@ namespace Server.Items
     }
 
     [Flippable(0x2794, 0x27DF)]
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class ClothNinjaJacket : BaseShirt
     {
         [Constructible]
@@ -39,7 +41,7 @@ namespace Server.Items
         }
     }
 
-    [Serializable(0)]
+    [SerializationGenerator(0)]
     public partial class ElvenShirt : BaseShirt
     {
         [Constructible]
@@ -48,7 +50,7 @@ namespace Server.Items
         public override int RequiredRaces => Race.AllowElvesOnly;
     }
 
-    [Serializable(0)]
+    [SerializationGenerator(0)]
     public partial class ElvenDarkShirt : BaseShirt
     {
         [Constructible]

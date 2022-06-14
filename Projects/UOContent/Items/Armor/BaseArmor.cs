@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ModernUO.Serialization;
 using Server.Engines.Craft;
 using Server.Ethics;
 using Server.Factions;
@@ -13,7 +14,7 @@ using AMT = Server.Items.ArmorMaterialType;
 
 namespace Server.Items
 {
-    [Serializable(8, false)]
+    [SerializationGenerator(9, false)]
     public abstract partial class BaseArmor : Item, IScissorable, IFactionItem, ICraftable, IWearableDurability
     {
         [SerializableField(0)]
@@ -102,7 +103,7 @@ namespace Server.Items
         [InvalidateProperties]
         [SerializableField(10)]
         [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
-        private Mobile _crafter;
+        private string _crafter;
 
         [SerializableFieldSaveFlag(10)]
         private bool ShouldSerializeCrafter() => _crafter != null;
@@ -691,7 +692,7 @@ namespace Server.Items
         )
         {
             Quality = (ArmorQuality)quality;
-            Crafter = from;
+            Crafter =  from.RawName;;
 
             var resourceType = typeRes ?? craftItem.Resources[0].ItemType;
 
@@ -707,8 +708,8 @@ namespace Server.Items
 
             if (Quality == ArmorQuality.Exceptional)
             {
-                if (!(Core.ML && this is BaseShield)
-                ) // Guessed Core.ML removed exceptional resist bonuses from crafted shields
+                // Guessed Core.ML removed exceptional resist bonuses from crafted shields
+                if (!(Core.ML && this is BaseShield))
                 {
                     DistributeBonuses(
                         tool is BaseRunicTool ? 6 :
@@ -716,7 +717,7 @@ namespace Server.Items
                     ); // Not sure since when, but right now 15 points are added, not 14.
                 }
 
-                if (Core.ML && !(this is BaseShield))
+                if (Core.ML && this is not BaseShield)
                 {
                     var bonus = (int)(from.Skills.ArmsLore.Value / 20);
 
@@ -938,7 +939,7 @@ namespace Server.Items
 
         public override void OnAfterDuped(Item newItem)
         {
-            if (!(newItem is BaseArmor armor))
+            if (newItem is not BaseArmor armor)
             {
                 return;
             }
@@ -1192,168 +1193,6 @@ namespace Server.Items
             }
 
             m?.CheckStatTimers();
-        }
-
-        private void Deserialize(IGenericReader reader, int version)
-        {
-            var flags = (OldSaveFlag)reader.ReadEncodedInt();
-
-            Attributes = new AosAttributes(this);
-
-            if (GetSaveFlag(flags, OldSaveFlag.Warforged))
-            {
-                _warforged = reader.ReadBool();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.Enchanted))
-            {
-                _enchanted = reader.ReadBool();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.SocketAmount))
-            {
-                _socketAmount = reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.Sockets))
-            {
-                _sockets = reader.ReadString();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.ShardPower))
-            {
-                _shardPower = reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.Attributes))
-            {
-                Attributes.Deserialize(reader);
-            }
-
-            ArmorAttributes = new AosArmorAttributes(this);
-
-            if (GetSaveFlag(flags, OldSaveFlag.ArmorAttributes))
-            {
-                ArmorAttributes.Deserialize(reader);
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.PhysicalBonus))
-            {
-                _physicalBonus = reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.FireBonus))
-            {
-                _fireBonus = reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.ColdBonus))
-            {
-                _coldBonus = reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.PoisonBonus))
-            {
-                _poisonBonus = reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.EnergyBonus))
-            {
-                _energyBonus = reader.ReadEncodedInt();
-            }
-
-            _identified = GetSaveFlag(flags, OldSaveFlag.Identified);
-
-            if (GetSaveFlag(flags, OldSaveFlag.MaxHitPoints))
-            {
-                _maxHitPoints = reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.HitPoints))
-            {
-                _hitPoints = reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.Crafter))
-            {
-                _crafter = reader.ReadEntity<Mobile>();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.Quality))
-            {
-                _quality = (ArmorQuality)reader.ReadEncodedInt();
-            }
-            else
-            {
-                _quality = ArmorQuality.Regular;
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.Durability))
-            {
-                _durability = (ArmorDurabilityLevel)reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.Protection))
-            {
-                _protection = (ArmorProtectionLevel)reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.Resource))
-            {
-                _rawResource = (CraftResource)reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.BaseArmor))
-            {
-                _armorBase = reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.StrBonus))
-            {
-                _strBonus = reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.DexBonus))
-            {
-                _dexBonus = reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.IntBonus))
-            {
-                _intBonus = reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.StrReq))
-            {
-                _strReq = reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.DexReq))
-            {
-                _dexReq = reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.IntReq))
-            {
-                _intReq = reader.ReadEncodedInt();
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.MedAllowance))
-            {
-                _meditate = (AMA)reader.ReadEncodedInt();
-            }
-
-            SkillBonuses = new AosSkillBonuses(this);
-
-            if (GetSaveFlag(flags, OldSaveFlag.SkillBonuses))
-            {
-                SkillBonuses.Deserialize(reader);
-            }
-
-            if (GetSaveFlag(flags, OldSaveFlag.PlayerConstructed))
-            {
-                PlayerConstructed = true;
-            }
         }
 
         public override bool AllowSecureTrade(Mobile from, Mobile to, Mobile newOwner, bool accepted)
@@ -1719,7 +1558,7 @@ namespace Server.Items
             return false;
         }
 
-        public override void AddNameProperty(ObjectPropertyList list)
+        public override void AddNameProperty(IPropertyList list)
         {
             var oreType = _rawResource switch
             {
@@ -1743,31 +1582,39 @@ namespace Server.Items
                 _                           => 0
             };
 
-            if (_quality == ArmorQuality.Exceptional)
+            var name = Name;
+
+            if (oreType != 0)
             {
-                if (oreType != 0)
+                var qualityNumber = _quality == ArmorQuality.Exceptional ? 1053100 : 1053099;
+
+                if (name != null)
                 {
-                    list.Add(1053100, "#{0}\t{1}", oreType, GetNameString()); // exceptional ~1_oretype~ ~2_armortype~
+                    list.Add(qualityNumber, $"{oreType:#}\t{Name}");
                 }
                 else
                 {
-                    list.Add(1050040, GetNameString()); // exceptional ~1_ITEMNAME~
+                    list.Add(qualityNumber, $"{oreType:#}\t{LabelNumber:#}");
                 }
+            }
+            else if (_quality == ArmorQuality.Exceptional)
+            {
+                if (name != null)
+                {
+                    list.Add(1050040, name); // exceptional ~1_ITEMNAME~
+                }
+                else
+                {
+                    list.AddLocalized(1050040, LabelNumber); // exceptional ~1_ITEMNAME~
+                }
+            }
+            else if (name == null)
+            {
+                list.Add(LabelNumber);
             }
             else
             {
-                if (oreType != 0)
-                {
-                    list.Add(1053099, "#{0}\t{1}", oreType, GetNameString()); // ~1_oretype~ ~2_armortype~
-                }
-                else if (Name == null)
-                {
-                    list.Add(LabelNumber);
-                }
-                else
-                {
-                    list.Add(Name);
-                }
+                list.Add(Name);
             }
         }
 
@@ -1792,7 +1639,7 @@ namespace Server.Items
 
         public virtual int GetLuckBonus() => CraftResources.GetInfo(_rawResource)?.AttributeInfo?.ArmorLuck ?? 0;
 
-        public override void GetProperties(ObjectPropertyList list)
+        public override void GetProperties(IPropertyList list)
         {
             base.GetProperties(list);
             if (_warforged)
@@ -1835,7 +1682,7 @@ namespace Server.Items
 
             if (_crafter != null)
             {
-                list.Add(1050043, _crafter.Name); // crafted by ~1_NAME~
+                list.Add(1050043, _crafter); // crafted by ~1_NAME~
             }
 
             if (m_FactionState != null)
@@ -1859,72 +1706,72 @@ namespace Server.Items
 
             if ((prop = ArtifactRarity) > 0)
             {
-                list.Add(1061078, prop.ToString()); // artifact rarity ~1_val~
+                list.Add(1061078, prop); // artifact rarity ~1_val~
             }
 
             if ((prop = Attributes.WeaponDamage) != 0)
             {
-                list.Add(1060401, prop.ToString()); // damage increase ~1_val~%
+                list.Add(1060401, prop); // damage increase ~1_val~%
             }
 
             if ((prop = Attributes.DefendChance) != 0)
             {
-                list.Add(1060408, prop.ToString()); // defense chance increase ~1_val~%
+                list.Add(1060408, prop); // defense chance increase ~1_val~%
             }
 
             if ((prop = Attributes.BonusDex) != 0)
             {
-                list.Add(1060409, prop.ToString()); // dexterity bonus ~1_val~
+                list.Add(1060409, prop); // dexterity bonus ~1_val~
             }
 
             if ((prop = Attributes.EnhancePotions) != 0)
             {
-                list.Add(1060411, prop.ToString()); // enhance potions ~1_val~%
+                list.Add(1060411, prop); // enhance potions ~1_val~%
             }
 
             if ((prop = Attributes.CastRecovery) != 0)
             {
-                list.Add(1060412, prop.ToString()); // faster cast recovery ~1_val~
+                list.Add(1060412, prop); // faster cast recovery ~1_val~
             }
 
             if ((prop = Attributes.CastSpeed) != 0)
             {
-                list.Add(1060413, prop.ToString()); // faster casting ~1_val~
+                list.Add(1060413, prop); // faster casting ~1_val~
             }
 
             if ((prop = Attributes.AttackChance) != 0)
             {
-                list.Add(1060415, prop.ToString()); // hit chance increase ~1_val~%
+                list.Add(1060415, prop); // hit chance increase ~1_val~%
             }
 
             if ((prop = Attributes.BonusHits) != 0)
             {
-                list.Add(1060431, prop.ToString()); // hit point increase ~1_val~
+                list.Add(1060431, prop); // hit point increase ~1_val~
             }
 
             if ((prop = Attributes.BonusInt) != 0)
             {
-                list.Add(1060432, prop.ToString()); // intelligence bonus ~1_val~
+                list.Add(1060432, prop); // intelligence bonus ~1_val~
             }
 
             if ((prop = Attributes.LowerManaCost) != 0)
             {
-                list.Add(1060433, prop.ToString()); // lower mana cost ~1_val~%
+                list.Add(1060433, prop); // lower mana cost ~1_val~%
             }
 
             if ((prop = Attributes.LowerRegCost) != 0)
             {
-                list.Add(1060434, prop.ToString()); // lower reagent cost ~1_val~%
+                list.Add(1060434, prop); // lower reagent cost ~1_val~%
             }
 
             if ((prop = GetLowerStatReq()) != 0)
             {
-                list.Add(1060435, prop.ToString()); // lower requirements ~1_val~%
+                list.Add(1060435, prop); // lower requirements ~1_val~%
             }
 
             if ((prop = GetLuckBonus() + Attributes.Luck) != 0)
             {
-                list.Add(1060436, prop.ToString()); // luck ~1_val~
+                list.Add(1060436, prop); // luck ~1_val~
             }
 
             if (ArmorAttributes.MageArmor != 0)
@@ -1934,12 +1781,12 @@ namespace Server.Items
 
             if ((prop = Attributes.BonusMana) != 0)
             {
-                list.Add(1060439, prop.ToString()); // mana increase ~1_val~
+                list.Add(1060439, prop); // mana increase ~1_val~
             }
 
             if ((prop = Attributes.RegenMana) != 0)
             {
-                list.Add(1060440, prop.ToString()); // mana regeneration ~1_val~
+                list.Add(1060440, prop); // mana regeneration ~1_val~
             }
 
             if (Attributes.NightSight != 0)
@@ -1949,22 +1796,22 @@ namespace Server.Items
 
             if ((prop = Attributes.ReflectPhysical) != 0)
             {
-                list.Add(1060442, prop.ToString()); // reflect physical damage ~1_val~%
+                list.Add(1060442, prop); // reflect physical damage ~1_val~%
             }
 
             if ((prop = Attributes.RegenStam) != 0)
             {
-                list.Add(1060443, prop.ToString()); // stamina regeneration ~1_val~
+                list.Add(1060443, prop); // stamina regeneration ~1_val~
             }
 
             if ((prop = Attributes.RegenHits) != 0)
             {
-                list.Add(1060444, prop.ToString()); // hit point regeneration ~1_val~
+                list.Add(1060444, prop); // hit point regeneration ~1_val~
             }
 
             if ((prop = ArmorAttributes.SelfRepair) != 0)
             {
-                list.Add(1060450, prop.ToString()); // self repair ~1_val~
+                list.Add(1060450, prop); // self repair ~1_val~
             }
 
             if (Attributes.SpellChanneling != 0)
@@ -1974,44 +1821,44 @@ namespace Server.Items
 
             if ((prop = Attributes.SpellDamage) != 0)
             {
-                list.Add(1060483, prop.ToString()); // spell damage increase ~1_val~%
+                list.Add(1060483, prop); // spell damage increase ~1_val~%
             }
 
             if ((prop = Attributes.BonusStam) != 0)
             {
-                list.Add(1060484, prop.ToString()); // stamina increase ~1_val~
+                list.Add(1060484, prop); // stamina increase ~1_val~
             }
 
             if ((prop = Attributes.BonusStr) != 0)
             {
-                list.Add(1060485, prop.ToString()); // strength bonus ~1_val~
+                list.Add(1060485, prop); // strength bonus ~1_val~
             }
 
             if ((prop = Attributes.WeaponSpeed) != 0)
             {
-                list.Add(1060486, prop.ToString()); // swing speed increase ~1_val~%
+                list.Add(1060486, prop); // swing speed increase ~1_val~%
             }
 
             if (Core.ML && (prop = Attributes.IncreasedKarmaLoss) != 0)
             {
-                list.Add(1075210, prop.ToString()); // Increased Karma Loss ~1val~%
+                list.Add(1075210, prop); // Increased Karma Loss ~1val~%
             }
 
             AddResistanceProperties(list);
 
             if ((prop = GetDurabilityBonus()) > 0)
             {
-                list.Add(1060410, prop.ToString()); // durability ~1_val~%
+                list.Add(1060410, prop); // durability ~1_val~%
             }
 
             if ((prop = ComputeStatReq(StatType.Str)) > 0)
             {
-                list.Add(1061170, prop.ToString()); // strength requirement ~1_val~
+                list.Add(1061170, prop); // strength requirement ~1_val~
             }
 
             if (_hitPoints >= 0 && _maxHitPoints > 0)
             {
-                list.Add(1060639, "{0}\t{1}", _hitPoints, _maxHitPoints); // durability ~1_val~ / ~2_val~
+                list.Add(1060639, $"{_hitPoints}\t{_maxHitPoints}"); // durability ~1_val~ / ~2_val~
             }
         }
         public override void OnSingleClick(Mobile from)
@@ -2075,7 +1922,7 @@ namespace Server.Items
                 return;
             }
 
-            from.NetState.SendDisplayEquipmentInfo(Serial, number, _crafter?.RawName, false, attrs);
+            from.NetState.SendDisplayEquipmentInfo(Serial, number, _crafter, false, attrs);
         }
 
         [Flags]
