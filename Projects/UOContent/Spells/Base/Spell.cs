@@ -568,16 +568,11 @@ namespace Server.Spells
                 Caster.SendMessage("You cannot cast while feared.");
                 return false;
             }
-            if ((Scroll is BaseWand || Scroll is BaseDevice) && Caster.Spell?.IsCasting == true)
+
+            var isWand = Scroll is BaseWand || Scroll is BaseDevice;
+            if (isWand)
             {
-                if (isWand)
-                {
-                    Caster.SendLocalizedMessage(502643); // You can not cast a spell while frozen.
-                }
-                else
-                {
-                    Caster.SendLocalizedMessage(502642); // You are already casting a spell.
-                }
+                Caster.SendLocalizedMessage(Caster.Spell?.IsCasting == true ? 502643 : 502642);
             }
             else if (BlockedByHorrificBeast &&
                      TransformationSpellHelper.UnderTransformation(Caster, typeof(HorrificBeastSpell)) ||
@@ -585,7 +580,7 @@ namespace Server.Spells
             {
                 Caster.SendLocalizedMessage(1061091); // You cannot cast that spell in this form.
             }
-            else if (!isWand && (Caster.Paralyzed || Caster.Frozen))
+            else if (Caster.Paralyzed || Caster.Frozen)
             {
                 Caster.SendLocalizedMessage(502643); // You can not cast a spell while frozen.
             }
@@ -867,7 +862,7 @@ namespace Server.Spells
                     wand.ConsumeCharge(Caster);
                     Caster.RevealingAction();
                 }
-                
+
                 if (Scroll is BaseWand)
                 {
                     var m = Scroll.Movable;

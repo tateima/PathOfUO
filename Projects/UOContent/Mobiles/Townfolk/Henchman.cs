@@ -6,7 +6,7 @@ namespace Server.Mobiles
     {
         [Constructible]
         public Henchman()
-            : base(AIType.AI_Melee, FightMode.None, 10, 1, 0.2, 1.4)
+            : base(AIType.AI_Melee, FightMode.None, 10, 1)
         {
             SpeechHue = Utility.RandomDyedHue();
 

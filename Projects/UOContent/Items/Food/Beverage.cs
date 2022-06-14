@@ -111,12 +111,7 @@ public partial class BoneBroth : BaseBeverage
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Bone",
-            "broth"
-        );
+        list.Add(1060658, $"{"Bone"} {"broth"}"); // ~1_val~: ~2_val~
     }
 }
 [SerializationGenerator(0, false)]
@@ -166,12 +161,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(
-             1060847,
-             "{0} {1}",
-             "Enchanted",
-             "milk"
-         );
+         list.Add(1060658, $"{"Enchanted"} {"milk"}"); // ~1_val~: ~2_val~
      }
  }
  [SerializationGenerator(0, false)]
@@ -214,12 +204,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(
-             1060847,
-             "{0} {1}",
-             "Mage",
-             "water"
-         );
+         list.Add(1060658, $"{"Mage"} {"water"}"); // ~1_val~: ~2_val~
      }
  }
  [SerializationGenerator(0, false)]
@@ -267,12 +252,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(
-             1060847,
-             "{0} {1}",
-             "Orcish",
-             "water"
-         );
+         list.Add(1060658, $"{"Orcish"} {"water"}"); // ~1_val~: ~2_val~
      }
  }
  [SerializationGenerator(0, false)]
@@ -319,12 +299,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(
-             1060847,
-             "{0} {1}",
-             "Demonic",
-             "water"
-         );
+         list.Add(1060658, $"{"Demonic"} {"water"}"); // ~1_val~: ~2_val~
      }
  }
  [SerializationGenerator(0, false)]
@@ -371,12 +346,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(
-             1060847,
-             "{0} {1}",
-             "Skeletal",
-             "water"
-         );
+         list.Add(1060658, $"{"Skeletal"} {"water"}"); // ~1_val~: ~2_val~
      }
  }
 
@@ -422,12 +392,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(
-             1060847,
-             "{0} {1}",
-             "Charged",
-             "spirits"
-         );
+         list.Add(1060658, $"{"Charged"} {"spirits"}"); // ~1_val~: ~2_val~
      }
  }
 
@@ -486,12 +451,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(
-             1060847,
-             "{0} {1}",
-             "Holy",
-             "water"
-         );
+         list.Add(1060658, $"{"Holy"} {"water"}"); // ~1_val~: ~2_val~
      }
  }
 
@@ -539,12 +499,7 @@ public partial class BoneBroth : BaseBeverage
 
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(
-             1060847,
-             "{0} {1}",
-             "Fire",
-             "spirits"
-         );
+         list.Add(1060658, $"{"Fire"} {"spirits"}"); // ~1_val~: ~2_val~
      }
  }
 
@@ -592,12 +547,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(
-             1060847,
-             "{0} {1}",
-             "Black",
-             "Sambucca"
-         );
+         list.Add(1060658, $"{"Black"} {"Sambucca"}"); // ~1_val~: ~2_val~
      }
  }
 
@@ -645,12 +595,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(
-             1060847,
-             "{0} {1}",
-             "Soldier's",
-             "brew"
-         );
+         list.Add(1060658, $"{"Soldier's"} {"brew"}"); // ~1_val~: ~2_val~
      }
  }
 
@@ -704,12 +649,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(
-             1060847,
-             "{0} {1}",
-             "Ninja's",
-             "brew"
-         );
+         list.Add(1060658, $"{"Ninja's"} {"brew"}"); // ~1_val~: ~2_val~
      }
  }
 [SerializationGenerator(0, false)]
@@ -762,12 +702,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(
-             1060847,
-             "{0} {1}",
-             "Healer's",
-             "brew"
-         );
+         list.Add(1060658, $"{"Healer's"} {"brew"}"); // ~1_val~: ~2_val~
      }
  }
 
@@ -804,12 +739,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(
-             1060847,
-             "{0} {1}",
-             "Ancestral",
-             "brew"
-         );
+         list.Add(1060658, $"{"Ancestral"} {"brew"}"); // ~1_val~: ~2_val~
      }
  }
 
@@ -855,12 +785,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(
-             1060847,
-             "{0} {1}",
-             "Pirate's",
-             "brew"
-         );
+         list.Add(1060658, $"{"Pirate's"} {"brew"}"); // ~1_val~: ~2_val~
      }
  }
 [SerializationGenerator(0, false)]
@@ -905,11 +830,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public void GetProperties(IPropertyList list)
      {
-         list.Add(
-             1060847,
-             "{0}",
-             "Guiness"
-         );
+         list.Add(1060658, $"{"Guiness"}{""}"); // ~1_val~: ~2_val~
      }
     }
 
@@ -1438,7 +1359,7 @@ public abstract partial class BaseBeverage : Item, IHasQuantity
                 // if they have optimised consumption return some mana
                 if (optimisedConsumption != null)
                 {
-                    if (!ContainsAlchohol && from.Mana < from.ManaMax)
+                    if (!ContainsAlcohol && from.Mana < from.ManaMax)
                     {
                         from.Mana += optimisedConsumption.Level * 2;
                     }

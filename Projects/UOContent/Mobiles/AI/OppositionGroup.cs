@@ -200,7 +200,6 @@ namespace Server
 
         public static Type[] HumanoidGroup{ get; } =
         {
-            typeof(Wanderer),
             typeof(ArcticOgreLord),
             typeof(OgreLord),
             typeof(Ogre),

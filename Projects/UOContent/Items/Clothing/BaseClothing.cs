@@ -758,18 +758,9 @@ namespace Server.Items
             base.GetProperties(list);
 
              if (_pocketAmount > 0) {
-                 list.Add(
-                     1060847,
-                     "Sockets: {0}/{1}",
-                     PocketArray.Length.ToString(),
-                     _pocketAmount.ToString()
-                 );
+                 list.Add(1060658, $"{"Sockets"}:\t{PocketArray.Length.ToString()}/{_pocketAmount.ToString()}"); // ~1_val~: ~2_val~
                  for (var i = 0; i < PocketArray.Length; i++) {
-                     list.Add(
-                         1060847,
-                         "{0}",
-                         PocketArray[i]
-                     );
+                     list.Add(1060658, $"{PocketArray[i]}"); // ~1_val~: ~2_val~
                  }
             }
 

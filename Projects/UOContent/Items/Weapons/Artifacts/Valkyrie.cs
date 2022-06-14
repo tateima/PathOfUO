@@ -1,7 +1,8 @@
+using ModernUO.Serialization;
 namespace Server.Items
 {
     [Flippable(0x13B9, 0x13Ba)]
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class Valkyrie : VikingSword
     {
         [Constructible]

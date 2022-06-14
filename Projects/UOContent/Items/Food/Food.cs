@@ -164,10 +164,6 @@ public partial class GarlicBread : Food
         Weight = 1.0;
         FillFactor = 1;
     }
-
-    public GarlicBread(Serial serial) : base(serial)
-    {
-    }
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in energy resistance");
         m_Mobile = from;
@@ -183,12 +179,7 @@ public partial class GarlicBread : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Garlic",
-            "bread"
-        );
+        list.Add(1060658, $"{"Garlic"} {"bread"}"); // ~1_val~: ~2_val~
     }
 }
 
@@ -199,10 +190,6 @@ public partial class SingingFillet : Food
     private SkillMod m_Mod;
     [Constructible]
     public SingingFillet(int amount = 1) : base(0x97B, amount) => FillFactor = 3;
-
-    public SingingFillet(Serial serial) : base(serial)
-    {
-    }
     public override double DefaultWeight => 0.1;
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in a barding skill");
@@ -225,12 +212,7 @@ public partial class SingingFillet : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Singing",
-            "fillet"
-        );
+        list.Add(1060658, $"{"Singing"} {"fillet"}"); // ~1_val~: ~2_val~
     }
 }
 
@@ -245,10 +227,6 @@ public partial class IronRichCheese : Food
     {
         Weight = 1.0;
         FillFactor = 1;
-    }
-
-    public IronRichCheese(Serial serial) : base(serial)
-    {
     }
 
     public override bool Eat(Mobile from) {
@@ -266,12 +244,7 @@ public partial class IronRichCheese : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Iron-rich",
-            "cheese"
-        );
+        list.Add(1060658, $"{"Iron-rich"} {"cheese"}"); // ~1_val~: ~2_val~
     }
 }
 
@@ -288,9 +261,6 @@ public partial class SourDough : Food
         FillFactor = 1;
     }
 
-    public SourDough(Serial serial) : base(serial)
-    {
-    }
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in poison resistance");
         m_Mobile = from;
@@ -306,12 +276,7 @@ public partial class SourDough : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Sourdough",
-            "bread"
-        );
+        list.Add(1060658, $"{"Sourdough"} {"bread"}"); // ~1_val~: ~2_val~
     }
 }
 [SerializationGenerator(0, false)]
@@ -324,10 +289,6 @@ public partial class BraveEggs : Food
     {
         Weight = 1.0;
         FillFactor = 1;
-    }
-
-    public BraveEggs(Serial serial) : base(serial)
-    {
     }
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in swordsman skill");
@@ -344,12 +305,7 @@ public partial class BraveEggs : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Brave",
-            "eggs"
-        );
+        list.Add(1060658, $"{"Brave"} {"eggs"}"); // ~1_val~: ~2_val~
     }
 }
 [SerializationGenerator(0, false)]
@@ -362,10 +318,6 @@ public partial class StickyChicken : Food
     {
         Weight = 1.0;
         FillFactor = 5;
-    }
-
-    public StickyChicken(Serial serial) : base(serial)
-    {
     }
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in taming skill");
@@ -382,12 +334,7 @@ public partial class StickyChicken : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Sticky",
-            "chicken"
-        );
+        list.Add(1060658, $"{"Sticky"} {"chicken"}"); // ~1_val~: ~2_val~
     }
 }
 [SerializationGenerator(0, false)]
@@ -403,9 +350,6 @@ public partial class DecoratedRoastPig : Food
         FillFactor = 1;
     }
 
-    public DecoratedRoastPig(Serial serial) : base(serial)
-    {
-    }
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in macing skill");
         m_Mobile = from;
@@ -421,12 +365,7 @@ public partial class DecoratedRoastPig : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Decorated roast",
-            "pig"
-        );
+        list.Add(1060658, $"{"Decorated roast"} {"pig"}"); // ~1_val~: ~2_val~
     }
 }
 [SerializationGenerator(0, false)]
@@ -439,10 +378,6 @@ public partial class EnchantedSausage : Food
         Hue = 0x7D;
         Weight = 1.0;
         FillFactor = 1;
-    }
-
-    public EnchantedSausage(Serial serial) : base(serial)
-    {
     }
 
     public override bool Eat(Mobile from) {
@@ -458,12 +393,7 @@ public partial class EnchantedSausage : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Enchanted",
-            "sausage"
-        );
+        list.Add(1060658, $"{"Enchanted"} {"sausage"}"); // ~1_val~: ~2_val~
     }
 }
 
@@ -476,10 +406,6 @@ public partial class GoldenHam : Food
         Hue = 0x94;
         Weight = 1.0;
         FillFactor = 1;
-    }
-
-    public GoldenHam(Serial serial) : base(serial)
-    {
     }
     public override bool Eat(Mobile from) {
 
@@ -494,12 +420,7 @@ public partial class GoldenHam : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Golden",
-            "ham"
-        );
+        list.Add(1060658, $"{"Golden"} {"ham"}"); // ~1_val~: ~2_val~
     }
 }
 
@@ -516,10 +437,6 @@ public partial class MandrakeCake : Food
         Weight = 1.0;
         FillFactor = 10;
     }
-
-    public MandrakeCake(Serial serial) : base(serial)
-    {
-    }
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in magery skill");
         m_Mobile = from;
@@ -535,12 +452,7 @@ public partial class MandrakeCake : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Mandrake",
-            "cake"
-        );
+        list.Add(1060658, $"{"Mandrake"} {"cake"}"); // ~1_val~: ~2_val~
     }
 }
 
@@ -555,10 +467,6 @@ public partial class BatEncrustedRibs : Food
         Hue = 0x21E;
         Weight = 1.0;
         FillFactor = 1;
-    }
-
-    public BatEncrustedRibs(Serial serial) : base(serial)
-    {
     }
 
     public override bool Eat(Mobile from) {
@@ -576,12 +484,7 @@ public partial class BatEncrustedRibs : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Bat-encrusted",
-            "ribs"
-        );
+        list.Add(1060658, $"{"Bat-encrusted"} {"ribs"}"); // ~1_val~: ~2_val~
     }
 }
 
@@ -596,10 +499,6 @@ public partial class AthletesPie : Food
         Stackable = false;
         Weight = 1.0;
         FillFactor = 5;
-    }
-
-    public AthletesPie(Serial serial) : base(serial)
-    {
     }
 
     public override int LabelNumber => 1041347; // baked meat pie
@@ -618,12 +517,7 @@ public partial class AthletesPie : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Athletes",
-            "pie"
-        );
+        list.Add(1060658, $"{"Athletes"} {"pie"}"); // ~1_val~: ~2_val~
     }
 }
 
@@ -639,10 +533,6 @@ public partial class LemonPie : Food
         Stackable = false;
         Weight = 1.0;
         FillFactor = 1;
-    }
-
-    public LemonPie(Serial serial) : base(serial)
-    {
     }
 
     public override int LabelNumber => 1041343; // baked apple pie
@@ -662,12 +552,7 @@ public partial class LemonPie : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Lemon",
-            "pie"
-        );
+        list.Add(1060658, $"{"Lemon"} {"pie"}"); // ~1_val~: ~2_val~
     }
 }
 
@@ -684,9 +569,6 @@ public partial class PhilosophersQuiche : Food
         FillFactor = 5;
     }
 
-    public PhilosophersQuiche(Serial serial) : base(serial)
-    {
-    }
     public override int LabelNumber => 1041345; // baked quiche
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in evaluating intelligence skill");
@@ -703,12 +585,7 @@ public partial class PhilosophersQuiche : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Philosophers",
-            "quiche"
-        );
+        list.Add(1060658, $"{"Philosophers"} {"quiche"}"); // ~1_val~: ~2_val~
     }
 }
 
@@ -723,10 +600,6 @@ public partial class SacrificialLambLeg : Food
         Hue = 0x215;
         Weight = 2.0;
         FillFactor = 1;
-    }
-
-    public SacrificialLambLeg(Serial serial) : base(serial)
-    {
     }
 
     public override bool Eat(Mobile from) {
@@ -744,12 +617,7 @@ public partial class SacrificialLambLeg : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Sacrificial lamb",
-            "leg"
-        );
+        list.Add(1060658, $"{"Sacrificial lamb"} {"leg"}"); // ~1_val~: ~2_val~
     }
 }
 

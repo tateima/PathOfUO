@@ -566,7 +566,7 @@ namespace Server.Mobiles
                         if (
                             resp.Item is BaseWeapon { Crafter: { } } baseWeapon && baseWeapon.Crafter == seller
                             ||
-                            resp.Item is BaseArmor { Crafter: { } } baseArmor && baseArmor.Crafter == seller
+                            resp.Item is BaseArmor { Crafter: { } } baseArmor && baseArmor.Crafter == seller.RawName
                             ||
                             resp.Item is BaseJewel { Crafter: { } } baseJewel && baseJewel.Crafter == seller
                         )

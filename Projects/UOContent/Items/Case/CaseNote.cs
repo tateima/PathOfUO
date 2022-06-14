@@ -1,9 +1,9 @@
 using Server.Talent;
-using Server.Network;
 using Server.Mobiles;
 using System.Collections.Generic;
 using Server.Gumps;
 using Server.Misc;
+using Server.Network;
 
 namespace Server.Items
 {
@@ -108,7 +108,7 @@ namespace Server.Items
                 );
             }
         }
-        public override void GetProperties(ObjectPropertyList list)
+        public override void GetProperties(IPropertyList list)
         {
             AddNameProperties(list);
         }

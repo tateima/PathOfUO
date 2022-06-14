@@ -1,10 +1,11 @@
 using Server.Talent;
-using Server.Network;
 using Server.Mobiles;
-
+using ModernUO.Serialization;
+using Server.Network;
 namespace Server.Items
 {
-    public sealed class SpiritBoard : Item
+    [SerializationGenerator(0, false)]
+    public sealed partial class SpiritBoard : Item
     {
         [Constructible]
         public SpiritBoard() : base(0x0FAA) {
@@ -22,24 +23,6 @@ namespace Server.Items
                 Name = "a silver spirit board";
             }
             Weight = 2.0;
-        }
-
-        public SpiritBoard(Serial serial) : base(serial)
-        {
-        }
-
-        public override void Serialize(IGenericWriter writer)
-        {
-            base.Serialize(writer);
-
-            writer.Write(0); // version
-        }
-
-        public override void Deserialize(IGenericReader reader)
-        {
-            base.Deserialize(reader);
-
-            var version = reader.ReadInt();
         }
 
         public override void OnDoubleClick(Mobile from)
@@ -104,7 +87,7 @@ namespace Server.Items
                 );
             }
         }
-        public override void GetProperties(ObjectPropertyList list)
+        public override void GetProperties(IPropertyList list)
         {
             AddNameProperties(list);
         }

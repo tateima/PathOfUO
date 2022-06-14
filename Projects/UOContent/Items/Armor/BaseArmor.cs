@@ -1657,27 +1657,14 @@ namespace Server.Items
                 );
             }
             if (_socketAmount > 0) {
-                list.Add(
-                    1060847,
-                    "Sockets: {0}/{1}",
-                    SocketArray.Length.ToString(),
-                    _socketAmount.ToString()
-                );
+                list.Add(1060658, $"{"Sockets"}:\t{SocketArray.Length.ToString()}/{_socketAmount.ToString()}"); // ~1_val~: ~2_val~
                 for (var i = 0; i < SocketArray.Length; i++) {
-                    list.Add(
-                        1060847,
-                        "{0}",
-                        SocketArray[i]
-                    );
+                    list.Add(1060658, $"{SocketArray[i]}"); // ~1_val~: ~2_val~
                 }
             }
             if (_shardPower > 0)
             {
-                list.Add(
-                    1060847,
-                    "Shard Power: {0}",
-                    _shardPower.ToString()
-                );
+                list.Add(1060658, $"{"Shard Power:\t"}{_shardPower.ToString()}"); // ~1_val~: ~2_val~
             }
 
             if (_crafter != null)

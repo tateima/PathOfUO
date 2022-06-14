@@ -1,3 +1,4 @@
+using ModernUO.Serialization;
 using Server.Mobiles;
 using Server.Spells.Fourth;
 using Server.Spells.Fifth;
@@ -7,7 +8,7 @@ using Server.Talent;
 
 namespace Server.Items
 {
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
 
     public partial class TelewarperDevice : BaseDevice
     {
@@ -24,7 +25,7 @@ namespace Server.Items
             Hue = 1992;
         }
 
-        public override void GetProperties(ObjectPropertyList list)
+        public override void GetProperties(IPropertyList list)
         {
             base.GetProperties(list);
             list.Add("Teleports target, but may accidentally summon creatures instead.");

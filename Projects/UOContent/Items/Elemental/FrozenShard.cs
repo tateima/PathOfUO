@@ -1,11 +1,10 @@
-using System;
-using Server;
+using ModernUO.Serialization;
 using Server.Mobiles;
-using Server.Targeting;
 
 namespace Server.Items
 {
-    public class FrozenShard : BaseShard
+    [SerializationGenerator(0, false)]
+    public partial class FrozenShard : BaseShard
     {
         public override double DefaultWeight
         {
@@ -25,24 +24,7 @@ namespace Server.Items
             Hue = MonsterBuff.FrozenHue;
         }
 
-        public FrozenShard(Serial serial) : base(serial)
-        {
-        }
-
-        public override void Serialize(IGenericWriter writer)
-        {
-            base.Serialize(writer);
-            writer.Write((int)0); // version
-        }
-
-        public override void Deserialize(IGenericReader reader)
-        {
-            base.Deserialize(reader);
-            int version = reader.ReadInt();
-            Light = LightType.Circle150;
-        }
-
-        public override void GetProperties(ObjectPropertyList list)
+        public override void GetProperties(IPropertyList list)
         {
             base.GetProperties(list);
             list.Add(1061196, "freezing"); // This shard has ~1_val~ properties
@@ -62,7 +44,7 @@ namespace Server.Items
                     use = true;
                 }
             }
-            else 
+            else
             {
                 from.SendLocalizedMessage(1061200, "frozen"); //You cannot imbue the properties of this shard with this item
             }

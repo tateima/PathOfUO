@@ -3605,7 +3605,7 @@ namespace Server.Mobiles
             StartBoss();
             base.Attack(m);
         }
-        
+
         public override void OnDoubleClick(Mobile from)
         {
             if (from.AccessLevel >= AccessLevel.GameMaster && !Body.IsHuman)
@@ -3638,122 +3638,66 @@ namespace Server.Mobiles
 
             if (IsSoulFeeder)
             {
-                list.Add(
-                    1060847,
-                    "Soul Feeder\t{0}",
-                    arg0: ""
-                ); // ~1_val~ ~2_val~
+                list.Add(1060658, $"{"Soul Feeder"}:\t{""}"); // ~1_val~: ~2_val~
             }
             if (IsBoss)
             {
-                list.Add(
-                    1060847,
-                    "Boss\t{0}",
-                    arg0: ""
-                ); // ~1_val~ ~2_val~
+                list.Add(1060658, $"{"Boss"}:\t{""}"); // ~1_val~: ~2_val~
             }
             else if (IsMinion)
             {
-                list.Add(
-                    1060847,
-                    "Minion\t{0}",
-                    ""
-                );
+                list.Add(1060658, $"{"Minion"}:\t{""}"); // ~1_val~: ~2_val~
             }
 
             if (IsMagicResistant)
             {
-                list.Add(
-                    1060847,
-                    "Magic Resistant\t{0}",
-                    ""
-                );
+                list.Add(1060658, $"{"Magic Resistant"}:\t{""}"); // ~1_val~: ~2_val~
             }
 
             if (IsReflective)
             {
-                list.Add(
-                    1060847,
-                    "Reflective\t{0}",
-                    ""
-                );
+                list.Add(1060658, $"{"Reflective"}:\t{""}"); // ~1_val~: ~2_val~
             }
 
             if (IsRegenerative)
             {
-                list.Add(
-                    1060847,
-                    "Regenerative\t{0}",
-                    ""
-                );
+                list.Add(1060658, $"{"Regenerative"}:\t{""}"); // ~1_val~: ~2_val~
             }
 
             if (IsIllusionist)
             {
-                list.Add(
-                    1060847,
-                    "Illusionist\t{0}",
-                    ""
-                );
+                list.Add(1060658, $"{"Illusionist"}:\t{""}"); // ~1_val~: ~2_val~
             }
 
             if (IsCorruptor)
             {
-                list.Add(
-                    1060847,
-                    "Corruptor\t{0}",
-                    ""
-                );
+                list.Add(1060658, $"{"Corruptor"}:\t{""}"); // ~1_val~: ~2_val~
             }
             else if (IsCorrupted)
             {
-                list.Add(
-                    1060847,
-                    "Corrupted\t{0}",
-                    ""
-                );
+                list.Add(1060658, $"{"Corrupted"}:\t{""}"); // ~1_val~: ~2_val~
             }
 
             if (IsEthereal)
             {
-                list.Add(
-                    1060847,
-                    "Ethereal\t{0}",
-                    ""
-                );
+                list.Add(1060658, $"{"Ethereal"}:\t{""}"); // ~1_val~: ~2_val~
             }
 
             if (IsBurning)
             {
-                list.Add(
-                    1060847,
-                    "Burning\t{0}",
-                    ""
-                );
+                list.Add(1060658, $"{"Burning"}:\t{""}"); // ~1_val~: ~2_val~
             }
             else if (IsFrozen)
             {
-                list.Add(
-                    1060847,
-                    "Frozen\t{0}",
-                    ""
-                );
+                list.Add(1060658, $"{"Frozen"}:\t{""}"); // ~1_val~: ~2_val~
             }
             else if (IsElectrified)
             {
-                list.Add(
-                    1060847,
-                    "Electrified\t{0}",
-                    ""
-                );
+                list.Add(1060658, $"{"Electrified"}:\t{""}"); // ~1_val~: ~2_val~
             }
             else if (IsToxic)
             {
-                list.Add(
-                    1060847,
-                    "Toxic\t{0}",
-                    ""
-                );
+                list.Add(1060658, $"{"Toxic"}:\t{""}"); // ~1_val~: ~2_val~
             }
 
             if (MLQuestSystem.Enabled && CanGiveMLQuest)

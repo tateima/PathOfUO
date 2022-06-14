@@ -23,14 +23,6 @@ namespace Server.Spells.Fourth
 
         private RunebookEntry m_Entry;
 
-        // for scroll support
-        public RecallSpell(Mobile caster, Item scroll = null) : base(
-            caster,
-            scroll,
-            _info
-        ) {
-        } 
-
         public RecallSpell(Mobile caster, Item scroll) : base(caster, scroll, _info)
         {
         }
@@ -52,7 +44,7 @@ namespace Server.Spells.Fourth
         {
             if (!PlanarTravel.CanPlanarTravel(Caster)) {
                 Caster.LocalOverheadMessage(MessageType.Regular, 0x22, false, PlanarTravel.NO_TRAVEL_MESSAGE);
-            } 
+            }
             else if (Sigil.ExistsOn(Caster))
             {
                 Caster.SendLocalizedMessage(1061632); // You can't do that while carrying the sigil.

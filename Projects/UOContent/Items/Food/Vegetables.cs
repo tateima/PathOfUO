@@ -1,139 +1,10 @@
+using System;
 using System.Collections.Generic;
 using ModernUO.Serialization;
 using Server;
 using Server.ContextMenus;
 
 namespace Server.Items;
-
-public abstract partial class Food : Item
-{
-    [SerializableField(0)]
-    [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
-    private Mobile _poisoner;
-
-    [SerializableField(1)]
-    [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
-    private Poison _poison;
-
-    [SerializableField(2)]
-    [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
-    private int _fillFactor;
-
-    public Food(int itemID, int amount = 1) : base(itemID)
-    {
-        Stackable = true;
-        Amount = amount;
-        FillFactor = 1;
-    }
-
-    public override void GetContextMenuEntries(Mobile from, List<ContextMenuEntry> list)
-    {
-        base.GetContextMenuEntries(from, list);
-
-        if (from.Alive)
-        {
-            list.Add(new EatEntry(from, this));
-        }
-    }
-
-    public override void OnDoubleClick(Mobile from)
-    {
-        if (!Movable)
-        {
-            return;
-        }
-
-        if (from.InRange(GetWorldLocation(), 1))
-        {
-            Eat(from);
-        }
-    }
-
-    public override bool CanStackWith(Item dropped)
-    {
-        if (dropped is Food food)
-        {
-            if (Poison != food.Poison || Poisoner != food.Poisoner)
-            {
-                return false;
-            }
-        }
-        return base.CanStackWith(dropped);
-    }
-
-
-    public virtual bool Eat(Mobile from)
-    {
-        // Fill the Mobile with FillFactor
-        if (CheckHunger(from))
-        {
-            // Play a random "eat" sound
-            from.PlaySound(Utility.Random(0x3A, 3));
-
-            if (from.Body.IsHuman && !from.Mounted)
-            {
-                from.Animate(34, 5, 1, true, false, 0);
-            }
-
-            if (Poison != null)
-            {
-                from.ApplyPoison(Poisoner, Poison);
-            }
-
-            Consume();
-            return true;
-        }
-
-        return false;
-    }
-
-    public virtual bool CheckHunger(Mobile from) => FillHunger(from, FillFactor);
-
-    public static bool FillHunger(Mobile from, int fillFactor)
-    {
-        if (from.Hunger >= 20)
-        {
-            from.SendLocalizedMessage(500867); // You are simply too full to eat any more!
-            return false;
-        }
-
-        var iHunger = from.Hunger + fillFactor;
-
-        if (from.Stam < from.StamMax)
-        {
-            from.Stam += Utility.Random(6, 3) + fillFactor / 5;
-        }
-
-        if (iHunger >= 20)
-        {
-            from.Hunger = 20;
-            from.SendLocalizedMessage(500872); // You manage to eat the food, but you are stuffed!
-        }
-        else
-        {
-            from.Hunger = iHunger;
-
-            if (iHunger < 5)
-            {
-                from.SendLocalizedMessage(500868); // You eat the food, but are still extremely hungry.
-            }
-            else if (iHunger < 10)
-            {
-                from.SendLocalizedMessage(500869); // You eat the food, and begin to feel more satiated.
-            }
-            else if (iHunger < 15)
-            {
-                from.SendLocalizedMessage(500870); // After eating the food, you feel much less hungry.
-            }
-            else
-            {
-                from.SendLocalizedMessage(500871); // You feel quite full after consuming the food.
-            }
-        }
-
-        return true;
-    }
-}
 
 [Flippable(0xc77, 0xc78)]
 [SerializationGenerator(0, false)]
@@ -175,11 +46,7 @@ public partial class Chilli : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "Chilli",
-            ""
-        );
+        list.Add(1060658, $"{"Chilli"} {""}"); // ~1_val~: ~2_val~
     }
 }
 
@@ -211,12 +78,7 @@ public partial class FrozenCabbage : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(
-            1060847,
-            "{0} {1}",
-            "Frozen",
-            "cabbage"
-        );
+        list.Add(1060658, $"{"Frozen"} {"cabbage"}"); // ~1_val~: ~2_val~
     }
 }
 [Flippable(0xc7b, 0xc7c)]

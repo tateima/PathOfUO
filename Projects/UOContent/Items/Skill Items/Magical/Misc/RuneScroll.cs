@@ -1,8 +1,9 @@
 using Server.Misc;
+using ModernUO.Serialization;
 
 namespace Server.Items
 {
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public sealed partial class RuneScroll : Item
     {
         [SerializableField(0)]
@@ -70,26 +71,14 @@ namespace Server.Items
             Weight = 1.0;
         }
 
-        public override void GetProperties(ObjectPropertyList list)
+        public override void GetProperties(IPropertyList list)
         {
             base.GetProperties(list);
-            list.Add(
-                1060847,
-                "Rune name: {0}",
-                _runeWordName
-            );
-            list.Add(
-                1060847,
-                "Rune symbol: {0}",
-                _type
-            );
+            list.Add(1060658, $"{"Rune name"}:\t{_runeWordName}"); // ~1_val~: ~2_val~
+            list.Add(1060658, $"{"Rune symbol"}:\t{_type}");       // ~1_val~: ~2_val~
             if (_identified)
             {
-                list.Add(
-                    1060847,
-                    "Symbol identity: {0}",
-                    _symbolType
-                );
+                list.Add(1060658, $"{"Symbol identity"}:\t{_symbolType}"); // ~1_val~: ~2_val~
             }
         }
     }

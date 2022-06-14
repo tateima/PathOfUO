@@ -1,3 +1,4 @@
+using ModernUO.Serialization;
 using Server.Mobiles;
 using Server.Spells.Fourth;
 using Server.Spells.Sixth;
@@ -5,7 +6,7 @@ using Server.Talent;
 
 namespace Server.Items
 {
-    [Serializable(0, false)]
+    [SerializationGenerator(0, false)]
     public partial class WhizzyGigDevice : BaseDevice
     {
         public override double DefaultWeight => 0.1;
@@ -21,7 +22,7 @@ namespace Server.Items
             Hue = 1992;
         }
 
-        public override void GetProperties(ObjectPropertyList list)
+        public override void GetProperties(IPropertyList list)
         {
             base.GetProperties(list);
             list.Add("Heals target, but may accidentally damage them instead.");

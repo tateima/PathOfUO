@@ -1,10 +1,10 @@
-using System;
-using Server;
+using ModernUO.Serialization;
 using Server.Mobiles;
 
 namespace Server.Items
 {
-    public class EnchanterDust : Item
+    [SerializationGenerator(0, false)]
+    public partial class EnchanterDust : Item
     {
         public override double DefaultWeight
         {
@@ -24,24 +24,7 @@ namespace Server.Items
             Hue = MonsterBuff.IllusionistHue;
         }
 
-        public EnchanterDust(Serial serial) : base(serial)
-        {
-        }
-
-        public override void Serialize(IGenericWriter writer)
-        {
-            base.Serialize(writer);
-            writer.Write((int)0); // version
-        }
-
-        public override void Deserialize(IGenericReader reader)
-        {
-            base.Deserialize(reader);
-            int version = reader.ReadInt();
-            Light = LightType.Circle150;
-        }
-
-        public override void GetProperties(ObjectPropertyList list)
+        public override void GetProperties(IPropertyList list)
         {
             base.GetProperties(list);
             list.Add(1061203); // enchanting dust

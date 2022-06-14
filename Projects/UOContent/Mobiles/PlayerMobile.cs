@@ -4177,26 +4177,12 @@ namespace Server.Mobiles
         public override void GetProperties(IPropertyList list)
         {
             base.GetProperties(list);
-
-            list.Add(
-                1060847,
-                "Level:\t{0}",
-                Level
-            ); // ~1_val~ ~2_val~
+            list.Add(1060658, $"Level:\t{Level}"); // ~1_val~: ~2_val~
             string xp = (LevelExperience + CraftExperience + NonCraftExperience).ToString();
             int nextLevel = (int)NextLevel();
-            list.Add(
-                1060847,
-                "{0}/{1}\tXP",
-                xp,
-                nextLevel.ToString()
-            ); // ~1_val~ ~2_val~
-
-             if (Core.Now < m_NextPlanarTravel) {
-                list.Add(1060847,
-                "Suffering planar exhaustion: {0}",
-                string.Format("{0}", WaitTeleporter.FormatTime(m_NextPlanarTravel - Core.Now))
-                );
+            list.Add(1060847, $"{xp}/{nextLevel.ToString()}:\tXP"); // ~1_val~: ~2_val~
+            if (Core.Now < m_NextPlanarTravel) {
+                list.Add(1060847, $"Suffering planar exhaustion:\t{string.Format("{0}", WaitTeleporter.FormatTime(m_NextPlanarTravel - Core.Now))}"); // ~1_val~: ~2_val
             }
             if (Map == Faction.Facet)
             {

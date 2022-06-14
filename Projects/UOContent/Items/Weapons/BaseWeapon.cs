@@ -3249,69 +3249,36 @@ namespace Server.Items
                 );
             }
             if (m_SocketAmount > 0) {
-                list.Add(
-                    1060847,
-                    "Sockets: {0}/{1}",
-                    SocketArray.Length.ToString(),
-                    m_SocketAmount.ToString()
-                );
+                list.Add(1060847, $"Sockets:\t{SocketArray.Length.ToString()}/{m_SocketAmount.ToString()}");
                 for (var i = 0; i < SocketArray.Length; i++) {
-                    list.Add(
-                        1060847,
-                        "{0}",
-                        SocketArray[i]
-                    );
+                    list.Add(1060847, $"\t{SocketArray[i]}");
                 }
             }
             if (m_ShardPower > 0)
             {
-                list.Add(
-                    1060847,
-                    "Shard Power: {0}",
-                    m_ShardPower.ToString()
-                );
+                list.Add(1060847, $"Shard Power:\t{m_ShardPower.ToString()}");
             }
 
             if (m_Haunted)
             {
-                list.Add(
-                    1060847,
-                    "Haunted\t{0}",
-                    ""
-                );
+                list.Add(1060847, "Haunted:\t");
             }
 
             if (m_Burning)
             {
-                list.Add(
-                    1060847,
-                    "Burning\t{0}",
-                    ""
-                );
+                list.Add(1060847, "Burning:\t");
             }
             else if (m_Frozen)
             {
-                list.Add(
-                    1060847,
-                    "Frozen\t{0}",
-                    ""
-                );
+                list.Add(1060847, "Frozen:\t");
             }
             else if (m_Electrified)
             {
-                list.Add(
-                    1060847,
-                    "Electrified\t{0}",
-                    ""
-                );
+                list.Add(1060847, "Electrified:\t");
             }
             else if (m_Toxic)
             {
-                list.Add(
-                    1060847,
-                    "Toxic\t{0}",
-                    ""
-                );
+                list.Add(1060847, "Toxic:\t");
             }
 
             if (m_Crafter != null)

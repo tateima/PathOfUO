@@ -315,18 +315,9 @@ namespace Server.Items
                 );
             }
             if (m_SocketAmount > 0) {
-                list.Add(
-                    1060847,
-                    "Sockets: {0}/{1}",
-                    SocketArray.Length.ToString(),
-                    m_SocketAmount.ToString()
-                );
+                list.Add(1060847, $"Sockets:\t{SocketArray.Length.ToString()}/{m_SocketAmount.ToString()}");
                 for (var i = 0; i < SocketArray.Length; i++) {
-                    list.Add(
-                        1060847,
-                        "{0}",
-                        SocketArray[i]
-                    );
+                    list.Add(1060847, $"\t{SocketArray[i]}");
                 }
             }
             SkillBonuses.GetProperties(list);
