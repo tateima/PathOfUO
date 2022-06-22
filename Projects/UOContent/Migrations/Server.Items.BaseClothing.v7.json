@@ -125,7 +125,6 @@
     {
       "name": "TalentIndex",
       "type": "int",
-      "usesSaveFlag": true,
       "rule": "PrimitiveTypeMigrationRule",
       "ruleArguments": [
         "EncodedInt"

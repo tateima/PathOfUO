@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-using System.Text.RegularExpressions;
 using ModernUO.Serialization;
 using Server.Pantheon;
 using Server.Talent;
@@ -11,9 +8,23 @@ namespace Server.Items
     [SerializationGenerator(1, false)]
     public partial class PantheonScroll : Item
     {
-        [SerializableField(1)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
         private string _alignmentRaw;
+
+        [SerializableField(1)]
+        [CommandProperty(AccessLevel.GameMaster)]
+        public string AlignmentRaw
+        {
+            get => _alignmentRaw;
+            set
+            {
+                if (_alignmentRaw is not null)
+                {
+                    _alignmentRaw = value;
+                    InvalidateProperties();
+                    this.MarkDirty();
+                }
+            }
+        }
 
         private int _talentIndex;
         [EncodedInt]

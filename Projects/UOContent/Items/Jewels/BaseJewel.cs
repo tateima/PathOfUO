@@ -1,641 +1,615 @@
 using System;
+using ModernUO.Serialization;
 using Server.Engines.Craft;
+using Server.Items;
 using Server.Pantheon;
 using Server.Talent;
 
-namespace Server.Items
+namespace Server.Items;
+
+public enum GemType
 {
-    public enum GemType
+    None,
+    StarSapphire,
+    Emerald,
+    Sapphire,
+    Ruby,
+    Citrine,
+    Amethyst,
+    Tourmaline,
+    Amber,
+    Diamond
+}
+
+[SerializationGenerator(4, false)]
+public abstract partial class BaseJewel : Item, ICraftable
+{
+    [EncodedInt]
+    [InvalidateProperties]
+    [SerializableField(0)]
+    [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
+    private int _maxHitPoints;
+
+    // Field 1
+    private int _hitPoints;
+
+    [SerializableField(2, "private", "private")]
+    private CraftResource _rawResource;
+
+    [SerializableField(3)]
+    [InvalidateProperties]
+    [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
+    private GemType _gemType;
+
+    [SerializableField(4)]
+    [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster, canModify: true)]")]
+    private AosAttributes _attributes;
+
+    [SerializableField(5)]
+    [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster, canModify: true)]")]
+    private AosElementAttributes _resistances;
+
+    [SerializableField(6)]
+    [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster, canModify: true)]")]
+    private AosSkillBonuses _skillBonuses;
+
+    private int _socketAmount = 0;
+
+    [EncodedInt]
+    [SerializableField(7)]
+    [CommandProperty(AccessLevel.GameMaster)]
+    public int SocketAmount
     {
-        None,
-        StarSapphire,
-        Emerald,
-        Sapphire,
-        Ruby,
-        Citrine,
-        Amethyst,
-        Tourmaline,
-        Amber,
-        Diamond
+        get => _socketAmount;
+        set
+        {
+            if (_socketAmount != value)
+            {
+                _socketAmount = value;
+                InvalidateProperties();
+                this.MarkDirty();
+            }
+        }
     }
 
-    public abstract class BaseJewel : Item, ICraftable, IPantheonItem
+    [SerializableFieldSaveFlag(7)]
+    private bool ShouldSerializeSocketAmount() => _socketAmount != 0;
+
+    private string _sockets = "";
+    [EncodedInt]
+    [SerializableField(8)]
+    [CommandProperty(AccessLevel.GameMaster)]
+    public string Sockets
     {
-        private GemType m_GemType;
-        private int m_HitPoints;
-        private int m_MaxHitPoints;
-        private CraftResource m_Resource;
-        private Mobile m_Crafter;
-        private int m_SocketAmount;
-        private string m_Sockets;
-        private bool m_Enchanted;
-        private int m_TalentIndex;
-        private int m_TalentLevel;
-        private string m_AlignmentRaw;
-
-        public BaseJewel(int itemID, Layer layer) : base(itemID)
+        get => _sockets;
+        set
         {
-            m_AlignmentRaw = "None";
-            m_TalentIndex = BaseTalent.InvalidTalentIndex;
-            m_TalentLevel = 0;
-            Attributes = new AosAttributes(this);
-            Resistances = new AosElementAttributes(this);
-            SkillBonuses = new AosSkillBonuses(this);
-            m_Resource = CraftResource.Iron;
-            m_GemType = GemType.None;
-            m_SocketAmount = 0;
-            m_Sockets = "";
-            m_Enchanted = false;
-            Layer = layer;
-
-            m_HitPoints = m_MaxHitPoints = Utility.RandomMinMax(InitMinHits, InitMaxHits);
-        }
-
-        public BaseJewel(Serial serial) : base(serial)
-        {
-        }
-        public Deity.Alignment Alignment() => Deity.AlignmentFromString(m_AlignmentRaw);
-
-        [CommandProperty(AccessLevel.GameMaster)]
-        public int TalentIndex
-        {
-            get => m_TalentIndex;
-            set
+            if (_sockets != value)
             {
-                m_TalentIndex = value;
-                Talent = TalentConstructor.ConstructFromIndex(m_TalentIndex);
+                _sockets = value;
+
                 InvalidateProperties();
+                this.MarkDirty();
             }
         }
-        public BaseTalent Talent { get; set; }
+    }
 
-        [CommandProperty(AccessLevel.GameMaster)]
-        public int TalentLevel
+    public string[] SocketArray => _sockets.Split(',');
+
+    [SerializableFieldSaveFlag(8)]
+    private bool ShouldSerializeSockets() => !string.IsNullOrEmpty(_sockets);
+
+    private bool _enchanted;
+
+    [SerializableField(9)]
+    [CommandProperty(AccessLevel.GameMaster)]
+    public bool Enchanted
+    {
+        get => _enchanted;
+        set
         {
-            get => m_TalentLevel;
-            set
+            _enchanted = value;
+            InvalidateProperties();
+            this.MarkDirty();
+        }
+    }
+
+    [SerializableFieldSaveFlag(9)]
+    private bool ShouldSerializeEnchanted() => _enchanted;
+
+    [InvalidateProperties]
+    [SerializableField(10)]
+    [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster, canModify: true)]")]
+    private string _alignmentRaw;
+
+    [SerializableFieldSaveFlag(10)]
+    private bool ShouldSerializeAlignmentRaw() => _alignmentRaw != null;
+
+    public Deity.Alignment Alignment() => Deity.AlignmentFromString(_alignmentRaw);
+
+    private int _talentIndex;
+
+    [EncodedInt]
+    [SerializableField(11)]
+    [CommandProperty(AccessLevel.GameMaster)]
+    public int TalentIndex
+    {
+        get => _talentIndex;
+        set
+        {
+            if (_talentIndex != value)
             {
-                m_TalentLevel = value;
+                _talentIndex = value;
+                if (_talentIndex < BaseTalent.InvalidTalentIndex)
+                {
+                    Talent = TalentConstructor.ConstructFromIndex(_talentIndex);
+                }
                 InvalidateProperties();
+                this.MarkDirty();
             }
         }
-        [CommandProperty(AccessLevel.GameMaster)]
-        public string AlignmentRaw
+    }
+
+    public BaseTalent Talent { get; set; }
+
+    private int _talentLevel;
+
+    [EncodedInt]
+    [SerializableField(12)]
+    [CommandProperty(AccessLevel.GameMaster)]
+    public int TalentLevel
+    {
+        get => _talentLevel;
+        set
         {
-            get => m_AlignmentRaw;
-            set
+            if (_talentLevel != value)
             {
-                m_AlignmentRaw = value;
+                _talentLevel = value;
                 InvalidateProperties();
+                this.MarkDirty();
             }
         }
-        [CommandProperty(AccessLevel.GameMaster)]
-        public bool Enchanted
+    }
+
+    [InvalidateProperties]
+    [SerializableField(13)]
+    [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
+    private string _crafter;
+
+    [SerializableFieldSaveFlag(13)]
+    private bool ShouldSerializeCrafter() => _crafter != null;
+
+    public BaseJewel(int itemID, Layer layer) : base(itemID)
+    {
+        _crafter = null;
+        _socketAmount = 0;
+        _sockets = "";
+        _enchanted = false;
+        _alignmentRaw = "None";
+        _talentLevel = 0;
+        _talentIndex = BaseTalent.InvalidTalentIndex;
+        _attributes = new AosAttributes(this);
+        _resistances = new AosElementAttributes(this);
+        _skillBonuses = new AosSkillBonuses(this);
+        _rawResource = CraftResource.Iron;
+        Hue = CraftResources.GetHue(_rawResource);
+        _gemType = GemType.None;
+
+        Layer = layer;
+
+        _hitPoints = _maxHitPoints = Utility.RandomMinMax(InitMinHits, InitMaxHits);
+    }
+
+    [EncodedInt]
+    [SerializableField(1)]
+    [CommandProperty(AccessLevel.GameMaster)]
+    public int HitPoints
+    {
+        get => _hitPoints;
+        set
         {
-            get => m_Enchanted;
-            set
+            if (value != _hitPoints && _maxHitPoints > 0)
             {
-                m_Enchanted = value;
+                _hitPoints = value;
+
+                if (_hitPoints < 0)
+                {
+                    Delete();
+                }
+                else if (_hitPoints > _maxHitPoints)
+                {
+                    _hitPoints = _maxHitPoints;
+                }
+
                 InvalidateProperties();
+                this.MarkDirty();
             }
         }
-        [CommandProperty(AccessLevel.GameMaster)]
-        public int SocketAmount
+    }
+
+    [CommandProperty(AccessLevel.GameMaster)]
+    public CraftResource Resource
+    {
+        get => _rawResource;
+        set
         {
-            get => m_SocketAmount;
-            set
-            {
-                m_SocketAmount = value;
-                InvalidateProperties();
-            }
+            _rawResource = value;
+            Hue = CraftResources.GetHue(_rawResource);
         }
-        public string[] SocketArray => m_Sockets.Split(',');
-        [CommandProperty(AccessLevel.GameMaster)]
-        public string Sockets
+    }
+
+    public override int PhysicalResistance => Resistances.Physical;
+    public override int FireResistance => Resistances.Fire;
+    public override int ColdResistance => Resistances.Cold;
+    public override int PoisonResistance => Resistances.Poison;
+    public override int EnergyResistance => Resistances.Energy;
+    public virtual int BaseGemTypeNumber => 0;
+
+    public virtual int InitMinHits => 0;
+    public virtual int InitMaxHits => 0;
+
+    public override int LabelNumber
+    {
+        get
         {
-            get => m_Sockets;
-            set
+            if (_gemType == GemType.None)
             {
-                m_Sockets = value;
-                InvalidateProperties();
+                return base.LabelNumber;
+            }
+
+            return BaseGemTypeNumber + (int)_gemType - 1;
+        }
+    }
+
+    public virtual int ArtifactRarity => 0;
+
+    public int OnCraft(
+        int quality, bool makersMark, Mobile from, CraftSystem craftSystem, Type typeRes, BaseTool tool,
+        CraftItem craftItem, int resHue
+    )
+    {
+        var resourceType = typeRes ?? craftItem.Resources[0].ItemType;
+
+        Resource = CraftResources.GetFromType(resourceType);
+
+        var context = craftSystem.GetContext(from);
+
+        if (context?.DoNotColor == true)
+        {
+            Hue = 0;
+        }
+
+        if (craftItem.Resources.Count > 1)
+        {
+            resourceType = craftItem.Resources[1].ItemType;
+
+            if (resourceType == typeof(StarSapphire))
+            {
+                GemType = GemType.StarSapphire;
+            }
+            else if (resourceType == typeof(Emerald))
+            {
+                GemType = GemType.Emerald;
+            }
+            else if (resourceType == typeof(Sapphire))
+            {
+                GemType = GemType.Sapphire;
+            }
+            else if (resourceType == typeof(Ruby))
+            {
+                GemType = GemType.Ruby;
+            }
+            else if (resourceType == typeof(Citrine))
+            {
+                GemType = GemType.Citrine;
+            }
+            else if (resourceType == typeof(Amethyst))
+            {
+                GemType = GemType.Amethyst;
+            }
+            else if (resourceType == typeof(Tourmaline))
+            {
+                GemType = GemType.Tourmaline;
+            }
+            else if (resourceType == typeof(Amber))
+            {
+                GemType = GemType.Amber;
+            }
+            else if (resourceType == typeof(Diamond))
+            {
+                GemType = GemType.Diamond;
             }
         }
 
-        [CommandProperty(AccessLevel.GameMaster)]
-        public int MaxHitPoints
+        return 1;
+    }
+
+    public override void OnAfterDuped(Item newItem)
+    {
+        if (newItem is not BaseJewel jewel)
         {
-            get => m_MaxHitPoints;
-            set
-            {
-                m_MaxHitPoints = value;
-                InvalidateProperties();
-            }
+            return;
         }
 
-        [CommandProperty(AccessLevel.GameMaster)]
-        public int HitPoints
+        jewel.Attributes = new AosAttributes(newItem, Attributes);
+        jewel.Resistances = new AosElementAttributes(newItem, Resistances);
+        jewel.SkillBonuses = new AosSkillBonuses(newItem, SkillBonuses);
+    }
+
+    public override void OnAdded(IEntity parent)
+    {
+        if (Core.AOS && parent is Mobile from)
         {
-            get => m_HitPoints;
-            set
+            SkillBonuses.AddTo(from);
+
+            var strBonus = Attributes.BonusStr;
+            var dexBonus = Attributes.BonusDex;
+            var intBonus = Attributes.BonusInt;
+
+            if (strBonus != 0 || dexBonus != 0 || intBonus != 0)
             {
-                if (value != m_HitPoints && MaxHitPoints > 0)
+                var serial = Serial;
+
+                if (strBonus != 0)
                 {
-                    m_HitPoints = value;
+                    from.AddStatMod(new StatMod(StatType.Str, $"{serial}Str", strBonus, TimeSpan.Zero));
+                }
 
-                    if (m_HitPoints < 0)
-                    {
-                        Delete();
-                    }
-                    else if (m_HitPoints > MaxHitPoints)
-                    {
-                        m_HitPoints = MaxHitPoints;
-                    }
+                if (dexBonus != 0)
+                {
+                    from.AddStatMod(new StatMod(StatType.Dex, $"{serial}Dex", dexBonus, TimeSpan.Zero));
+                }
 
-                    InvalidateProperties();
+                if (intBonus != 0)
+                {
+                    from.AddStatMod(new StatMod(StatType.Int, $"{serial}Int", intBonus, TimeSpan.Zero));
                 }
             }
+
+            from.CheckStatTimers();
         }
+    }
 
-        [CommandProperty(AccessLevel.GameMaster, canModify: true)]
-        public AosAttributes Attributes { get; set; }
-
-        [CommandProperty(AccessLevel.GameMaster, canModify: true)]
-        public AosElementAttributes Resistances { get; set; }
-
-        [CommandProperty(AccessLevel.GameMaster, canModify: true)]
-        public AosSkillBonuses SkillBonuses { get; set; }
-
-        [CommandProperty(AccessLevel.GameMaster)]
-        public Mobile Crafter
+    public override void OnRemoved(IEntity parent)
+    {
+        if (Core.AOS && parent is Mobile from)
         {
-            get => m_Crafter;
-            set
-            {
-                m_Crafter = value;
-                InvalidateProperties();
-            }
-        }
+            SkillBonuses.Remove();
 
-        [CommandProperty(AccessLevel.GameMaster)]
-        public CraftResource Resource
+            var serial = Serial;
+
+            from.RemoveStatMod($"{serial}Str");
+            from.RemoveStatMod($"{serial}Dex");
+            from.RemoveStatMod($"{serial}Int");
+
+            from.CheckStatTimers();
+        }
+    }
+
+    public override void GetProperties(IPropertyList list)
+    {
+        base.GetProperties(list);
+
+        SkillBonuses.GetProperties(list);
+
+        int prop;
+        if (_alignmentRaw != null)
         {
-            get => m_Resource;
-            set
+            list.Add(1114057, $"Alignment: {AlignmentRaw}"); // ~1_val~
+            if (_talentIndex < BaseTalent.InvalidTalentIndex && TalentLevel > 0)
             {
-                m_Resource = value;
-                Hue = CraftResources.GetHue(m_Resource);
+                list.Add(1114057, $"{Talent.DisplayName} + {TalentLevel.ToString()}"); // ~1_val~
             }
-        }
 
-        [CommandProperty(AccessLevel.GameMaster)]
-        public GemType GemType
+        }
+        if (_enchanted)
         {
-            get => m_GemType;
-            set
-            {
-                m_GemType = value;
-                InvalidateProperties();
+            list.Add(
+                1114057,
+                "Enchanted"
+            );
+        }
+        if (_socketAmount > 0) {
+            list.Add(1114057, $"Sockets: {SocketArray.Length.ToString()}/{_socketAmount.ToString()}"); // ~1_val~
+            for (var i = 0; i < SocketArray.Length; i++) {
+                list.Add(1114057, $"{SocketArray[i]}"); // ~1_val~
             }
         }
-
-        public override int PhysicalResistance => Resistances.Physical;
-        public override int FireResistance => Resistances.Fire;
-        public override int ColdResistance => Resistances.Cold;
-        public override int PoisonResistance => Resistances.Poison;
-        public override int EnergyResistance => Resistances.Energy;
-        public virtual int BaseGemTypeNumber => 0;
-
-        public virtual int InitMinHits => 0;
-        public virtual int InitMaxHits => 0;
-
-        public override int LabelNumber
+        if (_crafter != null)
         {
-            get
-            {
-                if (m_GemType == GemType.None)
-                {
-                    return base.LabelNumber;
-                }
-
-                return BaseGemTypeNumber + (int)m_GemType - 1;
-            }
+            list.Add(1050043, _crafter); // crafted by ~1_NAME~
         }
-
-        public virtual int ArtifactRarity => 0;
-
-        public int OnCraft(
-            int quality, bool makersMark, Mobile from, CraftSystem craftSystem, Type typeRes, BaseTool tool,
-            CraftItem craftItem, int resHue
-        )
+        if ((prop = ArtifactRarity) > 0)
         {
-            Crafter = from;
-            var resourceType = typeRes ?? craftItem.Resources[0].ItemType;
-
-            Resource = CraftResources.GetFromType(resourceType);
-
-            var context = craftSystem.GetContext(from);
-
-            if (context?.DoNotColor == true)
-            {
-                Hue = 0;
-            }
-
-            if (craftItem.Resources.Count > 1)
-            {
-                resourceType = craftItem.Resources[1].ItemType;
-
-                if (resourceType == typeof(StarSapphire))
-                {
-                    GemType = GemType.StarSapphire;
-                }
-                else if (resourceType == typeof(Emerald))
-                {
-                    GemType = GemType.Emerald;
-                }
-                else if (resourceType == typeof(Sapphire))
-                {
-                    GemType = GemType.Sapphire;
-                }
-                else if (resourceType == typeof(Ruby))
-                {
-                    GemType = GemType.Ruby;
-                }
-                else if (resourceType == typeof(Citrine))
-                {
-                    GemType = GemType.Citrine;
-                }
-                else if (resourceType == typeof(Amethyst))
-                {
-                    GemType = GemType.Amethyst;
-                }
-                else if (resourceType == typeof(Tourmaline))
-                {
-                    GemType = GemType.Tourmaline;
-                }
-                else if (resourceType == typeof(Amber))
-                {
-                    GemType = GemType.Amber;
-                }
-                else if (resourceType == typeof(Diamond))
-                {
-                    GemType = GemType.Diamond;
-                }
-            }
-
-            return 1;
+            list.Add(1061078, prop); // artifact rarity ~1_val~
         }
 
-        public override void OnAfterDuped(Item newItem)
+        if ((prop = Attributes.WeaponDamage) != 0)
         {
-            if (newItem is not BaseJewel jewel)
-            {
-                return;
-            }
-
-            jewel.Attributes = new AosAttributes(newItem, Attributes);
-            jewel.Resistances = new AosElementAttributes(newItem, Resistances);
-            jewel.SkillBonuses = new AosSkillBonuses(newItem, SkillBonuses);
+            list.Add(1060401, prop); // damage increase ~1_val~%
         }
 
-        public override void OnAdded(IEntity parent)
+        if ((prop = Attributes.DefendChance) != 0)
         {
-            if (Core.AOS && parent is Mobile from)
-            {
-                SkillBonuses.AddTo(from);
-
-                var strBonus = Attributes.BonusStr;
-                var dexBonus = Attributes.BonusDex;
-                var intBonus = Attributes.BonusInt;
-
-                if (strBonus != 0 || dexBonus != 0 || intBonus != 0)
-                {
-                    var modName = Serial.ToString();
-
-                    if (strBonus != 0)
-                    {
-                        from.AddStatMod(new StatMod(StatType.Str, $"{modName}Str", strBonus, TimeSpan.Zero));
-                    }
-
-                    if (dexBonus != 0)
-                    {
-                        from.AddStatMod(new StatMod(StatType.Dex, $"{modName}Dex", dexBonus, TimeSpan.Zero));
-                    }
-
-                    if (intBonus != 0)
-                    {
-                        from.AddStatMod(new StatMod(StatType.Int, $"{modName}Int", intBonus, TimeSpan.Zero));
-                    }
-                }
-
-                from.CheckStatTimers();
-            }
+            list.Add(1060408, prop); // defense chance increase ~1_val~%
         }
 
-        public override void OnRemoved(IEntity parent)
+        if ((prop = Attributes.BonusDex) != 0)
         {
-            if (Core.AOS && parent is Mobile from)
-            {
-                SkillBonuses.Remove();
-
-                var modName = Serial.ToString();
-
-                from.RemoveStatMod($"{modName}Str");
-                from.RemoveStatMod($"{modName}Dex");
-                from.RemoveStatMod($"{modName}Int");
-
-                from.CheckStatTimers();
-            }
+            list.Add(1060409, prop); // dexterity bonus ~1_val~
         }
 
-        public override void GetProperties(IPropertyList list)
+        if ((prop = Attributes.EnhancePotions) != 0)
         {
-            base.GetProperties(list);
-            if (m_AlignmentRaw != null)
-            {
-                list.Add(1114057, $"Alignment: {m_AlignmentRaw}"); // ~1_val~
-                if (m_TalentIndex < BaseTalent.InvalidTalentIndex && TalentLevel > 0)
-                {
-                    list.Add(1114057, $"{Talent.DisplayName} + {TalentLevel.ToString()}"); // ~1_val~
-                }
-            }
-
-            if (m_Enchanted)
-            {
-                list.Add(
-                    1114057,
-                    "Enchanted"
-                );
-            }
-            if (m_SocketAmount > 0) {
-                list.Add(1114057, $"Sockets:\t{SocketArray.Length.ToString()}/{m_SocketAmount.ToString()}");
-                for (var i = 0; i < SocketArray.Length; i++) {
-                    list.Add(1114057, $"\t{SocketArray[i]}");
-                }
-            }
-            SkillBonuses.GetProperties(list);
-
-            int prop;
-
-            if ((prop = ArtifactRarity) > 0)
-            {
-                list.Add(1061078, prop); // artifact rarity ~1_val~
-            }
-
-            if ((prop = Attributes.WeaponDamage) != 0)
-            {
-                list.Add(1060401, prop); // damage increase ~1_val~%
-            }
-
-            if ((prop = Attributes.DefendChance) != 0)
-            {
-                list.Add(1060408, prop); // defense chance increase ~1_val~%
-            }
-
-            if ((prop = Attributes.BonusDex) != 0)
-            {
-                list.Add(1060409, prop); // dexterity bonus ~1_val~
-            }
-
-            if ((prop = Attributes.EnhancePotions) != 0)
-            {
-                list.Add(1060411, prop); // enhance potions ~1_val~%
-            }
-
-            if ((prop = Attributes.CastRecovery) != 0)
-            {
-                list.Add(1060412, prop); // faster cast recovery ~1_val~
-            }
-
-            if ((prop = Attributes.CastSpeed) != 0)
-            {
-                list.Add(1060413, prop); // faster casting ~1_val~
-            }
-
-            if ((prop = Attributes.AttackChance) != 0)
-            {
-                list.Add(1060415, prop); // hit chance increase ~1_val~%
-            }
-
-            if ((prop = Attributes.BonusHits) != 0)
-            {
-                list.Add(1060431, prop); // hit point increase ~1_val~
-            }
-
-            if ((prop = Attributes.BonusInt) != 0)
-            {
-                list.Add(1060432, prop); // intelligence bonus ~1_val~
-            }
-
-            if ((prop = Attributes.LowerManaCost) != 0)
-            {
-                list.Add(1060433, prop); // lower mana cost ~1_val~%
-            }
-
-            if ((prop = Attributes.LowerRegCost) != 0)
-            {
-                list.Add(1060434, prop); // lower reagent cost ~1_val~%
-            }
-
-            if ((prop = Attributes.Luck) != 0)
-            {
-                list.Add(1060436, prop); // luck ~1_val~
-            }
-
-            if ((prop = Attributes.BonusMana) != 0)
-            {
-                list.Add(1060439, prop); // mana increase ~1_val~
-            }
-
-            if ((prop = Attributes.RegenMana) != 0)
-            {
-                list.Add(1060440, prop); // mana regeneration ~1_val~
-            }
-
-            if (Attributes.NightSight != 0)
-            {
-                list.Add(1060441); // night sight
-            }
-
-            if ((prop = Attributes.ReflectPhysical) != 0)
-            {
-                list.Add(1060442, prop); // reflect physical damage ~1_val~%
-            }
-
-            if ((prop = Attributes.RegenStam) != 0)
-            {
-                list.Add(1060443, prop); // stamina regeneration ~1_val~
-            }
-
-            if ((prop = Attributes.RegenHits) != 0)
-            {
-                list.Add(1060444, prop); // hit point regeneration ~1_val~
-            }
-
-            if (Attributes.SpellChanneling != 0)
-            {
-                list.Add(1060482); // spell channeling
-            }
-
-            if ((prop = Attributes.SpellDamage) != 0)
-            {
-                list.Add(1060483, prop); // spell damage increase ~1_val~%
-            }
-
-            if ((prop = Attributes.BonusStam) != 0)
-            {
-                list.Add(1060484, prop); // stamina increase ~1_val~
-            }
-
-            if ((prop = Attributes.BonusStr) != 0)
-            {
-                list.Add(1060485, prop); // strength bonus ~1_val~
-            }
-
-            if ((prop = Attributes.WeaponSpeed) != 0)
-            {
-                list.Add(1060486, prop); // swing speed increase ~1_val~%
-            }
-
-            if (Core.ML && (prop = Attributes.IncreasedKarmaLoss) != 0)
-            {
-                list.Add(1075210, prop); // Increased Karma Loss ~1val~%
-            }
-
-            AddResistanceProperties(list);
-
-            if (m_HitPoints >= 0 && m_MaxHitPoints > 0)
-            {
-                list.Add(1060639, $"{m_HitPoints}\t{m_MaxHitPoints}"); // durability ~1_val~ / ~2_val~
-            }
+            list.Add(1060411, prop); // enhance potions ~1_val~%
         }
 
-        public override void Serialize(IGenericWriter writer)
+        if ((prop = Attributes.CastRecovery) != 0)
         {
-            base.Serialize(writer);
-
-            writer.Write(6); // version
-            writer.Write(m_AlignmentRaw);
-            writer.WriteEncodedInt(m_TalentIndex);
-            writer.WriteEncodedInt(m_TalentLevel);
-            writer.Write(m_SocketAmount);
-            writer.Write(m_Sockets);
-
-            writer.Write(m_Crafter);
-            writer.WriteEncodedInt(m_MaxHitPoints);
-            writer.WriteEncodedInt(m_HitPoints);
-
-            writer.WriteEncodedInt((int)m_Resource);
-            writer.WriteEncodedInt((int)m_GemType);
-
-            Attributes.Serialize(writer);
-            Resistances.Serialize(writer);
-            SkillBonuses.Serialize(writer);
+            list.Add(1060412, prop); // faster cast recovery ~1_val~
         }
 
-        public override void Deserialize(IGenericReader reader)
+        if ((prop = Attributes.CastSpeed) != 0)
         {
-            base.Deserialize(reader);
+            list.Add(1060413, prop); // faster casting ~1_val~
+        }
 
-            var version = reader.ReadInt();
+        if ((prop = Attributes.AttackChance) != 0)
+        {
+            list.Add(1060415, prop); // hit chance increase ~1_val~%
+        }
 
-            switch (version)
+        if ((prop = Attributes.BonusHits) != 0)
+        {
+            list.Add(1060431, prop); // hit point increase ~1_val~
+        }
+
+        if ((prop = Attributes.BonusInt) != 0)
+        {
+            list.Add(1060432, prop); // intelligence bonus ~1_val~
+        }
+
+        if ((prop = Attributes.LowerManaCost) != 0)
+        {
+            list.Add(1060433, prop); // lower mana cost ~1_val~%
+        }
+
+        if ((prop = Attributes.LowerRegCost) != 0)
+        {
+            list.Add(1060434, prop); // lower reagent cost ~1_val~%
+        }
+
+        if ((prop = Attributes.Luck) != 0)
+        {
+            list.Add(1060436, prop); // luck ~1_val~
+        }
+
+        if ((prop = Attributes.BonusMana) != 0)
+        {
+            list.Add(1060439, prop); // mana increase ~1_val~
+        }
+
+        if ((prop = Attributes.RegenMana) != 0)
+        {
+            list.Add(1060440, prop); // mana regeneration ~1_val~
+        }
+
+        if (Attributes.NightSight != 0)
+        {
+            list.Add(1060441); // night sight
+        }
+
+        if ((prop = Attributes.ReflectPhysical) != 0)
+        {
+            list.Add(1060442, prop); // reflect physical damage ~1_val~%
+        }
+
+        if ((prop = Attributes.RegenStam) != 0)
+        {
+            list.Add(1060443, prop); // stamina regeneration ~1_val~
+        }
+
+        if ((prop = Attributes.RegenHits) != 0)
+        {
+            list.Add(1060444, prop); // hit point regeneration ~1_val~
+        }
+
+        if (Attributes.SpellChanneling != 0)
+        {
+            list.Add(1060482); // spell channeling
+        }
+
+        if ((prop = Attributes.SpellDamage) != 0)
+        {
+            list.Add(1060483, prop); // spell damage increase ~1_val~%
+        }
+
+        if ((prop = Attributes.BonusStam) != 0)
+        {
+            list.Add(1060484, prop); // stamina increase ~1_val~
+        }
+
+        if ((prop = Attributes.BonusStr) != 0)
+        {
+            list.Add(1060485, prop); // strength bonus ~1_val~
+        }
+
+        if ((prop = Attributes.WeaponSpeed) != 0)
+        {
+            list.Add(1060486, prop); // swing speed increase ~1_val~%
+        }
+
+        if (Core.ML && (prop = Attributes.IncreasedKarmaLoss) != 0)
+        {
+            list.Add(1075210, prop); // Increased Karma Loss ~1val~%
+        }
+
+        AddResistanceProperties(list);
+
+        if (_hitPoints >= 0 && _maxHitPoints > 0)
+        {
+            list.Add(1060639, $"{_hitPoints}\t{_maxHitPoints}"); // durability ~1_val~ / ~2_val~
+        }
+    }
+
+    private void Deserialize(IGenericReader reader, int version)
+    {
+        _maxHitPoints = reader.ReadEncodedInt();
+        _hitPoints = reader.ReadEncodedInt();
+        _rawResource = (CraftResource)reader.ReadEncodedInt();
+        _gemType = (GemType)reader.ReadEncodedInt();
+        _attributes = new AosAttributes(this);
+        _attributes.Deserialize(reader);
+        _resistances = new AosElementAttributes(this);
+        _resistances.Deserialize(reader);
+        _skillBonuses = new AosSkillBonuses(this);
+        _skillBonuses.Deserialize(reader);
+    }
+
+    [AfterDeserialization]
+    private void AfterDeserialization()
+    {
+        var m = Parent as Mobile;
+
+        if (_talentIndex < BaseTalent.InvalidTalentIndex)
+        {
+            Talent = TalentConstructor.ConstructFromIndex(_talentIndex);
+        }
+
+        if (Core.AOS && m != null)
+        {
+            SkillBonuses.AddTo(m);
+        }
+
+        var strBonus = Attributes.BonusStr;
+        var dexBonus = Attributes.BonusDex;
+        var intBonus = Attributes.BonusInt;
+
+        if (m != null && (strBonus != 0 || dexBonus != 0 || intBonus != 0))
+        {
+            var serial = Serial;
+
+            if (strBonus != 0)
             {
-                case 6:
-                    {
-                        m_AlignmentRaw = reader.ReadString();
-                        m_TalentIndex = reader.ReadEncodedInt();
-                        m_TalentLevel = reader.ReadEncodedInt();
-                        goto case 5;
-                    }
-                case 5:
-                    {
-                        m_SocketAmount = reader.ReadInt();
-                        m_Sockets = reader.ReadString();
-                        goto case 4;
-                    }
-                case 4:
-                    {
-                        m_Crafter = reader.ReadEntity<Mobile>();
-                        goto case 3;
-                    }
-                case 3:
-                    {
-                        m_MaxHitPoints = reader.ReadEncodedInt();
-                        m_HitPoints = reader.ReadEncodedInt();
-
-                        goto case 2;
-                    }
-                case 2:
-                    {
-                        m_Resource = (CraftResource)reader.ReadEncodedInt();
-                        m_GemType = (GemType)reader.ReadEncodedInt();
-
-                        goto case 1;
-                    }
-                case 1:
-                    {
-                        Attributes = new AosAttributes(this);
-                        Attributes.Deserialize(reader);
-                        Resistances = new AosElementAttributes(this);
-                        Resistances.Deserialize(reader);
-                        SkillBonuses = new AosSkillBonuses(this);
-                        SkillBonuses.Deserialize(reader);
-
-                        var m = Parent as Mobile;
-
-                        if (Core.AOS && m != null)
-                        {
-                            SkillBonuses.AddTo(m);
-                        }
-
-                        var strBonus = Attributes.BonusStr;
-                        var dexBonus = Attributes.BonusDex;
-                        var intBonus = Attributes.BonusInt;
-
-                        if (m != null && (strBonus != 0 || dexBonus != 0 || intBonus != 0))
-                        {
-                            var modName = Serial.ToString();
-
-                            if (strBonus != 0)
-                            {
-                                m.AddStatMod(new StatMod(StatType.Str, $"{modName}Str", strBonus, TimeSpan.Zero));
-                            }
-
-                            if (dexBonus != 0)
-                            {
-                                m.AddStatMod(new StatMod(StatType.Dex, $"{modName}Dex", dexBonus, TimeSpan.Zero));
-                            }
-
-                            if (intBonus != 0)
-                            {
-                                m.AddStatMod(new StatMod(StatType.Int, $"{modName}Int", intBonus, TimeSpan.Zero));
-                            }
-                        }
-
-                        m?.CheckStatTimers();
-
-                        break;
-                    }
-                case 0:
-                    {
-                        Attributes = new AosAttributes(this);
-                        Resistances = new AosElementAttributes(this);
-                        SkillBonuses = new AosSkillBonuses(this);
-
-                        break;
-                    }
+                m.AddStatMod(new StatMod(StatType.Str, $"{serial}Str", strBonus, TimeSpan.Zero));
             }
 
-            if (version < 2)
+            if (dexBonus != 0)
             {
-                m_Resource = CraftResource.Iron;
-                m_GemType = GemType.None;
+                m.AddStatMod(new StatMod(StatType.Dex, $"{serial}Dex", dexBonus, TimeSpan.Zero));
             }
 
-            if (m_Sockets is null)
+            if (intBonus != 0)
             {
-                m_Sockets = "";
+                m.AddStatMod(new StatMod(StatType.Int, $"{serial}Int", intBonus, TimeSpan.Zero));
+            }
+
+            if (_sockets is null)
+            {
+                _sockets = "";
             }
         }
+
+        m?.CheckStatTimers();
     }
 }

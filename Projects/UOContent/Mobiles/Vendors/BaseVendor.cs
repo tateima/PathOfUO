@@ -569,7 +569,7 @@ namespace Server.Mobiles
                             ||
                             resp.Item is BaseArmor { Crafter: { } } baseArmor && baseArmor.Crafter == seller.RawName
                             ||
-                            resp.Item is BaseJewel { Crafter: { } } baseJewel && baseJewel.Crafter == seller
+                            resp.Item is BaseJewel { Crafter: { } } baseJewel && baseJewel.Crafter == seller.RawName
                         )
                         {
                             sellPrice += AOS.Scale(sellPrice, tycoonModifier);

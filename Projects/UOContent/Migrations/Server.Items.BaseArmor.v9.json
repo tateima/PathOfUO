@@ -269,7 +269,6 @@
     {
       "name": "TalentIndex",
       "type": "int",
-      "usesSaveFlag": true,
       "rule": "PrimitiveTypeMigrationRule",
       "ruleArguments": [
         "EncodedInt"
@@ -278,7 +277,6 @@
     {
       "name": "TalentLevel",
       "type": "int",
-      "usesSaveFlag": true,
       "rule": "PrimitiveTypeMigrationRule",
       "ruleArguments": [
         "EncodedInt"
