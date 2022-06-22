@@ -1079,6 +1079,8 @@ namespace Server.Mobiles
             }
         }
 
+        public bool Neutral() => Alignment is not Deity.Alignment.None;
+
         public bool Heroism()
         {
             Heroism heroism = GetTalent(typeof(Heroism)) as Heroism;
@@ -1688,7 +1690,10 @@ namespace Server.Mobiles
 
             if (from is PlayerMobile mobile)
             {
-                mobile.DeityDecay();
+                if (!mobile.Neutral())
+                {
+                    mobile.DeityDecay();
+                }
                 mobile.ClaimAutoStabledPets();
                 mobile.RestCheck();
                 mobile.HungerHarmCheck(true);
@@ -1715,14 +1720,21 @@ namespace Server.Mobiles
 
         public void DeityDecay()
         {
-            if (DeityPoints > 0 && m_LastDeityDecay < DateTime.Now.AddSeconds(-599))
+            if (m_LastDeityDecay < DateTime.Now.AddSeconds(-599))
             {
                 DeityPoints -= 1 + Level / 10;
                 LastDeityDecay = DateTime.Now;
                 if (DeityPoints <= 0)
                 {
-                    DeityPoints = 0;
-                    Deity.RemoveFavor(this);
+                    if (HasDeityFavor)
+                    {
+                        Deity.RemoveFavor(this);
+                    }
+                    if (DeityPoints <= -1000)
+                    {
+                        Deity.BestowCurse(this);
+                        DeityPoints = -1000;
+                    }
                 }
             }
             Timer.StartTimer(TimeSpan.FromMinutes(10), DeityDecay, out _deityDecayTimer);
@@ -2493,8 +2505,11 @@ namespace Server.Mobiles
             {
                 Quest?.GetContextMenuEntries(list);
                 list.Add(new CharacterSheetMenuEntry(this));
-                list.Add(new DeityRewardEntry(this));
-                list.Add(new DeityFavorEntry(this));
+                if (!Neutral())
+                {
+                    list.Add(new DeityRewardEntry(this));
+                    list.Add(new DeityFavorEntry(this));
+                }
                 if (Alive)
                 {
                     if (InsuranceEnabled)
@@ -4348,11 +4363,14 @@ namespace Server.Mobiles
 
             list.Add(1114057, $"Level: {Level.ToString()}"); // ~1_val~
             list.Add(1114057, $"Alignment: {Alignment.ToString()}"); // ~1_val~
-            if (DeityPoints > 0)
+            if (!Neutral())
             {
-                list.Add(1114057, $"Deity loyalty: {DeityPoints.ToString()}"); // ~1_val~
+                if (DeityPoints > 0)
+                {
+                    list.Add(1114057, $"Deity loyalty: {DeityPoints.ToString()}"); // ~1_val~
+                }
+                list.Add(1114057, $"Next prayer: {WaitTeleporter.FormatTime(m_NextPrayer - Core.Now)}"); // ~1_val~
             }
-            list.Add(1114057, $"Next prayer: {WaitTeleporter.FormatTime(m_NextPrayer - Core.Now)}"); // ~1_val~
             string xp = (LevelExperience + CraftExperience + NonCraftExperience).ToString();
             int nextLevel = (int)NextLevel();
             list.Add(1114057, $"{xp}/{nextLevel.ToString()}: XP");                  // ~1_val~

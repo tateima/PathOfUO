@@ -9,8 +9,10 @@ namespace Server.Gumps
 {
     public class ChoosePathGump : Gump
     {
-        public ChoosePathGump(Mobile from, int page) : base(0, 0)
+        private readonly bool _createStaterSkills;
+        public ChoosePathGump(Mobile from, int page, bool createStaterSkills) : base(0, 0)
         {
+            _createStaterSkills = createStaterSkills;
             if (from == null)
             {
                 from.CloseGump<ChoosePathGump>();
@@ -293,15 +295,22 @@ namespace Server.Gumps
 
                 if (page > 0)
                 {
-                    player.SendGump(new ChoosePathGump(player, page));
+                    player.SendGump(new ChoosePathGump(player, page, _createStaterSkills));
                 }
                 else
                 {
                     player.CloseGump<ChoosePathGump>();
-                    player.StarterSkills = new Skills(player);
-                    foreach (var skill in player.Skills)
+                    if (_createStaterSkills)
                     {
-                        player.StarterSkills[skill.SkillName].Base = skill.Base;
+                        player.StarterSkills = new Skills(player);
+                        foreach (var skill in player.Skills)
+                        {
+                            player.StarterSkills[skill.SkillName].Base = skill.Base;
+                        }
+                    }
+                    if (player.Alignment is not Deity.Alignment.None)
+                    {
+                        player.DeityDecay();
                     }
                 }
             }

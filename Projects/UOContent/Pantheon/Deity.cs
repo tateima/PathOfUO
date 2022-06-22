@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Server.Engines.BulkOrders;
 using Server.Engines.Craft;
-using Server.Engines.MLQuests.Items;
 using Server.Items;
 using Server.Mobiles;
 using Server.Talent;
@@ -13,6 +12,7 @@ namespace Server.Pantheon
 {
     public static class Deity
     {
+        public const string DeityCurseModName = "DeityCurse";
         public enum Alignment
         {
             Charity,
@@ -290,26 +290,26 @@ namespace Server.Pantheon
             RewardPoints(player, points, new[] { player.Alignment });
         }
 
-        public static void Effect(PlayerMobile player)
+        public static void Effect(Mobile target, Alignment alignment)
         {
             int sound = 0;
-            switch (player.Alignment)
+            switch (alignment)
             {
                 case Alignment.Order:
-                    player.BoltEffect(0);
+                    target.BoltEffect(0);
                     break;
                 case Alignment.Chaos:
-                    player.FixedParticles(0x3709, 10, 10, 5052, 0, 0, EffectLayer.LeftFoot, 0);
+                    target.FixedParticles(0x3709, 10, 10, 5052, 0, 0, EffectLayer.LeftFoot, 0);
                     sound = 0x208;
                     break;
                 case Alignment.Darkness:
-                    player.FixedParticles(0x3728, 1, 13, 9912, 1150, 7, EffectLayer.Head);
-                    player.FixedParticles(0x3779, 1, 15, 9502, 67, 7, EffectLayer.Head);
+                    target.FixedParticles(0x3728, 1, 13, 9912, 1150, 7, EffectLayer.Head);
+                    target.FixedParticles(0x3779, 1, 15, 9502, 67, 7, EffectLayer.Head);
                     sound = 0xFC;
                     break;
                 case Alignment.Light:
                     Effects.SendLocationParticles(
-                        EffectItem.Create(player.Location, player.Map, EffectItem.DefaultDuration),
+                        EffectItem.Create(target.Location, target.Map, EffectItem.DefaultDuration),
                         0x3728,
                         8,
                         20,
@@ -319,14 +319,16 @@ namespace Server.Pantheon
                     break;
                 case Alignment.Greed:
                 case Alignment.Charity:
-                    player.FixedParticles(0x373A, 10, 15, 5018, EffectLayer.Waist);
+                    target.FixedParticles(0x373A, 10, 15, 5018, EffectLayer.Waist);
                     sound = 0x1EA;
+                    break;
+                case Alignment.None:
                     break;
             }
 
             if (sound > 0)
             {
-                player.SendSound(sound);
+                target.SendSound(sound);
             }
         }
 
@@ -355,7 +357,7 @@ namespace Server.Pantheon
             if (player.DeityPoints > 500 && HasDeityTalents(player))
             {
                 player.HasDeityFavor = true;
-                Effect(player);
+                Effect(player, player.Alignment);
             }
             else
             {
@@ -365,6 +367,49 @@ namespace Server.Pantheon
         public static void RemoveFavor(PlayerMobile player)
         {
             player.HasDeityFavor = false;
+        }
+
+        public static void DestroyItem(Item[] items, PlayerMobile player, string context)
+        {
+            Item item = items[Utility.Random(items.Length)];
+            player.SendMessage($"The gods have punished your disloyalty by destroying a {item.Name} from your {context}.");
+            items[Utility.Random(items.Length)].Delete();
+        }
+
+        public static void BestowCurse(PlayerMobile player)
+        {
+            Effect(player, player.Alignment);
+            if (Utility.Random(100) < 15)
+            {
+                int amount = Utility.RandomMinMax(3, 10);
+                player.AddStatMod(new StatMod(StatType.All, DeityCurseModName, -amount, TimeSpan.FromHours(1)));
+                player.SendMessage("The gods have punished your disloyalty with a curse.");
+            } else if (Utility.Random(100) < 15 && player.Backpack is not null)
+            {
+                Item[] items = player.Backpack?.FindItemsByType(typeof(Item));
+                if (items.Length > 0)
+                {
+                    DestroyItem(items, player, "backpack");
+                } else if (player.BankBox is not null)
+                {
+                    items = player.BankBox?.FindItemsByType(typeof(Item));
+                    if (items.Length > 0)
+                    {
+                        DestroyItem(items, player, "bank box");
+                    }
+                }
+            } else if (Utility.Random(100) < 15 && player.AllFollowers.Count > 0)
+            {
+                Mobile follower = player.AllFollowers[Utility.Random(player.AllFollowers.Count)];
+                player.SendMessage($"The gods have punished your disloyalty by removing one of your {follower.Name} followers.");
+                follower.Delete();
+            }
+            else
+            {
+                player.Hunger -= Utility.RandomMinMax(1, 4);
+                player.Thirst -= Utility.RandomMinMax(1, 4);
+                player.SendMessage($"The gods have punished your disloyalty making you more hungry and thirsty.");
+            }
         }
 
         public static void BestowReward(PlayerMobile player)
@@ -403,7 +448,6 @@ namespace Server.Pantheon
 
         public static void RewardMessage(PlayerMobile player)
         {
-            Effect(player);
             player.LocalOverheadMessage(MessageType.Regular, 0x0481, false, "*** The pantheon have granted you a reward ***");
         }
 
@@ -434,6 +478,7 @@ namespace Server.Pantheon
 
                     Point3D newLocation = new Point3D(player.Location.X + 1, player.Location.Y + 1, player.Location.Z);
                     sacrifice.MoveToWorld(newLocation, player.Map);
+                    Effect(sacrifice, player.Alignment);
                     sacrifice.Kill();
                     sacrifice.LastKiller = player;
                     RewardMessage(player);

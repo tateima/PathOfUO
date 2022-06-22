@@ -60,7 +60,7 @@ namespace Server.Mobiles
                     DeleteAlignmentItems(player.Backpack.Items);
                 }
 
-                player.SendGump(new ChoosePathGump(player, 2));
+                player.SendGump(new ChoosePathGump(player, 2, false));
             }
             else
             {
