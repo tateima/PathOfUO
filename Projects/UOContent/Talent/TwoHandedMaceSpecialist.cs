@@ -10,6 +10,7 @@ namespace Server.Talent
             RequiredWeapon = new[] { typeof(WarHammer) };
             DisplayName = "Warmonger";
             Description = "Increases damage to two handed mace fighting weapons.";
+            AdditionalDetail = $"{PassiveDetail} This talent causes (1-X) * 2 damage where X is the talent level.";
             ImageID = 196;
             GumpHeight = 75;
             AddEndY = 85;

@@ -77,7 +77,7 @@ namespace Server.Mobiles
                 location.Y = 0;
                 location.Z = 0;
                 MoveToWorld(location, Map);
-                Timer.StartTimer(TimeSpan.FromMinutes(10), ReturnWithResources, out _slaveTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(300), ReturnWithResources, out _slaveTimerToken);
             }
             else
             {

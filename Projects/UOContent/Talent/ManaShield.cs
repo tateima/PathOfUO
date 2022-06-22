@@ -13,8 +13,10 @@ namespace Server.Talent
             CanBeUsed = true;
             HasDefenseEffect = true;
             DisplayName = "Mana shield";
+            CooldownSeconds = 180;
             MaxLevel = 1;
             Description = "Absorbs damage with mana. Does not work in Wraith Form. Requires 75+ magery.";
+            AdditionalDetail = "Each level decreases cooldown by 5 seconds.";
             ImageID = 155;
             AddEndY = 95;
         }
@@ -62,7 +64,7 @@ namespace Server.Talent
                 OnCooldown = true;
                 from.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
                 from.PlaySound(0x1E8);
-                Timer.StartTimer(TimeSpan.FromSeconds(180 - Level * 5), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds - Level * 5), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
     }

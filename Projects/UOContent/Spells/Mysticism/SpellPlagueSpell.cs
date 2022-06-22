@@ -60,7 +60,6 @@ namespace Server.Spells.Mysticism
                 VisualEffect(targeted);
 
                 var damage = GetNewAosDamage(33, 1, 5, targeted);
-                DarkAffinityPower(ref damage);
                 SpellHelper.Damage(this, targeted, damage, 0, 0, 0, 0, 0);
 
                 var timer = new SpellPlagueTimer(this, targeted);

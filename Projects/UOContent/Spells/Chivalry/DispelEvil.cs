@@ -49,7 +49,7 @@ namespace Server.Spells.Chivalry
                 var eable = Caster.GetMobilesInRange(8);
                 int lightPower = 0;
                 LightAffinityPower(ref lightPower);
-                
+
                 using var queue = PooledRefQueue<Mobile>.Create();
                 foreach (var m in eable)
                 {
@@ -70,7 +70,7 @@ namespace Server.Spells.Chivalry
                         {
                             var dispelChance = (50.0 + 100 * (chiv - bc.DispelDifficulty) / (bc.DispelFocus * 2)) / 100;
                             dispelChance *= dispelSkill / 100.0;
-                            
+
                             dispelChance += lightPower;
 
                             if (dispelChance > Utility.RandomDouble())

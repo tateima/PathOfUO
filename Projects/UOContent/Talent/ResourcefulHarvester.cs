@@ -5,7 +5,8 @@ namespace Server.Talent
         public ResourcefulHarvester()
         {
             DisplayName = "Resourceful";
-            Description = "2% Chance per level on harvesting to receive extra resources.";
+            Description = "Chance when harvesting to receive extra resources.";
+            AdditionalDetail = $"The chance for this increases by 2% per level. {PassiveDetail}";
             ImageID = 124;
             MaxLevel = 6;
             GumpHeight = 85;

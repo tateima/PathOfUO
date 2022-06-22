@@ -152,7 +152,7 @@ namespace Server.Misc
             ((PlayerMobile)newChar).TalentPoints = 1;
             ((PlayerMobile)newChar).CraftSkillPoints = 6;
             ((PlayerMobile)newChar).NonCraftSkillPoints = 6;
-            
+
             var young = false;
 
             if (newChar is PlayerMobile pm)

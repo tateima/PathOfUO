@@ -10,8 +10,10 @@ namespace Server.Talent
             TalentDependency = typeof(BondingMaster);
             DisplayName = "Cannibalise pet";
             CanBeUsed = true;
-            Description = "Sacrifice another tamed animal, transferring between 10-50% of their stats.";
+            Description = "Sacrifice another tamed animal, transferring their stats to a target creature.";
+            AdditionalDetail = "You may only sacrifice a maximum of 3 tamed creatures to your chosen target. The transfer increases by 2% per level.";
             ImageID = 376;
+            AddEndAdditionalDetailsY = 70;
         }
 
         public override void OnUse(Mobile from)
@@ -22,14 +24,14 @@ namespace Server.Talent
 
         private class InternalFirstTarget : Target
         {
-            private readonly int m_level;
+            private readonly int _level;
 
             public InternalFirstTarget(int level) : base(
                 3,
                 false,
                 TargetFlags.None
             ) =>
-                m_level = level;
+                _level = level;
 
             protected override void OnTarget(Mobile from, object targeted)
             {
@@ -38,7 +40,7 @@ namespace Server.Talent
                 if (targeted is BaseCreature { ControlMaster: { } } creature && creature.ControlMaster == @from && creature.Controlled && creature.CannibalPoints < 3)
                 {
                     from.SendMessage("Wish pet do you wish to sacrifice?");
-                    from.Target = new InternalSecondTarget(creature, m_level);
+                    from.Target = new InternalSecondTarget(creature, _level);
                 }
                 else
                 {
@@ -49,8 +51,8 @@ namespace Server.Talent
 
         private class InternalSecondTarget : Target
         {
-            private BaseCreature m_CannibalCreature;
-            private readonly int m_Level;
+            private BaseCreature _cannibalCreature;
+            private readonly int _level;
 
             public InternalSecondTarget(Mobile cannibalCreature, int level) : base(
                 3,
@@ -58,17 +60,17 @@ namespace Server.Talent
                 TargetFlags.None
             )
             {
-                m_Level = level;
-                m_CannibalCreature = (BaseCreature)cannibalCreature;
+                _level = level;
+                _cannibalCreature = (BaseCreature)cannibalCreature;
             }
 
             protected override void OnTarget(Mobile from, object targeted)
             {
                 from.RevealingAction();
-                if (targeted is BaseCreature { ControlMaster: { } } creature && creature.ControlMaster == @from && creature.Controlled && creature.GetType() == m_CannibalCreature.GetType() && creature.CannibalPoints == 0)
+                if (targeted is BaseCreature { ControlMaster: { } } creature && creature.ControlMaster == @from && creature.Controlled && creature.GetType() == _cannibalCreature.GetType() && creature.CannibalPoints == 0)
                 {
-                    m_CannibalCreature = TransferMobileStats(creature, m_CannibalCreature);
-                    m_CannibalCreature.CannibalPoints += 1;
+                    _cannibalCreature = TransferMobileStats(creature, _cannibalCreature);
+                    _cannibalCreature.CannibalPoints += 1;
                     creature.Kill();
                 }
                 else
@@ -79,12 +81,12 @@ namespace Server.Talent
 
             public BaseCreature TransferMobileStats(Mobile target, BaseCreature destination)
             {
-                destination.RawDex += AOS.Scale(target.RawDex, m_Level * 2);
-                destination.RawInt += AOS.Scale(target.RawInt, m_Level * 2);
-                destination.RawStr += AOS.Scale(target.RawStr, m_Level * 2);
-                destination.SetHits(destination.HitsMax + AOS.Scale(target.HitsMax, m_Level * 2));
-                destination.SetMana(destination.ManaMax + AOS.Scale(target.ManaMax, m_Level * 2));
-                destination.SetStam(destination.StamMax + AOS.Scale(target.StamMax, m_Level * 2));
+                destination.RawDex += AOS.Scale(target.RawDex, _level * 2);
+                destination.RawInt += AOS.Scale(target.RawInt, _level * 2);
+                destination.RawStr += AOS.Scale(target.RawStr, _level * 2);
+                destination.SetHits(destination.HitsMax + AOS.Scale(target.HitsMax, _level * 2));
+                destination.SetMana(destination.ManaMax + AOS.Scale(target.ManaMax, _level * 2));
+                destination.SetStam(destination.StamMax + AOS.Scale(target.StamMax, _level * 2));
                 return destination;
             }
         }

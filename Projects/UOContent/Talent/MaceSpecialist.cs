@@ -6,7 +6,6 @@ namespace Server.Talent
     {
         public MaceSpecialist()
         {
-            BlockedBy = new[] { typeof(TwoHandedMaceSpecialist) };
             TalentDependency = typeof(MacefightingFocus);
             RequiredWeapon = new[]
             {
@@ -15,7 +14,9 @@ namespace Server.Talent
             };
             RequiredWeaponSkill = SkillName.Macing;
             DisplayName = "Mace specialist";
-            Description = "Increases damage to one handed macefighting weapons.";
+            IncreaseHitChance = true;
+            Description = "Increases damage and hit chance to one handed mace fighting weapons.";
+            AdditionalDetail = $"{PassiveDetail} The chance to hit increases 1% per level. This talent causes 1-X damage where X is the talent level.";
             ImageID = 181;
             AddEndY = 90;
         }

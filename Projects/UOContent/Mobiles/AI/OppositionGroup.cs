@@ -130,7 +130,8 @@ namespace Server
             typeof(ShadowIronElemental),
             typeof(ValoriteElemental),
             typeof(CrystalElemental),
-            typeof(VeriteElemental)
+            typeof(VeriteElemental),
+            typeof(ChaosElemental)
         };
         public static Type[] AbyssalGroup { get; } =
         {
@@ -163,7 +164,8 @@ namespace Server
             typeof(StoneGargoyle),
             typeof(GazerLarva),
             typeof(ShadowFiend),
-            typeof(SummonedDaemon)
+            typeof(SummonedDaemon),
+            typeof(ChaosElemental)
         };
         public static Type[] ReptilianGroup { get; } =
         {
@@ -237,7 +239,8 @@ namespace Server
             typeof(EvilMage),
             typeof(EvilMageLord),
             typeof(EvilWanderingHealer),
-            typeof(Executioner)
+            typeof(Executioner),
+            typeof(Celestial)
         };
 
         public static Type[] AnimalGroup { get; } =

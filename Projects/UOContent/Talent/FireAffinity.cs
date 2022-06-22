@@ -10,7 +10,7 @@ namespace Server.Talent
 {
     public class FireAffinity : BaseTalent
     {
-        private Mobile m_Mobile;
+        private Mobile _mobile;
 
         public FireAffinity()
         {
@@ -22,6 +22,7 @@ namespace Server.Talent
             DisplayName = "Fire affinity";
             CanBeUsed = true;
             Description = "Increases damage done by fire abilities/spells.";
+            AdditionalDetail = "Each level increases damage by 2%";
             ImageID = 137;
             GumpHeight = 70;
             AddEndY = 65;
@@ -38,13 +39,13 @@ namespace Server.Talent
             if (!OnCooldown)
             {
                 ResMod = new ResistanceMod(ResistanceType.Fire, Level * 5);
-                m_Mobile = from;
+                _mobile = from;
                 OnCooldown = true;
                 if (Core.AOS)
                 {
-                    m_Mobile.AddResistanceMod(ResMod);
-                    m_Mobile.FixedParticles(0x3709, 10, 30, 5052, EffectLayer.LeftFoot);
-                    m_Mobile.PlaySound(0x208);
+                    _mobile.AddResistanceMod(ResMod);
+                    _mobile.FixedParticles(0x3709, 10, 30, 5052, EffectLayer.LeftFoot);
+                    _mobile.PlaySound(0x208);
                 }
 
                 Timer.StartTimer(TimeSpan.FromSeconds(60 + Utility.Random(20)), ExpireBuff, out _);
@@ -54,11 +55,11 @@ namespace Server.Talent
 
         public void ExpireBuff()
         {
-            if (m_Mobile != null)
+            if (_mobile != null)
             {
                 if (Core.AOS)
                 {
-                    m_Mobile.RemoveResistanceMod(ResMod);
+                    _mobile.RemoveResistanceMod(ResMod);
                 }
             }
         }

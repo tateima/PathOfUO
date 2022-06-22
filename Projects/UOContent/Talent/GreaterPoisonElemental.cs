@@ -13,7 +13,9 @@ namespace Server.Talent
             DisplayName = "Poison Elemental";
             MobilePercentagePerPoint = 15;
             CanBeUsed = true;
-            Description = "Summon a poison elemental to assist you for 2 minutes. 5 minute cooldown. Mana is required.";
+            ManaRequired = 65;
+            CooldownSeconds = 300;
+            Description = "Summon a poison elemental to assist you for 2 minutes.";
             ImageID = 390;
             MaxLevel = 1;
             GumpHeight = 230;
@@ -24,19 +26,9 @@ namespace Server.Talent
         {
             if (!OnCooldown)
             {
-                var canCast = true;
-                if (from.Mana > 65)
+                if (from.Mana > ManaRequired)
                 {
-                    from.Mana -= 65;
-                }
-                else
-                {
-                    canCast = false;
-                    from.SendMessage("You need 65 mana to summon this poison lord.");
-                }
-
-                if (canCast)
-                {
+                    ApplyManaCost(from);
                     from.RevealingAction();
                     from.PublicOverheadMessage(
                         MessageType.Spell,
@@ -47,16 +39,25 @@ namespace Server.Talent
                     );
                     // its a talent, no need for animation timer, just a single animation is fine
                     from.Animate(269, 7, 1, true, false, 0);
+                    var creature = new PoisonElemental
+                    {
+                        OverrideDispellable = true
+                    };
                     SpellHelper.Summon(
-                        new PoisonElemental(),
+                        creature,
                         from,
                         0x217,
                         TimeSpan.FromMinutes(2),
                         false,
                         false
                     ); // dont scale because they're already quite powerful
-                    Timer.StartTimer(TimeSpan.FromMinutes(5), ExpireTalentCooldown, out _talentTimerToken);
+                    Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
+                    EmptyCreatureBackpack(creature);
                     OnCooldown = true;
+                }
+                else
+                {
+                    from.SendMessage($"You need {ManaRequired.ToString()} mana to summon this poison lord.");
                 }
             }
         }

@@ -6,13 +6,14 @@ namespace Server.Talent
 {
     public class LoreSeeker : BaseTalent
     {
-        private Mobile m_Mobile;
+        private Mobile _mobile;
 
         public LoreSeeker()
         {
             DisplayName = "Lore seeker";
             Description = "Expose weaknesses in enemies on hit. Need 70 or above in two lore skills.";
             ImageID = 127;
+            CooldownSeconds = 30;
             GumpHeight = 85;
             AddEndY = 80;
         }
@@ -41,15 +42,15 @@ namespace Server.Talent
                 var randomResistanceType = (ResistanceType)values.GetValue(Utility.Random(values.Length));
                 ResMod = new ResistanceMod(randomResistanceType, -(Level * 2));
                 target.AddResistanceMod(ResMod);
-                m_Mobile = target;
-                Timer.StartTimer(TimeSpan.FromSeconds(30), ExpireTalentCooldown, out _talentTimerToken);
+                _mobile = target;
+                Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
 
         public override void ExpireTalentCooldown()
         {
             base.ExpireTalentCooldown();
-            m_Mobile?.RemoveResistanceMod(ResMod);
+            _mobile?.RemoveResistanceMod(ResMod);
         }
     }
 }

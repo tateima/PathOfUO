@@ -111,7 +111,7 @@ namespace Server.Spells.Necromancy
                         // if (damage > 40)
                         // damage = 40;
                         damage *= ReagentsScale();
-                        
+
                         DarkAffinityDamage(ref damage);
                         SpellMindDamage(ref damage);
                         SpellHelper.Damage(this, m, damage, 0, 0, 100, 0, 0);

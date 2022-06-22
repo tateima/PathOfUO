@@ -16,12 +16,15 @@ namespace Server.Talent
             TalentDependency = typeof(Inventive);
             DisplayName = "Automaton";
             MobilePercentagePerPoint = 10;
+            CooldownSeconds = 480;
             CanBeUsed = true;
             Description =
-                "Construct an automaton to assist you for up to 8 minutes. Requires 95 tinkering skill points. 8 minute cooldown.";
+                "Construct an automaton to assist you for up to 8+ minutes. Requires 95 tinkering skill points.";
+            AdditionalDetail = "As your level increases, the upgrade costs also increase substantially. A manual exists that specifies the exact requirements. The more engineering skills you have (Carpentry, Tailoring, Blacksmithing and Tinkering) the more powerful the automaton will become.";
             ImageID = 352;
             GumpHeight = 230;
-            AddEndY = 145;
+            AddEndY = 135;
+            AddEndAdditionalDetailsY = AddEndY;
         }
 
         public override bool HasUpgradeRequirement(Mobile mobile)
@@ -149,16 +152,9 @@ namespace Server.Talent
                     MobilePercentagePerPoint += inventive.Level;
                 }
                 _construct = (AutomatonConstruct)ScaleMobile(_construct);
-                if (_construct.Backpack != null)
-                {
-                    for (var x = _construct.Backpack.Items.Count - 1; x >= 0; x--)
-                    {
-                        var item = _construct.Backpack.Items[x];
-                        item.Delete();
-                    }
-                }
+                EmptyCreatureBackpack(_construct);
                 SpellHelper.Summon(_construct, from, 0x042, TimeSpan.FromMinutes(modifier), false, false);
-                Timer.StartTimer(TimeSpan.FromMinutes(8), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                 OnCooldown = true;
             }
         }

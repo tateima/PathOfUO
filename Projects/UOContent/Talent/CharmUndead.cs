@@ -5,14 +5,15 @@ namespace Server.Talent
 {
     public class CharmUndead : BaseTalent
     {
-        private BaseCreature m_Charmed;
+        private BaseCreature _charmed;
 
         public CharmUndead()
         {
             DisplayName = "Charm Undead";
             CanBeUsed = true;
+            CooldownSeconds = 180;
             Description =
-                "Allows a chance for spirit speak to charm a nearby undead. 3min cooldown. Requires 20-100 spiritspeak.";
+                "Allows a chance for spirit speak to charm a nearby undead. Requires 20-100 spiritspeak.";
             ImageID = 406;
             MaxLevel = 5;
             GumpHeight = 95;
@@ -36,9 +37,9 @@ namespace Server.Talent
 
         public void ExpireCharm()
         {
-            m_Charmed.Owners.Clear();
-            m_Charmed.SetControlMaster(null);
-            m_Charmed.Summoned = false;
+            _charmed.Owners.Clear();
+            _charmed.SetControlMaster(null);
+            _charmed.Summoned = false;
         }
 
         public bool CheckCharm(Mobile from)
@@ -61,11 +62,11 @@ namespace Server.Talent
                         creature.Owners.Add(from);
                         creature.SetControlMaster(from);
                         creature.Summoned = true;
-                        m_Charmed = creature;
+                        _charmed = creature;
                         OnCooldown = true;
                         Activated = false;
-                        Timer.StartTimer(TimeSpan.FromMinutes(3), ExpireCharm);
-                        Timer.StartTimer(TimeSpan.FromMinutes(3), ExpireTalentCooldown, out _talentTimerToken);
+                        Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireCharm);
+                        Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                         from.SendMessage("You charm a nearby undead creature.");
                         return true;
                     }

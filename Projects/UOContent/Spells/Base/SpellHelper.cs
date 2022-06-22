@@ -1017,12 +1017,26 @@ namespace Server.Spells
             if (target is PlayerMobile targetPlayer)
             {
                 spellWard = (SpellWard)targetPlayer.GetTalent(typeof(SpellWard));
+                if (spellWard != null && target != from)
+                {
+                    spellWard.ProcessDamage(spell, delay, target, from, ref damage, ref phys, ref fire, ref cold, ref pois, ref nrgy, ref chaos);
+                }
+
+                if (targetPlayer.TalentEffect?.HasDamageAbsorptionEffect == true
+                    && targetPlayer.TalentEffect?.CanAbsorbSpells == true)
+                {
+                    dmg = targetPlayer.TalentEffect.CheckDamageAbsorptionEffect(target, from, dmg);
+                }
+                foreach (var (_, value) in targetPlayer.Talents)
+                {
+                    if (value.HasDamageAbsorptionEffect && value.CanAbsorbSpells)
+                    {
+                        dmg = value.CheckDamageAbsorptionEffect(target, from, dmg);
+                    }
+                }
             }
 
-            if (spellWard != null && target != from)
-            {
-                spellWard.ProcessDamage(spell, delay, target, from, ref damage, ref phys, ref fire, ref cold, ref pois, ref nrgy, ref chaos);
-            }
+
 
             if (delay == TimeSpan.Zero)
             {

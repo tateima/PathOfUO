@@ -7,16 +7,16 @@ namespace Server.Talent
 {
     public class GroundSlam : BaseTalent
     {
-        private readonly List<Mobile> m_SlowedMobiles = new();
-
         public GroundSlam()
         {
             TalentDependency = typeof(TwoHandedMaceSpecialist);
             RequiredWeapon = new[] { typeof(WarHammer) };
             DisplayName = "Ground slam";
             CanBeUsed = true;
-            Description = "Push back surrounding mobiles by 1-5 yards and slows them down, 30s cooldown.";
+            Description = "Push back surrounding mobiles by 1-5 yards and slows them down.";
+            AdditionalDetail = "The slow effect lasts 10 seconds.";
             ImageID = 369;
+            CooldownSeconds = 30;
             GumpHeight = 75;
             AddEndY = 80;
         }
@@ -37,14 +37,7 @@ namespace Server.Talent
                     }
 
                     var mobileLocation = mobile.Location;
-                    var mobileDirection = attacker.GetDirectionTo(mobileLocation.X, mobileLocation.Y);
-                    var newMobileLocation = mobileDirection switch
-                    {
-                        Direction.East  => new Point3D(mobileLocation.X + Level, mobileLocation.Y, mobileLocation.Y),
-                        Direction.West  => new Point3D(mobileLocation.X - Level, mobileLocation.Y, mobileLocation.Y),
-                        Direction.South => new Point3D(mobileLocation.X, mobileLocation.Y + Level, mobileLocation.Y),
-                        _               => new Point3D(mobileLocation.X, mobileLocation.Y - Level, mobileLocation.Y)
-                    };
+                    var newMobileLocation = CalculatePushbackFromAnchor(mobileLocation, Level, mobile);
                     var attempts = 10;
                     while (!mobile.InLOS(newMobileLocation))
                     {
@@ -52,14 +45,7 @@ namespace Server.Talent
                         {
                             break;
                         }
-
-                        newMobileLocation = mobileDirection switch
-                        {
-                            Direction.East  => new Point3D(mobileLocation.X - 1, mobileLocation.Y, mobileLocation.Y),
-                            Direction.West  => new Point3D(mobileLocation.X + 1, mobileLocation.Y, mobileLocation.Y),
-                            Direction.South => new Point3D(mobileLocation.X, mobileLocation.Y - 1, mobileLocation.Y),
-                            _               => new Point3D(mobileLocation.X, mobileLocation.Y + 1, mobileLocation.Y)
-                        };
+                        newMobileLocation = CalculatePushbackFromAnchor(mobileLocation, 1, mobile);
                         attempts++;
                     }
 
@@ -67,38 +53,29 @@ namespace Server.Talent
                     mobile.Damage(Level, attacker);
                     if (mobile is BaseCreature creature)
                     {
-                        creature.ActiveSpeed /= 2;
-                        m_SlowedMobiles.Add(creature);
+                        SlowCreature(creature, 0, false);
                     }
                     else if (mobile is PlayerMobile player)
                     {
                         player.Slow(Utility.Random(10));
                     }
                 }
-
-                Timer.StartTimer(TimeSpan.FromSeconds(10), ExpireSlowedMobiles, out _);
-                Timer.StartTimer(TimeSpan.FromSeconds(30), ExpireTalentCooldown, out _talentTimerToken);
+                attacker.PlaySound(0x11E);
+                Timer.StartTimer(TimeSpan.FromSeconds(10), ExpireSlowEffect, out _);
+                Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
 
         public override void OnUse(Mobile from)
         {
             var weapon = from.Weapon as BaseWeapon;
-            if (weapon is WarHammer)
+            if (weapon?.Skill == RequiredWeaponSkill && weapon is WarHammer)
             {
                 base.OnUse(from);
             }
             else
             {
                 from.SendMessage("You do not have a war hammer equipped.");
-            }
-        }
-
-        public void ExpireSlowedMobiles()
-        {
-            foreach (var mobile in m_SlowedMobiles)
-            {
-                ((BaseCreature)mobile).ActiveSpeed *= 2;
             }
         }
     }

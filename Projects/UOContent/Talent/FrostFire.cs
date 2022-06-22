@@ -1,3 +1,4 @@
+using System;
 using Server.Mobiles;
 using Server.Spells;
 using Server.Spells.First;
@@ -36,7 +37,7 @@ namespace Server.Talent
 
         public void ModifyFireSpell(ref int fire, ref int cold, Mobile target, ref int hue)
         {
-            hue = MonsterBuff.FrozenHue;
+            hue = 0x48F;
             var originalFire = fire;
             fire = AOS.Scale(originalFire, 100 - ModifySpellMultiplier());
             cold += AOS.Scale(originalFire, ModifySpellMultiplier());
@@ -44,7 +45,7 @@ namespace Server.Talent
             {
                 if (target is BaseCreature creature)
                 {
-                    creature.ActiveSpeed /= 2;
+                    SlowCreature(creature, Utility.RandomMinMax(1,3), true);
                 }
                 else if (target is PlayerMobile targetPlayer)
                 {

@@ -6,6 +6,8 @@ using Server.Ethics;
 using Server.Factions;
 using Server.Misc;
 using Server.Network;
+using Server.Pantheon;
+using Server.Talent;
 using Server.Utilities;
 
 namespace Server.Items
@@ -25,7 +27,7 @@ namespace Server.Items
     }
 
     [SerializationGenerator(7, false)]
-    public abstract partial class BaseClothing : Item, IDyable, IScissorable, IFactionItem, ICraftable, IWearableDurability
+    public abstract partial class BaseClothing : Item, IDyable, IScissorable, IFactionItem, ICraftable, IWearableDurability, IPantheonItem
     {
         [SerializableField(0, "private", "private")]
         private CraftResource _rawResource;
@@ -157,6 +159,63 @@ namespace Server.Items
         [SerializableFieldSaveFlag(12)]
         private bool ShouldSerializePockets() => !string.IsNullOrEmpty(_pockets);
 
+        [InvalidateProperties]
+        [SerializableField(13)]
+        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
+        private string _alignmentRaw;
+
+        [SerializableFieldSaveFlag(13)]
+        private bool ShouldSerializeAlignmentRaw() => _alignmentRaw != null;
+
+        public Deity.Alignment Alignment() => Deity.AlignmentFromString(_alignmentRaw);
+
+        private int _talentIndex;
+        [EncodedInt]
+        [SerializableField(14)]
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int TalentIndex
+        {
+            get => _talentIndex;
+            set
+            {
+                if (_talentIndex != value)
+                {
+                    if (_talentIndex < BaseTalent.InvalidTalentIndex)
+                    {
+                        Talent = TalentConstructor.ConstructFromIndex(_talentIndex);
+                    }
+                    _talentIndex = value;
+                    InvalidateProperties();
+                    this.MarkDirty();
+                }
+            }
+        }
+
+        public BaseTalent Talent { get; set; }
+
+        private int _talentLevel;
+
+        [EncodedInt]
+        [SerializableField(15)]
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int TalentLevel
+        {
+            get => _talentLevel;
+            set
+            {
+                if (_talentLevel != value)
+                {
+                    _talentLevel = value;
+                    InvalidateProperties();
+                    this.MarkDirty();
+                }
+            }
+        }
+
+        [SerializableFieldSaveFlag(15)]
+        private bool ShouldSerializeTalentLevel() => _talentLevel > 0;
+
+
         private FactionItem _factionState;
 
         public BaseClothing(int itemID, Layer layer, int hue = 0) : base(itemID)
@@ -167,8 +226,11 @@ namespace Server.Items
             _rawResource = DefaultResource;
 
             _hitPoints = _maxHitPoints = Utility.RandomMinMax(InitMinHits, InitMaxHits);
+            _talentLevel = 0;
+            _talentIndex = BaseTalent.InvalidTalentIndex;
             _pocketAmount = 0;
             _pockets = "";
+            _alignmentRaw = "None";
             Attributes = new AosAttributes(this);
             ClothingAttributes = new AosArmorAttributes(this);
             SkillBonuses = new AosSkillBonuses(this);
@@ -757,10 +819,19 @@ namespace Server.Items
         {
             base.GetProperties(list);
 
-             if (_pocketAmount > 0) {
-                 list.Add(1060658, $"{"Sockets"}:\t{PocketArray.Length.ToString()}/{_pocketAmount.ToString()}"); // ~1_val~: ~2_val~
+            if (_alignmentRaw != null)
+            {
+                list.Add(1114057, $"Alignment: {AlignmentRaw}"); // ~1_val~
+                if (_talentIndex < BaseTalent.InvalidTalentIndex)
+                {
+                    list.Add(1114057, $"{Talent.DisplayName} + {TalentLevel.ToString()}"); // ~1_val~
+                }
+            }
+
+            if (_pocketAmount > 0) {
+                 list.Add(1114057, $"Sockets: {PocketArray.Length.ToString()}/{_pocketAmount.ToString()}"); // ~1_val~
                  for (var i = 0; i < PocketArray.Length; i++) {
-                     list.Add(1060658, $"{PocketArray[i]}"); // ~1_val~: ~2_val~
+                     list.Add(1114057, $"{PocketArray[i]}"); // ~1_val~
                  }
             }
 
@@ -1037,6 +1108,11 @@ namespace Server.Items
             if (_maxHitPoints == 0 && _hitPoints == 0)
             {
                 _hitPoints = _maxHitPoints = Utility.RandomMinMax(InitMinHits, InitMaxHits);
+            }
+
+            if (_talentIndex < BaseTalent.InvalidTalentIndex)
+            {
+                Talent = TalentConstructor.ConstructFromIndex(_talentIndex);
             }
 
             if (Parent is Mobile parent)

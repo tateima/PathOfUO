@@ -44,7 +44,7 @@ namespace Server.Spells.Eighth
         {
             if (CheckSequence())
             {
-                var duration = TimeSpan.FromSeconds(2 * Caster.Skills.Magery.Fixed / 5);              
+                var duration = TimeSpan.FromSeconds(2 * Caster.Skills.Magery.Fixed / 5);
 
                 if (Core.AOS)
                 {

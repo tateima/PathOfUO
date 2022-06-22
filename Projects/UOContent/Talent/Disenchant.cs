@@ -105,14 +105,14 @@ namespace Server.Talent
 
         private class InternalTarget : Target
         {
-            private readonly BaseTalent m_Talent;
+            private readonly BaseTalent _talent;
 
             public InternalTarget(BaseTalent talent) : base(
                 2,
                 false,
                 TargetFlags.None
             ) =>
-                m_Talent = talent;
+                _talent = talent;
 
             protected override void OnTarget(Mobile from, object targeted)
             {
@@ -122,7 +122,7 @@ namespace Server.Talent
                     from.RevealingAction();
                     if (targeted is BaseWeapon weapon)
                     {
-                        if (m_Talent.Level >= 2)
+                        if (_talent.Level >= 2)
                         {
                             amount += TallyWeaponAttributes(weapon.WeaponAttributes);
                             amount += TallyAttributes(weapon.Attributes);
@@ -130,68 +130,68 @@ namespace Server.Talent
                             amount += TallySkillBonuses(weapon.SkillBonuses);
                         }
 
-                        if (weapon.DamageLevel == WeaponDamageLevel.Ruin && m_Talent.Level >= 1)
+                        if (weapon.DamageLevel == WeaponDamageLevel.Ruin && _talent.Level >= 1)
                         {
                             amount += 1.0;
                         }
 
-                        if (weapon.DamageLevel == WeaponDamageLevel.Might && m_Talent.Level >= 1)
+                        if (weapon.DamageLevel == WeaponDamageLevel.Might && _talent.Level >= 1)
                         {
                             amount += 2.5;
                         }
 
-                        if (weapon.DamageLevel == WeaponDamageLevel.Force && m_Talent.Level >= 2)
+                        if (weapon.DamageLevel == WeaponDamageLevel.Force && _talent.Level >= 2)
                         {
                             amount += 3.0;
                         }
 
-                        if (weapon.DamageLevel == WeaponDamageLevel.Power && m_Talent.Level >= 2)
+                        if (weapon.DamageLevel == WeaponDamageLevel.Power && _talent.Level >= 2)
                         {
                             amount += 5.5;
                         }
 
-                        if (weapon.DamageLevel == WeaponDamageLevel.Vanq && m_Talent.Level >= 3)
+                        if (weapon.DamageLevel == WeaponDamageLevel.Vanq && _talent.Level >= 3)
                         {
                             amount += 8.0;
                         }
 
-                        if (weapon.Slayer != SlayerName.None && weapon.Slayer2 != SlayerName.None && m_Talent.Level >= 3)
+                        if (weapon.Slayer != SlayerName.None && weapon.Slayer2 != SlayerName.None && _talent.Level >= 3)
                         {
                             amount += 8.0;
                         }
                     }
-                    else if (targeted is BaseArmor armor)
+                    else if (targeted is Items.BaseArmor armor)
                     {
-                        if (m_Talent.Level >= 2)
+                        if (_talent.Level >= 2)
                         {
                             amount += TallyArmorAttributes(armor.ArmorAttributes);
                             amount += TallyAttributes(armor.Attributes);
                             amount += TallySkillBonuses(armor._skillBonuses);
                         }
 
-                        if (armor.ProtectionLevel == ArmorProtectionLevel.Guarding && m_Talent.Level > 1)
+                        if (armor.ProtectionLevel == ArmorProtectionLevel.Guarding && _talent.Level > 1)
                         {
                             amount += 1.50;
                         }
 
-                        if (armor.ProtectionLevel == ArmorProtectionLevel.Hardening && m_Talent.Level > 2)
+                        if (armor.ProtectionLevel == ArmorProtectionLevel.Hardening && _talent.Level > 2)
                         {
                             amount += 2.50;
                         }
 
-                        if (armor.ProtectionLevel == ArmorProtectionLevel.Fortification && m_Talent.Level > 2)
+                        if (armor.ProtectionLevel == ArmorProtectionLevel.Fortification && _talent.Level > 2)
                         {
                             amount += 3.5;
                         }
 
-                        if (armor.ProtectionLevel == ArmorProtectionLevel.Invulnerability && m_Talent.Level > 3)
+                        if (armor.ProtectionLevel == ArmorProtectionLevel.Invulnerability && _talent.Level > 3)
                         {
                             amount += 5.5;
                         }
                     }
                     else if (targeted is BaseJewel jewel)
                     {
-                        if (m_Talent.Level >= 2)
+                        if (_talent.Level >= 2)
                         {
                             amount += jewel.ArtifactRarity;
                             amount += TallyAttributes(jewel.Attributes);

@@ -11,7 +11,8 @@ namespace Server.Talent
             CanBeUsed = true;
             TalentDependency = typeof(ShieldFocus);
             DisplayName = "Phalanx";
-            Description = "Blocks 2-8 projectiles from hitting target. 2min second cooldown.";
+            CooldownSeconds = 120;
+            Description = "Blocks 2-8 projectiles from hitting target.";
             ImageID = 375;
             GumpHeight = 75;
             AddEndY = 85;
@@ -19,22 +20,25 @@ namespace Server.Talent
 
         public int RemainingBlocks { get; set; }
 
-        public bool CheckBlock(BaseWeapon weapon)
+        public override bool HasSkillRequirement(Mobile mobile) => mobile.Skills.Parry.Value >= 70.0;
+
+        public bool CheckBlock(Mobile defender, BaseWeapon attackingWeapon)
         {
-            if (((Mobile)weapon.Parent).FindItemOnLayer(Layer.TwoHanded) is BaseShield && weapon is BaseRanged &&
-                RemainingBlocks > 0 && Activated)
+            if (Activated)
             {
-                RemainingBlocks--;
-                if (RemainingBlocks == 0)
+                if (defender.FindItemOnLayer(Layer.TwoHanded) is BaseShield && attackingWeapon is BaseRanged && RemainingBlocks > 0)
                 {
-                    Activated = false;
-                    OnCooldown = true;
-                    Timer.StartTimer(TimeSpan.FromSeconds(120), ExpireTalentCooldown, out _talentTimerToken);
+                    RemainingBlocks--;
+                    if (RemainingBlocks == 0)
+                    {
+                        Activated = false;
+                        OnCooldown = true;
+                        Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
+                    }
+                    defender.SendSound(0x520);
+                    return true;
                 }
-
-                return true;
             }
-
             return false;
         }
 
@@ -46,6 +50,7 @@ namespace Server.Talent
                 {
                     Activated = true;
                     RemainingBlocks = Level + Utility.Random(1, 3);
+                    from.SendSound(0x140);
                 }
             }
             else

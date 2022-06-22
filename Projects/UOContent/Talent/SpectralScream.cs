@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Server.Mobiles;
 
 namespace Server.Talent
@@ -10,7 +11,10 @@ namespace Server.Talent
             BlockedBy = new[] { typeof(GreaterFireElemental) };
             TalentDependency = typeof(SummonerCommand);
             DisplayName = "Spectral scream";
-            Description = "Fears surrounding enemies. Level decreases cooldown by 24s. 3 min cooldown.";
+            Description = "Fears surrounding enemies. Level decreases cooldown by 24s.";
+            AdditionalDetail = "The fear effect lasts 10 seconds.";
+            CooldownSeconds = 180;
+            ManaRequired = 30;
             CanBeUsed = true;
             GumpHeight = 230;
             AddEndY = 105;
@@ -21,13 +25,13 @@ namespace Server.Talent
         {
             if (!OnCooldown)
             {
-                if (from.Mana < 30)
+                if (from.Mana < ManaRequired)
                 {
-                    from.SendMessage("You require at least 30 mana to use this talent");
+                    from.SendMessage($"You require at least {ManaRequired.ToString()} mana to use this talent.");
                 }
                 else
                 {
-                    from.Mana -= 30;
+                    ApplyManaCost(from);
                     from.RevealingAction();
                     from.PlaySound(0x380);
                     foreach (var other in from.GetMobilesInRange(6))
@@ -40,8 +44,8 @@ namespace Server.Talent
 
                         var location = other.Location;
                         var newLocation = new Point3D(
-                            location.X + Utility.Random(5),
-                            location.Y + Utility.Random(5),
+                            location.X + Utility.RandomMinMax(-15, 15),
+                            location.Y + Utility.RandomMinMax(-15, 15),
                             location.Z
                         );
                         var attempts = 0;
@@ -53,8 +57,8 @@ namespace Server.Talent
                             }
 
                             newLocation = new Point3D(
-                                location.X + Utility.Random(5),
-                                location.Y + Utility.Random(5),
+                                location.X + Utility.RandomMinMax(-15, 15),
+                                location.Y + Utility.RandomMinMax(-15, 15),
                                 location.Z
                             );
                             attempts++;
@@ -62,8 +66,8 @@ namespace Server.Talent
 
                         if (other is BaseCreature creature)
                         {
-                            var path = new PathFollower(other, newLocation);
-                            creature.AIObject.Path = path;
+                            creature.Fear(10);
+                            creature.BeginFlee(TimeSpan.FromSeconds(10));
                         }
                         else if (other is PlayerMobile player)
                         {
@@ -72,7 +76,7 @@ namespace Server.Talent
                     }
 
                     OnCooldown = true;
-                    Timer.StartTimer(TimeSpan.FromSeconds(180 - Level * 24), ExpireTalentCooldown, out _talentTimerToken);
+                    Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds - Level * 24), ExpireTalentCooldown, out _talentTimerToken);
                 }
             }
         }

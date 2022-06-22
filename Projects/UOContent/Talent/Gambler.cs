@@ -12,7 +12,9 @@ namespace Server.Talent
             CanBeUsed = true;
             TalentDependency = typeof(SmoothTalker);
             DisplayName = "Gambler";
-            Description = "Gamble gold with target npc, can result in gold loss. 5m cooldown.";
+            Description = "Gamble gold with target npc, high chance of gold loss.";
+            AdditionalDetail = $"The gold received increases by 50 per level. Wins can also result in some rarer items. {PassiveDetail}";
+            CooldownSeconds = 300;
             ImageID = 362;
             GumpHeight = 85;
             AddEndY = 75;
@@ -42,8 +44,8 @@ namespace Server.Talent
 
         private class InternalTarget : Target
         {
-            private readonly Mobile m_Gambler;
-            private readonly Gambler m_GamblerTalent;
+            private readonly Mobile _gambler;
+            private readonly Gambler _gamblerTalent;
 
             public InternalTarget(Mobile gambler, Gambler gamblerTalent) : base(
                 8,
@@ -51,8 +53,8 @@ namespace Server.Talent
                 TargetFlags.None
             )
             {
-                m_Gambler = gambler;
-                m_GamblerTalent = gamblerTalent;
+                _gambler = gambler;
+                _gamblerTalent = gamblerTalent;
             }
 
             protected override void OnTarget(Mobile from, object targeted)
@@ -67,7 +69,7 @@ namespace Server.Talent
                     }
                     else
                     {
-                        double goldAmount = Utility.Random(m_GamblerTalent.Level * 50);
+                        double goldAmount = Utility.Random(_gamblerTalent.Level * 50);
                         var chanceOfLosing = 30.0;
                         var stakes = Utility.RandomDouble();
                         if (targeted is Gypsy or GypsyLord)
@@ -77,11 +79,11 @@ namespace Server.Talent
                         }
 
                         goldAmount *= stakes;
-                        if (m_GamblerTalent.CanAffordLoss((PlayerMobile)m_Gambler, (int)goldAmount))
+                        if (_gamblerTalent.CanAffordLoss((PlayerMobile)_gambler, (int)goldAmount))
                         {
                             bool loss = Utility.Random(100) < (int)chanceOfLosing;
-                            m_GamblerTalent.ProcessGoldGain(
-                                (PlayerMobile)m_Gambler,
+                            _gamblerTalent.ProcessGoldGain(
+                                (PlayerMobile)_gambler,
                                 (int)goldAmount,
                                 loss,
                                 true
@@ -96,14 +98,14 @@ namespace Server.Talent
                                 if (opponent is Gypsy && Utility.Random(100) < 10)
                                 {
                                     var jewelry = Loot.RandomJewelry();
-                                    m_Gambler.Backpack?.AddItem(jewelry);
+                                    _gambler.Backpack?.AddItem(jewelry);
                                     opponent.SayTo(from, "Here's the bonus stakes");
                                 } else if (opponent is GypsyLord && Utility.Random(2000) < 1)
                                 {
                                     if (Utility.RandomBool())
                                     {
                                         var pack = LootPack.Rich;
-                                        pack.ForceGenerate(m_Gambler, m_Gambler.Backpack, pack.RandomEntry(), 1);
+                                        pack.ForceGenerate(_gambler, _gambler.Backpack, pack.RandomEntry(), 1);
                                     }
                                     else
                                     {
@@ -113,14 +115,14 @@ namespace Server.Talent
                                             2 => Loot.RandomShard(),
                                             _ => new RuneScroll()
                                         };
-                                        m_Gambler.Backpack.AddItem(stakeItem);
+                                        _gambler.Backpack.AddItem(stakeItem);
                                     }
                                     opponent.SayTo(from, "You are a lucky adventurer today!");
                                 }
                             }
                             else if (opponent.GambleLosses > 0)
                             {
-                                var jewel = m_Gambler.Backpack?.FindItemByType<BaseJewel>();
+                                var jewel = _gambler.Backpack?.FindItemByType<BaseJewel>();
                                 if (jewel != null && Utility.Random(100) < 10)
                                 {
                                     opponent.Backpack?.AddItem(jewel);
@@ -155,8 +157,8 @@ namespace Server.Talent
                                     : lossSpeech
                             );
                             from.SendSound(0x32);
-                            m_GamblerTalent.OnCooldown = true;
-                            Timer.StartTimer(TimeSpan.FromSeconds(10), m_GamblerTalent.ExpireTalentCooldown, out m_GamblerTalent._talentTimerToken);
+                            _gamblerTalent.OnCooldown = true;
+                            Timer.StartTimer(TimeSpan.FromSeconds(_gamblerTalent.CooldownSeconds), _gamblerTalent.ExpireTalentCooldown, out _gamblerTalent._talentTimerToken);
                         }
                         else
                         {
@@ -166,7 +168,7 @@ namespace Server.Talent
                 }
                 else
                 {
-                    m_Gambler.SendMessage("You cannot gamble with that target.");
+                    _gambler.SendMessage("You cannot gamble with that target.");
                 }
             }
         }

@@ -9,6 +9,7 @@ namespace Server.Talent
             HasDamageAbsorptionEffect = true;
             DisplayName = "Arachnid hunter";
             Description = "Increases damage to arachnids and heals damage from them.";
+            AdditionalDetail = $"The damage caused is 1-X where X is the talent level. The damage absorbed from their attacks is 5% per level. {PassiveDetail}";
             ImageID = 149;
             AddEndY = 90;
         }

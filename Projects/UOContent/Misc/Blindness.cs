@@ -35,20 +35,20 @@ namespace Server
         }
         public static Mobile RandomNearbyMobile(Mobile from, int distance) {
             Mobile nearby = null;
-            List<Mobile> mobiles = from.GetMobilesInRange(distance).ToList();
-            foreach(Mobile mobile in mobiles) {
+            List<Mobile> viables = new List<Mobile>();
+            foreach(Mobile mobile in from.GetMobilesInRange(distance)) {
                 if (mobile == from || !mobile.CanBeHarmful(from, false) ||
                     Core.AOS && !mobile.InLOS(from))
                 {
                     continue;
                 }
-                if (Utility.Random(100) < 25) {
-                    nearby = mobile;
-                    break;
-                } else if (mobile == mobiles.Last()) {
-                    nearby = mobile;
-                }
+                viables.Add(mobile);
             }
+            if (viables.Count > 0)
+            {
+                nearby = viables[Utility.Random(viables.Count)];
+            }
+
             return nearby;
         }
     }

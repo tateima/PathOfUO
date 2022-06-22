@@ -8,11 +8,11 @@ namespace Server.Talent
 {
     public class GraveDigger : BaseTalent
     {
-        private Dictionary<Point2D, DateTime> m_LastGraves;
+        private Dictionary<Point2D, DateTime> _lastGraves;
 
         public GraveDigger()
         {
-            m_LastGraves = new Dictionary<Point2D, DateTime>();
+            _lastGraves = new Dictionary<Point2D, DateTime>();
             DisplayName = "Grave digger";
             Description =
                 "Allows you to dig up items from graveyards as well as other things! Each level improves rewards. Requires 70+ mining.";
@@ -26,13 +26,13 @@ namespace Server.Talent
         public void Dig(BaseHarvestTool tool, Mobile mobile, Point3D point)
         {
             var expiryTime = DateTime.Now.AddMinutes(-30);
-            var expiredGraves = m_LastGraves.Where(g => g.Value < expiryTime).ToList();
+            var expiredGraves = _lastGraves.Where(g => g.Value < expiryTime).ToList();
             foreach (KeyValuePair<Point2D, DateTime> entry in expiredGraves)
             {
-                m_LastGraves.Remove(entry.Key);
+                _lastGraves.Remove(entry.Key);
             }
 
-            bool canDig = m_LastGraves.All(entry => !mobile.InRange(entry.Key, 3));
+            bool canDig = _lastGraves.All(entry => !mobile.InRange(entry.Key, 3));
             if (canDig && mobile.BeginAction(tool))
             {
                 new DigTimer(mobile, tool, point, this).Start();
@@ -45,109 +45,108 @@ namespace Server.Talent
 
         private class DigTimer : Timer
         {
-            private readonly Mobile m_From;
-            private readonly BaseHarvestTool m_Tool;
-            private readonly long m_LastMoveTime;
-            private readonly long m_NextActionTime;
-            private readonly long m_NextSpellTime;
-            private readonly GraveDigger m_GraveDigger;
-            private int m_Count;
-            private TreasureChestDirt m_Dirt1;
-            private TreasureChestDirt m_Dirt2;
-            private GraveDiggerBone m_Bone1;
-            private GraveDiggerBone m_Bone2;
-
-            private readonly Point3D m_Location;
+            private readonly Mobile _from;
+            private readonly BaseHarvestTool _tool;
+            private readonly long _lastMoveTime;
+            private readonly long _nextActionTime;
+            private readonly long _nextSpellTime;
+            private readonly GraveDigger _graveDigger;
+            private int _count;
+            private TreasureChestDirt _dirt1;
+            private TreasureChestDirt _dirt2;
+            private GraveDiggerBone _bone1;
+            private GraveDiggerBone _bone2;
+            private readonly Point3D _location;
 
             public DigTimer(Mobile from, BaseHarvestTool tool, Point3D location, GraveDigger graveDigger) : base(
                 TimeSpan.Zero,
                 TimeSpan.FromSeconds(1.0)
             )
             {
-                m_From = from;
-                m_Location = location;
-                m_Tool = tool;
-                m_NextSpellTime = from.NextSpellTime;
-                m_NextActionTime = from.NextActionTime;
-                m_LastMoveTime = from.LastMoveTime;
-                m_GraveDigger = graveDigger;
+                _from = from;
+                _location = location;
+                _tool = tool;
+                _nextSpellTime = from.NextSpellTime;
+                _nextActionTime = from.NextActionTime;
+                _lastMoveTime = from.LastMoveTime;
+                _graveDigger = graveDigger;
             }
 
             private void Terminate(bool delete = false)
             {
-                m_GraveDigger.m_LastGraves.Add(new Point2D(m_Location.X, m_Location.Y), DateTime.Now);
+                _graveDigger._lastGraves.Add(new Point2D(_location.X, _location.Y), DateTime.Now);
                 Stop();
-                m_From.EndAction(m_Tool);
+                _from.EndAction(_tool);
                 if (delete)
                 {
-                    m_Tool.Delete();
+                    _tool.Delete();
                 }
 
-                if (m_Dirt1 != null)
+                if (_dirt1 != null)
                 {
-                    m_Dirt1.Delete();
-                    m_Dirt2.Delete();
+                    _dirt1.Delete();
+                    _dirt2.Delete();
                 }
             }
 
             protected override void OnTick()
             {
-                if (m_Tool.UsesRemaining == 1)
+                if (_tool.UsesRemaining == 1)
                 {
                     Terminate(true);
                 }
 
-                if (m_NextSpellTime != m_From.NextSpellTime ||
-                    m_NextActionTime != m_From.NextActionTime)
+                if (_nextSpellTime != _from.NextSpellTime ||
+                    _nextActionTime != _from.NextActionTime)
                 {
                     Terminate();
                     return;
                 }
 
-                if (m_LastMoveTime != m_From.LastMoveTime)
+                if (_lastMoveTime != _from.LastMoveTime)
                 {
-                    m_From.SendMessage("You cannot move around while digging up graves.");
+                    _from.SendMessage("You cannot move around while digging up graves.");
                     Terminate();
                     return;
                 }
 
-                m_Count++;
+                _count++;
 
-                m_From.RevealingAction();
-                m_From.Direction = m_From.GetDirectionTo(m_Location);
+                _from.RevealingAction();
+                _from.Direction = _from.GetDirectionTo(_location);
 
-                if (m_From.Body.IsHuman && !m_From.Mounted)
+                if (_from.Body.IsHuman && !_from.Mounted)
                 {
-                    m_From.Animate(11, 5, 1, true, false, 0);
+                    _from.Animate(11, 5, 1, true, false, 0);
                 }
 
-                if (m_Count > 1 && m_Dirt1 == null)
+                if (_count > 1 && _dirt1 == null)
                 {
-                    m_Dirt1 = new TreasureChestDirt();
-                    m_Dirt1.MoveToWorld(m_Location, m_From.Map);
+                    _dirt1 = new TreasureChestDirt();
+                    _dirt1.MoveToWorld(_location, _from.Map);
 
-                    m_Dirt2 = new TreasureChestDirt();
-                    m_Dirt2.MoveToWorld(new Point3D(m_Location.X, m_Location.Y - 1, m_Location.Z), m_From.Map);
+                    _dirt2 = new TreasureChestDirt();
+                    _dirt2.MoveToWorld(new Point3D(_location.X, _location.Y - 1, _location.Z), _from.Map);
                 }
 
-                if (m_Count > 5 && m_Bone1 is null)
+                if (_count > 5 && _bone1 is null)
                 {
-                    m_Bone1 = new GraveDiggerBone();
-                    m_Bone1.MoveToWorld(new Point3D(m_Location.X, m_Location.Y - 1, m_Location.Z), m_From.Map);
+                    _bone1 = new GraveDiggerBone();
+                    _bone1.MoveToWorld(new Point3D(_location.X, _location.Y - 1, _location.Z), _from.Map);
                 }
 
-                if (m_Count > 10 && m_Bone2 is null)
+                if (_count > 10 && _bone2 is null)
                 {
-                    m_Bone2 = new GraveDiggerBone();
-                    m_Bone2.MoveToWorld(new Point3D(m_Location.X, m_Location.Y + 1, m_Location.Z), m_From.Map);
+                    _bone2 = new GraveDiggerBone();
+                    _bone2.MoveToWorld(new Point3D(_location.X, _location.Y + 1, _location.Z), _from.Map);
                 }
 
-                new SoundTimer(m_From, 0x125 + m_Count % 2).Start();
+                new SoundTimer(_from, 0x125 + _count % 2).Start();
 
                 if (Utility.Random(100) < 10)
                 {
                     // spawn undead
-                    BaseCreature undead = Utility.RandomMinMax(1, 7 + m_GraveDigger.Level) switch
+                    BaseCreature undead = Utility.RandomMinMax(1, 7 + _graveDigger.Level) switch
                     {
                         1  => new Shade(),
                         2  => new Spectre(),
@@ -166,7 +165,7 @@ namespace Server.Talent
 
                     if (undead != null)
                     {
-                        Effects.PlaySound(m_From.Location, m_From.Map, 0x1FB);
+                        Effects.PlaySound(_from.Location, _from.Map, 0x1FB);
                         Effects.SendLocationParticles(
                             EffectItem.Create(undead.Location, undead.Map, EffectItem.DefaultDuration),
                             0x37CC,
@@ -177,26 +176,26 @@ namespace Server.Talent
                             9917,
                             0
                         );
-                        undead.MoveToWorld(m_Location, m_From.Map);
+                        undead.MoveToWorld(_location, _from.Map);
                         Terminate();
                     }
                 }
-                else if (Utility.Random(100) < m_GraveDigger.Level)
+                else if (Utility.Random(100) < _graveDigger.Level)
                 {
                     if (Utility.RandomBool())
                     {
                         var brigand = new Brigand();
-                        brigand.MoveToWorld(m_Location, m_From.Map);
-                        m_From.SendMessage("You dig up a murderer who was buried alive.");
+                        brigand.MoveToWorld(_location, _from.Map);
+                        _from.SendMessage("You dig up a murderer who was buried alive.");
                         Terminate();
                     }
                     else
                     {
-                        if (m_From.Backpack != null)
+                        if (_from.Backpack != null)
                         {
                             if (Utility.Random(500) < 1)
                             {
-                                m_From.Backpack.AddItem(new RuneScroll());
+                                _from.Backpack.AddItem(new RuneScroll());
                             }
                             else
                             {
@@ -204,27 +203,27 @@ namespace Server.Talent
                                 {
                                     case 1:
                                         var gem = Loot.RandomGem();
-                                        m_From.Backpack.AddItem(gem);
+                                        _from.Backpack.AddItem(gem);
                                         break;
                                     case 2:
-                                        var gold = new Gold(Utility.Random(m_GraveDigger.Level));
-                                        m_From.Backpack.AddItem(gold);
+                                        var gold = new Gold(Utility.Random(_graveDigger.Level));
+                                        _from.Backpack.AddItem(gold);
                                         break;
                                     case 3:
                                         var jewelry = Loot.RandomJewelry();
-                                        m_From.Backpack.AddItem(jewelry);
+                                        _from.Backpack.AddItem(jewelry);
                                         break;
                                     case 4:
                                         var book = Loot.RandomLibraryBook();
-                                        m_From.Backpack.AddItem(book);
+                                        _from.Backpack.AddItem(book);
                                         break;
                                     case 5:
                                         var reagent = Loot.RandomNecromancyReagent();
-                                        m_From.Backpack.AddItem(reagent);
+                                        _from.Backpack.AddItem(reagent);
                                         break;
                                     case 6:
                                         var potion = Loot.RandomPotion();
-                                        m_From.Backpack.AddItem(potion);
+                                        _from.Backpack.AddItem(potion);
                                         break;
                                     case 7:
                                         var scroll = Loot.RandomScroll(0, 15, SpellbookType.Necromancer);
@@ -233,27 +232,27 @@ namespace Server.Talent
                                             scroll = Loot.RandomScroll(0, 63, SpellbookType.Regular);
                                         }
 
-                                        m_From.Backpack.AddItem(scroll);
+                                        _from.Backpack.AddItem(scroll);
                                         break;
                                     case 8:
                                         var weapon = Loot.RandomWeapon();
-                                        m_From.Backpack.AddItem(weapon);
+                                        _from.Backpack.AddItem(weapon);
                                         break;
                                     case 9:
                                         var wand = Loot.RandomWand();
-                                        m_From.Backpack.AddItem(wand);
+                                        _from.Backpack.AddItem(wand);
                                         break;
                                     case 10:
                                         var clothing = Loot.RandomClothing();
-                                        m_From.Backpack.AddItem(clothing);
+                                        _from.Backpack.AddItem(clothing);
                                         break;
                                     case 11:
                                         var hat = Loot.RandomHat();
-                                        m_From.Backpack.AddItem(hat);
+                                        _from.Backpack.AddItem(hat);
                                         break;
                                     case 12:
                                         var shield = Loot.RandomShield();
-                                        m_From.Backpack.AddItem(shield);
+                                        _from.Backpack.AddItem(shield);
                                         break;
                                 }
                             }
@@ -263,28 +262,28 @@ namespace Server.Talent
                                 Terminate();
                             }
 
-                            m_From.SendMessage("You dig up an item from the grave.");
+                            _from.SendMessage("You dig up an item from the grave.");
                         }
                     }
                 }
 
-                m_Tool.UsesRemaining--;
+                _tool.UsesRemaining--;
             }
 
             private class SoundTimer : Timer
             {
-                private readonly Mobile m_From;
-                private readonly int m_SoundID;
+                private readonly Mobile _from;
+                private readonly int _soundId;
 
                 public SoundTimer(Mobile from, int soundID) : base(TimeSpan.FromSeconds(0.9))
                 {
-                    m_From = from;
-                    m_SoundID = soundID;
+                    _from = from;
+                    _soundId = soundID;
                 }
 
                 protected override void OnTick()
                 {
-                    m_From.PlaySound(m_SoundID);
+                    _from.PlaySound(_soundId);
                 }
             }
         }

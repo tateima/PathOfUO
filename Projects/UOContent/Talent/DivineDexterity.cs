@@ -6,6 +6,7 @@ namespace Server.Talent
     {
         public DivineDexterity()
         {
+            StatModNames = new[] { "DivineDex" };
             BlockedBy = Array.Empty<Type>();
             DisplayName = "Divine dexterity";
             Description = "Increases dexterity by 2 per level.";
@@ -16,8 +17,8 @@ namespace Server.Talent
 
         public override void UpdateMobile(Mobile mobile)
         {
-            mobile.RemoveStatMod("DivineDex");
-            mobile.AddStatMod(new StatMod(StatType.Dex, "DivineDex", Level * 2, TimeSpan.Zero));
+            ResetMobileMods(mobile);
+            mobile.AddStatMod(new StatMod(StatType.Dex, StatModNames[0], Level * 2, TimeSpan.Zero));
         }
     }
 }

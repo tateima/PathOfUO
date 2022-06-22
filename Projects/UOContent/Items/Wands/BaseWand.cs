@@ -164,7 +164,7 @@ namespace Server.Items
                     list.Add(1017339, $"{_charges}");
                     break; // mana drain charges: ~1_val~
                 case WandEffect.Device:
-                    list.Add(1060658, $"device charges:\t{_charges}");  // ~1_val~: ~2_val~
+                    list.Add(1114057, $"device charges:\t{_charges}"); // ~1_val~
                     break;
             }
         }

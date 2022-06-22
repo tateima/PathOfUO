@@ -7,15 +7,19 @@ namespace Server.Talent
 {
     public class DryThunderstorm : BaseTalent
     {
-        private Mobile m_Mobile;
+        private Mobile _mobile;
 
         public DryThunderstorm()
         {
             TalentDependency = typeof(SpellMind);
             DisplayName = "Thunderstorm";
             CanBeUsed = true;
+            CooldownSeconds = 120;
+            ManaRequired = 60;
             Description =
-                "Conjures up a storm that will strike lightning (Level * 5) times to nearby enemies. 2 min cooldown.";
+                "Conjures up a storm that will strike lightning bolts to any nearby enemies.";
+            AdditionalDetail = "Each level in this talent will increase the number of bolts by 3 + (1-X) where X is level.";
+            AddEndAdditionalDetailsY = 70;
             ImageID = 371;
         }
 
@@ -23,18 +27,25 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (from.Mana < 60)
+            if (Activated)
             {
-                from.SendMessage("You require 60 mana to conjure a storm.");
+                from.SendMessage($"{DisplayName} is already in use");
             }
-            else if (!Activated && !OnCooldown)
+            else
             {
-                m_Mobile = from;
-                Activated = true;
-                from.Mana -= 60;
-                RemainingBolts = Level * 5 + Utility.Random(1, Level);
-                Timer.StartTimer(TimeSpan.FromSeconds(Utility.Random(7, 10)), CheckStorm, out _talentTimerToken);
-                from.PlaySound(0x5CE);
+                if (from.Mana < ManaRequired)
+                {
+                    from.SendMessage($"You require {ManaRequired.ToString()} mana to conjure a storm.");
+                }
+                else if (!Activated && !OnCooldown)
+                {
+                    _mobile = from;
+                    Activated = true;
+                    ApplyManaCost(from);
+                    RemainingBolts = Level * 3 + Utility.Random(Level);
+                    Timer.StartTimer(TimeSpan.FromSeconds(Utility.Random(7, 10)), CheckStorm, out _talentTimerToken);
+                    from.PlaySound(0x5CE);
+                }
             }
         }
 
@@ -42,17 +53,17 @@ namespace Server.Talent
         {
             if (RemainingBolts > 0)
             {
-                foreach (var mobile in m_Mobile.GetMobilesInRange(8))
+                foreach (var mobile in _mobile.GetMobilesInRange(8))
                 {
-                    if (mobile == m_Mobile || mobile is PlayerMobile && mobile.Karma > 0 ||
-                        !mobile.CanBeHarmful(m_Mobile, false) ||
-                        Core.AOS && !mobile.InLOS(m_Mobile))
+                    if (mobile == _mobile || mobile is PlayerMobile && mobile.Karma > 0 ||
+                        !mobile.CanBeHarmful(_mobile, false) ||
+                        Core.AOS && !mobile.InLOS(_mobile))
                     {
                         continue;
                     }
 
                     double damage;
-                    var lightning = new LightningSpell(m_Mobile);
+                    var lightning = new LightningSpell(_mobile);
                     if (Core.AOS)
                     {
                         damage = lightning.GetNewAosDamage(23, 1, 4, mobile);
@@ -71,8 +82,9 @@ namespace Server.Talent
                     }
 
                     mobile.BoltEffect(0);
-                    SpellHelper.Damage(lightning, mobile, damage);
-                    m_Mobile.DoHarmful(mobile);
+                    SpellHelper.Damage(lightning, mobile, damage, 0, 0, 0, 0, 100);
+                    lightning = null;
+                    _mobile.DoHarmful(mobile);
                     RemainingBolts--;
                     break;
                 }
@@ -83,7 +95,7 @@ namespace Server.Talent
             {
                 Activated = false;
                 OnCooldown = true;
-                Timer.StartTimer(TimeSpan.FromSeconds(120), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
     }

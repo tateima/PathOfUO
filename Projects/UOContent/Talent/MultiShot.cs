@@ -19,8 +19,11 @@ namespace Server.Talent
             };
             RequiredWeaponSkill = SkillName.Archery;
             CanBeUsed = true;
+            ManaRequired = 30;
+            CooldownSeconds = 120;
             DisplayName = "Multi shot";
             Description = "Shoot between 1-6 arrows to nearby enemies. 2 minute cooldown.";
+            AdditionalDetail = "The arrow number increases by 1 per level.";
             ImageID = 377;
             GumpHeight = 85;
             AddEndY = 85;
@@ -30,7 +33,7 @@ namespace Server.Talent
         {
             if (!OnCooldown)
             {
-                if (from.Mana < 30)
+                if (from.Mana < ManaRequired)
                 {
                     from.SendMessage("Multi shot requires 30 mana to use.");
                 }
@@ -83,9 +86,10 @@ namespace Server.Talent
                         numberOfShots++;
                         if (numberOfShots > maxShots)
                         {
+                            ApplyManaCost(attacker);
                             OnCooldown = true;
                             Activated = false;
-                            Timer.StartTimer(TimeSpan.FromSeconds(120), ExpireTalentCooldown, out _talentTimerToken);
+                            Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                             break;
                         }
                     }
@@ -95,8 +99,8 @@ namespace Server.Talent
 
         private class InternalTarget : Target
         {
-            private readonly MultiShot m_MultiShot;
-            private readonly Mobile m_Attacker;
+            private readonly MultiShot _multiShot;
+            private readonly Mobile _attacker;
 
             public InternalTarget(MultiShot multiShot, Mobile attacker) : base(
                 8,
@@ -104,8 +108,8 @@ namespace Server.Talent
                 TargetFlags.None
             )
             {
-                m_MultiShot = multiShot;
-                m_Attacker = attacker;
+                _multiShot = multiShot;
+                _attacker = attacker;
             }
 
             protected override void OnTarget(Mobile from, object targeted)
@@ -114,8 +118,7 @@ namespace Server.Talent
 
                 if (targeted is Mobile target && from.CanBeHarmful(target, true))
                 {
-                    from.Mana -= 30;
-                    m_MultiShot.DoShot(m_Attacker, target);
+                    _multiShot.DoShot(_attacker, target);
                 }
                 else
                 {

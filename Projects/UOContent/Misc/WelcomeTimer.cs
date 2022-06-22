@@ -59,7 +59,7 @@ namespace Server.Misc
             {
                 if (!m_ShowedPathChoice)
                 {
-                    m_Mobile.SendGump(new ChoosePathGump(m_Mobile));
+                    m_Mobile.SendGump(new ChoosePathGump(m_Mobile, 1));
                     m_ShowedPathChoice = true;
                 }
                 m_Mobile.SendMessage(0x35, m_Messages[m_State++]);

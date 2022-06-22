@@ -7,6 +7,7 @@ namespace Server.Talent
             TalentDependency = typeof(WarCraftFocus);
             DisplayName = "Strong tools";
             Description = "Your tools are less likely to lose durability on use.";
+            AdditionalDetail = $"The chance for this save increases by 5% per level. {PassiveDetail}";
             ImageID = 199;
             AddEndY = 85;
         }

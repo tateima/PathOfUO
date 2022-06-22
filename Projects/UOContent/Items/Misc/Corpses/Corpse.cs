@@ -90,6 +90,8 @@ namespace Server.Items
 
         private Dictionary<Item, Point3D> m_RestoreTable;
 
+        private Type m_PreviousLife;
+
         // Why was this public?
         // public override bool IsPublicContainer => true;
 
@@ -211,6 +213,12 @@ namespace Server.Items
         public override bool DisplayWeight => false;
 
         public HairInfo Hair { get; }
+
+        public Type PreviousLife
+        {
+            get => m_PreviousLife;
+            set => m_PreviousLife = value;
+        }
 
         public FacialHairInfo FacialHair { get; }
 
@@ -556,7 +564,9 @@ namespace Server.Items
         {
             base.Serialize(writer);
 
-            writer.Write(12); // version
+            writer.Write(13); // version
+
+            writer.Write(m_PreviousLife?.ToString() ?? "");
 
             if (RestoreEquip == null)
             {
@@ -624,6 +634,11 @@ namespace Server.Items
 
             switch (version)
             {
+                case 13:
+                    {
+                        m_PreviousLife = Type.GetType(reader.ReadString());
+                        goto case 12;
+                    }
                 case 12:
                     {
                         if (reader.ReadBool())

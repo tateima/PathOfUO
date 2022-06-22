@@ -7,8 +7,10 @@ namespace Server.Talent
     {
         public LeatherWarmaster()
         {
+            StatModNames = new[] { "LeatherWarmaster" };
             DisplayName = "Leather warmaster";
-            Description = "Reduces damage while wearing leather. Increases Dex by 2 per Level";
+            Description = "Reduces damage while wearing leather. Increases Dex by 4 per Level";
+            AdditionalDetail = $"{PassiveDetail}";
             ImageID = 386;
             GumpHeight = 85;
             AddEndY = 90;
@@ -17,16 +19,16 @@ namespace Server.Talent
 
         public override void UpdateMobile(Mobile mobile)
         {
-            if (BaseArmor.FullLeather(mobile))
+            ResetMobileMods(mobile);
+            if (Items.BaseArmor.FullLeather(mobile))
             {
-                mobile.RemoveStatMod("LeatherWarmaster");
-                mobile.AddStatMod(new StatMod(StatType.Dex, "LeatherWarmaster", Level * 2, TimeSpan.Zero));
+                mobile.AddStatMod(new StatMod(StatType.Dex, StatModNames[0], Level * 4, TimeSpan.Zero));
             }
         }
 
         public override int CheckDamageAbsorptionEffect(Mobile defender, Mobile attacker, int damage)
         {
-            if (BaseArmor.FullLeather(defender))
+            if (Items.BaseArmor.FullLeather(defender))
             {
                 damage -= Level;
             }

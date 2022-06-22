@@ -8,6 +8,7 @@ namespace Server.Talent
             RequiredWeaponSkill = SkillName.Fencing;
             DisplayName = "Fencing focus";
             Description = "Chance of getting a critical strike with fencing weapons.";
+            AdditionalDetail = $"{CriticalDamageDetail} The chance increases 1% per level and applies to any weapon that requires fencing.";
             ImageID = 345;
             GumpHeight = 85;
             AddEndY = 80;

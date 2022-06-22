@@ -9,6 +9,7 @@ namespace Server.Talent
             HasDamageAbsorptionEffect = true;
             DisplayName = "Elemental hunter";
             Description = "Increases damage to elemental and heals damage from them.";
+            AdditionalDetail = $"The damage caused is 1-X where X is the talent level. The damage absorbed from their attacks is 5% per level. {PassiveDetail}";
             ImageID = 175;
             AddEndY = 85;
         }

@@ -7,8 +7,10 @@ namespace Server.Talent
     {
         public PlateWarmaster()
         {
+            StatModNames = new[] { "PlateWarmaster" };
             DisplayName = "Plate warmaster";
-            Description = "Reduces damage while wearing plate. Increases Str by 2 per Level";
+            Description = "Reduces damage while wearing plate. Increases Str by 4 per Level";
+            AdditionalDetail = $"{PassiveDetail}";
             ImageID = 393;
             GumpHeight = 85;
             AddEndY = 80;
@@ -17,15 +19,15 @@ namespace Server.Talent
 
         public override void UpdateMobile(Mobile mobile)
         {
-            if (BaseArmor.FullPlate(mobile))
+            ResetMobileMods(mobile);
+            if (Items.BaseArmor.FullPlate(mobile))
             {
-                mobile.RemoveStatMod("PlateWarmaster");
-                mobile.AddStatMod(new StatMod(StatType.Str, "PlateWarmaster", Level * 2, TimeSpan.Zero));
+                mobile.AddStatMod(new StatMod(StatType.Str, StatModNames[0], Level * 4, TimeSpan.Zero));
             }
         }
         public override int CheckDamageAbsorptionEffect(Mobile defender, Mobile attacker, int damage)
         {
-            if (BaseArmor.FullPlate(defender)) {
+            if (Items.BaseArmor.FullPlate(defender)) {
                 damage -= Level;
             }
             return damage;

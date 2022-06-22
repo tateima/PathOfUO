@@ -73,16 +73,6 @@ namespace Server.Spells.Seventh
                     int fire = 100;
                     int cold = 0;
                     int hue = 0;
-                    BaseTalent frostFire = null;
-                    if (Caster is PlayerMobile playerCaster) {
-                        BaseTalent fireAffinity = playerCaster.GetTalent(typeof(FireAffinity));
-                        if (fireAffinity != null)
-                        {
-                            damage += (double)fireAffinity.ModifySpellMultiplier();
-                        }
-                        frostFire = playerCaster.GetTalent(typeof(FrostFire));
-                    }
-
                     int count = queue.Count;
 
                     if (count > 0)
@@ -113,8 +103,9 @@ namespace Server.Spells.Seventh
 
                             toDeal *= GetDamageScalar(m);
                             Caster.DoHarmful(m);
-                            if (frostFire != null && fire > 0) {
-                                ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, m, hue: ref hue);
+                            if (Caster is PlayerMobile playerCaster)
+                            {
+                                BaseTalent.ApplyFrostFireEffect(playerCaster, ref fire, ref cold, ref hue, m);
                             }
                             SpellHelper.Damage(this, m, toDeal, 0, fire, cold, 0, 0);
                             Caster.MovingParticles(m, 0x36D4, 7, 0, false, true, hue, 0, 9501, 1, 0, 0x100);

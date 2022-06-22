@@ -58,7 +58,7 @@ namespace Server.Spells.Spellweaving
                     if (CheckFireAffinity())
                     {
                         duration += FireAffinity.Level * 2;
-                    } 
+                    }
 
                     var t = new ImmolatingWeaponTimer(TimeSpan.FromSeconds(duration), damage, Caster, weapon);
                     _table[weapon] = t;
@@ -91,14 +91,11 @@ namespace Server.Spells.Spellweaving
             int fire = 100;
             int cold = 0;
             int hue = 0;
-            int damage = timer._damage;
+            double damage = timer._damage;
             if (timer._caster is PlayerMobile playerCaster) {
-                BaseTalent frostFire = playerCaster.GetTalent(typeof(FrostFire));
-                if (frostFire != null && fire > 0) {
-                    ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, target, hue: ref hue);
-                }
+                BaseTalent.ApplyFrostFireEffect(playerCaster, ref fire, ref cold, ref hue, target);
             }
-            AOS.Damage(target, timer._caster, timer._damage, 0, fire, cold, 0, 0);
+            AOS.Damage(target, timer._caster, (int)damage, 0, fire, cold, 0, 0);
         }
 
         public static void StopImmolating(BaseWeapon weapon)

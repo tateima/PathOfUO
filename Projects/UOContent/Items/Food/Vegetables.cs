@@ -46,7 +46,7 @@ public partial class Chilli : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Chilli"} {""}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Chilli"); // ~1_val~
     }
 }
 
@@ -78,7 +78,7 @@ public partial class FrozenCabbage : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Frozen"} {"cabbage"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Frozen cabbage"); // ~1_val~
     }
 }
 [Flippable(0xc7b, 0xc7c)]

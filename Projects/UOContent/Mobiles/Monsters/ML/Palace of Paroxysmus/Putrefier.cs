@@ -57,9 +57,9 @@ namespace Server.Mobiles
         public override void OnDeath( Container c )
         {
           base.OnDeath( c );
-    
+
           c.DropItem( new SpleenOfThePutrefier() );
-    
+
           if (Utility.RandomDouble() < 0.6)
             c.DropItem( new ParrotItem() );
         }

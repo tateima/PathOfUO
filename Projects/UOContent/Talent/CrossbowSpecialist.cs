@@ -12,6 +12,7 @@ namespace Server.Talent
             IncreaseHitChance = true;
             DisplayName = "Crossbow specialist";
             Description = "Increases damage and hit chance of crossbow weapons.";
+            AdditionalDetail = $"{PassiveDetail} The chance to hit increases 1% per level. This talent causes 1-X damage where X is the talent level.";
             ImageID = 152;
             GumpHeight = 85;
             AddEndY = 80;

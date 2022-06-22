@@ -36,11 +36,12 @@
         <Delete Files="..\..\Distribution\zlib.dll" ContinueOnError="true" />
     </Target>
     <ItemGroup>
-        <PackageReference Include="Argon2.Bindings" Version="1.11.0" />
+        <PackageReference Include="Argon2.Bindings" Version="1.13.0" />
         <PackageReference Include="MailKit" Version="2.15.0" />
         <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="6.0.0" />
         <PackageReference Include="Microsoft.NETCore.Jit" Version="2.0.8" />
         <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.1.2" />
+        <PackageReference Include="MimeKit" Version="3.3.0" />
         <PackageReference Include="PollGroup" Version="1.2.1" />
         <PackageReference Include="Zlib.Bindings" Version="1.9.2" />
 

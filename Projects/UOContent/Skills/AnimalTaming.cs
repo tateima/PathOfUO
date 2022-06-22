@@ -492,8 +492,7 @@ namespace Server.SkillHandlers
 
                                 if (m_Tamer is PlayerMobile player)
                                 {
-                                    BaseTalent rangerCommand = player.GetTalent(typeof(RangerCommand));
-                                    if (rangerCommand != null)
+                                    if (player.GetTalent(typeof(RangerCommand)) is RangerCommand rangerCommand)
                                     {
                                         greaterDragonScale += rangerCommand.ModifySpellScalar();
                                         greaterDragonCap += rangerCommand.ModifySpellScalar();
@@ -502,6 +501,7 @@ namespace Server.SkillHandlers
                                         statLossScale += rangerCommand.ModifySpellScalar();
                                     }
                                 }
+
 
                                 if (m_Creature is GreaterDragon)
                                 {
@@ -547,6 +547,7 @@ namespace Server.SkillHandlers
 
                             m_Creature.SetControlMaster(m_Tamer);
                             m_Creature.IsBonded = false;
+                            ((PlayerMobile)m_Tamer)?.Leadership();
                         }
                         else
                         {

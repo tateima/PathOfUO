@@ -8,7 +8,7 @@ namespace Server.Items
     public abstract class BaseConflagrationPotion : BasePotion
     {
         private static readonly Dictionary<Mobile, TimerExecutionToken> m_Delay = new();
-        private readonly List<Mobile> m_Users = new();
+        public List<Mobile> Users = new();
 
         public BaseConflagrationPotion(PotionEffect effect) : base(0xF06, effect) => Hue = 0x489;
 
@@ -47,9 +47,9 @@ namespace Server.Items
 
             from.RevealingAction();
 
-            if (!m_Users.Contains(from))
+            if (!Users.Contains(from))
             {
-                m_Users.Add(from);
+                Users.Add(from);
             }
 
             from.Target = new ThrowTarget(this);
@@ -79,9 +79,9 @@ namespace Server.Items
             Consume();
 
             // Check if any other players are using this potion
-            for (var i = 0; i < m_Users.Count; i++)
+            for (var i = 0; i < Users.Count; i++)
             {
-                if (m_Users[i].Target is ThrowTarget targ && targ.Potion == this)
+                if (Users[i].Target is ThrowTarget targ && targ.Potion == this)
                 {
                     Target.Cancel(from);
                 }

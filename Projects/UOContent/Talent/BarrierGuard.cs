@@ -12,7 +12,8 @@ namespace Server.Talent
             TalentDependency = typeof(SwordSpecialist);
             DisplayName = "Barrier guard";
             CanBeUsed = true;
-            Description = "Parry the next 1-5 attacks, depending on level. 45s min cooldown.";
+            CooldownSeconds = 45;
+            Description = "Parry the next 1-5 attacks, depending on level.";
             ImageID = 367;
             GumpHeight = 75;
             AddEndY = 85;
@@ -20,32 +21,33 @@ namespace Server.Talent
 
         public int RemainingParry { get; set; }
 
-        public bool CheckParry()
+        public bool CheckParry(Mobile defender)
         {
-            var canParry = RemainingParry > 0;
-            if (canParry)
+            var canParry = false;
+            if (Activated && defender.FindItemOnLayer(Layer.OneHanded) is BaseSword)
             {
-                RemainingParry--;
+                canParry = RemainingParry > 0;
+                if (canParry)
+                {
+                    RemainingParry--;
+                }
+                else
+                {
+                    Activated = false;
+                    OnCooldown = true;
+                    Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
+                }
             }
-            else
-            {
-                OnCooldown = true;
-                Timer.StartTimer(TimeSpan.FromSeconds(45), ExpireTalentCooldown, out _talentTimerToken);
-            }
-
             return canParry;
         }
 
         public override void OnUse(Mobile from)
         {
             var weapon = from.Weapon as BaseWeapon;
-            if (weapon is not BaseSword)
+            if (weapon?.Skill == RequiredWeaponSkill && weapon is BaseSword)
             {
-                if (!Activated && !OnCooldown)
-                {
-                    Activated = true;
-                    RemainingParry = Level;
-                }
+                base.OnUse(from);
+                RemainingParry = Level;
             }
             else
             {

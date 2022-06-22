@@ -11,8 +11,11 @@ namespace Server.Talent
             RequiredWeapon = new[] { typeof(BaseShield) };
             CanBeUsed = true;
             TalentDependency = typeof(ShieldFocus);
+            CooldownSeconds = 120;
+            ManaRequired = 15;
             DisplayName = "Spell ward";
-            Description = "Reflects damage from 4-8 spells while activated with shield. 2min second cooldown.";
+            Description = "Reflects damage from 4-8 spells while activated with shield.";
+            AdditionalDetail = "Only works for damaging spells, not poisons or curse types.";
             ImageID = 372;
             GumpHeight = 75;
             AddEndY = 75;
@@ -43,7 +46,7 @@ namespace Server.Talent
                         from.PlaySound(0x1F1);
                     }
 
-                    SpellHelper.Damage(spell, from, damage, phys, fire, cold, pois, nrgy, chaos);
+                    SpellHelper.Damage(spell, from, damage-1, phys, fire, cold, pois, nrgy, chaos);
                     damage = 0;
                     phys = 0;
                     fire = 0;
@@ -51,11 +54,12 @@ namespace Server.Talent
                     pois = 0;
                     nrgy = 0;
                     chaos = 0;
+                    from.Damage(1, target); // to trigger honour
                     if (RemainingReflections == 0)
                     {
                         Activated = false;
                         OnCooldown = true;
-                        Timer.StartTimer(TimeSpan.FromSeconds(120), ExpireTalentCooldown, out _talentTimerToken);
+                        Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                     }
                 }
             }
@@ -65,15 +69,17 @@ namespace Server.Talent
         {
             if (from.FindItemOnLayer(Layer.TwoHanded) is BaseShield)
             {
-                if (from.Mana < 20)
+                if (from.Mana < ManaRequired)
                 {
-                    from.SendMessage("You require 20 mana to conjure a storm.");
+                    from.SendMessage("You require 20 mana to ward your shield.");
                 }
                 else if (!Activated && !OnCooldown)
                 {
                     Activated = true;
-                    from.Mana -= 20;
+                    ApplyManaCost(from);
                     RemainingReflections = Level + Utility.Random(1, 3);
+                    from.FixedParticles(0x375A, 10, 15, 5011, EffectLayer.Head);
+                    from.PlaySound(0x1EB);
                 }
             }
             else

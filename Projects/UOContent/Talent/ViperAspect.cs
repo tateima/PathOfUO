@@ -4,7 +4,7 @@ namespace Server.Talent
 {
     public class ViperAspect : BaseTalent
     {
-        private Mobile m_Mobile;
+        private Mobile _mobile;
 
         public ViperAspect()
         {
@@ -12,7 +12,9 @@ namespace Server.Talent
             DisplayName = "Viper aspect";
             CanBeUsed = true;
             Description = "Increased poison resistance and adds a chance to poison your target on weapon or spell hit.";
+            AdditionalDetail = "Each level increases effects by 2%. When used, increases resistances to poison by 5 points per level for 60-80 seconds.";
             ImageID = 195;
+            CooldownSeconds = 180;
             GumpHeight = 75;
             AddEndY = 85;
         }
@@ -22,39 +24,41 @@ namespace Server.Talent
             CheckViperEffect(attacker, target);
         }
 
+        public override int ModifySpellMultiplier() => Level * 2;
+
         public override void OnUse(Mobile from)
         {
             if (!OnCooldown)
             {
                 ResMod = new ResistanceMod(ResistanceType.Poison, Level * 5);
-                m_Mobile = from;
+                _mobile = from;
                 OnCooldown = true;
                 if (Core.AOS)
                 {
-                    m_Mobile.AddResistanceMod(ResMod);
-                    m_Mobile.FixedParticles(0x374A, 10, 15, 5021, EffectLayer.Waist);
-                    m_Mobile.PlaySound(0x205);
+                    _mobile.AddResistanceMod(ResMod);
+                    _mobile.FixedParticles(0x374A, 10, 15, 5021, EffectLayer.Waist);
+                    _mobile.PlaySound(0x205);
                 }
 
                 Timer.StartTimer(TimeSpan.FromSeconds(60 + Utility.Random(20)), ExpireBuff, out _);
-                Timer.StartTimer(TimeSpan.FromSeconds(180 - Level * 5), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds - Level * 5), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
 
         public void ExpireBuff()
         {
-            if (m_Mobile != null)
+            if (_mobile != null)
             {
                 if (Core.AOS)
                 {
-                    m_Mobile.RemoveResistanceMod(ResMod);
+                    _mobile.RemoveResistanceMod(ResMod);
                 }
             }
         }
 
         public void CheckViperEffect(Mobile attacker, Mobile target)
         {
-            if (Utility.Random(100) < Level)
+            if (Utility.Random(100) < Level * 2)
             {
                 target.ApplyPoison(attacker, Poison.GetPoison(Level));
             }

@@ -11,7 +11,9 @@ namespace Server.Talent
             RequiredWeaponSkill = SkillName.Swords;
             IncreaseHitChance = true;
             DisplayName = "Polearm specialist";
-            Description = "Increases damage and hit chance of polearm weapons.";
+            Description = "Increases damage and hit chance of pole arm weapons.";
+            AdditionalDetail = $"{PassiveDetail} The chance to hit increases 1% per level. This talent causes (1-X) * 2 damage where X is the talent level.";
+            AddEndAdditionalDetailsY = 80;
             ImageID = 350;
             GumpHeight = 85;
             AddEndY = 80;

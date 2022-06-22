@@ -7,6 +7,7 @@ namespace Server.Talent
             TalentDependency = typeof(BoneBreaker);
             DisplayName = "Pain management";
             Description = "Decrease bleeding effects and poison damage.";
+            AdditionalDetail = $"Each level improves the effect by 2%. {PassiveDetail}";
             ImageID = 186;
             GumpHeight = 85;
             AddEndY = 80;

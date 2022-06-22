@@ -7,10 +7,11 @@ namespace Server.Talent
         public SwordsmanshipFocus()
         {
             RequiredWeaponSkill = SkillName.Swords;
-            RequiredWeapon = new[] { typeof(BaseSword) };
             BlockedBy = new[] { typeof(ArcherFocus) };
             DisplayName = "Swordsman focus";
             Description = "Chance of getting a critical strike with sword weapons.";
+            AdditionalDetail = $"{CriticalDamageDetail} The chance increases 1% per level and applies to any weapon that requires swordsmanship.";
+            AddEndAdditionalDetailsY = 70;
             ImageID = 133;
             GumpHeight = 85;
             AddEndY = 80;

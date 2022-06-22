@@ -46,7 +46,7 @@ public partial class DragonBardingDeed : Item, ICraftable
     {
         Exceptional = quality >= 2;
         CraftedBy = from?.RawName;
-        
+
         var resourceType = typeRes ?? craftItem.Resources[0].ItemType;
 
         Resource = CraftResources.GetFromType(resourceType);

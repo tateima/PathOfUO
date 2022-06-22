@@ -11,8 +11,11 @@ namespace Server.Talent
             TalentDependency = typeof(GuardianLight);
             HasDefenseEffect = true;
             DisplayName = "Holy avenger";
+            CooldownSeconds = 7;
             Description =
                 "Increased damage to holy spells, adds reflective and area of affect damage in combat. Requires 75+ chivalry.";
+            AdditionalDetail = "Each level increases reflective damage by 3% and decreases cooldown by 1 second. This talent will also slightly increase attack speed and damage done to unholy creatures.";
+            AddEndAdditionalDetailsY = 100;
             ImageID = 293;
             AddEndY = 120;
         }
@@ -24,9 +27,14 @@ namespace Server.Talent
             if (!OnCooldown)
             {
                 OnCooldown = true;
-                var modifier = Level * 2;
-                // reflect 2% attacker damage per level back to them
-                target.Damage(AOS.Scale(damage, modifier));
+                var modifier = Level * 3;
+                // reflect 3% attacker damage per level back to them
+                var reflected = AOS.Scale(damage, modifier);
+                if (reflected < 1)
+                {
+                    reflected = 1;
+                }
+                target.Damage(reflected, defender);
                 defender.PlaySound(0x213);
                 Effects.SendLocationParticles(
                     EffectItem.Create(
@@ -42,7 +50,7 @@ namespace Server.Talent
                     9502,
                     0
                 );
-                Timer.StartTimer(TimeSpan.FromSeconds((double)15 - Level), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds - Level), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
     }

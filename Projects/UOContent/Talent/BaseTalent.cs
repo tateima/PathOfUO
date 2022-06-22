@@ -1,14 +1,20 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using Server.Factions;
 using Server.Gumps;
 using Server.Items;
 using Server.Mobiles;
+using Server.Pantheon;
 using Server.Spells;
 
 namespace Server.Talent
 {
     public class BaseTalent : ITalent
     {
+        public static string CriticalDamageDetail = "A critical strike will do double damage.";
+        public static string PassiveDetail = "This is a passive talent and does not incur any costs.";
+        public const int InvalidTalentIndex = 999;
         public static readonly Type[] TalentTypes =
         {
             typeof(ViperAspect),
@@ -53,6 +59,7 @@ namespace Server.Talent
             typeof(PlanarShift),
             typeof(WarMagicFocus),
             typeof(SpellMind),
+            typeof(FrostFire),
             typeof(DryThunderstorm),
             typeof(SwordsmanshipFocus),
             typeof(SwordSpecialist),
@@ -91,7 +98,7 @@ namespace Server.Talent
             typeof(CrossbowSpecialist),
             typeof(IceBolt),
             typeof(BowSpecialist),
-            typeof(MultiShot), // up to here test
+            typeof(MultiShot),
             typeof(CarefulShooter),
             typeof(LoreSeeker),
             typeof(LoreDisciples),
@@ -139,7 +146,25 @@ namespace Server.Talent
             typeof(Mediumship),
             typeof(Detective),
             typeof(OrnateCrafter),
-            typeof(Runebinding)
+            typeof(Runebinding),
+            typeof(SummonChaosElemental),
+            typeof(FlameWave),
+            typeof(ChaoticGrip),
+            typeof(Zealot),
+            typeof(DivineProtection),
+            typeof(SummonCelestial),
+            typeof(Heroism),
+            typeof(LayOnHands),
+            typeof(GodlyStrike),
+            typeof(SiphonLife),
+            typeof(WellOfDeath),
+            typeof(BloodLink),
+            typeof(Bribery),
+            typeof(Gluttony),
+            typeof(Deception),
+            typeof(Wisdom),
+            typeof(KeyToTheCity),
+            typeof(Leadership)
         };
 
         public TimerExecutionToken _talentTimerToken;
@@ -147,6 +172,16 @@ namespace Server.Talent
 
         public BaseTalent()
         {
+            DeityAlignment = Deity.Alignment.None;
+            RequiresDeityFavor = false;
+            StatModNames = Array.Empty<string>();
+            AddEndAdditionalDetailsY = 50;
+            CooldownSeconds = 0;
+            ManaRequired = 0;
+            StamRequired = 0;
+            SlowedCreatures = new List<BaseCreature>();
+            SlowModifier = 2;
+            CanAbsorbSpells = false;
             UpgradeCost = false;
             Activated = false;
             OnCooldown = false;
@@ -159,8 +194,8 @@ namespace Server.Talent
             HasBeforeDeathSave = false;
             MobilePercentagePerPoint = 3;
             BlockedBy = Array.Empty<Type>();
-            RequiredWeapon = new[] { typeof(BaseWeapon) };
-            RequiredWeaponSkill = SkillName.Alchemy;
+            RequiredWeapon = Array.Empty<Type>();
+            RequiredWeaponSkill = SkillName.Carpentry;
             RequiredSpell = Array.Empty<Type>();
             IncreaseHitChance = false;
             IncreaseParryChance = false;
@@ -169,12 +204,22 @@ namespace Server.Talent
             MaxLevel = 5;
             DisplayName = "Basic Talent";
             Description = "Does something.";
+            AdditionalDetail = "";
             ImageID = 30145;
             AddEndY = 110;
             GumpHeight = 200;
         }
 
+
         public virtual double SpecialDamageScalar => Core.AOS ? 0.16 : 0.05;
+
+        public string[] StatModNames { get; set; }
+        public int CooldownSeconds { get; set; }
+        public int SlowModifier { get; set; }
+
+        public List<BaseCreature> SlowedCreatures { get; set; }
+
+        public bool RequiresDeityFavor { get; set; }
 
         public bool UpdateOnEquip { get; set; }
 
@@ -183,6 +228,8 @@ namespace Server.Talent
         public bool HasKillEffect { get; set; }
 
         public bool HasDefenseEffect { get; set; }
+
+        public bool CanAbsorbSpells { get; set; }
 
         public bool HasDamageAbsorptionEffect { get; set; }
 
@@ -196,6 +243,12 @@ namespace Server.Talent
 
         public bool OnCooldown { get; set; }
 
+        public int ManaRequired { get; set; }
+
+        public int StamRequired { get; set; }
+
+        public Deity.Alignment DeityAlignment { get; set; }
+
         public int TalentDependencyPoints { get; set; }
 
         public int GumpHeight { get; set; }
@@ -208,6 +261,8 @@ namespace Server.Talent
 
         public string Description { get; set; }
 
+        public string AdditionalDetail { get; set; }
+
         public string DisplayName { get; set; }
 
         public int MobilePercentagePerPoint { get; set; }
@@ -219,6 +274,8 @@ namespace Server.Talent
         public ResistanceMod ResMod { get; set; }
 
         public int Level { get; set; }
+
+        public int AddEndAdditionalDetailsY { get; set; }
 
         public int AddEndY { get; set; }
 
@@ -234,7 +291,6 @@ namespace Server.Talent
         {
         }
 
-
         public virtual void UpdateMobile(Mobile mobile)
         {
         }
@@ -246,9 +302,7 @@ namespace Server.Talent
 
         public virtual bool CanApplyHitEffect(Item i)
         {
-            var debug = i.GetType().IsSubclassOf(typeof(BaseWeapon));
             var valid = RequiredWeapon.FirstOrDefault(w => w == i.GetType() || i.GetType().IsSubclassOf(w));
-
             var validSkill = false;
             if (i is BaseWeapon bw)
             {
@@ -282,7 +336,7 @@ namespace Server.Talent
 
         public virtual int CheckDamageAbsorptionEffect(Mobile defender, Mobile attacker, int damage) => damage;
 
-        public virtual void CheckDefenseEffect(Mobile defender, Mobile target, int damage)
+        public virtual void CheckDefenseEffect(Mobile defender, Mobile attacker, int damage)
         {
         }
 
@@ -339,7 +393,7 @@ namespace Server.Talent
 
         public void CriticalStrike(Mobile mobile, Mobile target, int damage)
         {
-            target.Damage(damage / 2, mobile);
+            target.Damage(damage * 2, mobile);
         }
 
 
@@ -435,6 +489,220 @@ namespace Server.Talent
                         player.AddToBackpack(new Gold(modifiedAmount));
                     }
                 }
+            }
+        }
+
+        public virtual void SlowCreature(BaseCreature creature, int duration, bool startTimerImmediately)
+        {
+            creature.SpeedMod = creature.CurrentSpeed*SlowModifier;
+            SlowedCreatures.Add(creature);
+            if (startTimerImmediately)
+            {
+                Timer.StartTimer(TimeSpan.FromSeconds(duration), ExpireSlowEffect);
+            }
+        }
+
+        public virtual void ExpireSlowEffect()
+        {
+            foreach (var creature in SlowedCreatures)
+            {
+                creature.SpeedMod = 0;
+            }
+        }
+
+        public virtual Point3D CalculatePushbackFromAnchor(Point3D anchorPosition, int distance, Mobile from)
+        {
+            var newLocation = new Point3D(anchorPosition.X, anchorPosition.Y + distance, anchorPosition.Z);
+            if (from.Direction.HasFlag(Direction.East))
+            {
+                newLocation = new Point3D(anchorPosition.X - distance, anchorPosition.Y, anchorPosition.Z);
+            } else if (from.Direction.HasFlag(Direction.West))
+            {
+                newLocation = new Point3D(anchorPosition.X + distance, anchorPosition.Y, anchorPosition.Z);
+            } else if (from.Direction.HasFlag(Direction.South))
+            {
+                newLocation = new Point3D(anchorPosition.X, anchorPosition.Y - distance, anchorPosition.Z);
+            }
+            return newLocation;
+        }
+
+        public virtual void ResetDeityPower()
+        {
+        }
+
+        public virtual void ApplyManaCost(Mobile mobile)
+        {
+            mobile.Mana -= ManaRequired;
+            if (mobile.Mana < 0)
+            {
+                mobile.Mana = 0;
+            }
+        }
+
+        public virtual void ApplyStaminaCost(Mobile mobile)
+        {
+            mobile.Stam -= StamRequired;
+            if (mobile.Stam < 0)
+            {
+                mobile.Stam = 0;
+            }
+        }
+
+        public virtual void ResetMobileMods(Mobile mobile)
+        {
+            foreach (var statModName in StatModNames)
+            {
+                mobile.RemoveStatMod(statModName);
+            }
+        }
+
+        public static void ApplyFrostFireEffect(PlayerMobile from, ref int fire, ref int cold, ref int hue, Mobile target)
+        {
+            BaseTalent frostFire = from.GetTalent(typeof(FrostFire));
+            if (frostFire != null && fire > 0) {
+                ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, target, ref hue);
+            }
+        }
+
+        public static void EmptyCreatureBackpack(BaseCreature creature)
+        {
+            if (creature.Backpack != null)
+            {
+                for (var x = creature.Backpack.Items.Count - 1; x >= 0; x--)
+                {
+                    var item = creature.Backpack.Items[x];
+                    item.Delete();
+                }
+            }
+        }
+
+        public static void EmptyCorpse(Corpse corpse)
+        {
+            foreach (var item in corpse.Items.ToList())
+            {
+                Point3D point = new Point3D(
+                    corpse.Location.X + Utility.RandomMinMax(-2, 2),
+                    corpse.Location.Y + Utility.RandomMinMax(-2, 2),
+                    corpse.Location.Z
+                );
+                item.MoveToWorld(point, corpse.Map);
+            }
+        }
+        public static bool SetSkillOrder(Mobile ally, Skill skill, ref SkillName skillOrder)
+        {
+            if (ally.Skills[skillOrder].Base < skill.Base)
+            {
+                skillOrder = skill.SkillName;
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool IsRangerSkill(SkillName skillToCheck)
+        {
+            bool isRangerSkill = false;
+            SkillName[] rangerGroup = new[]
+            {
+                SkillName.Veterinary,
+                SkillName.AnimalLore,
+                SkillName.AnimalTaming
+            };
+            foreach (SkillName rangerSkillName in rangerGroup)
+            {
+                if (rangerSkillName == skillToCheck)
+                {
+                    isRangerSkill = true;
+                    break;
+                }
+            }
+            return isRangerSkill;
+        }
+
+        public static List<SkillName> GetPlayerSkillNames(PlayerMobile player, bool crafting)
+        {
+            List<SkillName> skillNames = new List<SkillName>();
+            List<Skill> skills = new List<Skill>();
+            GetTopSkills(player, ref skills, 6);
+            foreach(var skill in skills)
+            {
+                bool isCrafting = IsCraftingSkill(skill.SkillName);
+                if (crafting && isCrafting || !crafting && !isCrafting)
+                {
+                    skillNames.Add(skill.SkillName);
+                }
+            }
+            return skillNames;
+        }
+
+        public static bool IsCraftingSkill(SkillName skillToCheck)
+        {
+            bool isCraftingSkill = false;
+            SkillsGumpGroup craftingGroup = SkillsGumpGroup.Groups.Where(group => group.Name == "Crafting").FirstOrDefault();
+            SkillName[] harvestingGroup = new[]
+            {
+                SkillName.Camping,
+                SkillName.Fishing,
+                SkillName.Herding,
+                SkillName.Lumberjacking,
+                SkillName.Mining
+            };
+            if (craftingGroup is not null)
+            {
+                SkillName[] combinedSkills = craftingGroup.Skills.Concat(harvestingGroup).ToArray();
+                foreach (SkillName craftingSkillName in combinedSkills)
+                {
+                    if (craftingSkillName == skillToCheck)
+                    {
+                        isCraftingSkill = true;
+                        break;
+                    }
+                }
+            }
+
+            return isCraftingSkill;
+        }
+
+
+        public static void GetTopSkills(Mobile target, ref List<Skill> skills, int amount)
+        {
+            foreach (var skill in target.Skills)
+            {
+                var targetSkill = target.Skills[skill.SkillName];
+                if (targetSkill.Base > 10.0)
+                {
+                    var lesser = skills.Where(s => s.Base < targetSkill.Base).Min();
+                    if (lesser is not null && skills.Count > amount)
+                    {
+                        var index = skills.FindIndex(0, s => s.SkillName == lesser.SkillName);
+                        skills[index] = targetSkill;
+                    }
+                    else
+                    {
+                        skills.Add(skill);
+                    }
+                }
+            }
+        }
+        public static List<DefaultSkillMod> GetTopDefaultSkillMods(List<Skill> skills, double modifier)
+        {
+            List<DefaultSkillMod> skillMods = new List<DefaultSkillMod>();
+            foreach (var skill in skills)
+            {
+                skillMods.Add(new DefaultSkillMod(skill.SkillName, true, modifier));
+            }
+
+            return skillMods;
+        }
+
+        public static void CheckSetTalentEffect(Mobile ally, BaseTalent? baseTalent)
+        {
+            if (ally is PlayerMobile playerMobile)
+            {
+                playerMobile.TalentEffect = baseTalent;
+            } else if (ally is BaseCreature baseCreature)
+            {
+                baseCreature.TalentEffect = baseTalent;
             }
         }
     }

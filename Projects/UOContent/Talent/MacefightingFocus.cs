@@ -8,6 +8,8 @@ namespace Server.Talent
             RequiredWeaponSkill = SkillName.Macing;
             DisplayName = "Macefighting focus";
             Description = "Chance of getting a critical strike with macing weapons.";
+            AdditionalDetail = $"{CriticalDamageDetail} The chance increases 1% per level and applies to any weapon that requires mace fighting.";
+            AddEndAdditionalDetailsY = 80;
             ImageID = 172;
             GumpHeight = 80;
             AddEndY = 80;

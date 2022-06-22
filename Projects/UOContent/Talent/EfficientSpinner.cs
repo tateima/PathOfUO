@@ -6,7 +6,8 @@ namespace Server.Talent
         {
             TalentDependency = typeof(ResourcefulHarvester);
             DisplayName = "Thread master";
-            Description = "3% Chance per level to receive extra tailoring materials when spinning.";
+            Description = "Chance to receive extra tailoring materials when spinning.";
+            AdditionalDetail = $"The chance for this increases by 3% per level. {PassiveDetail}";
             ImageID = 358;
             MaxLevel = 6;
             GumpHeight = 85;

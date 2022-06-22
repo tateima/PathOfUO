@@ -30,7 +30,7 @@ namespace Server.Items
 
         public override bool RequireFreeHand => false;
 
-        private HashSet<Mobile> _users;
+        public HashSet<Mobile> Users;
 
         public override void Serialize(IGenericWriter writer)
         {
@@ -84,8 +84,8 @@ namespace Server.Items
 
             from.RevealingAction();
 
-            _users ??= new HashSet<Mobile>();
-            _users.Add(from);
+            Users ??= new HashSet<Mobile>();
+            Users.Add(from);
 
             from.Target = new ThrowTarget(this);
 
@@ -191,7 +191,7 @@ namespace Server.Items
 
             Consume();
 
-            foreach (var user in _users)
+            foreach (var user in Users)
             {
                 if (user.Target is ThrowTarget targ && targ.Potion == this)
                 {
@@ -199,7 +199,7 @@ namespace Server.Items
                 }
             }
 
-            _users.Clear();
+            Users.Clear();
 
             if (map == null)
             {

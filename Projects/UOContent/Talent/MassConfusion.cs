@@ -11,7 +11,9 @@ namespace Server.Talent
             TalentDependency = typeof(Resonance);
             DisplayName = "Mass Confusion";
             Description =
-                "Your music confuses nearby monsters. Each level increases AOE and decreases cooldown by 10s. 3 min cooldown. Requires 60 peace, provocation and 70 music.";
+                "Your music confuses nearby monsters. Each level increases AOE and decreases cooldown by 10s. Requires 60 peace, provocation and 70 music.";
+            CooldownSeconds = 150;
+            ManaRequired = 30;
             ImageID = 384;
             CanBeUsed = true;
             GumpHeight = 230;
@@ -31,9 +33,9 @@ namespace Server.Talent
         {
             if (!OnCooldown)
             {
-                if (from.Mana < 30)
+                if (from.Mana < ManaRequired)
                 {
-                    from.SendMessage("You require at least 30 mana to use this talent");
+                    from.SendMessage($"You require at least {ManaRequired.ToString()} mana to use this talent");
                 }
                 else
                 {
@@ -51,7 +53,7 @@ namespace Server.Talent
 
                     if (instrument != null)
                     {
-                        from.Mana -= 30;
+                        ApplyManaCost(from);
                         from.RevealingAction();
                         var success = false;
                         var sonicAffinity = ((PlayerMobile)from).GetTalent(typeof(SonicAffinity));
@@ -84,22 +86,24 @@ namespace Server.Talent
                             }
                             else
                             {
+                                success = true;
                                 var attempts = 10;
                                 resonance?.CheckHitEffect(from, creature, 0);
-                                while (!success)
+                                var resolved = false;
+                                while (!resolved)
                                 {
                                     attempts++;
                                     var nearby = Blindness.RandomNearbyMobile(creature, Level + 3);
-                                    if (nearby != null && creature.CanBeHarmful(nearby) && creature.InLOS(nearby))
+                                    if (nearby != null && nearby != from)
                                     {
                                         creature.Provoke(from, nearby, true);
-                                        success = true;
+                                        resolved = true;
                                     }
 
                                     if (attempts > 10)
                                     {
                                         creature.Pacify(from, Core.Now + TimeSpan.FromSeconds(seconds));
-                                        success = true;
+                                        resolved = true;
                                     }
                                 }
                             }
@@ -117,7 +121,7 @@ namespace Server.Talent
                         instrument.ConsumeUse(from);
                         OnCooldown = true;
                         Timer.StartTimer(
-                            TimeSpan.FromSeconds(180 - Level * 10),
+                            TimeSpan.FromSeconds(CooldownSeconds - Level * 10),
                             ExpireTalentCooldown,
                             out _talentTimerToken
                         );

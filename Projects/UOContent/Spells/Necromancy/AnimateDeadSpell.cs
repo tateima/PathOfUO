@@ -122,7 +122,7 @@ namespace Server.Spells.Necromancy
         public void Target(Item item)
         {
             var comp = item as MaabusCoffinComponent;
-
+            var hasReagents = HasReagents();
             if (comp?.Addon is MaabusCoffin addon)
             {
                 var pm = Caster as PlayerMobile;
@@ -193,7 +193,7 @@ namespace Server.Spells.Necromancy
 
                                 Timer.StartTimer(
                                     TimeSpan.FromSeconds(2.0),
-                                    () => SummonDelay_Callback(Caster, c, p, map, group, DarkAffinity)
+                                    () => SummonDelay_Callback(Caster, c, p, map, group, hasReagents, DarkAffinity)
                                 );
                             }
                         }
@@ -297,7 +297,7 @@ namespace Server.Spells.Necromancy
             }
         }
 
-        private static void SummonDelay_Callback(Mobile caster, Corpse corpse, Point3D loc, Map map, CreatureGroup group, BaseTalent? darkAffinity)
+        private static void SummonDelay_Callback(Mobile caster, Corpse corpse, Point3D loc, Map map, CreatureGroup group, bool hasReagents, BaseTalent? darkAffinity)
         {
             if (corpse.Animated)
             {
@@ -357,6 +357,10 @@ namespace Server.Spells.Necromancy
 
             if (summoned is BaseCreature bc)
             {
+                if (!hasReagents)
+                {
+                    Scale(bc, 50); // no reagents = weaker
+                }
                 // to be sure
                 bc.Tamable = false;
 
@@ -376,7 +380,7 @@ namespace Server.Spells.Necromancy
             {
                 summoned = darkAffinity.ScaleMobileStats(summoned);
             }
-        
+
             summoned.Fame = 0;
             summoned.Karma = -1500;
 

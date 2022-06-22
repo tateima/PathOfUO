@@ -19,9 +19,9 @@ using Server.Gumps;
 using Server.Items;
 using Server.Misc;
 using Server.Movement;
-using System.Linq;
 using Server.Multis;
 using Server.Network;
+using Server.Pantheon;
 using Server.Regions;
 using Server.SkillHandlers;
 using Server.Spells;
@@ -43,69 +43,6 @@ using RankDefinition = Server.Guilds.RankDefinition;
 
 namespace Server.Mobiles
 {
-    public enum Level : int
-    {
-        One = 0,
-        Two = 1000,
-        Three = 3000,
-        Four = 6000,
-        Five = 10000,
-        Six = 15000,
-        Seven = 21000,
-        Eight = 28000,
-        Nine = 36000,
-        Ten = 45000,
-        Eleven = 55000,
-        Twelve = 66000,
-        Thirteen = 78000,
-        Fourteen = 91000,
-        Fifteen = 105000,
-        Sixteen = 120000,
-        Seventeen = 136000,
-        Eighteen = 153000,
-        Nineteen = 171000,
-        Twenty = 190000,
-        TwentyOne = 210000,
-        TwentyTwo = 231000,
-        TwentyThree = 253000,
-        TwentyFour = 276000,
-        TwentyFive = 300000,
-        TwentySix = 325000,
-        TwentySeven = 351000,
-        TwentyEight = 378000,
-        TwentyNine = 406000,
-        Thirty = 435000,
-        ThirtyOne = 465000,
-        ThirtyTwo = 496000,
-        ThirtyThree = 528000,
-        ThirtyFour = 561000,
-        ThirtyFive = 595000,
-        ThirtySix = 630000,
-        ThirtySeven = 666000,
-        ThirtyEight = 703000,
-        ThirtyNine = 741000,
-        Fourty = 780000,
-        FourtyOne = 820000,
-        FourtyTwo = 861000,
-        FourtyThree = 903000,
-        FourtyFour = 946000,
-        FourtyFive = 990000,
-        FourtySix = 1035000,
-        FourtySeven = 1081000,
-        FourtyEight = 1128000,
-        FourtyNine = 1176000,
-        Fifty = 1225000,
-        FiftyOne = 1275000,
-        FiftyTwo = 1326000,
-        FiftyThree = 1378000,
-        FiftyFour = 1431000,
-        FiftyFive = 1485000,
-        FiftySix = 1540000,
-        FiftySeven = 1596000,
-        FiftyEight = 1653000,
-        FiftyNine = 1711000,
-        Sixty = 1770000
-    }
     [Flags]
     public enum PlayerFlag // First 16 bits are reserved for default-distro use, start custom flags at 0x00010000
     {
@@ -246,7 +183,15 @@ namespace Server.Mobiles
 
         private bool m_LastProtectedMessage;
 
+        private TimerExecutionToken _restTimerToken;
         private TimerExecutionToken _hungerTimerToken;
+        private TimerExecutionToken _deityDecayTimer;
+
+        private Deity.Alignment m_Alignment;
+        private int m_DeityPoints;
+        private DateTime m_NextPrayer;
+        private DateTime m_LastDeityDecay;
+        private bool m_HasDeityFavor;
 
         private int m_CraftExperience;
         private int m_RangerExperience;
@@ -285,6 +230,12 @@ namespace Server.Mobiles
 
         public PlayerMobile()
         {
+            StarterSkills = new Skills(this);
+            m_Alignment = Deity.Alignment.None;
+            m_DeityPoints = 0;
+            m_NextPrayer = DateTime.Now.AddDays(-1);
+            m_LastDeityDecay = DateTime.Now;
+            m_HasDeityFavor = false;
             LevelExperience = 0;
             CraftSkillPoints = 0;
             AllottedCraftSkillPoints = 0;
@@ -304,7 +255,7 @@ namespace Server.Mobiles
             m_RestedHenchmen = new List<Mobile>();
             m_AllDebtees = new List<Mobile>();
             HardCore = true;
-            Level = "One";
+            Level = 1;
             AutoStabled = new List<Mobile>();
 
             VisibilityList = new List<Mobile>();
@@ -340,6 +291,61 @@ namespace Server.Mobiles
                 InvalidateProperties();
             }
         }
+
+        [CommandProperty(AccessLevel.Counselor)]
+        public Skills StarterSkills { get; set; }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool HasDeityFavor
+        {
+            get => m_HasDeityFavor;
+            set
+            {
+                m_HasDeityFavor = value;
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public Deity.Alignment Alignment
+        {
+            get => m_Alignment;
+            set
+            {
+                m_Alignment = value;
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public DateTime LastDeityDecay
+        {
+            get => m_LastDeityDecay;
+            set
+            {
+                m_LastDeityDecay = value;
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public DateTime NextPrayer
+        {
+            get => m_NextPrayer;
+            set
+            {
+                m_NextPrayer = value;
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int DeityPoints
+        {
+            get => m_DeityPoints;
+            set => m_DeityPoints = value;
+        }
+
+        public BaseTalent TalentEffect { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster)]
         public int TalentPoints { get; set; }
@@ -393,27 +399,17 @@ namespace Server.Mobiles
                 CheckExperience();
             }
         }
-        private static int GetBaseExperience(string level) => (int)Enum.Parse(typeof(Level), level);
 
-        private Level NextLevel()
-        {
-            return Enum.GetValues(typeof(Level)).Cast<Level>().FirstOrDefault(level => LevelExperience + m_NonCraftExperience + m_CraftExperience + m_RangerExperience < (int)level);
-        }
-        private Level EntitledLevel()
-        {
-            return Enum.GetValues(typeof(Level)).Cast<Level>().AsParallel().Where(level => LevelExperience + m_NonCraftExperience + m_CraftExperience + m_RangerExperience >= (int)level).Max();
-        }
+        private int GetRequiredExperience(int level) => level * (level - 1) * (500 + level * 5);
+        private int GetBaseExperience() => GetRequiredExperience(Level);
+        private int NextLevel() => GetRequiredExperience(Level + 1);
 
         public void CheckExperience()
         {
-            Level entitledLevel = EntitledLevel();
-            string newLevel = Enum.GetName(typeof(Level), entitledLevel);
-            if (!string.Equals(newLevel, Level, StringComparison.InvariantCultureIgnoreCase))
+            int requiredExperience = NextLevel();
+            if (LevelExperience + m_NonCraftExperience + m_CraftExperience + m_RangerExperience >= requiredExperience && Level < 60)
             {
-                int currentLevelBaseExp = GetBaseExperience(Level);
-                // get the experience value between current level and next
-                int intermediaryExp = (int)entitledLevel - currentLevelBaseExp;
-                Level = newLevel;
+                Level++;
                 double totalExperienceEarned = m_NonCraftExperience + m_CraftExperience + m_RangerExperience;
                 // calculate % contributions, round down not up to figure out point allocation
                 double craftingContr = m_CraftExperience / totalExperienceEarned;
@@ -421,7 +417,7 @@ namespace Server.Mobiles
                 double rangerContr = m_RangerExperience / totalExperienceEarned;
 
                 // get remaining experience to add later
-                int remainingExp = (int)((LevelExperience + totalExperienceEarned) - (int)entitledLevel);
+                int remainingExp = (int)(LevelExperience + totalExperienceEarned - requiredExperience);
                 if (remainingExp < 0)
                 {
                     remainingExp = 0;
@@ -441,7 +437,7 @@ namespace Server.Mobiles
                 SendMessage("You have gained a level!");
                 FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
                 PlaySound(0x202);
-                LevelExperience = GetBaseExperience(Level);
+                LevelExperience = GetBaseExperience();
             }
             InvalidateProperties();
         }
@@ -491,7 +487,7 @@ namespace Server.Mobiles
         public bool HardCore { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster)]
-        public string Level { get; set; }
+        public int Level { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster)]
         public DateTime AnkhNextUse { get; set; }
@@ -657,15 +653,18 @@ namespace Server.Mobiles
             get => base.Paralyzed;
             set
             {
-                base.Paralyzed = value;
+                if (!Heroism())
+                {
+                    base.Paralyzed = value;
 
-                if (value)
-                {
-                    AddBuff(new BuffInfo(BuffIcon.Paralyze, 1075827)); // Paralyze/You are frozen and can not move
-                }
-                else
-                {
-                    RemoveBuff(BuffIcon.Paralyze);
+                    if (value)
+                    {
+                        AddBuff(new BuffInfo(BuffIcon.Paralyze, 1075827)); // Paralyze/You are frozen and can not move
+                    }
+                    else
+                    {
+                        RemoveBuff(BuffIcon.Paralyze);
+                    }
                 }
             }
         }
@@ -1080,26 +1079,55 @@ namespace Server.Mobiles
                 }
             }
         }
+
+        public bool Heroism()
+        {
+            Heroism heroism = GetTalent(typeof(Heroism)) as Heroism;
+            return heroism?.CheckSave(this) == true;
+        }
+
+        public void Leadership()
+        {
+            Leadership leadership = GetTalent(typeof(Leadership)) as Leadership;
+            leadership?.UpdateMobile(this);
+        }
+
         public void Blind(int duration, string message = "* Blinded *")
         {
+            if (Heroism())
+            {
+                duration = 0;
+            }
+            BaseTalent trueSighted = GetTalent(typeof(TrueSighted));
+            if (trueSighted != null) {
+                duration -= AOS.Scale(duration, trueSighted.ModifySpellMultiplier());
+            }
+            if (duration < 0)
+            {
+                return;
+            }
             Blinded = true;
             PublicOverheadMessage(
                 MessageType.Regular,
                 0x3B2,
                 false,
                 message
-                );
-            BaseTalent trueSighted = GetTalent(typeof(TrueSighted));
-            if (trueSighted != null) {
-                duration -= AOS.Scale(duration, trueSighted.ModifySpellMultiplier());
-            }
+            );
             Timer.StartTimer(TimeSpan.FromSeconds(duration), UnBlind);
         }
         public void Fear(int duration , string message = "* Feared *")
         {
             Fearless fearless = GetTalent(typeof(Fearless)) as Fearless;
-            if (fearless != null && fearless.CheckFearSave(this)) {
+            if (fearless?.CheckFearSave(this) == true || Heroism()) {
                 SendMessage("You courageously resisted the fear effect");
+                if (Female)
+                {
+                    SendSound(0x31C);
+                }
+                else
+                {
+                    SendSound(0x431);
+                }
             } else {
                 Feared = true;
                 SendSound(0x182);
@@ -1661,55 +1689,102 @@ namespace Server.Mobiles
 
             if (from is PlayerMobile mobile)
             {
+                mobile.DeityDecay();
                 mobile.ClaimAutoStabledPets();
+                mobile.RestCheck();
                 mobile.HungerHarmCheck(true);
+                bool showTalentBar = false;
                 foreach (KeyValuePair<Type, BaseTalent> entry in mobile.Talents)
                 {
                     if (entry.Value.Level > 0)
                     {
                         entry.Value.UpdateMobile(mobile);
+                        if (entry.Value.CanBeUsed)
+                        {
+                            showTalentBar = true;
+                        }
                     }
+                }
+
+                if (showTalentBar)
+                {
+                    mobile.SendGump(new TalentBarGump(mobile, 1, 0, new List<TalentGump.TalentGumpPage>()));
                 }
 
             }
         }
 
+        public void DeityDecay()
+        {
+            if (DeityPoints > 0 && m_LastDeityDecay < DateTime.Now.AddSeconds(-599))
+            {
+                DeityPoints -= 1 + Level / 10;
+                LastDeityDecay = DateTime.Now;
+                if (DeityPoints <= 0)
+                {
+                    DeityPoints = 0;
+                    Deity.RemoveFavor(this);
+                }
+            }
+            Timer.StartTimer(TimeSpan.FromMinutes(10), DeityDecay, out _deityDecayTimer);
+        }
+
+        public void RestCheck()
+        {
+            double restModifier = Math.Floor((Core.Now - LastOnline).TotalHours);
+            // the longer you're on the more tired and hungry you get
+            if (restModifier >= 1)
+            {
+                Hunger -= (int)restModifier;
+            }
+            Timer.StartTimer(TimeSpan.FromHours(1), RestCheck, out _restTimerToken);
+        }
         public void HungerHarmCheck(bool startTimerOnly)
         {
             if (!startTimerOnly)
             {
                 int damage = Utility.RandomMinMax(11, 30 - (int)(Skills.Cooking.Value / 10)); // cooking helps save hunger death!
-                            if (Hunger < 10)
-                            {
-                                string message = "Thou need food or else thy will die!";
-                                BaseTalent fortitude = GetTalent(typeof(Fortitude));
-                                if (fortitude != null && Hits - damage <= 0) {
-                                    damage = 0;
-                                    message = "Thou need food but thy talents spared thee!";
-                                }
-                                SendMessage(0x21, message);
-                                Damage(damage - Hunger, this);
-                                Stam -= (damage - Hunger);
-                            }
-                            if (Thirst < 10)
-                            {
-                                Damage(damage - Thirst, this);
-                                Mana -= (damage - Thirst);
-                                SendMessage(0x21, "Thou need water or else thy will die!");
-                            }
-                            if (Hunger < 10 || Thirst < 10)
-                            {
-                                if (Female)
-                                {
-                                    SendSound(0x14B);
-                                }
-                                else
-                                {
-                                    SendSound(0x157);
-                                }
-                            }
+                Gluttony gluttony = GetTalent(typeof(Gluttony)) as Gluttony;
+                if (Hunger < 20)
+                {
+                    gluttony?._internalTimer.Stop();
+                }
+                else
+                {
+                    gluttony?._internalTimer?.Start();
+                }
+
+                if (Hunger < 10)
+                {
+                    string message = "Thou need food or else thy will die!";
+                    BaseTalent fortitude = GetTalent(typeof(Fortitude));
+                    if (fortitude != null && Hits - damage <= 0) {
+                        damage = 0;
+                        message = "Thou need food but thy talents spared thee!";
+                    }
+                    SendMessage(0x21, message);
+                    Damage(damage - Hunger, this);
+                    Stam -= (damage - Hunger);
+                }
+                if (Thirst < 10)
+                {
+                    Damage(damage - Thirst, this);
+                    Mana -= (damage - Thirst);
+                    SendMessage(0x21, "Thou need water or else thy will die!");
+                }
+                if (Hunger < 10 || Thirst < 10)
+                {
+                    if (Female)
+                    {
+                        SendSound(0x14B);
+                    }
+                    else
+                    {
+                        SendSound(0x157);
+                    }
+                }
             }
-            Timer.StartTimer(TimeSpan.FromMinutes(5), HungerHarmCheck, out _hungerTimerToken);
+            Timer.StartTimer(TimeSpan.FromMinutes(6), HungerHarmCheck, out _hungerTimerToken);
         }
 
         private void HungerHarmCheck()
@@ -2130,14 +2205,54 @@ namespace Server.Mobiles
 
         public override bool CheckContextMenuDisplay(IEntity target) => DesignContext == null;
 
+        public void UpdateTalentsWithItem(Item item, bool remove)
+        {
+            if (
+                item is IPantheonItem pantheonItem && pantheonItem.Talent is not null
+            )
+            {
+                BaseTalent itemTalent = pantheonItem.Talent;
+                BaseTalent playerTalent = GetTalent(itemTalent.GetType());
+                BaseTalent targetTalent = null;
+                if (playerTalent is not null)
+                {
+                    playerTalent.Level += (remove) ? -pantheonItem.TalentLevel : pantheonItem.TalentLevel;
+                    targetTalent = playerTalent;
+                }
+                else if (!remove)
+                {
+                    itemTalent.Level = pantheonItem.TalentLevel;
+                    targetTalent = itemTalent;
+                }
+                if (targetTalent is not null)
+                {
+                    if (targetTalent.Level <= 0)
+                    {
+                        if (targetTalent.RequiresDeityFavor)
+                        {
+                            targetTalent.ResetDeityPower();
+                        }
+                        Talents.TryRemove(BaseTalent.TalentTypes[pantheonItem.TalentIndex], out targetTalent);
+                    }
+                    else
+                    {
+                        Talents.AddOrUpdate(BaseTalent.TalentTypes[pantheonItem.TalentIndex], targetTalent, (t, bt) => targetTalent);
+                        targetTalent.UpdateMobile(this);
+                    }
+                }
+            }
+        }
+
         public override void OnItemAdded(Item item)
         {
             base.OnItemAdded(item);
-
+            CheckEquipmentTalents();
             if (item is BaseArmor or BaseWeapon)
             {
                 CheckStatTimers();
             }
+
+            UpdateTalentsWithItem(item, false);
 
             if (NetState != null)
             {
@@ -2148,11 +2263,12 @@ namespace Server.Mobiles
         public override void OnItemRemoved(Item item)
         {
             base.OnItemRemoved(item);
-
+            CheckEquipmentTalents();
             if (item is BaseArmor or BaseWeapon)
             {
                 CheckStatTimers();
             }
+            UpdateTalentsWithItem(item, true);
 
             if (NetState != null)
             {
@@ -2319,14 +2435,36 @@ namespace Server.Mobiles
             foreach(SkillName skill in skillNames) {
                 if (Skills[skill].Base > 0.0) {
                     int pointValue = (int)Math.Floor(Skills[skill].Base);
-                    if (CharacterSheetGump.IsCraftingSkill(skill)) {
+                    int starterValue = (int)Math.Floor(StarterSkills[skill].Base);
+                    if (BaseTalent.IsCraftingSkill(skill)) {
                         craftPoints += pointValue;
-                    } else if (CharacterSheetGump.IsRangerSkill(skill)) {
+                        if (starterValue > 0)
+                        {
+                            craftPoints -= starterValue;
+                        }
+                    } else if (BaseTalent.IsRangerSkill(skill)) {
                         rangerPoints += pointValue;
+                        if (starterValue > 0)
+                        {
+                            rangerPoints -= starterValue;
+                        }
                     } else {
                         nonCraftPoints += pointValue;
+                        if (starterValue > 0)
+                        {
+                            nonCraftPoints -= starterValue;
+                        }
                     }
-                    Skills[skill].Base = 0.0;
+
+                    if (starterValue > 0)
+                    {
+                        Skills[skill].Base = StarterSkills[skill].Base;
+                    }
+                    else
+                    {
+                        StarterSkills[skill].Base = 0.0;
+                    }
+
                 }
             }
             NonCraftSkillPoints += nonCraftPoints;
@@ -2340,6 +2478,7 @@ namespace Server.Mobiles
             {
                 if (entry.Value.Level > 0)
                 {
+                    entry.Value.ResetMobileMods(this);
                     TalentPoints += entry.Value.Level;
                 }
             }
@@ -2355,6 +2494,8 @@ namespace Server.Mobiles
             {
                 Quest?.GetContextMenuEntries(list);
                 list.Add(new CharacterSheetMenuEntry(this));
+                list.Add(new DeityRewardEntry(this));
+                list.Add(new DeityFavorEntry(this));
                 if (Alive)
                 {
                     if (InsuranceEnabled)
@@ -2569,6 +2710,12 @@ namespace Server.Mobiles
         {
             if (!base.CheckEquip(item))
             {
+                return false;
+            }
+
+            if (item is IPantheonItem pantheonItem && !(Deity.AlignmentFromString(pantheonItem.AlignmentRaw) == Deity.Alignment.None || Deity.AlignmentFromString(pantheonItem.AlignmentRaw) == Alignment))
+            {
+                SendMessage("You cannot wear this item, your deity would not allow it.");
                 return false;
             }
 
@@ -2894,7 +3041,7 @@ namespace Server.Mobiles
             BaseTalent mountedCombat = GetTalent(typeof(MountedCombat));
             int dismountChance = 15;
             if (mountedCombat != null) {
-                dismountChance -= mountedCombat.Level;
+                dismountChance -= mountedCombat.ModifySpellMultiplier();
             }
             if (Mounted && Utility.Random(100) < dismountChance) {
                 Dismount.DismountPlayer(from, this, 30);
@@ -2923,7 +3070,8 @@ namespace Server.Mobiles
                 }
             }
         }
-        public override bool EquipItem(Item item)
+
+        public void CheckEquipmentTalents()
         {
             foreach(KeyValuePair<Type,BaseTalent> entry in Talents)
             {
@@ -2932,7 +3080,6 @@ namespace Server.Mobiles
                     entry.Value.UpdateMobile(this);
                 }
             }
-            return base.EquipItem(item);
         }
 
         public override void OnWarmodeChanged()
@@ -3103,7 +3250,9 @@ namespace Server.Mobiles
 
         public override void OnDeath(Container c)
         {
-
+            _hungerTimerToken.Cancel();
+            _deityDecayTimer.Cancel();
+            _restTimerToken.Cancel();
             if (m_NonAutoreinsuredItems > 0)
             {
                 SendLocalizedMessage(1061115);
@@ -3141,6 +3290,7 @@ namespace Server.Mobiles
                 if (c is Corpse corpse)
                 {
                     corpse.Criminal = true;
+                    corpse.PreviousLife = typeof(PlayerMobile);
                 }
 
                 if (Stealing.ClassicMode)
@@ -3269,6 +3419,11 @@ namespace Server.Mobiles
             {
                 MonsterBuff.AddFeederStats(creatureThatKilled);
             }
+
+            if (LastKiller is PlayerMobile playerThatKilled)
+            {
+                Deity.PointsFromExperience(playerThatKilled, this, 0);
+            }
             Point3D point = new Point3D(1602, 1591, 20); // teleport back to Britain
             MoveToWorld(point, Map.Trammel);
             string broadcastMessage = $"{Name} has died at the hands of {LastKiller.Name}. At level {Level}, their deeds will be remembered.";
@@ -3390,7 +3545,7 @@ namespace Server.Mobiles
             var shield = FindItemOnLayer(Layer.TwoHanded) as BaseShield;
             if (shieldFocus != null && shield != null)
             {
-                amount = AOS.Scale(amount, 100 - shieldFocus.Level);
+                amount = AOS.Scale(amount, 100 - shieldFocus.Level*2);
             }
 
             if (EvilOmenSpell.TryEndEffect(this))
@@ -3516,6 +3671,14 @@ namespace Server.Mobiles
             var version = reader.ReadInt();
             switch (version)
             {
+                case 38:
+                    StarterSkills = new Skills(this, reader);
+                    m_Alignment = Deity.AlignmentFromString(reader.ReadString());
+                    m_DeityPoints = reader.ReadInt();
+                    m_NextPrayer = reader.ReadDateTime();
+                    m_LastDeityDecay = reader.ReadDateTime();
+                    m_HasDeityFavor = reader.ReadBool();
+                    goto case 37;
                 case 37:
                     m_NextPlanarTravel = reader.ReadDateTime();
                     m_Feared = reader.ReadBool();
@@ -3580,7 +3743,7 @@ namespace Server.Mobiles
                     m_NonCraftExperience = reader.ReadInt();
                     HardCore = reader.ReadBool();
                     HardCore = true; // new default, all players are roguelike
-                    Level = reader.ReadString();
+                    Level = reader.ReadInt();
                     goto case 29;
                 case 30:
                     goto case 29;
@@ -3915,7 +4078,13 @@ namespace Server.Mobiles
 
             base.Serialize(writer);
 
-            writer.Write(37); // version
+            writer.Write(38); // version
+            StarterSkills.Serialize(writer);
+            writer.Write(m_Alignment.ToString());
+            writer.Write(m_DeityPoints);
+            writer.Write(m_NextPrayer);
+            writer.Write(m_LastDeityDecay);
+            writer.Write(m_HasDeityFavor);
             writer.Write(m_NextPlanarTravel);
             writer.Write(m_Feared);
             writer.Write(m_Blinded);
@@ -4177,12 +4346,19 @@ namespace Server.Mobiles
         public override void GetProperties(IPropertyList list)
         {
             base.GetProperties(list);
-            list.Add(1060658, $"Level:\t{Level}"); // ~1_val~: ~2_val~
+
+            list.Add(1114057, $"Level: {Level.ToString()}"); // ~1_val~
+            list.Add(1114057, $"Alignment: {Alignment.ToString()}"); // ~1_val~
+            if (DeityPoints > 0)
+            {
+                list.Add(1114057, $"Deity loyalty: {DeityPoints.ToString()}"); // ~1_val~
+            }
+            list.Add(1114057, $"Next prayer: {WaitTeleporter.FormatTime(m_NextPrayer - Core.Now)}"); // ~1_val~
             string xp = (LevelExperience + CraftExperience + NonCraftExperience).ToString();
             int nextLevel = (int)NextLevel();
-            list.Add(1060847, $"{xp}/{nextLevel.ToString()}:\tXP"); // ~1_val~: ~2_val~
+            list.Add(1114057, $"{xp}/{nextLevel.ToString()}: XP");                  // ~1_val~
             if (Core.Now < m_NextPlanarTravel) {
-                list.Add(1060847, $"Suffering planar exhaustion:\t{string.Format("{0}", WaitTeleporter.FormatTime(m_NextPlanarTravel - Core.Now))}"); // ~1_val~: ~2_val
+                list.Add(1114057, $"Suffering planar exhaustion: {WaitTeleporter.FormatTime(m_NextPlanarTravel - Core.Now)}");                  // ~1_val~
             }
             if (Map == Faction.Facet)
             {
@@ -4284,6 +4460,11 @@ namespace Server.Mobiles
 
         protected override bool OnMove(Direction d)
         {
+            Deception deception = GetTalent(typeof(Deception)) as Deception;
+            if (Hidden && deception?.Activated == true)
+            {
+                return true;
+            }
             if (!Core.SE)
             {
                 return base.OnMove(d);

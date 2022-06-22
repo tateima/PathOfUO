@@ -6,7 +6,8 @@ namespace Server.Talent
         {
             TalentDependency = typeof(ResourcefulHarvester);
             DisplayName = "Metal worker";
-            Description = "3% Chance per level on harvesting to receive extra resources.";
+            Description = "Chance to receive extra resources when smelting.";
+            AdditionalDetail = $"The chance for this increases by 3% per level. {PassiveDetail}";
             ImageID = 356;
             MaxLevel = 6;
             GumpHeight = 85;

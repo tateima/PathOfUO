@@ -1,18 +1,25 @@
 using System;
+using Server.Items;
 
 namespace Server.Talent
 {
     public class GiantsHeritage : BaseTalent
     {
-        private Mobile m_Mobile;
+        private Mobile _mobile;
 
         public GiantsHeritage()
         {
+            RequiredWeapon = new[] { typeof(BaseWeapon) };
+            StatModNames = new[] { "GiantsHeritage" };
             TalentDependency = typeof(DivineStrength);
             DisplayName = "Giant's Heritage";
+            CooldownSeconds = 180;
             CanBeUsed = true;
             Description = "Increases strength per level while active. The more stamina you have the more damage you do.";
+            AdditionalDetail =
+                "Each level decreases the cooldown by 5 seconds and increases strength by 2 points per level. This buff lasts between 61 and 80 seconds.";
             ImageID = 144;
+            AddEndAdditionalDetailsY = 100;
         }
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
@@ -24,7 +31,7 @@ namespace Server.Talent
                 attacker.Stam -= 10 + Utility.Random(10);
                 if (attacker.Stam < 10)
                 {
-                    m_Mobile = attacker;
+                    _mobile = attacker;
                     ExpireBuff();
                 }
             }
@@ -40,22 +47,22 @@ namespace Server.Talent
                 }
                 else
                 {
-                    m_Mobile = from;
+                    _mobile = from;
                     Activated = true;
                     OnCooldown = true;
-                    m_Mobile.RemoveStatMod("GiantsHeritage");
-                    m_Mobile.AddStatMod(new StatMod(StatType.Str, "GiantsHeritage", Level * 2, TimeSpan.Zero));
-                    m_Mobile.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
-                    m_Mobile.PlaySound(0x1AB);
+                    ResetMobileMods(_mobile);
+                    _mobile.AddStatMod(new StatMod(StatType.Str, StatModNames[0], Level * 2, TimeSpan.Zero));
+                    _mobile.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
+                    _mobile.PlaySound(0x1AB);
                     Timer.StartTimer(TimeSpan.FromSeconds(60 + Utility.Random(20)), ExpireBuff, out _);
-                    Timer.StartTimer(TimeSpan.FromSeconds(180 - Level * 5), ExpireTalentCooldown, out _talentTimerToken);
+                    Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds - Level * 5), ExpireTalentCooldown, out _talentTimerToken);
                 }
             }
         }
 
         public void ExpireBuff()
         {
-            m_Mobile?.RemoveStatMod("GiantsHeritage");
+            _mobile?.RemoveStatMod("GiantsHeritage");
 
             Activated = false;
         }

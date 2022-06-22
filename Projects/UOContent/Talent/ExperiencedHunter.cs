@@ -6,6 +6,7 @@ namespace Server.Talent
         {
             DisplayName = "Experienced hunter";
             Description = "Increases damage to animals.";
+            AdditionalDetail = $"The damage caused is 1-X where X is the talent level. {PassiveDetail}";
             ImageID = 164;
             AddEndY = 45;
         }

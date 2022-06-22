@@ -179,7 +179,7 @@ public partial class GarlicBread : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Garlic"} {"bread"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Garlic bread"); // ~1_val~
     }
 }
 
@@ -212,7 +212,7 @@ public partial class SingingFillet : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Singing"} {"fillet"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Singing fillet"); // ~1_val~
     }
 }
 
@@ -244,7 +244,7 @@ public partial class IronRichCheese : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Iron-rich"} {"cheese"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Iron-rich cheese"); // ~1_val~
     }
 }
 
@@ -276,7 +276,7 @@ public partial class SourDough : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Sourdough"} {"bread"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Sourdough bread"); // ~1_val~
     }
 }
 [SerializationGenerator(0, false)]
@@ -305,7 +305,7 @@ public partial class BraveEggs : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Brave"} {"eggs"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Brave eggs"); // ~1_val~
     }
 }
 [SerializationGenerator(0, false)]
@@ -334,7 +334,7 @@ public partial class StickyChicken : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Sticky"} {"chicken"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Sticky chicken"); // ~1_val~
     }
 }
 [SerializationGenerator(0, false)]
@@ -365,7 +365,7 @@ public partial class DecoratedRoastPig : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Decorated roast"} {"pig"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Decorated roast pig"); // ~1_val~
     }
 }
 [SerializationGenerator(0, false)]
@@ -393,7 +393,7 @@ public partial class EnchantedSausage : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Enchanted"} {"sausage"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Enchanted sausage"); // ~1_val~
     }
 }
 
@@ -420,7 +420,7 @@ public partial class GoldenHam : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Golden"} {"ham"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Golden ham"); // ~1_val~
     }
 }
 
@@ -452,7 +452,7 @@ public partial class MandrakeCake : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Mandrake"} {"cake"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, $"Mandrake cake"); // ~1_val~
     }
 }
 
@@ -484,7 +484,7 @@ public partial class BatEncrustedRibs : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Bat-encrusted"} {"ribs"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Bat-encrusted ribs");              // ~1_val~
     }
 }
 
@@ -517,7 +517,7 @@ public partial class AthletesPie : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Athletes"} {"pie"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Athletes pie"); // ~1_val~
     }
 }
 
@@ -552,7 +552,7 @@ public partial class LemonPie : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Lemon"} {"pie"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Lemon pie"); // ~1_val~
     }
 }
 
@@ -585,7 +585,7 @@ public partial class PhilosophersQuiche : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Philosophers"} {"quiche"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Philosophers quiche"); // ~1_val~
     }
 }
 
@@ -617,7 +617,7 @@ public partial class SacrificialLambLeg : Food
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Sacrificial lamb"} {"leg"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Sacrificial lamb leg"); // ~1_val~
     }
 }
 

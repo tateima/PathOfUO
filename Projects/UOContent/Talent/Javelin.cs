@@ -14,7 +14,10 @@ namespace Server.Talent
             TalentDependency = typeof(SpearSpecialist);
             DisplayName = "Javelin";
             CanBeUsed = true;
-            Description = "Throw copy of equipped spear at target. 45s min cooldown.";
+            Description = "Throw copy of equipped spear at target.";
+            AdditionalDetail = "Each level increases the distance you can throw by 3 yards.";
+            CooldownSeconds = 15;
+            StamRequired = 10;
             ImageID = 370;
             GumpHeight = 75;
             AddEndY = 65;
@@ -23,23 +26,31 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            var weapon = from.Weapon as BaseWeapon;
-            if (!OnCooldown && weapon is BaseSpear)
+            if (from.Stam >= StamRequired + 1)
             {
-                from.SendMessage("Whom do you wish to throw a spear at?");
-                from.Target = new InternalTarget(from, this);
+                var weapon = from.Weapon as BaseWeapon;
+                if (!OnCooldown && weapon?.Skill == RequiredWeaponSkill && weapon is BaseSpear)
+                {
+                    from.SendMessage("Whom do you wish to throw a spear at?");
+                    from.Target = new InternalTarget(from, this);
+                }
+                else
+                {
+                    from.SendMessage("You do not have a spear equipped.");
+                }
             }
             else
             {
-                from.SendMessage("You do not have a spear equipped.");
+                from.SendMessage("You do not have enough stamina.");
             }
+
         }
 
         private class InternalTarget : Target
         {
-            private readonly Javelin m_Javelin;
-            private readonly Mobile m_Mobile;
-            private Mobile m_Target;
+            private readonly Javelin _javelin;
+            private readonly Mobile _mobile;
+            private Mobile _target;
 
             public InternalTarget(Mobile mobile, Javelin javelin) : base(
                 8,
@@ -47,55 +58,53 @@ namespace Server.Talent
                 TargetFlags.None
             )
             {
-                m_Mobile = mobile;
-                m_Javelin = javelin;
+                _mobile = mobile;
+                _javelin = javelin;
             }
 
             public void CheckHit()
             {
-                if (m_Mobile.Weapon is BaseSpear spear && spear.CheckHit(m_Mobile, m_Target))
+                if (_mobile.Weapon is BaseSpear spear)
                 {
-                    spear.OnHit(m_Mobile, m_Target);
-                }
-                else
-                {
-                    m_Javelin.ExpireTalentCooldown();
-                    m_Javelin._talentTimerToken.Cancel();
+                    _javelin.ApplyStaminaCost(_mobile);
+                    if (spear.CheckHit(_mobile, _target))
+                    {
+                        spear.OnHit(_mobile, _target);
+                        _target.PlaySound(0x239);
+                    }
+                    spear.MoveToWorld(_target.Location, _mobile.Map);
                 }
             }
 
             protected override void OnTarget(Mobile from, object targeted)
             {
-                if (targeted != null)
+                if (targeted is Mobile target)
                 {
-                    if (targeted == m_Mobile || !((Mobile)targeted).CanBeHarmful(from, false) ||
-                        Core.AOS && !((Mobile)targeted).InLOS(from))
+                    if (target == _mobile || !target.CanBeHarmful(from, false) ||
+                        Core.AOS && !target.InLOS(from))
                     {
                         from.SendMessage("Thou cannot throw a spear at this target");
                         return;
                     }
 
-                    if (targeted is Mobile target)
-                    {
-                        var targetInRange = from.GetMobilesInRange(m_Javelin.Level).Any(mobile => mobile == target);
+                    var targetInRange = from.GetMobilesInRange(_javelin.Level*3).Any(mobile => mobile == target);
 
-                        if (targetInRange)
-                        {
-                            m_Target = target;
-                            from.RevealingAction();
-                            m_Javelin.OnCooldown = true;
-                            Timer.StartTimer(
-                                TimeSpan.FromSeconds(45),
-                                m_Javelin.ExpireTalentCooldown,
-                                out m_Javelin._talentTimerToken
-                            );
-                            Effects.SendMovingEffect(from, target, 0x1BFE, 18, 2, false, false, 0x3B5);
-                            Timer.StartTimer(TimeSpan.FromSeconds(2), CheckHit, out _);
-                        }
-                        else
-                        {
-                            from.SendMessage("Your target is too far away.");
-                        }
+                    if (targetInRange)
+                    {
+                        _target = target;
+                        from.RevealingAction();
+                        _javelin.OnCooldown = true;
+                        Timer.StartTimer(
+                            TimeSpan.FromSeconds(_javelin.CooldownSeconds),
+                            _javelin.ExpireTalentCooldown,
+                            out _javelin._talentTimerToken
+                        );
+                        Effects.SendMovingEffect(from, target, 0x1BFE, 18, 2, false, false, 0x3B5);
+                        Timer.StartTimer(TimeSpan.FromSeconds(1), CheckHit, out _);
+                    }
+                    else
+                    {
+                        from.SendMessage("Your target is too far away.");
                     }
                 }
             }

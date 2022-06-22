@@ -76,6 +76,7 @@ public static class SerializationExtensions
 
     public static void Write<T>(this IGenericWriter writer, ICollection<T> coll) where T : class, ISerializable
     {
+
         writer.Write(coll.Count);
         foreach (var entry in coll)
         {

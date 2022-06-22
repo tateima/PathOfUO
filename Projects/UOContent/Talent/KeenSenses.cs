@@ -7,6 +7,7 @@ namespace Server.Talent
             TalentDependency = typeof(KeenEye);
             DisplayName = "Keen senses";
             Description = "Chance of dodging incoming attacks.";
+            AdditionalDetail = $"Each level increases dodge chance by 2% {PassiveDetail}";
             ImageID = 117;
             GumpHeight = 85;
             AddEndY = 80;

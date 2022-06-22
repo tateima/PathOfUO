@@ -205,11 +205,10 @@ namespace Server.SkillHandlers
                         }
 
                         BaseTalent resonance = null;
-                        BaseTalent sonicAffinity = null;
                         if (from is PlayerMobile player)
                         {
                             resonance = player.GetTalent(typeof(Resonance));
-                            sonicAffinity = player.GetTalent(typeof(SonicAffinity));
+                            BaseTalent sonicAffinity = player.GetTalent(typeof(SonicAffinity));
                             if (sonicAffinity != null)
                             {
                                 diff -= sonicAffinity.ModifySpellScalar();

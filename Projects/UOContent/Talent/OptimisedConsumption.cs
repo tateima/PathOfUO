@@ -11,6 +11,7 @@ namespace Server.Talent
             TalentDependency = typeof(WarCraftFocus);
             DisplayName = "Consumable focus";
             Description = "Increases effectiveness of consumed goods. Consuming alcohol also improves your fighting skills.";
+            AdditionalDetail = $"Non-alcoholic beverages increase your mana. Food will increase your stats as well, but only if you are incredibly hungry. Potions are also enhanced by this talent.  All increases are calculated by 2 points per level. {PassiveDetail}";
             ImageID = 125;
             GumpHeight = 75;
             AddEndY = 100;
@@ -32,31 +33,31 @@ namespace Server.Talent
 
         private class DrunkTimer : Timer
         {
-            private readonly Mobile m_Drunk;
-            private readonly SkillMod[] m_SkillMods;
+            private readonly Mobile _drunk;
+            private readonly SkillMod[] _skillMods;
 
             public DrunkTimer(Mobile drunk, SkillMod[] skillMods)
                 : base(TimeSpan.FromSeconds(5.0), TimeSpan.FromSeconds(5.0))
             {
-                m_Drunk = drunk;
-                m_SkillMods = skillMods;
+                _drunk = drunk;
+                _skillMods = skillMods;
                 foreach (SkillMod skillMod in skillMods)
                 {
-                    m_Drunk.AddSkillMod(skillMod);
+                    _drunk.AddSkillMod(skillMod);
                 }
             }
 
             protected override void OnTick()
             {
-                if (m_Drunk.Deleted || m_Drunk.Map == Map.Internal)
+                if (_drunk.Deleted || _drunk.Map == Map.Internal)
                 {
                     Stop();
                 }
-                else if (m_Drunk.Alive && m_Drunk.BAC <= 0)
+                else if (_drunk.Alive && _drunk.BAC <= 0)
                 {
-                    foreach (var mod in m_SkillMods)
+                    foreach (var mod in _skillMods)
                     {
-                        m_Drunk.RemoveSkillMod(mod);
+                        _drunk.RemoveSkillMod(mod);
                     }
 
                     Stop();

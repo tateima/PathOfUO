@@ -10,7 +10,7 @@ namespace Server.Talent
             Description = "Poison damage can no longer kill you and you can heal while poisoned.";
             ImageID = 374;
             GumpHeight = 75;
-            AddEndY = 75;
+            AddEndY = 100;
             MaxLevel = 1;
         }
     }

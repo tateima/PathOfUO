@@ -17,7 +17,7 @@ namespace Server.Talent
             CanBeUsed = true;
             MaxLevel = 8;
             GumpHeight = 90;
-            AddEndY = 135;
+            AddEndY = 130;
         }
 
         public override bool HasSkillRequirement(Mobile mobile) => Disenchant.CanDisenchant(mobile, 70 + Level * 3);
@@ -74,16 +74,30 @@ namespace Server.Talent
             return randomAttribute;
         }
 
+        public static AosWeaponAttribute RandomWeaponAttribute()
+        {
+            var attributes = Enum.GetValues(typeof(AosWeaponAttribute));
+            var randomAttribute = (AosWeaponAttribute)attributes.GetValue(Utility.Random(attributes.Length));
+            return randomAttribute;
+        }
+
+        public static SkillName RandomSkill()
+        {
+            var skills = Enum.GetValues(typeof(SkillName));
+            var randomSkill = (SkillName)skills.GetValue(Utility.Random(skills.Length));
+            return randomSkill;
+        }
+
         private class InternalTarget : Target
         {
-            private readonly BaseTalent m_Talent;
+            private readonly BaseTalent _talent;
 
             public InternalTarget(BaseTalent talent) : base(
                 2,
                 false,
                 TargetFlags.None
             ) =>
-                m_Talent = talent;
+                _talent = talent;
 
             public static void AffixChances(int level, ref int tierOne, ref int tierTwo, ref int tierThree, ref int tierFour, ref int tierFive)
             {
@@ -200,19 +214,6 @@ namespace Server.Talent
                 CheckSetArmorAttributes(armor.ArmorAttributes);
             }
 
-            public static AosWeaponAttribute RandomWeaponAttribute()
-            {
-                var attributes = Enum.GetValues(typeof(AosWeaponAttribute));
-                var randomAttribute = (AosWeaponAttribute)attributes.GetValue(Utility.Random(attributes.Length));
-                return randomAttribute;
-            }
-
-            public static SkillName RandomSkill()
-            {
-                var skills = Enum.GetValues(typeof(SkillName));
-                var randomSkill = (SkillName)skills.GetValue(Utility.Random(skills.Length));
-                return randomSkill;
-            }
 
             public static int CheckRareStrike(int affixPower)
             {
@@ -666,7 +667,7 @@ namespace Server.Talent
                         var affixPower = 0;
                         var numberOfSkills = 0;
                         var numberOfElements = 0;
-                        AffixChances(m_Talent.Level, ref tierOne, ref tierTwo, ref tierThree, ref tierFour, ref tierFive);
+                        AffixChances(_talent.Level, ref tierOne, ref tierTwo, ref tierThree, ref tierFour, ref tierFive);
                         CalculateAffixPower(
                             ref affixPower,
                             ref numberOfAffixes,
@@ -703,7 +704,7 @@ namespace Server.Talent
                                 return;
                             }
                         }
-                        else if (targeted is BaseArmor armor)
+                        else if (targeted is Items.BaseArmor armor)
                         {
                             if (!armor.Enchanted)
                             {

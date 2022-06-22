@@ -32,7 +32,7 @@ namespace Server.Spells.Spellweaving
             {
                 return;
             }
-          
+
             if (!Caster.CanSee(m))
             {
                 Caster.SendLocalizedMessage(500237); // Target can not be seen.

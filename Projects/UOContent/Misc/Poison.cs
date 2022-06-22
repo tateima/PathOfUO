@@ -158,10 +158,15 @@ namespace Server
                 }
 
                 if (m_Mobile is PlayerMobile player)
-                {                    
+                {
                     BaseTalent wyvernAspect = player.GetTalent(typeof(WyvernAspect));
                     if (wyvernAspect != null && wyvernAspect.Activated)
                     {
+                        BaseTalent viperAspect = player.GetTalent(typeof(ViperAspect));
+                        if (viperAspect != null)
+                        {
+                            damage += AOS.Scale(damage, viperAspect.ModifySpellMultiplier());
+                        }
                         int damagedMobiles = 0;
                         foreach (Mobile mobile in player.GetMobilesInRange(3))
                         {
@@ -169,7 +174,8 @@ namespace Server
                                     Core.AOS && !mobile.InLOS(player))
                             {
                                 continue;
-                            } else if (damagedMobiles == wyvernAspect.Level)
+                            }
+                            if (damagedMobiles == wyvernAspect.Level)
                             {
                                 break;
                             }

@@ -13,6 +13,7 @@ using Server.Items;
 using Server.Misc;
 using Server.Multis;
 using Server.Network;
+using Server.Pantheon;
 using Server.Regions;
 using Server.SkillHandlers;
 using Server.Spells;
@@ -467,7 +468,7 @@ namespace Server.Mobiles
             {
                 m_Feared = value;
                 if (value) {
-                    ActiveSpeed /= 2;
+                    SpeedMod = CurrentSpeed*2;
                 }
             }
         }
@@ -514,6 +515,8 @@ namespace Server.Mobiles
         public virtual int FactionSilverWorth => 30;
 
         public virtual double WeaponAbilityChance => 0.4;
+
+        public BaseTalent TalentEffect { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster)]
         public int ExperienceValue { get; set; }
@@ -895,6 +898,7 @@ namespace Server.Mobiles
         public void UnFear()
         {
             Feared = false;
+            SpeedMod = 0;
         }
 
         public void Blind(int duration, string message = "* Blinded *")
@@ -1773,7 +1777,7 @@ namespace Server.Mobiles
 
         public virtual bool CheckControlChance(Mobile m)
         {
-            if (GetControlChance(m) > Utility.RandomDouble())
+            if (GetControlChance(m) > Utility.RandomDouble() || ((PlayerMobile)ControlMaster).GetTalent(typeof(Leadership)) is not null)
             {
                 Loyalty += 1;
                 return true;
@@ -2096,6 +2100,11 @@ namespace Server.Mobiles
             if (BardPacified && (HitsMax - Hits) * 0.001 > Utility.RandomDouble())
             {
                 Unpacify();
+            }
+
+            if (TalentEffect?.HasDamageAbsorptionEffect == true)
+            {
+                amount = TalentEffect.CheckDamageAbsorptionEffect(this, from, amount);
             }
 
             int disruptThreshold;
@@ -2577,7 +2586,6 @@ namespace Server.Mobiles
                 m_Burning = reader.ReadBool();
                 m_Toxic = reader.ReadBool();
                 m_Electrified = reader.ReadBool();
-                MonsterBuff.CheckTimers(this);
             } else
             {
                 m_Frozen = false;
@@ -2591,6 +2599,7 @@ namespace Server.Mobiles
                 m_Corruptor = reader.ReadBool();
                 m_Corrupted = reader.ReadBool();
                 m_Ethereal = reader.ReadBool();
+                MonsterBuff.CheckTimers(this);
             } else
             {
                 m_Illusionist = false;
@@ -2893,7 +2902,16 @@ namespace Server.Mobiles
                 SayTo(from, "Thou art giving me gold?");
 
                 SayTo(from, dropped.Amount >= 400 ? "'Tis a noble gift." : "Money is always welcome.");
-
+                Deity.RewardPoints((PlayerMobile)from,
+                    new[]
+                    {
+                        Utility.RandomMinMax(1, dropped.Amount/100),
+                        Utility.RandomMinMax(-1, -(dropped.Amount/100))
+                    }, new []
+                    {
+                        Deity.Alignment.Charity,
+                        Deity.Alignment.Greed
+                    });
                 SpeechHue = 0x3B2;
                 SayTo(from, 501548); // I thank thee.
 
@@ -3638,66 +3656,66 @@ namespace Server.Mobiles
 
             if (IsSoulFeeder)
             {
-                list.Add(1060658, $"{"Soul Feeder"}:\t{""}"); // ~1_val~: ~2_val~
+                list.Add(1114057, "Soul Feeder");          // ~1_val~
             }
             if (IsBoss)
             {
-                list.Add(1060658, $"{"Boss"}:\t{""}"); // ~1_val~: ~2_val~
+                list.Add(1114057, "Boss");      // ~1_val~
             }
             else if (IsMinion)
             {
-                list.Add(1060658, $"{"Minion"}:\t{""}"); // ~1_val~: ~2_val~
+                list.Add(1114057, "Minion");               // ~1_val~
             }
 
             if (IsMagicResistant)
             {
-                list.Add(1060658, $"{"Magic Resistant"}:\t{""}"); // ~1_val~: ~2_val~
+                list.Add(1114057, "Magic Resistant");                      // ~1_val~
             }
 
             if (IsReflective)
             {
-                list.Add(1060658, $"{"Reflective"}:\t{""}"); // ~1_val~: ~2_val~
+                list.Add(1114057, "Reflective");        // ~1_val~
             }
 
             if (IsRegenerative)
             {
-                list.Add(1060658, $"{"Regenerative"}:\t{""}"); // ~1_val~: ~2_val~
+                list.Add(1114057, "Regenerative");               // ~1_val~
             }
 
             if (IsIllusionist)
             {
-                list.Add(1060658, $"{"Illusionist"}:\t{""}"); // ~1_val~: ~2_val~
+                list.Add(1114057, "Illusionist");            // ~1_val~
             }
 
             if (IsCorruptor)
             {
-                list.Add(1060658, $"{"Corruptor"}:\t{""}"); // ~1_val~: ~2_val~
+                list.Add(1114057, "Corruptor");           // ~1_val~
             }
             else if (IsCorrupted)
             {
-                list.Add(1060658, $"{"Corrupted"}:\t{""}"); // ~1_val~: ~2_val~
+                list.Add(1114057, "Corrupted");             // ~1_val~
             }
 
             if (IsEthereal)
             {
-                list.Add(1060658, $"{"Ethereal"}:\t{""}"); // ~1_val~: ~2_val~
+                list.Add(1114057, "Ethereal");            // ~1_val~
             }
 
             if (IsBurning)
             {
-                list.Add(1060658, $"{"Burning"}:\t{""}"); // ~1_val~: ~2_val~
+                list.Add(1114057, "Burning");            // ~1_val~
             }
             else if (IsFrozen)
             {
-                list.Add(1060658, $"{"Frozen"}:\t{""}"); // ~1_val~: ~2_val~
+                list.Add(1114057, "Frozen");            // ~1_val~
             }
             else if (IsElectrified)
             {
-                list.Add(1060658, $"{"Electrified"}:\t{""}"); // ~1_val~: ~2_val~
+                list.Add(1114057, "Electrified");                  // ~1_val~
             }
             else if (IsToxic)
             {
-                list.Add(1060658, $"{"Toxic"}:\t{""}"); // ~1_val~: ~2_val~
+                list.Add(1114057, "Toxic");       // ~1_val~
             }
 
             if (MLQuestSystem.Enabled && CanGiveMLQuest)
@@ -4376,7 +4394,7 @@ namespace Server.Mobiles
                         }
                     }
                 }
-                int baseXp = (int)DynamicExperienceValue() + (ExperienceValue / 10);
+                int baseXp = (int)DynamicExperienceValue() + ExperienceValue / 10;
                 int scaleXp = ExperienceScale(baseXp);
                 if (ExperienceValue == 0)
                 {
@@ -4395,13 +4413,18 @@ namespace Server.Mobiles
                     if (titles[i] is PlayerMobile)
                     {
                         PlayerMobile player = (PlayerMobile)titles[i];
-                        int levelIndex = Array.IndexOf(Enum.GetNames(typeof(Level)), player.Level) + 1;
-                        if (levelIndex <= MaxLevel && scaleXp > 0)
+                        Deity.PointsFromExperience(player, this, baseXp);
+                        if (player.Level <= MaxLevel && scaleXp > 0 && player.Level < 60)
                         {
                             BaseTalent fastLearner = player.GetTalent(typeof(FastLearner));
                             if (fastLearner != null)
                             {
-                                scaleXp += AOS.Scale(scaleXp, (fastLearner.Level * 2));
+                                scaleXp += AOS.Scale(scaleXp, fastLearner.Level * 2);
+                            }
+                            BaseTalent wisdom = player.GetTalent(typeof(Wisdom));
+                            if (wisdom != null)
+                            {
+                                scaleXp += AOS.Scale(scaleXp, wisdom.Level * 30);
                             }
                             if (player.Ranger())
                             {
@@ -4432,6 +4455,10 @@ namespace Server.Mobiles
 
             base.OnDeath(c);
 
+            if (c is Corpse corpse)
+            {
+                corpse.PreviousLife = GetType();
+            }
             if (DeleteCorpseOnDeath)
             {
                 c.Delete();
@@ -4586,9 +4613,16 @@ namespace Server.Mobiles
             if (caster is PlayerMobile player)
             {
                 BaseTalent summonerCommand = player.GetTalent(typeof(SummonerCommand));
-                if (summonerCommand != null)
+                if (summonerCommand is not null)
                 {
                     creature = (BaseCreature)summonerCommand.ScaleMobile(creature);
+                }
+                player.Leadership();
+                if (Deity.AlignmentCheck(creature, player.Alignment, true))
+                {
+                    int penalty = Utility.RandomMinMax(1, 2);
+                    Deity.RewardPoints(player, new []{penalty * -1 }, new []{ player.Alignment });
+                    player.SendMessage("You have summoned a creature that is a sworn enemy to your alignment. Your deity loyalty has suffered a penalty.");
                 }
             }
 
@@ -4742,7 +4776,7 @@ namespace Server.Mobiles
         {
             BardPacified = true;
             BardEndTime = endtime;
-            Timer.StartTimer(TimeSpan.FromSeconds(30), Unpacify, out _peacemakingTimer);
+            Timer.StartTimer(TimeSpan.FromSeconds(Utility.Random(40)), Unpacify, out _peacemakingTimer);
         }
 
         public override Mobile GetDamageMaster(Mobile damagee)
@@ -4783,7 +4817,7 @@ namespace Server.Mobiles
         public void Provoke(Mobile master, Mobile target, bool bSuccess)
         {
             BardProvoked = true;
-            double seconds = (double)Utility.RandomMinMax(15, 40);
+            double seconds = Utility.RandomMinMax(35, 45);
             if (!Core.ML)
             {
                 PublicOverheadMessage(MessageType.Emote, EmoteHue, false, "*looks furious*");
@@ -6070,11 +6104,14 @@ namespace Server.Mobiles
             if (LastKiller is PlayerMobile killer)
             {
                 BaseTalent keenEye = killer.GetTalent(typeof(KeenEye));
-                if (keenEye != null && AI != AIType.AI_Animal && (Utility.Random(100) < keenEye.Level))
+                if (keenEye != null && AI != AIType.AI_Animal && Utility.Random(100) < keenEye.ModifySpellMultiplier())
                 {
-                    if (Utility.Random(500) <= 1)
+                    string message = "** You find something interesting in their pack **";
+                    int random = Utility.RandomMinMax(1, 3);
+                    if (Utility.Random(500) <= keenEye.ModifySpellMultiplier())
                     {
-                        switch (Utility.Random(1, 3))
+                        message = "** You find something powerful in their pack **";
+                        switch (random)
                         {
                             case 1:
                                 ForceRandomLoot(LootPack.Rich);
@@ -6089,7 +6126,7 @@ namespace Server.Mobiles
                     }
                     else
                     {
-                        switch (Utility.Random(1, 3))
+                        switch (random)
                         {
                             case 1:
                                 ForceRandomLoot(LootPack.Poor);
@@ -6102,7 +6139,12 @@ namespace Server.Mobiles
                                 break;
                         }
                     }
-
+                    killer.NonlocalOverheadMessage(
+                        MessageType.Regular,
+                        0x3B2,
+                        false,
+                        message
+                    );
                 }
             }
 

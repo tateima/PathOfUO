@@ -5,6 +5,7 @@ using Server.Network;
 using Server.Mobiles;
 using Server.Talent;
 using System.Collections.Generic;
+using Server.Pantheon;
 
 namespace Server.Gumps
 {
@@ -31,7 +32,12 @@ namespace Server.Gumps
 
             foreach (var (_, value) in player.Talents)
             {
-                if (value.CanBeUsed)
+                if (
+                    value.CanBeUsed &&
+                        (
+                            !value.RequiresDeityFavor || (value.RequiresDeityFavor && player.HasDeityFavor && value.DeityAlignment != Deity.Alignment.None && value.DeityAlignment == player.Alignment)
+                        )
+                )
                 {
                     m_UseableTalents.Add(value);
                 }
@@ -45,11 +51,11 @@ namespace Server.Gumps
                 _      => barWidth
             };
             AddPage(0);
-            AddImageTiled(0, 0, barWidth, 175, 0xA8E);
-            AddImageTiled(0, 0, 5, 175, 0x27A7);
+            AddImageTiled(0, 0, barWidth, 200, 0xA8E);
+            AddImageTiled(0, 0, 5, 200, 0x27A7);
             AddImageTiled(0, 0, barWidth, 5, 0x27A7);
-            AddImageTiled(barWidth, 0, 5, 175, 0x27A7);
-            AddImageTiled(0, 175, barWidth, 5, 0x27A7);
+            AddImageTiled(barWidth, 0, 5, 200, 0x27A7);
+            AddImageTiled(0, 200, barWidth, 5, 0x27A7);
             // close button
             AddButton(barWidth, 0, 40015, 40015, 1002);
             int x = 10;
@@ -68,7 +74,7 @@ namespace Server.Gumps
             for (int i = lastTalentIndex; i < m_UseableTalents.Count; i++)
             {
                 var talent = m_UseableTalents.ElementAt(i);
-                if (y + 60 > 175)
+                if (y + 60 > 200)
                 {
                     y = 10;
                     x += 110;
@@ -103,7 +109,7 @@ namespace Server.Gumps
                 {
                     AddButton(x + 30, y + 10, 2223, 2223, 0 + i);
                 }
-                y += 85;
+                y += 100;
             }
             Timer.StartTimer(TimeSpan.FromSeconds(5), UpdateGump, out _talentBarExecutionToken);
         }

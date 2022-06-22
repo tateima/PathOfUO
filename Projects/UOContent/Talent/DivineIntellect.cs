@@ -6,9 +6,11 @@ namespace Server.Talent
     {
         public DivineIntellect()
         {
+            StatModNames = new[] { "DivineInt" };
             BlockedBy = Array.Empty<Type>();
             DisplayName = "Divine intellect";
             Description = "Increases intellect by 2 per level.";
+            AdditionalDetail = $"{PassiveDetail}";
             ImageID = 132;
             GumpHeight = 70;
             AddEndY = 55;
@@ -16,8 +18,8 @@ namespace Server.Talent
 
         public override void UpdateMobile(Mobile mobile)
         {
-            mobile.RemoveStatMod("DivineInt");
-            mobile.AddStatMod(new StatMod(StatType.All, "DivineInt", Level * 2, TimeSpan.Zero));
+            ResetMobileMods(mobile);
+            mobile.AddStatMod(new StatMod(StatType.Int, StatModNames[0], Level * 2, TimeSpan.Zero));
         }
     }
 }

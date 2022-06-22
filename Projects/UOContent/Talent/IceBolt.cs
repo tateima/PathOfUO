@@ -6,7 +6,6 @@ namespace Server.Talent
 {
     public class IceBolt : BaseTalent
     {
-        private BaseCreature m_SlowedCreature;
 
         public IceBolt()
         {
@@ -14,8 +13,11 @@ namespace Server.Talent
             RequiredWeapon = new[] { typeof(Crossbow), typeof(HeavyCrossbow), typeof(RepeatingCrossbow) };
             RequiredWeaponSkill = SkillName.Archery;
             CanBeUsed = true;
+            ManaRequired = 15;
+            CooldownSeconds = 120;
             DisplayName = "Ice bolt";
-            Description = "Fire bolt of ice from weapon that slows target and does minor cold damage.";
+            Description = "Fire bolt of ice from crossbow that slows target and does minor cold damage.";
+            AdditionalDetail = "The slow lasts for 5 seconds per level and will apply an ice damage modifier to the target.";
             ImageID = 378;
             GumpHeight = 85;
             AddEndY = 80;
@@ -23,13 +25,11 @@ namespace Server.Talent
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
-            if (Activated)
+            if (Activated && attacker.Mana >= ManaRequired)
             {
                 if (target is BaseCreature creature)
                 {
-                    creature.ActiveSpeed /= 2;
-                    m_SlowedCreature = creature;
-                    Timer.StartTimer(TimeSpan.FromSeconds(Level * 5), ExpireIceEffect, out _talentTimerToken);
+                    SlowCreature(creature, Level * 5, true);
                     IceDamage(attacker, target, damage, 1);
                 }
 
@@ -41,7 +41,11 @@ namespace Server.Talent
 
                 if (target is PlayerMobile or BaseCreature)
                 {
-                    Timer.StartTimer(TimeSpan.FromSeconds(120), ExpireTalentCooldown, out _talentTimerToken);
+                    target.PlaySound(0x5C7);
+                    Activated = false;
+                    OnCooldown = true;
+                    ApplyManaCost(attacker);
+                    Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                 }
             }
         }
@@ -56,11 +60,6 @@ namespace Server.Talent
             {
                 target.Damage(AOS.Scale(damage, Level * modifier), attacker);
             }
-        }
-
-        public void ExpireIceEffect()
-        {
-            m_SlowedCreature.ActiveSpeed *= 2;
         }
     }
 }

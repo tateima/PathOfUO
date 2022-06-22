@@ -17,6 +17,7 @@ namespace Server.Talent
             HasKillEffect = true;
             DisplayName = "Master of death";
             Description = "Chance to summon nearby corpses as undead allies killed by player. Requires 85 necromancy.";
+            AdditionalDetail = "The chance increases by 5% per level and will strengthen the risen by 1%. These risen will summon for 2 minutes.";
             ImageID = 154;
         }
 
@@ -92,7 +93,7 @@ namespace Server.Talent
 
         public override void CheckKillEffect(Mobile victim, Mobile killer)
         {
-            if (Utility.Random(100) < Level * 2) // max 10%
+            if (Utility.Random(100) < Level * 5)
             {
                 var undead = RandomUndead();
                 if (undead != null)
@@ -100,14 +101,7 @@ namespace Server.Talent
                     // steal level % of stats from victim -- the stronger the victim the better the summon
                     undead = TransferMobileStats(victim, undead);
 
-                    if (undead.Backpack != null)
-                    {
-                        for (var x = undead.Backpack.Items.Count - 1; x >= 0; x--)
-                        {
-                            var item = undead.Backpack.Items[x];
-                            item.Delete();
-                        }
-                    }
+                    EmptyCreatureBackpack(undead);
 
                     SpellHelper.Summon(undead, killer, 0x1FE, TimeSpan.FromMinutes(2), false, false);
                     undead.Say("Master...");

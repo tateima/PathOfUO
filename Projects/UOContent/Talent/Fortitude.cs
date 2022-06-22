@@ -6,6 +6,7 @@ namespace Server.Talent
     {
         public Fortitude()
         {
+            StatModNames = new[] { "Fortitude" };
             DisplayName = "Fortitude";
             Description = "Increases all stats by 5 and prevent death from starvation. Requires 85+ cooking.";
             ImageID = 405;
@@ -19,8 +20,8 @@ namespace Server.Talent
 
         public override void UpdateMobile(Mobile mobile)
         {
-            mobile.RemoveStatMod("Fortitude");
-            mobile.AddStatMod(new StatMod(StatType.All, "Fortitude", 5, TimeSpan.Zero));
+            ResetMobileMods(mobile);
+            mobile.AddStatMod(new StatMod(StatType.All, StatModNames[0], 5, TimeSpan.Zero));
         }
     }
 }

@@ -5,6 +5,7 @@ using Server.ContextMenus;
 using Server.Engines.BulkOrders;
 using Server.Factions;
 using Server.Items;
+using Server.Items.Misc;
 using Server.Misc;
 using Server.Mobiles;
 using Server.Network;
@@ -1471,18 +1472,25 @@ namespace Server.Mobiles
             double talentScalar = 100.0;
             var priceScalar = GetPriceScalar();
             BaseTalent smoothTalker = null;
+            CityKey key = mobile.Backpack?.FindItemByType(typeof(CityKey)) as CityKey;
             if (mobile is PlayerMobile player)
             {
                 smoothTalker = player.GetTalent(typeof(SmoothTalker));
-                if (smoothTalker != null)
+
+                if (smoothTalker is not null)
                 {
                     talentScalar -= smoothTalker.ModifySpellScalar();
+                }
+
+                if (key is not null)
+                {
+                    talentScalar = 0.0;
                 }
             }
             foreach (var info in _buyInfo.ToArray())
             {
                 info.PriceScalar = priceScalar;
-                if (smoothTalker != null)
+                if (smoothTalker is not null || key is not null)
                 {
                     if (info.OriginalPrice == 0)
                     {

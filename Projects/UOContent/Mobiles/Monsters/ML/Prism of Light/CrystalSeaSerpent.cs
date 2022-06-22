@@ -31,13 +31,13 @@ namespace Server.Mobiles
         public override void OnDeath( Container c )
         {
           base.OnDeath( c );
-    
+
           if (Utility.RandomDouble() < 0.05)
             c.DropItem( new CrushedCrystals() );
-    
+
           if (Utility.RandomDouble() < 0.1)
             c.DropItem( new IcyHeart() );
-    
+
           if (Utility.RandomDouble() < 0.1)
             c.DropItem( new LuckyDagger() );
         }

@@ -6,7 +6,8 @@ namespace Server.Talent
         {
             TalentDependency = typeof(ResourcefulHarvester);
             DisplayName = "Skinner";
-            Description = "3% Chance per level to receive extra hide material when skinning creatures.";
+            Description = "Chance to receive extra hide material when skinning creatures.";
+            AdditionalDetail = $"The chance for this increases by 3% per level. {PassiveDetail}";
             ImageID = 359;
             MaxLevel = 6;
             GumpHeight = 85;

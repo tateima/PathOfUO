@@ -20,7 +20,7 @@ namespace Server
                 {
                     player.NextPlanarTravel = Core.Now.AddHours(30);
                 }
-                
+
             }
         }
     }

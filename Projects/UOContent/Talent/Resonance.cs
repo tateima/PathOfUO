@@ -11,8 +11,11 @@ namespace Server.Talent
             TalentDependency = typeof(SonicAffinity);
             DisplayName = "Resonance";
             CanBeUsed = true;
+            CooldownSeconds = 30;
+            ManaRequired = 25;
             Description =
-                "Chance on barding success that target is damaged by sonic energy. AOE damage effect on use - 1m cooldown. Requires 60+ music.";
+                "Chance on barding success that target is damaged by sonic energy. AOE damage effect on use. Requires 60+ music.";
+            AdditionalDetail = "Each level increases area of effect and damage by 1";
             ImageID = 180;
             AddEndY = 125;
         }
@@ -41,13 +44,13 @@ namespace Server.Talent
                         }
                     );
 
-                if (from.Mana < 20)
+                if (from.Mana < ManaRequired)
                 {
-                    from.SendMessage("You require at least 20 mana to use this talent");
+                    from.SendMessage($"You require at least {ManaRequired.ToString()} mana to use this talent");
                 }
                 else if (instrument != null)
                 {
-                    from.Mana -= 20;
+                    ApplyManaCost(from);
                     OnCooldown = true;
                     var success = false;
                     foreach (var other in from.GetMobilesInRange(Level + 3))
@@ -98,7 +101,7 @@ namespace Server.Talent
                     }
 
                     instrument.ConsumeUse(from);
-                    Timer.StartTimer(TimeSpan.FromSeconds(60), ExpireTalentCooldown, out _talentTimerToken);
+                    Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                 }
                 else
                 {

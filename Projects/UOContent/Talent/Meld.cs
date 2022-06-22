@@ -7,7 +7,8 @@ namespace Server.Talent
             TalentDependency = typeof(Enchant);
             DisplayName = "Meld";
             Description =
-                "Can meld elemental shards into items to increase their power. Requires at least one magic and one crafting skill above 70+.";
+                "Can meld elemental shards into items to increase their power.";
+            AdditionalDetail = "Requires at least one magic and one crafting skill above 70+";
             ImageID = 398;
             MaxLevel = 1;
             GumpHeight = 85;

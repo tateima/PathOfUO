@@ -285,28 +285,28 @@ namespace Server.Mobiles
                 {
                     Stop();
                 }
-                else
-                {
-                    // <instakill>
-                    TeleportTo(target);
-                    target.BoltEffect(0);
-
-                    if (target is BaseCreature creature)
-                    {
-                        creature.NoKillAwards = true;
-                    }
-
-                    target.Damage(target.HitsMax, m_Owner);
-                    target.Kill(); // just in case, maybe Damage is overridden on some shard
-
-                    if (target.Corpse != null && !target.Player)
-                    {
-                        target.Corpse.Delete();
-                    }
-
-                    m_Owner.Focus = null;
-                    Stop();
-                } // </instakill>
+                // else
+                // {
+                //     // <instakill>
+                //     TeleportTo(target);
+                //     target.BoltEffect(0);
+                //
+                //     if (target is BaseCreature creature)
+                //     {
+                //         creature.NoKillAwards = true;
+                //     }
+                //
+                //     target.Damage(target.HitsMax, m_Owner);
+                //     target.Kill(); // just in case, maybe Damage is overridden on some shard
+                //
+                //     if (target.Corpse != null && !target.Player)
+                //     {
+                //         target.Corpse.Delete();
+                //     }
+                //
+                //     m_Owner.Focus = null;
+                //     Stop();
+                // } // </instakill>
 
                 /*else if (!m_Owner.InRange( target, 20 ))
                 {

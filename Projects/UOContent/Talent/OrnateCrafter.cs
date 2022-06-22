@@ -118,20 +118,20 @@ namespace Server.Talent
 
         private class InternalTarget : Target
         {
-            private readonly OrnateCrafter m_Talent;
+            private readonly OrnateCrafter _talent;
 
             public InternalTarget(OrnateCrafter talent) : base(
                 2,
                 false,
                 TargetFlags.None
             ) =>
-                m_Talent = talent;
+                _talent = talent;
 
             protected override void OnTarget(Mobile from, object targeted)
             {
                 if (targeted is Item item && item.IsChildOf(from.Backpack))
                 {
-                    var number = Utility.Random(m_Talent.Level);
+                    var number = Utility.Random(_talent.Level);
                     var overheadMessage = "";
                     var smithItem = GetSkillItem(from, "metal");
                     var tailorItem = GetSkillItem(from, "cloth");
@@ -142,35 +142,35 @@ namespace Server.Talent
                     var socketItem = false;
                     var pocketedItem = false;
                     if (targeted is BaseWeapon weapon && canSmith && weapon.SocketAmount == 0 &&
-                        SocketSuccess(from, number, weapon) && CanSocket(from, m_Talent.Level))
+                        SocketSuccess(from, number, weapon) && CanSocket(from, _talent.Level))
                     {
                         weapon.SocketAmount = number;
                         socketItem = true;
                         overheadMessage = "* You add sockets to the weapon *";
                     }
                     else if (targeted is BaseArmor armor && canSmith && armor.SocketAmount == 0 &&
-                             SocketSuccess(from, number, armor) && CanSocket(from, m_Talent.Level))
+                             SocketSuccess(from, number, armor) && CanSocket(from, _talent.Level))
                     {
                         armor.SocketAmount = number;
                         socketItem = true;
                         overheadMessage = "* You add sockets to the armor *";
                     }
                     else if (targeted is BaseWaist waist && tailorItem != null && waist.PocketAmount == 0 &&
-                             SocketSuccess(from, number, waist) && CanPocket(from, m_Talent.Level))
+                             SocketSuccess(from, number, waist) && CanPocket(from, _talent.Level))
                     {
                         waist.PocketAmount = number;
                         pocketedItem = true;
                         overheadMessage = "* You add pockets to the waist cloth *";
                     }
                     else if (targeted is BaseHat hat && tailorItem != null && hat.PocketAmount == 0 &&
-                             SocketSuccess(from, number, hat) && CanPocket(from, m_Talent.Level))
+                             SocketSuccess(from, number, hat) && CanPocket(from, _talent.Level))
                     {
                         hat.PocketAmount = number;
                         pocketedItem = true;
                         overheadMessage = "* You add pockets to the hat *";
                     }
                     else if (targeted is BaseJewel jewel && tinkerItem != null && jewel.SocketAmount == 0 &&
-                             SocketSuccess(from, number, jewel) && CanSocketOrPocket(from, m_Talent.Level))
+                             SocketSuccess(from, number, jewel) && CanSocketOrPocket(from, _talent.Level))
                     {
                         jewel.SocketAmount = number;
                         pocketedItem = true;
@@ -230,21 +230,21 @@ namespace Server.Talent
 
         private class InternalSecondTarget : Target
         {
-            private readonly Item m_Item;
+            private readonly Item _item;
 
             public InternalSecondTarget(Item item) : base(
                 2,
                 false,
                 TargetFlags.None
             ) =>
-                m_Item = item;
+                _item = item;
 
             protected override void OnTarget(Mobile from, object targeted)
             {
                 if (targeted is Item item && item.IsChildOf(from.Backpack))
                 {
-                    SocketBonus.AddItem(from, item, m_Item);
-                    SocketBonus.AddSocketProperties(m_Item, item);
+                    SocketBonus.AddItem(from, item, _item);
+                    SocketBonus.AddSocketProperties(_item, item);
                 }
                 else
                 {

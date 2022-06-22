@@ -73,21 +73,21 @@ namespace Server.Talent
 
         private class InternalSecondTarget : Target
         {
-            private readonly Item m_Item;
+            private readonly Item _item;
 
             public InternalSecondTarget(Item item) : base(
                 2,
                 false,
                 TargetFlags.None
             ) =>
-                m_Item = item;
+                _item = item;
 
             protected override void OnTarget(Mobile from, object targeted)
             {
                 if (targeted is Item item && item.IsChildOf(from.Backpack))
                 {
-                    SocketBonus.AddItem(from, item, m_Item);
-                    SocketBonus.AddSocketProperties(m_Item, item);
+                    SocketBonus.AddItem(from, item, _item);
+                    SocketBonus.AddSocketProperties(_item, item);
                 }
                 else
                 {

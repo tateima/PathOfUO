@@ -9,7 +9,10 @@ namespace Server.Talent
         {
             TalentDependency = typeof(ResourcefulHarvester);
             DisplayName = "Slave driver";
-            Description = "Summon a slave to harvest resources for you, 10m cooldown";
+            Description = "Summon a slave to harvest resources for you.";
+            AdditionalDetail =
+                "This slave will respond to the commands log, ore, cloth or hide. They will then teleport and start harvesting this resource and return with your goods.  There is a chance that they will fail in this task, this chance is decreased by 1% per level.";
+            CooldownSeconds = 600;
             ImageID = 360;
             CanBeUsed = true;
             MaxLevel = 10;
@@ -22,14 +25,7 @@ namespace Server.Talent
             if (!OnCooldown)
             {
                 var slave = new Slave();
-                if (slave.Backpack != null)
-                {
-                    for (var x = slave.Backpack.Items.Count - 1; x >= 0; x--)
-                    {
-                        var item = slave.Backpack.Items[x];
-                        item.Delete();
-                    }
-                }
+                EmptyCreatureBackpack(slave);
 
                 var location = mobile.Location;
                 location.X += 3;
@@ -38,7 +34,7 @@ namespace Server.Talent
                 slave.Say("I am here to serve thee!");
                 slave.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
                 slave.PlaySound(0x1FE);
-                Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                 OnCooldown = true;
             }
         }

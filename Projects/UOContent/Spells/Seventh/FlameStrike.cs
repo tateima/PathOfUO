@@ -54,17 +54,9 @@ namespace Server.Spells.Seventh
                 int fire = 100;
                 int cold = 0;
                 int hue = 0;
-                
+
                 if (Caster is PlayerMobile playerCaster) {
-                    BaseTalent fireAffinity = playerCaster.GetTalent(typeof(FireAffinity));
-                    if (fireAffinity != null)
-                    {
-                        damage += fireAffinity.ModifySpellMultiplier();
-                    }
-                    BaseTalent frostFire = playerCaster.GetTalent(typeof(FrostFire));
-                    if (frostFire != null && fire > 0) {
-                        ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, m, hue: ref hue);
-                    }
+                    BaseTalent.ApplyFrostFireEffect(playerCaster, ref fire, ref cold, ref hue, m);
                 }
 
                 m.FixedParticles(0x3709, 10, 3, 5052, hue, 0, EffectLayer.LeftFoot, 0);

@@ -6,6 +6,7 @@ using Server.Mobiles;
 using Server.Talent;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using Server.Pantheon;
 
 namespace Server.Gumps
 {
@@ -67,22 +68,13 @@ namespace Server.Gumps
                 {
                     Type[] blockedBy = talent.BlockedBy;
                     BaseTalent hasBlocker = null;
-                    string blockedByStr = "";
+                    string blockedByStr = TalentDetailGump.BlockedByList(talent);
                     if (blockedBy != null && !talent.IgnoreTalentBlock(@from))
                     {
                         foreach (Type blockerType in blockedBy)
                         {
                             if (TalentConstructor.Construct(blockerType) is BaseTalent blockerTalent)
                             {
-                                blockedByStr += blockerTalent.DisplayName;
-                                if (blockerType != blockedBy[^1])
-                                {
-                                    blockedByStr += ", ";
-                                }
-                                else
-                                {
-                                    blockedByStr += ".";
-                                }
                                 hasBlocker = player.GetTalent(blockerType);
                                 if (hasBlocker != null)
                                 {
@@ -105,8 +97,12 @@ namespace Server.Gumps
                     int talentLevel = (used != null && used.Level > 0) ? used.Level : 0;
                     AddHtml(x, y, 200, 45, $"<BASEFONT COLOR=#FFFFE5>{talent.DisplayName}: ({talentLevel}/{talent.MaxLevel})</FONT>");
                     int hue = 0;
-                    if (talentLevel == 0 && (dependsOn != null && hasDependency == null) || (blockedBy != null && hasBlocker != null) || !talent.HasSkillRequirement(@from)
-                        || (hasDependency != null && hasDependency.Level < talent.TalentDependencyPoints && hasDependency.Level != hasDependency.MaxLevel))
+                    if (
+                        talent.DeityAlignment != Deity.Alignment.None && talent.DeityAlignment != player.Alignment
+                        ||
+                        (talentLevel == 0 && (dependsOn != null && hasDependency == null) || (blockedBy != null && hasBlocker != null) || !talent.HasSkillRequirement(@from)
+                            || (hasDependency != null && hasDependency.Level < talent.TalentDependencyPoints && hasDependency.Level != hasDependency.MaxLevel)
+                        ))
                     {
                         hue = 0x3E8;
                     }
@@ -117,6 +113,7 @@ namespace Server.Gumps
                     talent.Level = talentLevel;
                     AddImage(x + 160, y - 10, talent.ImageID, hue);
                     if (talent.HasSkillRequirement(@from)
+                        && !talent.RequiresDeityFavor
                         && (talentLevel < talent.MaxLevel && ((PlayerMobile)@from).TalentPoints > 0)
                         && ((dependsOn != null && hasDependency != null
                                                && (hasDependency.Level >= talent.TalentDependencyPoints || hasDependency.Level == hasDependency.MaxLevel))
@@ -125,6 +122,7 @@ namespace Server.Gumps
                     {
                         AddButton(x + 190, y, 2223, 2223, 0 + i, GumpButtonType.Reply, 0);
                     }
+                    AddButton(x, y + 20, 1531, 1532, 2000 + i, GumpButtonType.Reply, 0);
                     y += 40;
                     string requirements = (dependsOn != null) ? $"<BR>Requires {dependsOn.DisplayName}" : "";
                     blockedByStr = (blockedByStr.Length > 1) ? $"<BR>Blocks: {blockedByStr}" : "";
@@ -163,7 +161,7 @@ namespace Server.Gumps
                     player.SendGump(new CharacterSheetGump(player, 1, null));
                     return;
                 }
-                else if (info.ButtonID >= 0)
+                else if (info.ButtonID >= 0 && info.ButtonID < 2000)
                 {
                     var talent = TalentConstructor.Construct(BaseTalent.TalentTypes[info.ButtonID]) as BaseTalent;
                     ConcurrentDictionary<Type,BaseTalent> playerTalents = player.Talents ?? new ConcurrentDictionary<Type,BaseTalent>();
@@ -199,6 +197,13 @@ namespace Server.Gumps
                     lastTalentIndex = 0;
                 }
 
+                if (info.ButtonID >= 2000) // more details
+                {
+                    var talent = TalentConstructor.Construct(BaseTalent.TalentTypes[info.ButtonID-2000]) as BaseTalent;
+                    player.CloseGump<TalentGump>();
+                    player.SendGump(new TalentDetailGump(player, page, talent, lastTalentIndex, m_TalentGumpPages));
+                    return;
+                }
                 player.SendGump(new TalentGump(player, page, lastTalentIndex, m_TalentGumpPages));
             }
         }

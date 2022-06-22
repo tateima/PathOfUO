@@ -9,6 +9,7 @@ namespace Server.Talent
             HasDamageAbsorptionEffect = true;
             DisplayName = "Reptilian hunter";
             Description = "Increases damage to reptiles and heals damage from them.";
+            AdditionalDetail = $"The damage caused is 1-X where X is the talent level. The damage absorbed from their attacks is 5% per level. {PassiveDetail}";
             ImageID = 187;
             AddEndY = 95;
         }

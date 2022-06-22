@@ -7,8 +7,11 @@ namespace Server.Talent
     {
         public ClothWarmaster()
         {
+            StatModNames = new[] { "ClothWarmaster" };
             DisplayName = "Cloth warmaster";
-            Description = "Reduces damage while wearing cloth. Increases Int by 2 per Level";
+            Description = "Reduces damage while wearing cloth. Increases Int by 4 per Level";
+            AdditionalDetail = $"{PassiveDetail}";
+            UpdateOnEquip = true;
             ImageID = 395;
             GumpHeight = 85;
             AddEndY = 80;
@@ -16,16 +19,15 @@ namespace Server.Talent
 
         public override void UpdateMobile(Mobile mobile)
         {
-            if (BaseArmor.FullChain(mobile) || BaseArmor.FullRing(mobile))
+            ResetMobileMods(mobile);
+            if (Items.BaseArmor.FullCloth(mobile))
             {
-                mobile.RemoveStatMod("ClothWarmaster");
-                mobile.RemoveStatMod("ClothWarmaster");
-                mobile.AddStatMod(new StatMod(StatType.Int, "ClothWarmaster", Level * 2, TimeSpan.Zero));
+                mobile.AddStatMod(new StatMod(StatType.Int, StatModNames[0], Level * 4, TimeSpan.Zero));
             }
         }
         public override int CheckDamageAbsorptionEffect(Mobile defender, Mobile attacker, int damage)
         {
-            if (BaseArmor.FullCloth(defender)) {
+            if (Items.BaseArmor.FullCloth(defender)) {
                 damage -= Level;
             }
             return damage;

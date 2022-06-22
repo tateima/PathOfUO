@@ -1,3 +1,5 @@
+using Server.Items;
+
 namespace Server.Talent
 {
     public class Riposte : BaseTalent
@@ -7,7 +9,9 @@ namespace Server.Talent
             RequiredWeaponSkill = SkillName.Fencing;
             TalentDependency = typeof(FencingFocus);
             DisplayName = "Riposte";
+            StamRequired = 3;
             Description = "Chance to deal damage to them if enemy misses.";
+            AdditionalDetail = $"This chance increases by 2% per level and will damage the enemy for level * 2 damage. {PassiveDetail}";
             ImageID = 339;
             GumpHeight = 85;
             AddEndY = 80;
@@ -15,12 +19,17 @@ namespace Server.Talent
 
         public override void CheckDefenderMissEffect(Mobile attacker, Mobile target)
         {
-            // 5% chance
-            if (Utility.Random(100) < Level)
+            int modifier = Level * 2;
+            if (target.Weapon is BaseMeleeWeapon targetWeapon && target.Stam >= StamRequired + 1 && Utility.Random(100) < modifier)
             {
-                // max 10 damage (2 per level)
-                attacker.Damage(Level * 2, target);
+                ApplyStaminaCost(target);
+                if (targetWeapon.CheckHit(target, attacker))
+                {
+                    attacker.PlaySound(0x235);
+                    attacker.Damage(modifier, target);
+                }
             }
+
         }
     }
 }

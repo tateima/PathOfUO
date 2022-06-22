@@ -10,7 +10,10 @@ namespace Server.Talent
             DisplayName = "Wyvern Aspect";
             CanBeUsed = true;
             Description =
-                "Poison damage suffered by user also damages between 1-7 surrounding enemies for 5-35 seconds. 2 min cooldown";
+                "Poison damage suffered by user also damages between 1-7 surrounding enemies for 5-35 seconds.";
+            AdditionalDetail = "Wyvern aspect receives bonuses from viper aspect level.";
+            CooldownSeconds = 120;
+            ManaRequired = 25;
             ImageID = 375;
             MaxLevel = 7;
             GumpHeight = 75;
@@ -19,12 +22,17 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown && !Activated)
+            if (!OnCooldown && !Activated && from.Mana > ManaRequired)
             {
+                ApplyManaCost(from);
                 OnCooldown = true;
                 Activated = true;
                 Timer.StartTimer(TimeSpan.FromSeconds(Level * 5), ExpireActivated, out _);
-                Timer.StartTimer(TimeSpan.FromSeconds(120), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
+            }
+            else
+            {
+                from.SendMessage($"You need {ManaRequired.ToString()} mana to complete this poisonous ritual.");
             }
         }
 

@@ -11,6 +11,7 @@ namespace Server.Talent
             DisplayName = "Telewarper disc";
             CanBeUsed = true;
             Description = "Create device that teleports user. Can glitch and summon creatures.";
+            CooldownSeconds = 3600;
             ImageID = 169;
             GumpHeight = 230;
             AddEndY = 90;
@@ -31,7 +32,7 @@ namespace Server.Talent
                     OnCooldown = true;
                     var device = new TelewarperDevice();
                     from.AddToBackpack(device);
-                    Timer.StartTimer(TimeSpan.FromMinutes(60), ExpireTalentCooldown, out _talentTimerToken);
+                    Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                 }
             }
         }

@@ -26,8 +26,8 @@ namespace Server.Talent
 
         private class InternalTarget : Target
         {
-            private readonly Mobile m_Cook;
-            private readonly ExperimentalFood m_Talent;
+            private readonly Mobile _cook;
+            private readonly ExperimentalFood _talent;
 
             public InternalTarget(Mobile cook, ExperimentalFood talent) : base(
                 8,
@@ -35,8 +35,8 @@ namespace Server.Talent
                 TargetFlags.None
             )
             {
-                m_Cook = cook;
-                m_Talent = talent;
+                _cook = cook;
+                _talent = talent;
             }
 
             protected override void OnTarget(Mobile from, object targeted)
@@ -44,20 +44,20 @@ namespace Server.Talent
                 if (targeted is Food food)
                 {
                     from.SendMessage("What do you wish to experiment with on this food?");
-                    m_Cook.Target = new InternalSecondTarget(food, m_Cook, m_Talent);
+                    _cook.Target = new InternalSecondTarget(food, _cook, _talent);
                 }
                 else
                 {
-                    m_Cook.SendMessage("You cannot experiment with that target.");
+                    _cook.SendMessage("You cannot experiment with that target.");
                 }
             }
         }
 
         private class InternalSecondTarget : Target
         {
-            private readonly Mobile m_Cook;
-            private readonly Food m_Food;
-            private readonly ExperimentalFood m_Talent;
+            private readonly Mobile _cook;
+            private readonly Food _food;
+            private readonly ExperimentalFood _talent;
 
             public InternalSecondTarget(Food food, Mobile cook, ExperimentalFood talent) : base(
                 8,
@@ -65,9 +65,9 @@ namespace Server.Talent
                 TargetFlags.None
             )
             {
-                m_Food = food;
-                m_Cook = cook;
-                m_Talent = talent;
+                _food = food;
+                _cook = cook;
+                _talent = talent;
             }
 
             protected override void OnTarget(Mobile from, object targeted)
@@ -78,31 +78,31 @@ namespace Server.Talent
                     var partialSuccess = false;
                     var itemConsume = 0;
                     var foodConsume = 0;
-                    if (Utility.Random(100) < m_Talent.Level * 7)
+                    if (Utility.Random(100) < _talent.Level * 7)
                     {
                         if (from.Backpack != null)
                         {
                             itemConsume = 1;
                             foodConsume = 1;
-                            if (item is Garlic && m_Food is BreadLoaf)
+                            if (item is Garlic && _food is BreadLoaf)
                             {
                                 success = true;
                                 var bread = new GarlicBread();
                                 from.Backpack.AddItem(bread);
                             }
-                            else if (item is MandrakeRoot && m_Food is Cake)
+                            else if (item is MandrakeRoot && _food is Cake)
                             {
                                 success = true;
                                 var cake = new MandrakeCake();
                                 from.Backpack.AddItem(cake);
                             }
-                            else if (item is EnchanterDust && m_Food is Sausage)
+                            else if (item is EnchanterDust && _food is Sausage)
                             {
                                 success = true;
                                 var sausage = new EnchantedSausage();
                                 from.Backpack.AddItem(sausage);
                             }
-                            else if (item is Gold && m_Food is Ham)
+                            else if (item is Gold && _food is Ham)
                             {
                                 if (item.Amount >= 100)
                                 {
@@ -116,19 +116,19 @@ namespace Server.Talent
                                     partialSuccess = true;
                                 }
                             }
-                            else if (item is FireHorn && m_Food is Carrot)
+                            else if (item is FireHorn && _food is Carrot)
                             {
                                 success = true;
                                 var chilli = new Chilli();
                                 from.Backpack.AddItem(chilli);
                             }
-                            else if (item is IcyHeart && m_Food is Cabbage)
+                            else if (item is IcyHeart && _food is Cabbage)
                             {
                                 success = true;
                                 var cabbage = new FrozenCabbage();
                                 from.Backpack.AddItem(cabbage);
                             }
-                            else if (item is IronIngot && m_Food is CheeseWheel)
+                            else if (item is IronIngot && _food is CheeseWheel)
                             {
                                 if (item.Amount >= 10)
                                 {
@@ -142,7 +142,7 @@ namespace Server.Talent
                                     partialSuccess = true;
                                 }
                             }
-                            else if (item is CurePotion && m_Food is Muffins)
+                            else if (item is CurePotion && _food is Muffins)
                             {
                                 if (item.Amount >= 3)
                                 {
@@ -155,55 +155,55 @@ namespace Server.Talent
                                     partialSuccess = true;
                                 }
                             }
-                            else if (item is Kilt && m_Food is FriedEggs)
+                            else if (item is Kilt && _food is FriedEggs)
                             {
                                 success = true;
                                 var braveEggs = new BraveEggs();
                                 from.Backpack.AddItem(braveEggs);
                             }
-                            else if (item is BodySash && m_Food is RoastPig)
+                            else if (item is BodySash && _food is RoastPig)
                             {
                                 success = true;
                                 var roastPig = new DecoratedRoastPig();
                                 from.Backpack.AddItem(roastPig);
                             }
-                            else if (item is BatWing && m_Food is Ribs)
+                            else if (item is BatWing && _food is Ribs)
                             {
                                 success = true;
                                 var ribs = new BatEncrustedRibs();
                                 from.Backpack.AddItem(ribs);
                             }
-                            else if (item is Lemon && m_Food is ApplePie)
+                            else if (item is Lemon && _food is ApplePie)
                             {
                                 success = true;
                                 var pie = new LemonPie();
                                 from.Backpack.AddItem(pie);
                             }
-                            else if (item is DaemonBlood && m_Food is LambLeg)
+                            else if (item is DaemonBlood && _food is LambLeg)
                             {
                                 success = true;
                                 var lambLeg = new SacrificialLambLeg();
                                 from.Backpack.AddItem(lambLeg);
                             }
-                            else if (item is WizardsHat && m_Food is Quiche)
+                            else if (item is WizardsHat && _food is Quiche)
                             {
                                 success = true;
                                 var quiche = new PhilosophersQuiche();
                                 from.Backpack.AddItem(quiche);
                             }
-                            else if (item is Bandage && m_Food is MeatPie)
+                            else if (item is Bandage && _food is MeatPie)
                             {
                                 success = true;
                                 var athletesPie = new AthletesPie();
                                 from.Backpack.AddItem(athletesPie);
                             }
-                            else if (item is SpidersSilk && m_Food is CookedBird)
+                            else if (item is SpidersSilk && _food is CookedBird)
                             {
                                 success = true;
                                 var chicken = new StickyChicken();
                                 from.Backpack.AddItem(chicken);
                             }
-                            else if (item is Ginseng && m_Food is FishSteak)
+                            else if (item is Ginseng && _food is FishSteak)
                             {
                                 success = true;
                                 var singingFillet = new SingingFillet();
@@ -214,7 +214,7 @@ namespace Server.Talent
 
                     if (!success && !partialSuccess)
                     {
-                        m_Cook.SendMessage("Your experiment failed");
+                        _cook.SendMessage("Your experiment failed");
                     }
                     else if (partialSuccess)
                     {
@@ -224,7 +224,7 @@ namespace Server.Talent
                     }
                     else
                     {
-                        m_Cook.SendMessage("Your experiment has worked");
+                        _cook.SendMessage("Your experiment has worked");
                     }
 
                     if (itemConsume > 0)
@@ -238,16 +238,16 @@ namespace Server.Talent
 
                     if (foodConsume > 0)
                     {
-                        m_Food.Consume(foodConsume);
+                        _food.Consume(foodConsume);
                     }
                     else
                     {
-                        m_Food.Delete();
+                        _food.Delete();
                     }
                 }
                 else
                 {
-                    m_Cook.SendMessage("You cannot experiment with that target.");
+                    _cook.SendMessage("You cannot experiment with that target.");
                 }
             }
         }

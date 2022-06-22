@@ -64,15 +64,7 @@ namespace Server.Spells.First
                 int hue = 0;
                 if (Caster is PlayerMobile player)
                 {
-                    BaseTalent fireAffinity = player.GetTalent(typeof(FireAffinity));
-                    if (fireAffinity != null)
-                    {
-                        damage += fireAffinity.ModifySpellMultiplier();
-                    }
-                    BaseTalent frostFire = player.GetTalent(typeof(FrostFire));
-                    if (frostFire != null && fire > 0) {
-                        ((FrostFire)frostFire).ModifyFireSpell(ref fire, ref cold, m, hue: ref hue);
-                    }
+                    BaseTalent.ApplyFrostFireEffect(player, ref fire, ref cold, ref hue, m);
                 }
                 source.MovingParticles(m, 0x36D4, 5, 0, false, false, hue, 0, 3006, 0, 0, 0);
                 source.PlaySound(0x1E5);

@@ -5,7 +5,7 @@ namespace Server.Talent
         public AstralBorn()
         {
             DisplayName = "Astral born";
-            Description = "Decreases your planar exhaustion by 15 minutes.";
+            Description = "Decreases your planar exhaustion by 30 minutes.";
             ImageID = 401;
             GumpHeight = 85;
             MaxLevel = 1;

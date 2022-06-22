@@ -16,20 +16,23 @@ namespace Server.Talent
             };
             DisplayName = "Concussion";
             CanBeUsed = true;
-            Description = "Next hit drains 50% + level*2 mana for 20 seconds. 1 min cooldown.";
+            Description = "Next hit drains 50% + level * 2 mana for 20 seconds.";
+            StamRequired = 15;
             ImageID = 167;
+            CooldownSeconds = 60;
             GumpHeight = 75;
             AddEndY = 95;
         }
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
-            if (Activated)
+            if (Activated && attacker.Stam >= StamRequired + 1)
             {
                 Activated = false;
                 OnCooldown = true;
+                ApplyStaminaCost(attacker);
                 target.FixedParticles(0x3779, 10, 15, 5004, EffectLayer.Head);
-                target.PlaySound(0x1E4);
+                target.PlaySound(0x22C);
                 target.AddStatMod(
                     new StatMod(
                         StatType.Int,
@@ -38,7 +41,7 @@ namespace Server.Talent
                         TimeSpan.FromSeconds(20)
                     )
                 );
-                Timer.StartTimer(TimeSpan.FromSeconds(60), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
 

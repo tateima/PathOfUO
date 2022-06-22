@@ -9,6 +9,7 @@ namespace Server.Talent
             HasDamageAbsorptionEffect = true;
             DisplayName = "Undead hunter";
             Description = "Increases damage to undead and heals damage from them.";
+            AdditionalDetail = $"The damage caused is 1-X where X is the talent level. The damage absorbed from their attacks is 5% per level. {PassiveDetail}";
             ImageID = 143;
             AddEndY = 95;
         }

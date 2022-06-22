@@ -10,9 +10,11 @@ namespace Server.Talent
             TalentDependency = typeof(FencingSpecialist);
             RequiredWeaponSkill = SkillName.Fencing;
             DisplayName = "Back stab";
+            StamRequired = 10;
             CanBeUsed = true;
             Description =
                 "When activated, the next miss from opponent causes you to go behind them and hit for extra damage.";
+            CooldownSeconds = 30;
             ImageID = 118;
             GumpHeight = 75;
             AddEndY = 95;
@@ -34,11 +36,12 @@ namespace Server.Talent
         public override void CheckDefenderMissEffect(Mobile attacker, Mobile target)
         {
             var attackerPosition = attacker.Location;
-            if (Activated && attacker.Direction != Direction.Running && target.Weapon is BaseMeleeWeapon)
+            if (Activated && attacker.Direction != Direction.Running && target.Weapon is BaseMeleeWeapon backstabWeapon && target.Stam >= StamRequired + 1)
             {
                 Activated = false;
                 OnCooldown = true;
                 var attackerDirection = target.GetDirectionTo(attackerPosition.X, attackerPosition.Y);
+                var newDefendingLocation = CalculatePushbackFromAnchor(attackerPosition, -2, target);
                 var newDefendingDirection = attackerDirection switch
                 {
                     Direction.West  => Direction.East,
@@ -46,28 +49,23 @@ namespace Server.Talent
                     Direction.North => Direction.South,
                     _               => Direction.North
                 };
-                var newDefendingLocation = newDefendingDirection switch
-                {
-                    Direction.East  => new Point3D(attackerPosition.X - 2, attackerPosition.Y, attackerPosition.Y),
-                    Direction.West  => new Point3D(attackerPosition.X + 2, attackerPosition.Y, attackerPosition.Y),
-                    Direction.South => new Point3D(attackerPosition.X, attackerPosition.Y - 2, attackerPosition.Y),
-                    _               => new Point3D(attackerPosition.X, attackerPosition.Y + 2, attackerPosition.Y)
-                };
-
                 if (target.InLOS(newDefendingLocation))
                 {
+                    ApplyStaminaCost(target);
                     target.MoveToWorld(newDefendingLocation, target.Map);
                     target.Direction = newDefendingDirection;
                     target.PlaySound(0x525);
-                    var weapon = (BaseMeleeWeapon)target.Weapon;
-                    attacker.Damage(weapon.MaxDamage + Level, target);
+                    if (backstabWeapon.CheckHit(target, attacker))
+                    {
+                        attacker.Damage(backstabWeapon.MaxDamage + Level, target);
+                    }
                 }
                 else
                 {
                     target.SendMessage("Your back stab execution failed due to nearby objects");
                 }
 
-                Timer.StartTimer(TimeSpan.FromSeconds(45), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
     }

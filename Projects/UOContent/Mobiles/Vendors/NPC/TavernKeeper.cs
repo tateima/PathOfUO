@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Server.Items;
+using Server.Talent;
 using Server.Targeting;
 
 namespace Server.Mobiles
@@ -42,20 +43,23 @@ namespace Server.Mobiles
             } else if (speech.Contains("fetch"))
             {
                 PlayerMobile player = (PlayerMobile)e.Mobile;
-                if (player.Henchmen.Count + player.RestedHenchmen.Count > 2)
+                BaseTalent hireHenchman = player.GetTalent(typeof(HireHenchman));
+                if (hireHenchman != null)
                 {
-                    Say("You have too many henchmen already. I shall not fetch them.");
-                } else
-                {
-                    foreach (Mobile henchman in player.RestedHenchmen)
+                    if (player.Henchmen.Count + player.RestedHenchmen.Count > hireHenchman.Level)
                     {
-                        ((Henchman)henchman).SetControlMaster(player);
-                        ((Henchman)henchman).MoveToWorld(player.Location, player.Map);
-                        ((Henchman)henchman).ControlMaster = player;
-                        ((Henchman)henchman).ControlTarget = player;
+                        Say("You have too many henchmen already. I shall not fetch them.");
+                    } else
+                    {
+                        foreach (Mobile henchman in player.RestedHenchmen)
+                        {
+                            ((Henchman)henchman).SetControlMaster(player);
+                            ((Henchman)henchman).MoveToWorld(player.Location, player.Map);
+                            ((Henchman)henchman).ControlMaster = player;
+                            ((Henchman)henchman).ControlTarget = player;
+                        }
                     }
                 }
-
             } else
             {
                 e.Handled = true;

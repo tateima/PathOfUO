@@ -74,11 +74,11 @@ namespace Server.Items
         public override void GetProperties(IPropertyList list)
         {
             base.GetProperties(list);
-            list.Add(1060658, $"{"Rune name"}:\t{_runeWordName}"); // ~1_val~: ~2_val~
-            list.Add(1060658, $"{"Rune symbol"}:\t{_type}");       // ~1_val~: ~2_val~
+            list.Add(1114057, $"Rune name:\t{_runeWordName}"); // ~1_val~: ~2_val~
+            list.Add(1114057, $"Rune symbol:\t{_type}");       // ~1_val~: ~2_val~
             if (_identified)
             {
-                list.Add(1060658, $"{"Symbol identity"}:\t{_symbolType}"); // ~1_val~: ~2_val~
+                list.Add(1114057, $"Symbol identity:\t{_symbolType}"); // ~1_val~: ~2_val~
             }
         }
     }

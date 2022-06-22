@@ -16,6 +16,7 @@ using Server.Spells.Sixth;
 using Server.Spells.Spellweaving;
 using Server.Talent;
 using Server.Misc;
+using Server.Pantheon;
 
 namespace Server.Items
 {
@@ -25,7 +26,7 @@ namespace Server.Items
         SlayerName Slayer2 { get; set; }
     }
 
-    public abstract class BaseWeapon : Item, IWeapon, IFactionItem, ICraftable, ISlayer, IDurability
+    public abstract class BaseWeapon : Item, IWeapon, IFactionItem, ICraftable, ISlayer, IDurability, IPantheonItem
     {
         private static bool _enableInstaHit;
 
@@ -41,6 +42,9 @@ namespace Server.Items
         private string m_Sockets;
         private bool m_Enchanted;
         private bool m_WarForged;
+        private int m_TalentIndex;
+        private int m_TalentLevel;
+        private string m_AlignmentRaw;
 
         /* Weapon internals work differently now (Mar 13 2003)
          *
@@ -92,6 +96,10 @@ namespace Server.Items
 
         public BaseWeapon(int itemID) : base(itemID)
         {
+            m_AlignmentRaw = "None";
+            m_TalentIndex = BaseTalent.InvalidTalentIndex;
+            m_TalentLevel = 0;
+            Talent = TalentConstructor.ConstructFromIndex(m_TalentIndex);
             Layer = (Layer)ItemData.Quality;
             m_ShardPower = 0;
             m_SocketAmount = 0;
@@ -129,6 +137,42 @@ namespace Server.Items
 
         public BaseWeapon(Serial serial) : base(serial)
         {
+        }
+
+        public Deity.Alignment Alignment() => Deity.AlignmentFromString(m_AlignmentRaw);
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int TalentIndex
+        {
+            get => m_TalentIndex;
+            set
+            {
+                m_TalentIndex = value;
+                Talent = TalentConstructor.ConstructFromIndex(m_TalentIndex);
+                InvalidateProperties();
+            }
+        }
+        public BaseTalent Talent { get; set; }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int TalentLevel
+        {
+            get => m_TalentLevel;
+            set
+            {
+                m_TalentLevel = value;
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public string AlignmentRaw
+        {
+            get => m_AlignmentRaw;
+            set
+            {
+                m_AlignmentRaw = value;
+                InvalidateProperties();
+            }
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
@@ -1269,8 +1313,8 @@ namespace Server.Items
                 BarrierGuard barrierGuard = (BarrierGuard)mobile.GetTalent(typeof(BarrierGuard));
                 Phalanx phalanx = (Phalanx)mobile.GetTalent(typeof(Phalanx));
                 bool keenSenseCheck = (keenSenses?.CheckDodge() == true);
-                bool barrierGuardCheck = (barrierGuard?.CheckParry() == true);
-                bool phalanxCheck = (phalanx?.CheckBlock(this) == true);
+                bool barrierGuardCheck = (barrierGuard?.CheckParry(defender) == true);
+                bool phalanxCheck = (phalanx?.CheckBlock(defender, this) == true);
                 if (keenSenseCheck || barrierGuardCheck || phalanxCheck)
                 {
                     mobile.FixedEffect(0x37B9, 10, 16);
@@ -1414,20 +1458,28 @@ namespace Server.Items
             double delayInSeconds;
             int handFinesseBonus = 0;
             int holyAvengerBonus = 0;
+            int zealotBonus = 0;
             bool slowed = false;
             if (m is PlayerMobile player)
             {
                 slowed = player.Slowed;
                 BaseTalent handFinesse = player.GetTalent(typeof(HandFinesse));
                 BaseTalent holyAvenger = player.GetTalent(typeof(HolyAvenger));
+                if (player.TalentEffect is Zealot)
+                {
+                    zealotBonus += player.TalentEffect.Level * 5;
+                }
                 if (handFinesse != null)
                 {
-                    handFinesseBonus = (handFinesse.Level * 3);
+                    handFinesseBonus += handFinesse.Level * 3;
                 }
                 if (holyAvenger != null)
                 {
                     holyAvengerBonus += holyAvenger.Level;
                 }
+            } else if (m is BaseCreature creature && creature.TalentEffect is Zealot)
+            {
+                zealotBonus += creature.TalentEffect.Level * 5;
             }
 
             if (Core.SE)
@@ -1480,6 +1532,8 @@ namespace Server.Items
 
                 // add hand finesse bonus
                 bonus += handFinesseBonus;
+
+                bonus += zealotBonus;
 
                 if (bonus > 60)
                 {
@@ -1535,6 +1589,8 @@ namespace Server.Items
 
                 bonus += handFinesseBonus;
 
+                bonus += zealotBonus;
+
                 var discordanceEffect = 0;
 
                 // Discordance gives a malus of -0/-28% to swing speed.
@@ -1566,7 +1622,9 @@ namespace Server.Items
             else
             {
                 // add hand finesse to speed divided by 2 (a total max of 5 points)
-                speed += (handFinesseBonus / 2);
+                speed += handFinesseBonus / 2;
+                speed += zealotBonus / 2;
+
                 var v = (m.Stam + 100) * (int)speed;
                 if (slowed)
                 {
@@ -1678,11 +1736,15 @@ namespace Server.Items
 
         public int AbsorbDamageByTalent(Mobile defender, Mobile attacker, int damage) {
             if (defender is PlayerMobile player) {
+                if (player.TalentEffect?.HasDamageAbsorptionEffect == true)
+                {
+                    damage = player.TalentEffect.CheckDamageAbsorptionEffect(player, attacker, damage);
+                }
                 foreach (var (_, value) in player.Talents)
                 {
                     if (value.HasDamageAbsorptionEffect)
                     {
-                        value.CheckDamageAbsorptionEffect(player, attacker, damage);
+                        damage = value.CheckDamageAbsorptionEffect(player, attacker, damage);
                     }
                 }
             }
@@ -2694,7 +2756,7 @@ namespace Server.Items
             if (defender is PlayerMobile defendingPlayer) {
                 foreach (var (_, value) in defendingPlayer.Talents)
                 {
-                    if (value.CanApplyHitEffect(this))
+                    if (value.CanApplyHitEffect((BaseWeapon)defender.Weapon))
                     {
                         value.CheckDefenderMissEffect(attacker, defender);
                     }
@@ -3234,51 +3296,60 @@ namespace Server.Items
         public override void GetProperties(IPropertyList list)
         {
             base.GetProperties(list);
+            if (m_AlignmentRaw != null)
+            {
+                list.Add(1114057, $"Alignment: {m_AlignmentRaw}"); // ~1_val~
+                if (Talent is not null)
+                {
+                    list.Add(1114057, $"{Talent.DisplayName} + {TalentLevel.ToString()}"); // ~1_val~
+                }
+            }
+
             if (m_WarForged)
             {
                 list.Add(
-                    1060847,
+                    1114057,
                     "Warforged"
                 );
             }
             if (m_Enchanted)
             {
                 list.Add(
-                    1060847,
+                    1114057,
                     "Enchanted"
                 );
             }
             if (m_SocketAmount > 0) {
-                list.Add(1060847, $"Sockets:\t{SocketArray.Length.ToString()}/{m_SocketAmount.ToString()}");
+                list.Add(1114057, $"Sockets: {SocketArray.Length.ToString()}/{m_SocketAmount.ToString()}");
                 for (var i = 0; i < SocketArray.Length; i++) {
-                    list.Add(1060847, $"\t{SocketArray[i]}");
+                    list.Add(1114057, $"{SocketArray[i]}");
                 }
             }
             if (m_ShardPower > 0)
             {
-                list.Add(1060847, $"Shard Power:\t{m_ShardPower.ToString()}");
+                list.Add(1114057, $"Shard Power: {m_ShardPower.ToString()}");
             }
 
             if (m_Haunted)
             {
-                list.Add(1060847, "Haunted:\t");
+                list.Add(1114057, "Haunted");
             }
 
             if (m_Burning)
             {
-                list.Add(1060847, "Burning:\t");
+                list.Add(1114057, "Burning");
             }
             else if (m_Frozen)
             {
-                list.Add(1060847, "Frozen:\t");
+                list.Add(1114057, "Frozen");
             }
             else if (m_Electrified)
             {
-                list.Add(1060847, "Electrified:\t");
+                list.Add(1114057, "Electrified");
             }
             else if (m_Toxic)
             {
-                list.Add(1060847, "Toxic:\t");
+                list.Add(1114057, "Toxic");
             }
 
             if (m_Crafter != null)
@@ -4001,7 +4072,10 @@ namespace Server.Items
         {
             base.Serialize(writer);
 
-            writer.Write(15); // version
+            writer.Write(16); // version
+            writer.Write(m_AlignmentRaw);
+            writer.Write(m_TalentIndex);
+            writer.Write(m_TalentLevel);
             writer.Write(m_WarForged);
             writer.Write(m_Enchanted);
             writer.Write(m_SocketAmount);
@@ -4205,6 +4279,12 @@ namespace Server.Items
 
             switch (version)
             {
+                case 16:
+                    m_AlignmentRaw = reader.ReadString();
+                    m_TalentIndex = reader.ReadInt();
+                    m_TalentLevel = reader.ReadInt();
+                    Talent = TalentConstructor.ConstructFromIndex(m_TalentIndex);
+                    goto case 15;
                 case 15:
                     m_WarForged = reader.ReadBool();
                     goto case 14;

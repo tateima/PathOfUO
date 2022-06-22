@@ -160,44 +160,34 @@ public static class SkillCheck
         }
 
         var success = chance >= Utility.RandomDouble();
-        var gc = (double)(from.Skills.Cap - from.Skills.Total) / from.Skills.Cap;
-        gc += (skill.Cap - skill.Base) / skill.Cap;
-        gc /= 2;
+        // var gc = (double)(from.Skills.Cap - from.Skills.Total) / from.Skills.Cap;
+        // gc += (skill.Cap - skill.Base) / skill.Cap;
+        // gc /= 2;
 
-        gc += (1.0 - chance) * (success ? 0.5 :
-            Core.AOS ? 0.0 : 0.2);
-        gc /= 2;
+        // gc += (1.0 - chance) * (success ? 0.5 :
+        //     Core.AOS ? 0.0 : 0.2);
+        // gc /= 2;
 
-        gc *= skill.Info.GainFactor;
+        // gc *= skill.Info.GainFactor;
 
-        if (gc < 0.01)
-        {
-            return false; // level based
-          //  if (Core.AOS && Faction.InSkillLoss(from)) // Changed some time between the introduction of AoS and SE.
-           // {
-          //      return false;
-          //  }
+        // if (gc < 0.01)
+        // {
+        //     gc = 0.01;
+        // }
 
-           // if (AntiMacroCode && from is PlayerMobile mobile && UseAntiMacro[skill.Info.SkillID])
-          //  {
-           //     return mobile.AntiMacroCheck(skill, obj);
-           // }
+        // if (from is BaseCreature creature && creature.Controlled)
+        // {
+        //     gc *= 2;
+        // }
 
-           // return true;
-        }
-
-        if (from is BaseCreature creature && creature.Controlled)
-        {
-            gc *= 2;
-        }
-
-        if (from.Alive && (gc >= Utility.RandomDouble() && AllowGain(from, skill, amObj) || skill.Base < 10.0))
-        {
-            Gain(from, skill);
-        }
+        // if (from.Alive && (gc >= Utility.RandomDouble() && AllowGain(from, skill, amObj) || skill.Base < 10.0))
+        // {
+        //     Gain(from, skill);
+        // }
 
         return success;
     }
+
 
     public static bool Mobile_SkillCheckTarget(
         Mobile from, SkillName skillName, object target, double minSkill,
@@ -265,7 +255,7 @@ public static class SkillCheck
         return true;
     }
 
-    public static void Gain(Mobile from, Skill skill)
+        public static void Gain(Mobile from, Skill skill)
     {
         if (from.Region.IsPartOf<JailRegion>())
         {
@@ -321,8 +311,9 @@ public static class SkillCheck
 
         if (skill.Lock == SkillLock.Up)
         {
-            return; // do not trigger stat gain, level based
-           /* switch (stat)
+            var info = skill.Info;
+
+            if (from.StrLock == StatLockType.Up && info.StrGain / 33.3 > Utility.RandomDouble())
             {
                 GainStat(from, Stat.Str);
             }
@@ -334,10 +325,6 @@ public static class SkillCheck
             {
                 GainStat(from, Stat.Int);
             }
-
-            var atrophy = from.RawStatTotal / (double)from.StatCap >= Utility.RandomDouble();
-
-            IncreaseStat(from, stat, atrophy);*/
         }
     }
 

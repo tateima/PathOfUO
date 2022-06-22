@@ -84,7 +84,7 @@ namespace Server.Mobiles
         private DateTime m_DeleteTime;
         private Timer m_DeleteTimer;
 
-        private EDI m_Destination;
+        private EscortDestinationInfo m_Destination;
         private string m_DestinationString;
 
         private DateTime m_LastSeenEscorter;
@@ -124,7 +124,7 @@ namespace Server.Mobiles
             set
             {
                 m_DestinationString = value;
-                m_Destination = EDI.Find(value);
+                m_Destination = EscortDestinationInfo.Find(value);
             }
         }
 
@@ -665,7 +665,7 @@ namespace Server.Mobiles
             while (picked == null)
             {
                 picked = possible.RandomElement();
-                var test = EDI.Find(picked);
+                var test = EscortDestinationInfo.Find(picked);
 
                 if (test.Contains(Location))
                 {
@@ -676,7 +676,7 @@ namespace Server.Mobiles
             return picked;
         }
 
-        public EDI GetDestination()
+        public EscortDestinationInfo GetDestination()
         {
             if (MLQuestSystem.Enabled)
             {
@@ -695,7 +695,7 @@ namespace Server.Mobiles
 
             if (Map.Felucca.Regions.Count > 0)
             {
-                return m_Destination = EDI.Find(m_DestinationString);
+                return m_Destination = EscortDestinationInfo.Find(m_DestinationString);
             }
 
             return m_Destination = null;
@@ -754,7 +754,7 @@ namespace Server.Mobiles
             }
         }
 
-        public static EDI Find(string name)
+        public static EscortDestinationInfo Find(string name)
         {
             if (name == null || m_Table == null)
             {

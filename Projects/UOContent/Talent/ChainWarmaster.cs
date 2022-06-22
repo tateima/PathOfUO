@@ -7,8 +7,10 @@ namespace Server.Talent
     {
         public ChainWarmaster()
         {
+            StatModNames = new[] { "ChainWarmasterStr", "ChainWarmasterDex" };
             DisplayName = "Chain warmaster";
-            Description = "Reduces damage while wearing chain or ringmail. Increases Str by 1 and Dex by 1 per Level";
+            Description = "Reduces damage while wearing chain or ringmail. Increases Str by 2 and Dex by 2 per Level";
+            AdditionalDetail = $"{PassiveDetail}";
             ImageID = 394;
             GumpHeight = 85;
             UpdateOnEquip = true;
@@ -17,18 +19,17 @@ namespace Server.Talent
 
         public override void UpdateMobile(Mobile mobile)
         {
-            if (BaseArmor.FullChain(mobile) || BaseArmor.FullRing(mobile))
+            ResetMobileMods(mobile);
+            if (Items.BaseArmor.FullChain(mobile) || Items.BaseArmor.FullRing(mobile))
             {
-                mobile.RemoveStatMod("ChainWarmasterStr");
-                mobile.RemoveStatMod("ChainWarmasterDex");
-                mobile.AddStatMod(new StatMod(StatType.Str, "ChainWarmasterStr", Level, TimeSpan.Zero));
-                mobile.AddStatMod(new StatMod(StatType.Dex, "ChainWarmasterDex", Level, TimeSpan.Zero));
+                mobile.AddStatMod(new StatMod(StatType.Str, StatModNames[0], Level * 2, TimeSpan.Zero));
+                mobile.AddStatMod(new StatMod(StatType.Dex, StatModNames[1], Level * 2, TimeSpan.Zero));
             }
         }
 
         public override int CheckDamageAbsorptionEffect(Mobile defender, Mobile attacker, int damage)
         {
-            if (BaseArmor.FullChain(defender) || BaseArmor.FullRing(defender))
+            if (Items.BaseArmor.FullChain(defender) || Items.BaseArmor.FullRing(defender))
             {
                 damage -= Level;
             }

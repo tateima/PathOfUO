@@ -7,6 +7,7 @@ namespace Server.Talent
             TalentDependency = typeof(MerchantPorter);
             DisplayName = "Inventive";
             Description = "Increases potency of devices and inventions.";
+            AdditionalDetail = "This potency is increased by 15% per level.";
             ImageID = 29;
             MaxLevel = 6;
             GumpHeight = 85;

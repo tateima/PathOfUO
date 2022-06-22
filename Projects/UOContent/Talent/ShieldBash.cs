@@ -9,26 +9,34 @@ namespace Server.Talent
         {
             RequiredWeapon = new[] { typeof(BaseShield) };
             CanBeUsed = true;
+            HasDefenseEffect = true;
             TalentDependency = typeof(ShieldFocus);
             DisplayName = "Shield bash";
-            Description = "Stun target if hits for 2 second per level. 30 second cooldown.";
+            CooldownSeconds = 15;
+            Description = "Stun target for 2 second per level. 15 second cooldown.";
+            AdditionalDetail =
+                "This talent is a defensive one and is triggered on a successful counter attack while active. This talent causes 1-X+ damage where X is the talent level.";
             ImageID = 351;
             GumpHeight = 75;
             AddEndY = 90;
         }
 
-        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        public override bool HasSkillRequirement(Mobile mobile) => mobile.Skills.Parry.Value >= 35.0;
+
+        public override void CheckDefenseEffect(Mobile defender, Mobile attacker, int damage)
         {
-            if (Activated && attacker.Weapon is BaseWeapon weapon && attacker.FindItemOnLayer(Layer.TwoHanded) is BaseShield)
+            if (Activated && defender.Weapon is BaseWeapon weapon && defender.FindItemOnLayer(Layer.TwoHanded) is BaseShield && defender.Stam >= 11)
             {
-                if (weapon.CheckHit(attacker, target))
+                if (weapon.CheckHit(defender, attacker))
                 {
+                    ApplyStaminaCost(defender);
                     Activated = false;
                     OnCooldown = true;
-                    target.SendSound(0x140);
-                    target.FixedEffect(0x37B9, 10, 16);
-                    target.Paralyze(TimeSpan.FromSeconds(Level * 2));
-                    Timer.StartTimer(TimeSpan.FromSeconds(30), ExpireTalentCooldown, out _talentTimerToken);
+                    defender.SendSound(0x140);
+                    attacker.FixedEffect(0x37B9, 10, 16);
+                    attacker.Paralyze(TimeSpan.FromSeconds(Level * 2));
+                    attacker.Damage(Utility.Random(Level), defender);
+                    Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                 }
             }
         }

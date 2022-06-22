@@ -312,7 +312,6 @@ namespace Server.Spells
                     hasReagents = Caster.Backpack.FindItemsByType(type, true).Length > 0;
                     if (!hasReagents)
                     {
-                        hasReagents = false;
                         break;
                     }
                 }
@@ -347,21 +346,20 @@ namespace Server.Spells
         public virtual double GetDamageScalar(Mobile target)
         {
             var scalar = ReagentsScale();
-
-            if (!Core.AOS) // EvalInt stuff for AoS is handled elsewhere
+            if (Caster is PlayerMobile)
             {
-                if (Caster is PlayerMobile)
+                PlayerMobile player = (PlayerMobile)Caster;
+                foreach (KeyValuePair<Type, BaseTalent> entry in player.Talents)
                 {
-                    PlayerMobile player = (PlayerMobile)Caster;
-                    foreach (KeyValuePair<Type, BaseTalent> entry in player.Talents)
+                    if (entry.Value.CanScaleSpellDamage(this))
                     {
-                        if (entry.Value.CanScaleSpellDamage(this))
-                        {
-                            // add 1% for each talent point
-                            scalar += entry.Value.ModifySpellScalar();
-                        }
+                        // add 1% for each talent point
+                        scalar += entry.Value.ModifySpellScalar();
                     }
                 }
+            }
+            if (!Core.AOS) // EvalInt stuff for AoS is handled elsewhere
+            {
                 var casterEI = Caster.Skills[DamageSkill].Value;
                 var targetRS = target.Skills.MagicResist.Value;
 
@@ -500,23 +498,16 @@ namespace Server.Spells
                 _castTimer?.Stop();
                 _animTimer?.Stop();
 
-                if (Core.AOS && Caster.Player && type == DisturbType.Hurt)
-                {
-                    DoHurtFizzle();
-                }
-
                 Caster.NextSpellTime = Core.TickCount + (int)GetDisturbRecovery().TotalMilliseconds;
             }
             else if (State == SpellState.Sequencing)
             {
                 OnDisturb(type, false);
-
                 Target.Cancel(Caster);
-
-                if (Core.AOS && Caster.Player && type == DisturbType.Hurt)
-                {
-                    DoHurtFizzle();
-                }
+            }
+            if (Core.AOS && Caster.Player && type == DisturbType.Hurt)
+            {
+                DoHurtFizzle();
             }
         }
 

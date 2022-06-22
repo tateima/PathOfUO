@@ -15,8 +15,11 @@ namespace Server.Talent
             TalentDependency = typeof(Resonance);
             CanBeUsed = true;
             DisplayName = "Dominate creature";
+            CooldownSeconds = 300;
+            ManaRequired = 40;
             Description =
-                "Chance on to control target for 1 minute per level. 5 minute cooldown. Requires 90 music, all bardic skills 70+.";
+                "Chance to control target for 10 seconds per level. Requires 90 music, all bardic skills 70+.";
+            AdditionalDetail = "Each level decreases the cooldown by 30 seconds.";
             ImageID = 191;
             AddEndY = 110;
         }
@@ -38,6 +41,10 @@ namespace Server.Talent
                     else
                     {
                         bardicValid = mobile.Skills[skill].Base >= 70;
+                        if (!bardicValid)
+                        {
+                            break;
+                        }
                     }
                 }
             }
@@ -47,7 +54,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && from.Mana > ManaRequired)
             {
                 BaseInstrument instrument = null;
                 from.Backpack?.FindItemsByType<BaseInstrument>()
@@ -64,31 +71,33 @@ namespace Server.Talent
                 if (instrument != null)
                 {
                     from.SendMessage("Whom do you wish to control");
-                    from.Target = new InternalFirstTarget(from, instrument, Level);
-                    OnCooldown = true;
-                    Timer.StartTimer(TimeSpan.FromSeconds(300 - Level * 30), ExpireTalentCooldown, out _talentTimerToken);
+                    from.Target = new InternalFirstTarget(from, instrument, this);
                 }
                 else
                 {
                     from.SendMessage("You require an instrument to use this talent");
                 }
             }
+            else
+            {
+                from.SendMessage($"You require {ManaRequired.ToString()} mana to dominate this creatures mind.");
+            }
         }
 
         private class InternalFirstTarget : Target
         {
-            private readonly BaseInstrument m_Instrument;
-            private readonly int m_level;
-            private BaseCreature m_Creature;
+            private readonly BaseInstrument _instrument;
+            private readonly DominateCreature _dominateCreature;
+            private BaseCreature _creature;
 
-            public InternalFirstTarget(Mobile from, BaseInstrument instrument, int level) : base(
+            public InternalFirstTarget(Mobile from, BaseInstrument instrument, DominateCreature dominateCreature) : base(
                 BaseInstrument.GetBardRange(from, SkillName.Provocation),
                 false,
                 TargetFlags.None
             )
             {
-                m_Instrument = instrument;
-                m_level = level;
+                _instrument = instrument;
+                _dominateCreature = dominateCreature;
             }
 
             protected override void OnTarget(Mobile from, object targeted)
@@ -97,8 +106,8 @@ namespace Server.Talent
 
                 if (targeted is BaseCreature creature && from.CanBeHarmful(creature, true))
                 {
-                    m_Creature = creature;
-                    if (!m_Instrument.IsChildOf(from.Backpack))
+                    _creature = creature;
+                    if (!_instrument.IsChildOf(from.Backpack))
                     {
                         from.SendLocalizedMessage(
                             1062488
@@ -121,7 +130,13 @@ namespace Server.Talent
                     else
                     {
                         from.RevealingAction();
-                        var diff = m_Instrument.GetDifficultyFor(creature) - 10.0;
+                        _dominateCreature.OnCooldown = true;
+                        Timer.StartTimer(
+                            TimeSpan.FromSeconds(_dominateCreature.CooldownSeconds - _dominateCreature.Level * 30),
+                            _dominateCreature.ExpireTalentCooldown,
+                            out _dominateCreature._talentTimerToken
+                        );
+                        var diff = _instrument.GetDifficultyFor(creature) - 10.0;
                         // discordance is the core engine mechanic
                         var music = from.Skills.Discordance.Value;
 
@@ -134,8 +149,8 @@ namespace Server.Talent
                         {
                             from.NextSkillTime = Core.TickCount + 5000;
                             from.SendLocalizedMessage(500612); // You play poorly, and there is no effect.
-                            m_Instrument.PlayInstrumentBadly(from);
-                            m_Instrument.ConsumeUse(from);
+                            _instrument.PlayInstrumentBadly(from);
+                            _instrument.ConsumeUse(from);
                         }
                         else
                         {
@@ -143,8 +158,8 @@ namespace Server.Talent
                             {
                                 from.NextSkillTime = Core.TickCount + 5000;
                                 from.SendMessage("Your music fails to dominate the creatures mind.");
-                                m_Instrument.PlayInstrumentBadly(from);
-                                m_Instrument.ConsumeUse(from);
+                                _instrument.PlayInstrumentBadly(from);
+                                _instrument.ConsumeUse(from);
                             }
                             else
                             {
@@ -157,14 +172,14 @@ namespace Server.Talent
                                 from.SendMessage(
                                     "You play your music and your target submits to your will for a brief time"
                                 );
-                                m_Instrument.PlayInstrumentWell(from);
-                                m_Instrument.ConsumeUse(from);
-                                m_Creature.Owners.Add(from);
-                                m_Creature.SetControlMaster(from);
-                                m_Creature.Summoned = true;
-                                m_Creature.BardEndTime = Core.Now + TimeSpan.FromSeconds(m_level * 10);
+                                _instrument.PlayInstrumentWell(from);
+                                _instrument.ConsumeUse(from);
+                                _creature.Owners.Add(from);
+                                _creature.SetControlMaster(from);
+                                _creature.Summoned = true;
+                                _creature.BardEndTime = Core.Now + TimeSpan.FromSeconds(_dominateCreature.Level * 10);
                                 Timer.StartTimer(
-                                    TimeSpan.FromSeconds(m_level * 10),
+                                    TimeSpan.FromSeconds(_dominateCreature.Level * 10),
                                     ExpireDomination,
                                     out _
                                 );
@@ -180,9 +195,9 @@ namespace Server.Talent
 
             private void ExpireDomination()
             {
-                m_Creature.Owners.Clear();
-                m_Creature.SetControlMaster(null);
-                m_Creature.Summoned = false;
+                _creature.Owners.Clear();
+                _creature.SetControlMaster(null);
+                _creature.Summoned = false;
             }
         }
     }

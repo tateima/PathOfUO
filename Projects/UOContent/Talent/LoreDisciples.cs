@@ -14,7 +14,10 @@ namespace Server.Talent
             TalentDependency = typeof(LoreSeeker);
             CanBeUsed = true;
             DisplayName = "Lore disciples";
-            Description = "Summon random humanoids to fight alongside you for 2m (5m cooldown).";
+            Description = "Summon random humanoids to fight alongside you for 2 minutes.";
+            AdditionalDetail = "These disciples will be either a Brigand, a Mage or a Healer. The raw stats of these disciples grows by 3% per level. Additionally, their skills will be improved by 2% for every point in the Lore Teacher talent.";
+            CooldownSeconds = 300;
+            ManaRequired = 40;
             MaxLevel = 4;
             ImageID = 158;
             GumpHeight = 75;
@@ -26,15 +29,15 @@ namespace Server.Talent
             if (!OnCooldown)
             {
                 var canCast = true;
-                if (from.Mana < 40)
+                if (from.Mana < ManaRequired)
                 {
                     canCast = false;
-                    from.SendMessage("You need 40 mana to call upon your disciples.");
+                    from.SendMessage($"You need {ManaRequired.ToString()} mana to call upon your disciples.");
                 }
 
                 if (canCast)
                 {
-                    from.Mana -= 40;
+                    ApplyManaCost(from);
                     from.RevealingAction();
                     from.PublicOverheadMessage(
                         MessageType.Spell,
@@ -90,14 +93,7 @@ namespace Server.Talent
                         if (disciple != null)
                         {
                             disciple = (BaseCreature)ScaleMobileStats(disciple);
-                            if (disciple.Backpack != null)
-                            {
-                                for (var x = disciple.Backpack.Items.Count - 1; x >= 0; x--)
-                                {
-                                    var item = disciple.Backpack.Items[x];
-                                    item.Delete();
-                                }
-                            }
+                            EmptyCreatureBackpack(disciple);
                             SpellHelper.Summon(disciple, from, 0x1FE, TimeSpan.FromMinutes(2), false, false);
                             disciple.OverrideDispellable = true;
                             disciple.Say("I am here to serve thee!");
@@ -107,7 +103,7 @@ namespace Server.Talent
                         }
                     }
 
-                    Timer.StartTimer(TimeSpan.FromMinutes(5), ExpireTalentCooldown, out _talentTimerToken);
+                    Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                     OnCooldown = true;
                     from.SendMessage("Whom do you wish them to attack?");
                     from.Target = new InternalTarget(disciples);
@@ -117,22 +113,22 @@ namespace Server.Talent
 
         private class InternalTarget : Target
         {
-            private readonly List<Mobile> m_Disciples;
+            private readonly List<Mobile> _disciples;
 
             public InternalTarget(List<Mobile> disciples) : base(
                 8,
                 false,
                 TargetFlags.None
             ) =>
-                m_Disciples = disciples;
+                _disciples = disciples;
 
             protected override void OnTarget(Mobile from, object targeted)
             {
                 if (targeted is Mobile target && from.CanBeHarmful(target, true))
                 {
-                    for (var i = 0; i < m_Disciples.Count; i++)
+                    for (var i = 0; i < _disciples.Count; i++)
                     {
-                        m_Disciples[i].Attack(target);
+                        _disciples[i].Attack(target);
                     }
                 }
             }

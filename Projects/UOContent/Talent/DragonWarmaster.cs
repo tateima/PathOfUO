@@ -7,8 +7,10 @@ namespace Server.Talent
     {
         public DragonWarmaster()
         {
+            StatModNames = new[] { "DragonWarmasterStr", "DragonWarmasterInt" };
             DisplayName = "Dragon warmaster";
-            Description = "Reduces damage while wearing dragon armor. Increases Str by 3 and reduces Int by 1 per Level";
+            Description = "Reduces damage while wearing dragon armor. Increases Str by 3 and Int by 1 per Level";
+            AdditionalDetail = $"{PassiveDetail}";
             ImageID = 397;
             GumpHeight = 85;
             AddEndY = 80;
@@ -17,18 +19,17 @@ namespace Server.Talent
 
         public override void UpdateMobile(Mobile mobile)
         {
-            if (BaseArmor.FullDragon(mobile))
+            ResetMobileMods(mobile);
+            if (Items.BaseArmor.FullDragon(mobile))
             {
-                mobile.RemoveStatMod("DragonWarmasterStr");
-                mobile.RemoveStatMod("DragonWarmasterInt");
-                mobile.AddStatMod(new StatMod(StatType.Str, "ChainWarmasterStr", Level * 3, TimeSpan.Zero));
-                mobile.AddStatMod(new StatMod(StatType.Int, "ChainWarmasterInt", -Level, TimeSpan.Zero));
+                mobile.AddStatMod(new StatMod(StatType.Str, StatModNames[0], Level * 3, TimeSpan.Zero));
+                mobile.AddStatMod(new StatMod(StatType.Int, StatModNames[1], Level, TimeSpan.Zero));
             }
         }
 
         public override int CheckDamageAbsorptionEffect(Mobile defender, Mobile attacker, int damage)
         {
-            if (BaseArmor.FullDragon(defender))
+            if (Items.BaseArmor.FullDragon(defender))
             {
                 damage -= Level;
             }

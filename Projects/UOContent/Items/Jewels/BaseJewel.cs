@@ -1,5 +1,7 @@
 using System;
 using Server.Engines.Craft;
+using Server.Pantheon;
+using Server.Talent;
 
 namespace Server.Items
 {
@@ -17,7 +19,7 @@ namespace Server.Items
         Diamond
     }
 
-    public abstract class BaseJewel : Item, ICraftable
+    public abstract class BaseJewel : Item, ICraftable, IPantheonItem
     {
         private GemType m_GemType;
         private int m_HitPoints;
@@ -27,9 +29,15 @@ namespace Server.Items
         private int m_SocketAmount;
         private string m_Sockets;
         private bool m_Enchanted;
+        private int m_TalentIndex;
+        private int m_TalentLevel;
+        private string m_AlignmentRaw;
 
         public BaseJewel(int itemID, Layer layer) : base(itemID)
         {
+            m_AlignmentRaw = "None";
+            m_TalentIndex = BaseTalent.InvalidTalentIndex;
+            m_TalentLevel = 0;
             Attributes = new AosAttributes(this);
             Resistances = new AosElementAttributes(this);
             SkillBonuses = new AosSkillBonuses(this);
@@ -45,6 +53,41 @@ namespace Server.Items
 
         public BaseJewel(Serial serial) : base(serial)
         {
+        }
+        public Deity.Alignment Alignment() => Deity.AlignmentFromString(m_AlignmentRaw);
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int TalentIndex
+        {
+            get => m_TalentIndex;
+            set
+            {
+                m_TalentIndex = value;
+                Talent = TalentConstructor.ConstructFromIndex(m_TalentIndex);
+                InvalidateProperties();
+            }
+        }
+        public BaseTalent Talent { get; set; }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int TalentLevel
+        {
+            get => m_TalentLevel;
+            set
+            {
+                m_TalentLevel = value;
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public string AlignmentRaw
+        {
+            get => m_AlignmentRaw;
+            set
+            {
+                m_AlignmentRaw = value;
+                InvalidateProperties();
+            }
         }
         [CommandProperty(AccessLevel.GameMaster)]
         public bool Enchanted
@@ -307,17 +350,26 @@ namespace Server.Items
         public override void GetProperties(IPropertyList list)
         {
             base.GetProperties(list);
+            if (m_AlignmentRaw != null)
+            {
+                list.Add(1114057, $"Alignment: {m_AlignmentRaw}"); // ~1_val~
+                if (m_TalentIndex < BaseTalent.InvalidTalentIndex && TalentLevel > 0)
+                {
+                    list.Add(1114057, $"{Talent.DisplayName} + {TalentLevel.ToString()}"); // ~1_val~
+                }
+            }
+
             if (m_Enchanted)
             {
                 list.Add(
-                    1060847,
+                    1114057,
                     "Enchanted"
                 );
             }
             if (m_SocketAmount > 0) {
-                list.Add(1060847, $"Sockets:\t{SocketArray.Length.ToString()}/{m_SocketAmount.ToString()}");
+                list.Add(1114057, $"Sockets:\t{SocketArray.Length.ToString()}/{m_SocketAmount.ToString()}");
                 for (var i = 0; i < SocketArray.Length; i++) {
-                    list.Add(1060847, $"\t{SocketArray[i]}");
+                    list.Add(1114057, $"\t{SocketArray[i]}");
                 }
             }
             SkillBonuses.GetProperties(list);
@@ -461,7 +513,10 @@ namespace Server.Items
         {
             base.Serialize(writer);
 
-            writer.Write(5); // version
+            writer.Write(6); // version
+            writer.Write(m_AlignmentRaw);
+            writer.WriteEncodedInt(m_TalentIndex);
+            writer.WriteEncodedInt(m_TalentLevel);
             writer.Write(m_SocketAmount);
             writer.Write(m_Sockets);
 
@@ -485,6 +540,13 @@ namespace Server.Items
 
             switch (version)
             {
+                case 6:
+                    {
+                        m_AlignmentRaw = reader.ReadString();
+                        m_TalentIndex = reader.ReadEncodedInt();
+                        m_TalentLevel = reader.ReadEncodedInt();
+                        goto case 5;
+                    }
                 case 5:
                     {
                         m_SocketAmount = reader.ReadInt();

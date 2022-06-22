@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using Server;
+using Server.Gumps;
 using Server.Items;
+using Server.Pantheon;
 
 namespace Server.Mobiles
 {
@@ -31,6 +33,40 @@ namespace Server.Mobiles
         }
 
         public override bool HandlesOnSpeech(Mobile from) => true;
+
+        private void DeleteAlignmentItems(List<Item> items)
+        {
+            foreach (Item item in items.ToArray())
+            {
+                if (item is IPantheonItem pantheonItem && !string.Equals(pantheonItem.AlignmentRaw, Deity.Alignment.None.ToString()))
+                {
+                    item.Delete();
+                }
+            }
+        }
+
+        private void TryAlignmentChange(ref SpeechEventArgs e, PlayerMobile player)
+        {
+            e.Handled = true;
+            if (player.Alignment is Deity.Alignment.None || player.DeityPoints >= 60 * 35)
+            {
+                player.DeityPoints = 0;
+                if (player.BankBox is { Items: { } })
+                {
+                    DeleteAlignmentItems(player.BankBox.Items);
+                }
+                if (player.Backpack is { Items: { } })
+                {
+                    DeleteAlignmentItems(player.Backpack.Items);
+                }
+
+                player.SendGump(new ChoosePathGump(player, 2));
+            }
+            else
+            {
+                SayTo(player, $"You are not eligible for an alignment change. You either need {(60 * 35).ToString()} points of deity loyalty or be of no current alignment.");
+            }
+        }
 
         public void TryReset(ref SpeechEventArgs e, PlayerMobile player, bool skipConsume = false) {
             e.Handled = true;
@@ -74,6 +110,9 @@ namespace Server.Mobiles
                 if (!e.Handled) {
                     if (string.Equals(speech, "reset path")) {
                         TryReset(ref e, player, player.TalentResets == 0);
+                    } else if (string.Equals(speech, "new alignment"))
+                    {
+                        TryAlignmentChange(ref e, player);
                     }
                 }
                 else

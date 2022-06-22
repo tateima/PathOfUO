@@ -5,6 +5,7 @@ using Server.Engines.Stealables;
 using Server.Factions;
 using Server.Items;
 using Server.Mobiles;
+using Server.Pantheon;
 using Server.Spells;
 using Server.Spells.Fifth;
 using Server.Spells.Ninjitsu;
@@ -195,6 +196,16 @@ namespace Server.SkillHandlers
                                     sig.LastStolen = Core.Now;
                                 }
                                 ((PlayerMobile)m_Thief).NonCraftExperience += Utility.RandomMinMax(200, 300);
+                                Deity.RewardPoints((PlayerMobile)m_Thief,
+                                    new[]
+                                    {
+                                        Utility.RandomMinMax(5, 7),
+                                        Utility.RandomMinMax(-5, -7)
+                                    }, new []
+                                    {
+                                        Deity.Alignment.Greed,
+                                        Deity.Alignment.Charity
+                                    });
                                 return sig;
                             }
                         }
@@ -323,6 +334,17 @@ namespace Server.SkillHandlers
                                 si.Item = null;
                             }
                             ((PlayerMobile)m_Thief).NonCraftExperience += Utility.RandomMinMax(75, 150);
+
+                            Deity.RewardPoints((PlayerMobile)m_Thief,
+                                new[]
+                                {
+                                    Utility.RandomMinMax(1, 2),
+                                    Utility.RandomMinMax(-1, -2)
+                                }, new []
+                                {
+                                    Deity.Alignment.Greed,
+                                    Deity.Alignment.Charity
+                                });
                         }
                         else
                         {

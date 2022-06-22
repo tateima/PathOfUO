@@ -6,6 +6,7 @@ namespace Server.Talent
     {
         public DivineStrength()
         {
+            StatModNames = new[] { "DivineStr" };
             DisplayName = "Divine strength";
             Description = "Increases strength by 2 per level.";
             ImageID = 166;
@@ -15,8 +16,8 @@ namespace Server.Talent
 
         public override void UpdateMobile(Mobile mobile)
         {
-            mobile.RemoveStatMod("DivineStr");
-            mobile.AddStatMod(new StatMod(StatType.Str, "DivineStr", Level * 2, TimeSpan.Zero));
+            ResetMobileMods(mobile);
+            mobile.AddStatMod(new StatMod(StatType.Str, StatModNames[0], Level * 2, TimeSpan.Zero));
         }
     }
 }

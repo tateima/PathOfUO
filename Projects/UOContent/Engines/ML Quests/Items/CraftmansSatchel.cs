@@ -120,6 +120,69 @@ namespace Server.Engines.MLQuests.Items
         }
     }
 
+    public class InscriptionSatchel : BaseCraftmansSatchel
+    {
+        [Constructible]
+        public InscriptionSatchel()
+        {
+            AddBaseLoot(Loot.MLArmorTypes, Loot.MLWeaponTypes, Loot.MLRangedWeaponTypes, Loot.JewelryTypes, m_TalismanType);
+
+            if (Utility.RandomDouble() < 0.50)
+            {
+                AddRecipe(DefInscription.CraftSystem);
+            }
+        }
+        public InscriptionSatchel(Serial serial)
+            : base(serial)
+        {
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+    }
+    public class AlchemySatchel : BaseCraftmansSatchel
+    {
+        [Constructible]
+        public AlchemySatchel()
+        {
+            AddBaseLoot(Loot.MLArmorTypes, Loot.MLWeaponTypes, Loot.MLRangedWeaponTypes, Loot.JewelryTypes, m_TalismanType);
+
+            if (Utility.RandomDouble() < 0.50)
+            {
+                AddRecipe(DefAlchemy.CraftSystem);
+            }
+        }
+        public AlchemySatchel(Serial serial)
+            : base(serial)
+        {
+        }
+
+        public override void Serialize(IGenericWriter writer)
+        {
+            base.Serialize(writer);
+
+            writer.Write(0); // version
+        }
+
+        public override void Deserialize(IGenericReader reader)
+        {
+            base.Deserialize(reader);
+
+            var version = reader.ReadInt();
+        }
+    }
+
     public class TinkerSatchel : BaseCraftmansSatchel
     {
         [Constructible]

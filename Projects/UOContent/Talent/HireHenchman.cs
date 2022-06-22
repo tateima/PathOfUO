@@ -11,10 +11,11 @@ namespace Server.Talent
             BlockedBy = new[] { typeof(Merchant) };
             TalentDependency = typeof(SmoothTalker);
             DisplayName = "Henchman";
-            MobilePercentagePerPoint = 3;
+            MaxLevel = 3;
             CanBeUsed = true;
             Description =
-                "Hire a henchman to protect you. At least 6000 gold is required in your bank during hire. Stats and skills scale 12% per level.";
+                "Hire a henchman to protect you. At least 5000 gold is required in your bank during hire. Power increases with gold spent.";
+            AdditionalDetail = $"A maximum of 100,000 gold is accepted, which would provide a maximum power scale of 20%. The number of henchmen you can have increases by 1 per level. {PassiveDetail}";
             ImageID = 365;
             GumpHeight = 230;
             AddEndY = 125;
@@ -57,6 +58,7 @@ namespace Server.Talent
                             hireling.MoveToWorld(from.Location, from.Map);
                             hireling.Owners.Add(from);
                             hireling.SetControlMaster(from);
+                            player.Leadership();
                         }
                         else
                         {

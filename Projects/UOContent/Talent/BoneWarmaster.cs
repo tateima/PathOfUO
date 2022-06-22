@@ -7,8 +7,10 @@ namespace Server.Talent
     {
         public BoneWarmaster()
         {
+            StatModNames = new[] { "BoneWarmasterStr", "BoneWarmasterInt" };
             DisplayName = "Bone warmaster";
-            Description = "Reduces damage while wearing bone. Increases Int by 1 and Str by 1 per Level";
+            Description = "Reduces damage while wearing bone. Increases Int by 2 and Str by 2 per Level";
+            AdditionalDetail = $"{PassiveDetail}";
             ImageID = 396;
             GumpHeight = 70;
             UpdateOnEquip = true;
@@ -17,18 +19,17 @@ namespace Server.Talent
 
         public override void UpdateMobile(Mobile mobile)
         {
-            if (BaseArmor.FullBone(mobile))
+            ResetMobileMods(mobile);
+            if (Items.BaseArmor.FullBone(mobile))
             {
-                mobile.RemoveStatMod("BoneWarmasterStr");
-                mobile.RemoveStatMod("BoneWarmasterInt");
-                mobile.AddStatMod(new StatMod(StatType.Str, "BoneWarmasterStr", Level, TimeSpan.Zero));
-                mobile.AddStatMod(new StatMod(StatType.Int, "BoneWarmasterInt", Level, TimeSpan.Zero));
+                mobile.AddStatMod(new StatMod(StatType.Str, StatModNames[0], Level * 2, TimeSpan.Zero));
+                mobile.AddStatMod(new StatMod(StatType.Int, StatModNames[1], Level * 2, TimeSpan.Zero));
             }
         }
 
         public override int CheckDamageAbsorptionEffect(Mobile defender, Mobile attacker, int damage)
         {
-            if (BaseArmor.FullBone(defender)) {
+            if (Items.BaseArmor.FullBone(defender)) {
                 damage -= Level;
             }
             return damage;

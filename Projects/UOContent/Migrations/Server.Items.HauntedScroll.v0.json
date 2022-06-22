@@ -1,0 +1,53 @@
+{
+  "version": 0,
+  "type": "Server.Items.HauntedScroll",
+  "properties": [
+    {
+      "name": "ChapterLocation",
+      "type": "Server.Point2D",
+      "usesSaveFlag": true,
+      "rule": "PrimitiveUOTypeMigrationRule",
+      "ruleArguments": [
+        "Point2D"
+      ]
+    },
+    {
+      "name": "HookNumber",
+      "type": "int",
+      "usesSaveFlag": true,
+      "rule": "PrimitiveTypeMigrationRule",
+      "ruleArguments": [
+        ""
+      ]
+    },
+    {
+      "name": "Content",
+      "type": "string[]",
+      "usesSaveFlag": true,
+      "rule": "ArrayMigrationRule",
+      "ruleArguments": [
+        "string",
+        "PrimitiveTypeMigrationRule",
+        ""
+      ]
+    },
+    {
+      "name": "MapKey",
+      "type": "string",
+      "usesSaveFlag": true,
+      "rule": "PrimitiveTypeMigrationRule",
+      "ruleArguments": [
+        ""
+      ]
+    },
+    {
+      "name": "Protagonist",
+      "type": "string",
+      "usesSaveFlag": true,
+      "rule": "PrimitiveTypeMigrationRule",
+      "ruleArguments": [
+        ""
+      ]
+    }
+  ]
+}

@@ -6,6 +6,7 @@ namespace Server.Talent
         {
             DisplayName = "Warcraft focus";
             Description = "Increases durability and damage done for crafted weapons and armor.";
+            AdditionalDetail = $"The chance of success increases by 1% per level. The durability and damage to crafted items increases by 1 point per level. {PassiveDetail}";
             ImageID = 355;
             MaxLevel = 5;
             GumpHeight = 85;

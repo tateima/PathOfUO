@@ -91,19 +91,12 @@ namespace Server.Spells.Fourth
                 m_Fire = 100;
                 m_Cold = 0;
                 m_Hue = 0;
+                double doubleDamage = damage;
                 if (caster is PlayerMobile player)
                 {
-                    BaseTalent fireAffinity = player.GetTalent(typeof(FireAffinity));
-                    if (fireAffinity != null)
-                    {
-                        damage += fireAffinity.ModifySpellMultiplier();
-                    }
-                    BaseTalent frostFire = player.GetTalent(typeof(FrostFire));
-                    if (frostFire != null) {
-                        ((FrostFire)frostFire).ModifyFireSpell(ref m_Fire, ref m_Cold, null, hue: ref m_Hue);
-                    }
+                    BaseTalent.ApplyFrostFireEffect(player, ref m_Fire, ref m_Cold, ref m_Hue, null);
                 }
-                m_Damage = damage;
+                m_Damage = (int)doubleDamage;
 
                 m_End = Core.Now + duration;
                 m_Timer = new InternalTimer(this, TimeSpan.FromSeconds(val.Abs() * 0.2), caster.InLOS(this), canFit, m_Hue, m_Fire, m_Cold);
@@ -155,7 +148,7 @@ namespace Server.Spells.Fourth
                             goto case 2;
                         }
                     case 2:
-                        { 
+                        {
                             m_Damage = reader.ReadInt();
                             goto case 1;
                         }
@@ -204,10 +197,7 @@ namespace Server.Spells.Fourth
                     }
                     if (m_Cold > 0)
                     {
-                        if (m is BaseCreature creature)
-                        {
-                            creature.ActiveSpeed /= 2;
-                        } else if (m is PlayerMobile player)
+                        if (m is PlayerMobile player)
                         {
                             player.Slow(Utility.Random(6));
                         }

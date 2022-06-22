@@ -11,6 +11,7 @@ namespace Server.Talent
             DisplayName = "Thing-a-ma-bob";
             CanBeUsed = true;
             Description = "Create device that casts random spells at targets. Can glitch and heal them instead.";
+            CooldownSeconds = 3600;
             ImageID = 177;
             GumpHeight = 230;
             AddEndY = 90;
@@ -31,7 +32,7 @@ namespace Server.Talent
                     OnCooldown = true;
                     var device = new ThingAMaBobDevice();
                     from.AddToBackpack(device);
-                    Timer.StartTimer(TimeSpan.FromMinutes(60), ExpireTalentCooldown, out _talentTimerToken);
+                    Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                 }
             }
         }

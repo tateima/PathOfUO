@@ -36,8 +36,9 @@ namespace Server.Talent
             BlockedBy = new[] { typeof(SmoothTalker) };
             DisplayName = "Merchant porter";
             CanBeUsed = true;
+            CooldownSeconds = 600;
             Description =
-                "Teleport an npc vendor to player position for 1 minute. 10 minute cooldown, decreases by 1 minutes per level.";
+                "Teleport an npc vendor to player position for 1 minute. Cooldown decreases by 1 minute per level.";
             ImageID = 349;
             GumpHeight = 230;
             AddEndY = 105;
@@ -49,7 +50,7 @@ namespace Server.Talent
             {
                 OnCooldown = true;
                 from.SendGump(new MerchantPorterGump(from));
-                Timer.StartTimer(TimeSpan.FromMinutes(10 - Level), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds - Level), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
     }

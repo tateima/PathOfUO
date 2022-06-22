@@ -14,8 +14,9 @@ namespace Server.Talent
         {
             DisplayName = "Mediumship";
             CanBeUsed = true;
+            CooldownSeconds = 60;
             Description =
-                "Allows communication with dead spirits at specific locations. Each level unlocks more events Requires 20-100 spiritspeak.";
+                "Allows communication with dead spirits at specific locations. Each level unlocks more events. Requires 20-100 spiritspeak.";
             ImageID = 407;
             MaxLevel = 5;
             GumpHeight = 95;
@@ -83,7 +84,7 @@ namespace Server.Talent
                     GiveHauntedScroll(from);
                 }
 
-                Timer.StartTimer(TimeSpan.FromMinutes(1), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
 

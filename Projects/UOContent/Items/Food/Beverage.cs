@@ -111,7 +111,7 @@ public partial class BoneBroth : BaseBeverage
     }
     public override void GetProperties(IPropertyList list)
     {
-        list.Add(1060658, $"{"Bone"} {"broth"}"); // ~1_val~: ~2_val~
+        list.Add(1114057, "Bone broth"); // ~1_val~
     }
 }
 [SerializationGenerator(0, false)]
@@ -161,7 +161,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(1060658, $"{"Enchanted"} {"milk"}"); // ~1_val~: ~2_val~
+         list.Add(1114057, "Enchanted milk"); // ~1_val~
      }
  }
  [SerializationGenerator(0, false)]
@@ -204,7 +204,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(1060658, $"{"Mage"} {"water"}"); // ~1_val~: ~2_val~
+         list.Add(1114057, "Mage water"); // ~1_val~
      }
  }
  [SerializationGenerator(0, false)]
@@ -252,7 +252,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(1060658, $"{"Orcish"} {"water"}"); // ~1_val~: ~2_val~
+         list.Add(1114057, "Orcish water"); // ~1_val~
      }
  }
  [SerializationGenerator(0, false)]
@@ -299,7 +299,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(1060658, $"{"Demonic"} {"water"}"); // ~1_val~: ~2_val~
+         list.Add(1114057, "Demonic water"); // ~1_val~
      }
  }
  [SerializationGenerator(0, false)]
@@ -346,7 +346,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(1060658, $"{"Skeletal"} {"water"}"); // ~1_val~: ~2_val~
+         list.Add(1114057, "Skeletal water"); // ~1_val~
      }
  }
 
@@ -392,7 +392,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(1060658, $"{"Charged"} {"spirits"}"); // ~1_val~: ~2_val~
+         list.Add(1114057, "Charged spirits"); // ~1_val~
      }
  }
 
@@ -451,7 +451,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(1060658, $"{"Holy"} {"water"}"); // ~1_val~: ~2_val~
+         list.Add(1114057, "Holy water"); // ~1_val~
      }
  }
 
@@ -499,7 +499,7 @@ public partial class BoneBroth : BaseBeverage
 
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(1060658, $"{"Fire"} {"spirits"}"); // ~1_val~: ~2_val~
+         list.Add(1114057, "Fire spirits"); // ~1_val~
      }
  }
 
@@ -547,7 +547,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(1060658, $"{"Black"} {"Sambucca"}"); // ~1_val~: ~2_val~
+         list.Add(1114057, "Black Sambucca"); // ~1_val~
      }
  }
 
@@ -595,7 +595,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(1060658, $"{"Soldier's"} {"brew"}"); // ~1_val~: ~2_val~
+         list.Add(1114057, "Soldier's brew"); // ~1_val~
      }
  }
 
@@ -649,7 +649,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(1060658, $"{"Ninja's"} {"brew"}"); // ~1_val~: ~2_val~
+         list.Add(1114057, "Ninja's brew"); // ~1_val~
      }
  }
 [SerializationGenerator(0, false)]
@@ -702,7 +702,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(1060658, $"{"Healer's"} {"brew"}"); // ~1_val~: ~2_val~
+         list.Add(1114057, "Healer's brew"); // ~1_val~
      }
  }
 
@@ -739,7 +739,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(1060658, $"{"Ancestral"} {"brew"}"); // ~1_val~: ~2_val~
+         list.Add(1114057, "Ancestral brew"); // ~1_val~
      }
  }
 
@@ -785,7 +785,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public override void GetProperties(IPropertyList list)
      {
-         list.Add(1060658, $"{"Pirate's"} {"brew"}"); // ~1_val~: ~2_val~
+         list.Add(1114057, "Pirate's brew"); // ~1_val~
      }
  }
 [SerializationGenerator(0, false)]
@@ -830,7 +830,7 @@ public partial class BoneBroth : BaseBeverage
      }
      public void GetProperties(IPropertyList list)
      {
-         list.Add(1060658, $"{"Guiness"}{""}"); // ~1_val~: ~2_val~
+         list.Add(1114057, "Guiness"); // ~1_val~
      }
     }
 

@@ -143,7 +143,8 @@ namespace Server.Mobiles
 
                 foreach (var m in m_Mobile.GetMobilesInRange(m_Mobile.RangePerception))
                 {
-                    if (!m_Mobile.CanSee(m) || !(m is BaseCreature) || ((BaseCreature)m).Team != m_Mobile.Team)
+                    if ((!m_Mobile.CanSee(m) || !(m is BaseCreature) || ((BaseCreature)m).Team != m_Mobile.Team)
+                    )
                     {
                         continue;
                     }

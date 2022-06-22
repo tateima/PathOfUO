@@ -11,6 +11,7 @@ namespace Server.Talent
             DisplayName = "Poly gadget";
             CanBeUsed = true;
             Description = "Create device that polymorphs creatures into rabbits. Can glitch and make them stronger.";
+            CooldownSeconds = 3600;
             ImageID = 156;
             GumpHeight = 230;
             AddEndY = 105;
@@ -31,7 +32,7 @@ namespace Server.Talent
                     OnCooldown = true;
                     var device = new PolymeterDevice();
                     from.AddToBackpack(device);
-                    Timer.StartTimer(TimeSpan.FromMinutes(60), ExpireTalentCooldown, out _talentTimerToken);
+                    Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                 }
             }
         }

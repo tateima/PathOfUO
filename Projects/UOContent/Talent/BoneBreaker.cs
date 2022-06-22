@@ -1,4 +1,5 @@
 using System;
+using Server.Items;
 
 namespace Server.Talent
 {
@@ -6,10 +7,13 @@ namespace Server.Talent
     {
         public BoneBreaker()
         {
+            RequiredWeapon = new[] { typeof(BaseWeapon) };
             TalentDependency = typeof(IronSkin);
             DisplayName = "Bone breaker";
             CanBeUsed = true;
-            Description = "Next hit paralyzes target for 3s per level. Level also reduces cooldown by 10s. 2m cooldown";
+            Description = "Next hit paralyzes target for 3s per level. Level also reduces cooldown by 10s.";
+            StamRequired = 6;
+            CooldownSeconds = 80;
             ImageID = 134;
             GumpHeight = 75;
             AddEndY = 100;
@@ -17,13 +21,14 @@ namespace Server.Talent
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
-            if (Activated)
+            if (Activated && attacker.Stam > StamRequired + 1)
             {
                 Activated = false;
                 OnCooldown = true;
-                attacker.SendSound(0x125);
+                ApplyStaminaCost(attacker);
+                target.PlaySound(0x125);
                 target.Paralyze(TimeSpan.FromSeconds(Level * 3));
-                Timer.StartTimer(TimeSpan.FromSeconds(120 - Level * 10), ExpireTalentCooldown, out _talentTimerToken);
+                Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds - Level * 10), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
     }

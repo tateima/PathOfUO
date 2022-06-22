@@ -33,18 +33,18 @@ namespace Server.Talent
 
         private class InternalTarget : Target
         {
-            private readonly BaseTalent m_Talent;
+            private readonly BaseTalent _talent;
 
             public InternalTarget(BaseTalent talent) : base(
                 2,
                 false,
                 TargetFlags.None
             ) =>
-                m_Talent = talent;
+                _talent = talent;
 
             public bool Success(Mobile from, Item item)
             {
-                if (Utility.Random(100) < 5 + m_Talent.Level)
+                if (Utility.Random(100) < 5 + _talent.Level)
                 {
                     return true;
                 }

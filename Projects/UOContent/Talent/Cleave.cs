@@ -13,8 +13,10 @@ namespace Server.Talent
             RequiredWeaponSkill = SkillName.Swords;
             DisplayName = "Cleave";
             CanBeUsed = true;
+            StamRequired = 10;
             Description =
-                "Attack one other nearby enemy for 50% + level * 2 damage. If no enemies, apply 25% damage to same target (30s cooldown).";
+                "Attack one other nearby enemy for 50% + level * 2 damage. If no enemies, apply 25% damage to same target.";
+            CooldownSeconds = 30;
             ImageID = 368;
             GumpHeight = 75;
             AddEndY = 105;
@@ -22,7 +24,7 @@ namespace Server.Talent
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
-            if (Activated)
+            if (Activated && attacker.Stam > StamRequired + 1)
             {
                 Activated = false;
                 OnCooldown = true;
@@ -30,7 +32,7 @@ namespace Server.Talent
                 var hitAnotherMobile = false;
                 foreach (var mobile in mobiles)
                 {
-                    if (mobile == attacker || mobile is PlayerMobile && mobile.Karma > 0 ||
+                    if (mobile == target || (mobile is PlayerMobile && mobile.Karma > 0) ||
                         !mobile.CanBeHarmful(attacker, false) ||
                         Core.AOS && !mobile.InLOS(attacker))
                     {
@@ -46,15 +48,15 @@ namespace Server.Talent
                 {
                     target.Damage(AOS.Scale(damage, 25), attacker);
                 }
-
-                Timer.StartTimer(TimeSpan.FromSeconds(30), ExpireTalentCooldown, out _talentTimerToken);
+                ApplyStaminaCost(attacker);
+                Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
             }
         }
 
         public override void OnUse(Mobile from)
         {
             var weapon = from.Weapon as BaseWeapon;
-            if (weapon is BasePoleArm)
+            if (weapon?.Skill == RequiredWeaponSkill && weapon is BasePoleArm)
             {
                 base.OnUse(from);
             }

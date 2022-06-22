@@ -39,6 +39,7 @@ namespace Server.Mobiles
             Karma = -12500;
 
             VirtualArmor = 70;
+            ControlSlots = 4;
 
             PackItem(new Nightshade(4));
             PackItem(new LesserPoisonPotion());
@@ -50,6 +51,9 @@ namespace Server.Mobiles
 
         public override string CorpseName => "a poison elementals corpse";
         public override string DefaultName => "a poison elemental";
+
+        public override double DispelDifficulty => 150.5;
+        public override double DispelFocus => 45.0;
 
         public override bool BleedImmune => true;
         public override Poison PoisonImmune => Poison.Lethal;

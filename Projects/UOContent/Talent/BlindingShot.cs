@@ -12,6 +12,8 @@ namespace Server.Talent
             RequiredWeapon = new[] { typeof(BaseRanged) };
             RequiredWeaponSkill = SkillName.Archery;
             DisplayName = "Blinding shot";
+            ManaRequired = 15;
+            CooldownSeconds = 120;
             CanBeUsed = true;
             Description = "Next hit blinds target for 3s per level. Level also reduces cooldown by 10s. 2m cooldown";
             ImageID = 383;
@@ -21,11 +23,12 @@ namespace Server.Talent
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
-            if (Activated)
+            if (Activated && attacker.Mana >= ManaRequired)
             {
+                ApplyManaCost(attacker);
                 Activated = false;
                 OnCooldown = true;
-                var cooldownSeconds = 120 - Level * 10;
+                var cooldownSeconds = CooldownSeconds - Level * 10;
                 var duration = Level * 3;
                 if (target is PlayerMobile targetPlayer)
                 {

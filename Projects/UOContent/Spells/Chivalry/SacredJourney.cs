@@ -43,7 +43,7 @@ namespace Server.Spells.Chivalry
         {
             if (!PlanarTravel.CanPlanarTravel(Caster)) {
                 Caster.LocalOverheadMessage(MessageType.Regular, 0x22, false, PlanarTravel.NO_TRAVEL_MESSAGE);
-            } 
+            }
             else if (Sigil.ExistsOn(Caster))
             {
                 Caster.SendLocalizedMessage(1061632); // You can't do that while carrying the sigil.

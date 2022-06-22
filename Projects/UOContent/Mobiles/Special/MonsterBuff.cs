@@ -11,8 +11,8 @@ namespace Server.Mobiles
     {
         private static readonly TimeSpan FastRegenRate = TimeSpan.FromSeconds(1);
         private static readonly TimeSpan CPUSaverRate = TimeSpan.FromSeconds(3);
-        private static readonly TimeSpan CorruptionRate = TimeSpan.FromSeconds(5);
-        private static readonly TimeSpan ElementalDamageRate = TimeSpan.FromSeconds(6);
+        private static readonly TimeSpan CorruptionRate = TimeSpan.FromSeconds(7);
+        private static readonly TimeSpan ElementalDamageRate = TimeSpan.FromSeconds(8);
 
         public static readonly int CorruptionRange = 12;
 
@@ -603,14 +603,17 @@ namespace Server.Mobiles
             else if (owner.IsFrozen)
             {
                 damage = Utility.Random(3, 5);
-                BaseTalent warmth = null;
                 PlayerMobile player = null;
                 int frozenAvoidanceChance = 0;
                 if (mobile is PlayerMobile) {
                     player = (PlayerMobile)mobile;
-                    warmth = player.GetTalent(typeof(Warmth));
+                    Warmth warmth = player.GetTalent(typeof(Warmth)) as Warmth;
                     if (warmth != null) {
                         frozenAvoidanceChance = warmth.ModifySpellMultiplier();
+                    }
+                    if (player.Heroism())
+                    {
+                        frozenAvoidanceChance = 100;
                     }
                 }
 
@@ -624,7 +627,7 @@ namespace Server.Mobiles
                     "* Frozen by intense cold *"
                     );
                     CheckFreezeHue(mobile, mobile.HueMod);
-                } else if (player != null)
+                } else if (player != null && frozenAvoidanceChance < 100)
                 {
                     player.Slow(6);
                     mobile.PublicOverheadMessage(
@@ -738,11 +741,12 @@ namespace Server.Mobiles
         private class CorruptorTimer : Timer
         {
             private readonly BaseCreature m_Owner;
+            private int m_Modifier;
 
             public CorruptorTimer(Mobile m)
                 : base(CorruptionRate, CorruptionRate)
             {
-
+                m_Modifier = 0;
                 m_Owner = m as BaseCreature;
             }
 
@@ -760,8 +764,15 @@ namespace Server.Mobiles
                             }
                             creature.IsCorrupted = true;
                         } else if (mobile is PlayerMobile player) {
-                            if (CheckElementalEffect(5)) {
+                            if (CheckElementalEffect(5 + m_Modifier))
+                            {
+                                m_Modifier = 0;
+                                player.SendSound(0x37D);
                                 player.Fear(Utility.Random(10));
+                            }
+                            else
+                            {
+                                m_Modifier++;
                             }
                         }
                     }

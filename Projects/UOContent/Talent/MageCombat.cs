@@ -7,7 +7,8 @@ namespace Server.Talent
             BlockedBy = new[] { typeof(ManaShield) };
             TalentDependency = typeof(FastLearner);
             DisplayName = "Mage combatant";
-            Description = "Uses Eval Int instead of Tactics for combat damage. Allows weapon casting.";
+            Description = "Uses mage based skills to calculate combat damage and allows weapon casting.";
+            AdditionalDetail = $"Instead of using traditional tactics, evaluating intelligence is used. {PassiveDetail}";
             ImageID = 348;
             MaxLevel = 1;
             GumpHeight = 230;

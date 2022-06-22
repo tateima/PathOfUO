@@ -1,4 +1,5 @@
 using System;
+using Server.Items;
 using Server.Mobiles;
 using Server.Spells.Bushido;
 
@@ -8,13 +9,16 @@ namespace Server.Talent
     {
         public DragonAspect()
         {
+            RequiredWeapon = new[] { typeof(BaseWeapon) };
             BlockedBy = new[] { typeof(ViperAspect) };
             TalentDependency = typeof(FireAffinity);
             DisplayName = "Dragon aspect";
             Description = "Has a chance on spell cast or hit to conjure a fire breath.";
+            AdditionalDetail = $"Each level increases the chance by 2%. Damage is scaled by your hit points and your fire affinity level. This talent also increases your fire resistance by 5 points per level. {PassiveDetail}";
             ImageID = 198;
             GumpHeight = 75;
             AddEndY = 105;
+            AddEndAdditionalDetailsY = 110;
         }
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
@@ -22,7 +26,7 @@ namespace Server.Talent
             CheckDragonEffect(attacker, target);
         }
 
-        public void UpdateMobile(Mobile m)
+        public override void UpdateMobile(Mobile m)
         {
             if (Core.AOS)
             {
@@ -38,7 +42,7 @@ namespace Server.Talent
 
         public void CheckDragonEffect(Mobile attacker, Mobile target)
         {
-            if (Utility.Random(100) < Level)
+            if (Utility.Random(100) < Level * 200)
             {
                 Timer.StartTimer(TimeSpan.FromSeconds(1.3), () => BreathEffectCallback(attacker, target));
             }
@@ -55,21 +59,16 @@ namespace Server.Talent
             {
                 return;
             }
-
+            int fire = 100;
+            int cold = 0;
+            int hue = 0;
+            ApplyFrostFireEffect((PlayerMobile)attacker, ref fire, ref cold, ref hue, target);
             attacker.PlaySound(0x227);
-
-            Effects.SendMovingEffect(
-                attacker,
-                target,
-                0x36D4,
-                5,
-                0
-            );
-
-            Timer.StartTimer(TimeSpan.FromSeconds(1.0), () => BreathDamageCallback(attacker, target));
+            attacker.MovingParticles(target, 0x36D4,7, 0, false, true, hue, 0, 9502, 4019, 0x160, 0);
+            Timer.StartTimer(TimeSpan.FromSeconds(1.0), () => BreathDamageCallback(attacker, target, fire, cold));
         }
 
-        public virtual void BreathDamageCallback(Mobile attacker, Mobile target)
+        public virtual void BreathDamageCallback(Mobile attacker, Mobile target, int fire, int cold)
         {
             if (target is BaseCreature { BreathImmune: true })
             {
@@ -79,31 +78,26 @@ namespace Server.Talent
             if (attacker.CanBeHarmful(target))
             {
                 attacker.DoHarmful(target);
-                BreathDealDamage(attacker, target);
+                BreathDealDamage(attacker, target, fire, cold);
             }
         }
 
-        public virtual void BreathDealDamage(Mobile attacker, Mobile target)
+        public virtual void BreathDealDamage(Mobile attacker, Mobile target, int fire, int cold)
         {
             if (!Evasion.CheckSpellEvasion(target))
             {
-                var damage = (int)(attacker.Hits * SpecialDamageScalar);
-                if (attacker is PlayerMobile player)
+                var damage = attacker.Hits * SpecialDamageScalar;
+                if (damage < 1)
                 {
-                    var fireAffinity = player.GetTalent(typeof(FireAffinity));
-                    if (fireAffinity != null)
-                    {
-                        damage = AOS.Scale(damage, 100 + fireAffinity.ModifySpellMultiplier());
-                    }
+                    damage = 1;
                 }
-
                 AOS.Damage(
                     target,
                     attacker,
-                    damage,
+                    (int)damage,
                     0,
-                    100,
-                    0,
+                    fire,
+                    cold,
                     0,
                     0
                 );
