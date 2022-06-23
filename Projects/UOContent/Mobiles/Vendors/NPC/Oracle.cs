@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Server;
+using Server.ContextMenus;
 using Server.Gumps;
 using Server.Items;
 using Server.Pantheon;
@@ -113,6 +114,9 @@ namespace Server.Mobiles
                     } else if (string.Equals(speech, "new alignment"))
                     {
                         TryAlignmentChange(ref e, player);
+                    } else if (string.Equals(speech, "seek challenge"))
+                    {
+                        TryChallenge(ref e, player);
                     }
                 }
                 else
@@ -120,8 +124,22 @@ namespace Server.Mobiles
                     base.OnSpeech(e);
                 }
                 if (!e.Handled) {
-                    SayTo(player, "I do not understand thee. If you wish to reset your path, speak 'reset path'");
+                    SayTo(player, "I do not understand thee. If you wish to reset your path, speak 'reset path', to change your alignment, speak 'new alignment', to receive a challenge, speak 'seek challenge'");
                 }
+            }
+        }
+
+        private void TryChallenge(ref SpeechEventArgs speechEventArgs, PlayerMobile player)
+        {
+            if (player.NextDeityChallenge > Core.Now
+                // || player.Level < 35
+                )
+            {
+                SayTo(player, "You cannot face a new challenge from your deity yet.");
+            }
+            else
+            {
+                Deity.BeginChallenge(player);
             }
         }
 

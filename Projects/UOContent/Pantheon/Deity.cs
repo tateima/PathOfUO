@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Server.Engines.BulkOrders;
 using Server.Engines.Craft;
 using Server.Items;
@@ -211,34 +213,38 @@ namespace Server.Pantheon
             }
         }
 
+
+
         public static bool AlignmentCheck(Mobile mobile, Alignment alignment, bool enemy)
+        {
+            if (mobile is BaseCreature)
+            {
+                return CreatureAlignmentCheck(mobile.GetType(), alignment, enemy);
+            }
+            if (mobile is PlayerMobile player)
+            {
+                var validTarget = alignment switch
+                {
+                    Alignment.Light    => enemy ? player.Alignment is Alignment.Darkness : player.Alignment is Alignment.Light,
+                    Alignment.Darkness => enemy ? player.Alignment is Alignment.Light : player.Alignment is Alignment.Darkness,
+                    Alignment.Order    => enemy ? player.Alignment is Alignment.Chaos : player.Alignment is Alignment.Order,
+                    Alignment.Chaos    => enemy ? player.Alignment is Alignment.Order : player.Alignment is Alignment.Chaos,
+                    _                  => false
+                };
+                return validTarget;
+            }
+
+            return false;
+        }
+
+        public static bool CreatureAlignmentCheck(Type type, Alignment alignment, bool enemy)
         {
             var validTarget = alignment switch
             {
-                Alignment.Light => mobile switch
-                {
-                    BaseCreature creature => BaseTalent.IsMobileType(enemy ? OppositionGroup.UndeadGroup : OppositionGroup.HumanoidGroup, creature.GetType()),
-                    PlayerMobile player   => player.Alignment is Alignment.Darkness,
-                    _                     => false
-                },
-                Alignment.Darkness => mobile switch
-                {
-                    BaseCreature creature => BaseTalent.IsMobileType(enemy ? OppositionGroup.HumanoidGroup : OppositionGroup.UndeadGroup, creature.GetType()),
-                    PlayerMobile player   => player.Alignment is Alignment.Light,
-                    _                     => false
-                },
-                Alignment.Order => mobile switch
-                {
-                    BaseCreature creature => BaseTalent.IsMobileType(enemy ? OppositionGroup.AbyssalGroup : OppositionGroup.ReptilianGroup, creature.GetType()),
-                    PlayerMobile player   => player.Alignment is Alignment.Chaos,
-                    _                     => false
-                },
-                Alignment.Chaos => mobile switch
-                {
-                    BaseCreature creature => BaseTalent.IsMobileType(enemy ? OppositionGroup.ReptilianGroup : OppositionGroup.AbyssalGroup, creature.GetType()),
-                    PlayerMobile player   => player.Alignment is Alignment.Order,
-                    _                     => false
-                },
+                Alignment.Light => BaseTalent.IsMobileType(enemy ? OppositionGroup.UndeadGroup : OppositionGroup.HumanoidGroup, type),
+                Alignment.Darkness => BaseTalent.IsMobileType(enemy ? OppositionGroup.HumanoidGroup : OppositionGroup.UndeadGroup, type),
+                Alignment.Order => BaseTalent.IsMobileType(enemy ? OppositionGroup.AbyssalGroup : OppositionGroup.ReptilianGroup, type),
+                Alignment.Chaos => BaseTalent.IsMobileType(enemy ? OppositionGroup.ReptilianGroup : OppositionGroup.AbyssalGroup, type),
                 _ => false
             };
             return validTarget;
@@ -250,21 +256,21 @@ namespace Server.Pantheon
             {
                 Alignment.Light or Alignment.Order => mobile switch
                 {
-                    BaseCreature creature => !BaseTalent.IsMobileType(OppositionGroup.AbyssalGroup, creature.GetType()) &&
-                                             !BaseTalent.IsMobileType(OppositionGroup.UndeadGroup, creature.GetType()),
+                    BaseCreature creature => CreatureAlignmentCheck(creature.GetType(), Alignment.Light, false)
+                                             && CreatureAlignmentCheck(creature.GetType(), Alignment.Order, false),
                     PlayerMobile player => player.Alignment is Alignment.None or Alignment.Light or Alignment.Order,
-                    _ => false
+                    _                   => false
                 },
                 Alignment.Darkness => mobile switch
                 {
-                    BaseCreature creature => BaseTalent.IsMobileType(OppositionGroup.UndeadGroup, creature.GetType()),
+                    BaseCreature creature =>  CreatureAlignmentCheck(creature.GetType(), Alignment.Darkness, false),
                     PlayerMobile player   => player.Alignment is Alignment.None or Alignment.Darkness,
                     _                     => false
                 },
                 Alignment.Greed => mobile switch
                 {
                     BaseGuard => false,
-                    BaseCreature creature => BaseTalent.IsMobileType(OppositionGroup.HumanoidGroup, creature.GetType()) && !creature.IsInvulnerable,
+                    BaseCreature creature => CreatureAlignmentCheck(creature.GetType(), Alignment.Light, false) && !creature.IsInvulnerable,
                     PlayerMobile player   => player.Alignment is Alignment.None or Alignment.Greed,
                     _                     => false
                 },
@@ -288,6 +294,140 @@ namespace Server.Pantheon
                 }
             }
             RewardPoints(player, points, new[] { player.Alignment });
+        }
+
+        public static void BeginChallenge(PlayerMobile player)
+        {
+            Effect(player, player.Alignment);
+            int amount = Utility.Random(100) < 50 ? 1 : Utility.RandomMinMax(2, 5);
+            var buffs = amount == 1 ? Utility.RandomMinMax(2, 4) : Utility.RandomMinMax(1, 2);
+            var minimumExpValue = amount == 1 ? 350 + player.Level * 10 : 450 + player.Level * (8 - amount);
+            var maximumExpValue = amount == 1 ? 450 + player.Level * 20 : 450 + player.Level * (18 - amount);
+            var mobileTypes = Assembly.GetExecutingAssembly()
+                .GetTypes()
+                .Where(t => t.Namespace?.Contains("Mobiles") == true);
+
+            List<Mobile> challengers = new List<Mobile>();
+            foreach (var type in mobileTypes)
+            {
+                if (CreatureAlignmentCheck(type, player.Alignment, true) || player.Alignment is Alignment.Charity or Alignment.Greed)
+                {
+                    try
+                    {
+                        if (Activator.CreateInstance(type) is BaseCreature creature)
+                        {
+                            var dynamicExp = creature.DynamicExperienceValue();
+                            if (
+                                creature.IsInvulnerable == false
+                                && dynamicExp >= minimumExpValue
+                                && dynamicExp <= maximumExpValue
+                            )
+                            {
+                                challengers.Add(creature);
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // continue
+                    }
+                }
+            }
+
+            if (challengers.Count > 0)
+            {
+                for (int i = 0; i < amount; i++)
+                {
+                    BaseCreature challenger = challengers[Utility.Random(challengers.Count)] as BaseCreature;
+                    if (amount == 1 || i == 0)
+                    {
+                        var challengerBuffs = 0;
+                        while (challengerBuffs < buffs)
+                        {
+                            if (Utility.Random(100) < 5 && !challenger.IsIllusionist)
+                            {
+                                challenger.IsIllusionist = true;
+                                challengerBuffs++;
+                            }
+                            if (Utility.Random(100) < 5 && !challenger.IsCorruptor)
+                            {
+                                challenger.IsCorruptor = true;
+                                challengerBuffs++;
+                            }
+                            if (Utility.Random(100) < 5 && !challenger.IsEthereal)
+                            {
+                                challenger.IsEthereal = true;
+                                challengerBuffs++;
+                            }
+                            if (Utility.Random(100) < 5 && !challenger.IsIllusionist)
+                            {
+                                challenger.IsIllusionist = true;
+                                challengerBuffs++;
+                            }
+                            if (Utility.Random(100) < 5 && !challenger.IsMagicResistant)
+                            {
+                                challenger.IsMagicResistant = true;
+                                challengerBuffs++;
+                            }
+                            if (Utility.Random(100) < 5 && !challenger.IsFrozen)
+                            {
+                                challenger.IsFrozen = true;
+                                challengerBuffs++;
+                            }
+                            if (Utility.Random(100) < 5 && !challenger.IsBurning)
+                            {
+                                challenger.IsBurning = true;
+                                challengerBuffs++;
+                            }
+                            if (Utility.Random(100) < 5 && !challenger.IsElectrified)
+                            {
+                                challenger.IsElectrified = true;
+                                challengerBuffs++;
+                            }
+                            if (Utility.Random(100) < 5 && !challenger.IsToxic)
+                            {
+                                challenger.IsToxic = true;
+                                challengerBuffs++;
+                            }
+                            if (Utility.Random(100) < 5 && !challenger.IsReflective)
+                            {
+                                challenger.IsReflective = true;
+                                challengerBuffs++;
+                            }
+                            if (Utility.Random(100) < 5 && !challenger.IsRegenerative)
+                            {
+                                challenger.IsRegenerative = true;
+                                challengerBuffs++;
+                            }
+                            if (Utility.Random(100) < 5 && !challenger.IsSoulFeeder)
+                            {
+                                challenger.IsSoulFeeder = true;
+                                challengerBuffs++;
+                            }
+                        }
+                    }
+                    bool goodLocation = false;
+                    Point3D location = player.Location;
+                    while (!goodLocation && location == player.Location)
+                    {
+                        location = player.Location;
+                        location.X += Utility.RandomBool() ? Utility.RandomMinMax(5, 10) : Utility.RandomMinMax(-10, -5);
+                        location.Y += Utility.RandomBool() ? Utility.RandomMinMax(5, 10) : Utility.RandomMinMax(-10, -5);
+                        location.Y += Utility.RandomBool() ? Utility.RandomMinMax(5, 10) : Utility.RandomMinMax(-10, -5);
+                        goodLocation = player.InLOS(location);
+                    }
+                    challenger.MoveToWorld(location, player.Map);
+                }
+                player.SendMessage("A challenge awaits you from the pantheon.");
+                player.NextDeityChallenge = DateTime.Now.AddDays(1);
+                player.DeityChallengers = challengers;
+                Timer.StartTimer(TimeSpan.FromSeconds(1), player.ChallengeCheck);
+            }
+            else
+            {
+                player.SendMessage("The pantheon deems you too weak for a challenge.");
+            }
+
         }
 
         public static void Effect(Mobile target, Alignment alignment)
@@ -382,7 +522,7 @@ namespace Server.Pantheon
             if (Utility.Random(100) < 15)
             {
                 int amount = Utility.RandomMinMax(3, 10);
-                player.AddStatMod(new StatMod(StatType.All, DeityCurseModName, -amount, TimeSpan.FromHours(1)));
+                player.AddStatMod(new StatMod(StatType.All, DeityCurseModName, -amount, TimeSpan.FromMinutes(9)));
                 player.SendMessage("The gods have punished your disloyalty with a curse.");
             } else if (Utility.Random(100) < 15 && player.Backpack is not null)
             {

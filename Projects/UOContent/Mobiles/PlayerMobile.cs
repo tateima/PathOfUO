@@ -151,6 +151,7 @@ namespace Server.Mobiles
         private List<Mobile> m_AllDebtees;
         private List<Mobile> m_Henchmen;
         private List<Mobile> m_RestedHenchmen;
+        private List<Mobile> m_DeityChallengers;
 
         private int m_BeardModID = -1, m_BeardModHue;
 
@@ -185,9 +186,11 @@ namespace Server.Mobiles
         private TimerExecutionToken _restTimerToken;
         private TimerExecutionToken _hungerTimerToken;
         private TimerExecutionToken _deityDecayTimer;
+        private TimerExecutionToken _challengeTimer;
 
         private Deity.Alignment m_Alignment;
         private int m_DeityPoints;
+        private DateTime m_NextDeityChallenge;
         private DateTime m_NextPrayer;
         private DateTime m_LastDeityDecay;
         private bool m_HasDeityFavor;
@@ -233,6 +236,8 @@ namespace Server.Mobiles
             m_Alignment = Deity.Alignment.None;
             m_DeityPoints = 0;
             m_NextPrayer = DateTime.Now.AddDays(-1);
+            m_DeityChallengers = new List<Mobile>();
+            m_NextDeityChallenge = DateTime.Now.AddDays(-1);
             m_LastDeityDecay = DateTime.Now;
             m_HasDeityFavor = false;
             LevelExperience = 0;
@@ -337,6 +342,29 @@ namespace Server.Mobiles
                 InvalidateProperties();
             }
         }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public List<Mobile> DeityChallengers
+        {
+            get => m_DeityChallengers;
+            set
+            {
+                m_DeityChallengers = value;
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public DateTime NextDeityChallenge
+        {
+            get => m_NextDeityChallenge;
+            set
+            {
+                m_NextDeityChallenge = value;
+                InvalidateProperties();
+            }
+        }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public int DeityPoints
         {
@@ -1718,6 +1746,33 @@ namespace Server.Mobiles
             }
         }
 
+        public void ChallengeCheck()
+        {
+            if (DeityChallengers is not null)
+            {
+                if (DeityChallengers.Count == 0)
+                {
+                    Deity.RewardPoints(this, new [] { 100 + Level * 10 }, new [] { Alignment });
+                    _challengeTimer.Cancel();
+                    Deity.Effect(this, Alignment);
+                    SendMessage("Your display in battle has granted favor with the pantheon.");
+                }
+                else if (NextDeityChallenge.AddDays(-1) < Core.Now.AddMinutes(-15))
+                {
+                    foreach (var challenger in DeityChallengers)
+                    {
+                        challenger.Delete();
+                    }
+                    Deity.RewardPoints(this, new [] { -100 - Level * 10 }, new [] { Alignment });
+                    SendMessage("You have failed in your challenge to impress the pantheon.");
+                    _challengeTimer.Cancel();
+                }
+                else
+                {
+                    Timer.StartTimer(TimeSpan.FromSeconds(30), ChallengeCheck, out _challengeTimer);
+                }
+            }
+        }
         public void DeityDecay()
         {
             if (m_LastDeityDecay < DateTime.Now.AddSeconds(-599))
@@ -3160,7 +3215,6 @@ namespace Server.Mobiles
                     return false;
                 }
             }
-            return false;
             return base.OnBeforeDeath();
         }
 
@@ -3685,6 +3739,10 @@ namespace Server.Mobiles
             var version = reader.ReadInt();
             switch (version)
             {
+                case 39:
+                    m_DeityChallengers = reader.ReadEntityList<Mobile>();
+                    m_NextDeityChallenge = reader.ReadDateTime();
+                    goto case 38;
                 case 38:
                     StarterSkills = new Skills(this, reader);
                     m_Alignment = Deity.AlignmentFromString(reader.ReadString());
@@ -4092,7 +4150,9 @@ namespace Server.Mobiles
 
             base.Serialize(writer);
 
-            writer.Write(38); // version
+            writer.Write(39); // version
+            writer.Write(m_DeityChallengers);
+            writer.Write(m_NextDeityChallenge);
             StarterSkills.Serialize(writer);
             writer.Write(m_Alignment.ToString());
             writer.Write(m_DeityPoints);
@@ -4370,6 +4430,7 @@ namespace Server.Mobiles
                     list.Add(1114057, $"Deity loyalty: {DeityPoints.ToString()}"); // ~1_val~
                 }
                 list.Add(1114057, $"Next prayer: {WaitTeleporter.FormatTime(m_NextPrayer - Core.Now)}"); // ~1_val~
+                list.Add(1114057, $"Next challenge: {WaitTeleporter.FormatTime(m_NextDeityChallenge - Core.Now)}"); // ~1_val~
             }
             string xp = (LevelExperience + CraftExperience + NonCraftExperience).ToString();
             int nextLevel = (int)NextLevel();

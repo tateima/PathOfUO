@@ -831,7 +831,12 @@ namespace Server.Misc
             {
                 Race.AllowElvesOnly     => new RuneBlade(),
                 Race.AllowGargoylesOnly => new DreadSword(),
-                _                       => new Katana()
+                _                       => Utility.Random(2) switch
+                {
+                    1 => new Katana (),
+                    2 => new VikingSword(),
+                    _ => new Longsword()
+                }
             };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -840,7 +845,12 @@ namespace Server.Misc
             {
                 Race.AllowElvesOnly     => new DiamondMace(),
                 Race.AllowGargoylesOnly => new DiscMace(),
-                _                       => new Club()
+                _ => Utility.Random(2) switch
+                {
+                    1 => new Club(),
+                    2 => new Mace(),
+                    _ => new Maul()
+                }
             };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -849,7 +859,11 @@ namespace Server.Misc
             {
                 Race.AllowElvesOnly     => new Leafblade(),
                 Race.AllowGargoylesOnly => new BloodBlade(),
-                _                       => new Kryss()
+                _ => Utility.RandomBool() switch
+                {
+                    true  => new Kryss(),
+                    _ => new Dagger(),
+                }
             };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -858,7 +872,11 @@ namespace Server.Misc
             {
                 Race.AllowElvesOnly     => new ElvenCompositeLongbow(),
                 Race.AllowGargoylesOnly => new SerpentstoneStaff(),
-                _                       => new Bow()
+                _ => Utility.RandomBool() switch
+                {
+                    true => new Crossbow(),
+                    _    => new Bow(),
+                }
             };
 
         private static void AddSkillItems(this Mobile m, SkillName skill)
@@ -913,9 +931,16 @@ namespace Server.Misc
                     }
                 case SkillName.Archery:
                     {
-                        m.PackItem(new Arrow(25));
 
                         EquipItem(m, RangedWeapon(raceFlag));
+                        if (m.FindItemOnLayer(Layer.TwoHanded) is Crossbow)
+                        {
+                            m.PackItem(new Bolt(100));
+                        }
+                        else
+                        {
+                            m.PackItem(new Arrow(100));
+                        }
 
                         break;
                     }
