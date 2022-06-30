@@ -166,20 +166,38 @@ namespace Server.Regions
 
         public override bool AllowHousing(Mobile from, Point3D p) => false;
 
+        public void FocusCheck(Mobile focus, BaseGuard guard)
+        {
+            if (guard.Combatant is null)
+            {
+                if (focus is PlayerMobile && guard.IsHarmfulCriminal(focus) || focus is BaseCreature)
+                {
+                    guard.Combatant = focus;
+                } else if (focus is PlayerMobile && !guard.IsHarmfulCriminal(focus) && focus.Combatant is not null)
+                {
+                    guard.Combatant = focus.Combatant;
+                }
+            }
+        }
+
         public override void MakeGuard(Mobile focus)
         {
             var eable = focus.GetMobilesInRange<BaseGuard>(8);
-            var useGuard = eable.FirstOrDefault(m => m.Focus == null);
+            var useGuard = eable.FirstOrDefault(m => m.Alive);
 
             eable.Free();
 
             if (useGuard == null)
             {
-                m_GuardParams[0] = focus;
-
                 try
                 {
-                    m_GuardType.CreateInstance<object>(m_GuardParams);
+                    var guard = m_GuardType.CreateInstance<object>() as BaseGuard;
+                    if (guard is not null)
+                    {
+                        guard.MoveToWorld(focus.Location, focus.Map);
+                        FocusCheck(focus, guard);
+                        Timer.StartTimer(TimeSpan.FromMinutes(2), guard.Delete);
+                    }
                 }
                 catch
                 {
@@ -188,7 +206,7 @@ namespace Server.Regions
             }
             else
             {
-                useGuard.Focus = focus;
+                FocusCheck(focus, useGuard);
             }
         }
 

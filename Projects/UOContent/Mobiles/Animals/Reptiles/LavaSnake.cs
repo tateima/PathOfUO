@@ -43,7 +43,7 @@ namespace Server.Mobiles
         public LavaSnake(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a lava snake corpse";
         public override string DefaultName => "a lava snake";
 

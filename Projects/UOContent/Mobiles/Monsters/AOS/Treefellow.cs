@@ -43,7 +43,7 @@ namespace Server.Mobiles
 
         public override string DefaultName => "a treefellow";
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.FeyAndUndead;
+        public override OppositionGroup[] OppositionGroups => new []{ OppositionGroup.DarknessAndLight };
 
         public override bool BleedImmune => true;
 

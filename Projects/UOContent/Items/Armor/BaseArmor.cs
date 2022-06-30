@@ -302,10 +302,7 @@ namespace Server.Items
                 if (_talentIndex != value)
                 {
                     _talentIndex = value;
-                    if (_talentIndex < BaseTalent.InvalidTalentIndex)
-                    {
-                        Talent = TalentConstructor.ConstructFromIndex(_talentIndex);
-                    }
+                    Talent = _talentIndex < BaseTalent.InvalidTalentIndex ? TalentConstructor.ConstructFromIndex(_talentIndex) : null;
                     InvalidateProperties();
                     this.MarkDirty();
                 }
@@ -1214,10 +1211,7 @@ namespace Server.Items
         {
             var m = Parent as Mobile;
 
-            if (_talentIndex < BaseTalent.InvalidTalentIndex)
-            {
-                Talent = TalentConstructor.ConstructFromIndex(_talentIndex);
-            }
+            Talent = _talentIndex < BaseTalent.InvalidTalentIndex ? TalentConstructor.ConstructFromIndex(_talentIndex) : null;
 
             if (Core.AOS && m != null)
             {

@@ -55,7 +55,7 @@ namespace Server.Mobiles
         public Kraken(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a krakens corpse";
         public override string DefaultName => "a kraken";
 

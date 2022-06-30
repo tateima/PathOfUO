@@ -45,7 +45,7 @@ namespace Server.Mobiles
         public Imp(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "an imp corpse";
         public override string DefaultName => "an imp";
 

@@ -39,7 +39,7 @@ namespace Server.Mobiles
         public StoneHarpy(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a stone harpy corpse";
         public override string DefaultName => "a stone harpy";
 

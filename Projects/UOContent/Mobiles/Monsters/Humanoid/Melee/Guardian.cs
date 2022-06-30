@@ -67,7 +67,7 @@ namespace Server.Mobiles
         public Guardian(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override void Serialize(IGenericWriter writer)
         {
             base.Serialize(writer);

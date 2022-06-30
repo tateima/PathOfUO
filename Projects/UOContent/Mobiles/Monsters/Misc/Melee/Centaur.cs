@@ -54,7 +54,7 @@ namespace Server.Mobiles
 
         public override string CorpseName => "a centaur corpse";
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.FeyAndUndead;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override int Meat => 1;
         public override int Hides => 8;

@@ -40,7 +40,7 @@ namespace Server.Mobiles
         public IceSnake(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "an ice snake corpse";
         public override string DefaultName => "an ice snake";
 

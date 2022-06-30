@@ -434,9 +434,13 @@ namespace Server.Mobiles
         public void CheckExperience()
         {
             int requiredExperience = NextLevel();
-            if (LevelExperience + m_NonCraftExperience + m_CraftExperience + m_RangerExperience >= requiredExperience && Level < 60)
+            if (LevelExperience + m_NonCraftExperience + m_CraftExperience + m_RangerExperience >= requiredExperience && !MaxLevel())
             {
                 Level++;
+                if (Level >= 5 && Young)
+                {
+                    Young = false;
+                }
                 double totalExperienceEarned = m_NonCraftExperience + m_CraftExperience + m_RangerExperience;
                 // calculate % contributions, round down not up to figure out point allocation
                 double craftingContr = m_CraftExperience / totalExperienceEarned;
@@ -449,11 +453,17 @@ namespace Server.Mobiles
                 {
                     remainingExp = 0;
                 }
-
                 NonCraftSkillPoints += (int)Math.Round(nonCraftingContr*14, MidpointRounding.AwayFromZero);
                 CraftSkillPoints += (int)Math.Round(craftingContr*14, MidpointRounding.AwayFromZero);
                 RangerSkillPoints += (int)Math.Round(rangerContr*14, MidpointRounding.AwayFromZero);
-                StatPoints += 5;
+                if (Level < 5 || Level % 5 == 0)
+                {
+                    StatPoints += 5;
+                }
+                else
+                {
+                    StatPoints += 2;
+                }
                 TalentPoints += 1;
 
                 // reset craft and non craft experience for next level tracking
@@ -1107,8 +1117,9 @@ namespace Server.Mobiles
             }
         }
 
-        public bool Neutral() => Alignment is not Deity.Alignment.None;
+        public bool Neutral() => Alignment is Deity.Alignment.None;
 
+        public bool MaxLevel() => Level >= 70;
         public bool Heroism()
         {
             Heroism heroism = GetTalent(typeof(Heroism)) as Heroism;
@@ -1551,7 +1562,7 @@ namespace Server.Mobiles
                 }
             }
 
-            if (!_mountBlock.CheckBlock() || _mountBlock.Expiration < Core.Now + duration)
+            if (!_mountBlock?.CheckBlock() == true || _mountBlock?.Expiration < Core.Now + duration)
             {
                 _mountBlock?.RemoveBlock(this);
                 _mountBlock = new MountBlock(duration, type, this);
@@ -2109,7 +2120,11 @@ namespace Server.Mobiles
 
         private static void OnLogout(Mobile m)
         {
-            (m as PlayerMobile)?.AutoStablePets();
+            if (m is PlayerMobile player)
+            {
+                player.AutoStablePets();
+                player._deityDecayTimer.Cancel();
+            }
         }
 
         private static void EventSink_Connected(Mobile m)
@@ -2283,11 +2298,13 @@ namespace Server.Mobiles
                 if (playerTalent is not null)
                 {
                     playerTalent.Level += (remove) ? -pantheonItem.TalentLevel : pantheonItem.TalentLevel;
+                    playerTalent.MaxLevel += (remove) ? -pantheonItem.TalentLevel : pantheonItem.TalentLevel;
                     targetTalent = playerTalent;
                 }
                 else if (!remove)
                 {
                     itemTalent.Level = pantheonItem.TalentLevel;
+                    itemTalent.MaxLevel += pantheonItem.TalentLevel;
                     targetTalent = itemTalent;
                 }
                 if (targetTalent is not null)
@@ -2492,29 +2509,36 @@ namespace Server.Mobiles
             }
         }
 
-        public void ResetSkills()
+        public void ResetSkills(int combatRatio, int rangerRatio, int craftingRatio)
         {
             SkillName[] skillNames = (SkillName[])Enum.GetValues(typeof(SkillName));
             int craftPoints = 0;
             int nonCraftPoints = 0;
             int rangerPoints = 0;
-            foreach(SkillName skill in skillNames) {
-                if (Skills[skill].Base > 0.0) {
+            foreach (SkillName skill in skillNames)
+            {
+                if (Skills[skill].Base > 0.0)
+                {
                     int pointValue = (int)Math.Floor(Skills[skill].Base);
                     int starterValue = (int)Math.Floor(StarterSkills[skill].Base);
-                    if (BaseTalent.IsCraftingSkill(skill)) {
+                    if (BaseTalent.IsCraftingSkill(skill))
+                    {
                         craftPoints += pointValue;
                         if (starterValue > 0)
                         {
                             craftPoints -= starterValue;
                         }
-                    } else if (BaseTalent.IsRangerSkill(skill)) {
+                    }
+                    else if (BaseTalent.IsRangerSkill(skill))
+                    {
                         rangerPoints += pointValue;
                         if (starterValue > 0)
                         {
                             rangerPoints -= starterValue;
                         }
-                    } else {
+                    }
+                    else
+                    {
                         nonCraftPoints += pointValue;
                         if (starterValue > 0)
                         {
@@ -2522,20 +2546,22 @@ namespace Server.Mobiles
                         }
                     }
 
-                    if (starterValue > 0)
-                    {
-                        Skills[skill].Base = StarterSkills[skill].Base;
-                    }
-                    else
-                    {
-                        StarterSkills[skill].Base = 0.0;
-                    }
+                    Skills[skill].Base = starterValue > 0 ? StarterSkills[skill].Base : 0.0;
 
                 }
             }
-            NonCraftSkillPoints += nonCraftPoints;
-            CraftSkillPoints += craftPoints;
-            RangerSkillPoints += rangerPoints;
+
+            int totalPoints = nonCraftPoints + craftPoints + rangerPoints;
+            while (totalPoints > 0)
+            {
+                NonCraftSkillPoints += combatRatio;
+                CraftSkillPoints += craftingRatio;
+                RangerSkillPoints += rangerRatio;
+                totalPoints -= 14;
+            }
+            // NonCraftSkillPoints += nonCraftPoints;
+            // CraftSkillPoints += craftPoints;
+            // RangerSkillPoints += rangerPoints;
         }
 
         public void ResetTalents()
@@ -4425,10 +4451,7 @@ namespace Server.Mobiles
             list.Add(1114057, $"Alignment: {Alignment.ToString()}"); // ~1_val~
             if (!Neutral())
             {
-                if (DeityPoints > 0)
-                {
-                    list.Add(1114057, $"Deity loyalty: {DeityPoints.ToString()}"); // ~1_val~
-                }
+                list.Add(1114057, $"Deity loyalty: {DeityPoints.ToString()}"); // ~1_val~
                 list.Add(1114057, $"Next prayer: {WaitTeleporter.FormatTime(m_NextPrayer - Core.Now)}"); // ~1_val~
                 list.Add(1114057, $"Next challenge: {WaitTeleporter.FormatTime(m_NextDeityChallenge - Core.Now)}"); // ~1_val~
             }
@@ -4438,6 +4461,8 @@ namespace Server.Mobiles
             if (Core.Now < m_NextPlanarTravel) {
                 list.Add(1114057, $"Suffering planar exhaustion: {WaitTeleporter.FormatTime(m_NextPlanarTravel - Core.Now)}");                  // ~1_val~
             }
+            list.Add(1114057, $"Hunger: {(20 - Hunger).ToString()}"); // ~1_val~
+            list.Add(1114057, $"Thirst: {(20 - Thirst).ToString()}"); // ~1_val~
             if (Map == Faction.Facet)
             {
                 var pl = PlayerState.Find(this);

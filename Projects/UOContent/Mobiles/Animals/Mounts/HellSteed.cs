@@ -11,7 +11,7 @@ namespace Server.Mobiles
         public HellSteed(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a hellsteed corpse";
         public override bool HasBreath => true;
         public override int BreathChaosDamage => 100;

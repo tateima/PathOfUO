@@ -34,7 +34,7 @@ namespace Server.Mobiles
         public HeadlessOne(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override string CorpseName => "a headless corpse";
         public override string DefaultName => "a headless one";
 

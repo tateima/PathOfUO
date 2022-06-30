@@ -100,7 +100,7 @@ namespace Server.Gumps
                 if (page == 2 && m_SkillGroup != null)
                 {
                     AddLabel(110, 60, 0, m_SkillGroup.Name);
-                    AddLabel(90, 80, 0, "Skill Points: " + player.CraftSkillPoints.ToString() + "C/" + player.NonCraftSkillPoints.ToString() + "NC/" + player.RangerSkillPoints.ToString() + "R");
+                    AddLabel(90, 80, 0, "Skill Pts: " + player.CraftSkillPoints.ToString() + "C/" + player.NonCraftSkillPoints.ToString() + "NC/" + player.RangerSkillPoints.ToString() + "R");
                     y = 100;
                     for (int i = 0; i < m_SkillGroup.Skills.Length; ++i)
                     {

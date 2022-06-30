@@ -81,7 +81,7 @@ namespace Server.Mobiles
         public Brigand(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override bool ClickTitle => false;
 
         public override bool AlwaysMurderer => true;

@@ -68,7 +68,7 @@ namespace Server.Mobiles
         public Mobile Fisher { get; set; }
 
         public override string DefaultName => "a leviathan";
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override bool HasBreath => true;
         public override int BreathPhysicalDamage => 70; // TODO: Verify damage type
         public override int BreathColdDamage => 30;

@@ -37,7 +37,7 @@ namespace Server.Mobiles
         public GazerLarva(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a gazer larva corpse";
         public override string DefaultName => "a gazer larva";
 

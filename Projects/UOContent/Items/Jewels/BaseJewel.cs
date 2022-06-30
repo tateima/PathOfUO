@@ -140,10 +140,7 @@ public abstract partial class BaseJewel : Item, ICraftable
             if (_talentIndex != value)
             {
                 _talentIndex = value;
-                if (_talentIndex < BaseTalent.InvalidTalentIndex)
-                {
-                    Talent = TalentConstructor.ConstructFromIndex(_talentIndex);
-                }
+                Talent = _talentIndex < BaseTalent.InvalidTalentIndex ? TalentConstructor.ConstructFromIndex(_talentIndex) : null;
                 InvalidateProperties();
                 this.MarkDirty();
             }
@@ -571,10 +568,7 @@ public abstract partial class BaseJewel : Item, ICraftable
     {
         var m = Parent as Mobile;
 
-        if (_talentIndex < BaseTalent.InvalidTalentIndex)
-        {
-            Talent = TalentConstructor.ConstructFromIndex(_talentIndex);
-        }
+        Talent = _talentIndex < BaseTalent.InvalidTalentIndex ? TalentConstructor.ConstructFromIndex(_talentIndex) : null;
 
         if (Core.AOS && m != null)
         {

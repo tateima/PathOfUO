@@ -47,7 +47,7 @@ namespace Server.Mobiles
             : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a crystal sea serpent corpse";
         public override string DefaultName => "a crystal sea serpent";
 

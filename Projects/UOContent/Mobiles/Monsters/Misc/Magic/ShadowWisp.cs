@@ -59,7 +59,7 @@ namespace Server.Mobiles
         public override string CorpseName => "a wisp corpse";
         public override string DefaultName => "a shadow wisp";
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.FeyAndUndead;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override void Serialize(IGenericWriter writer)
         {

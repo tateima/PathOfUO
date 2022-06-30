@@ -51,7 +51,7 @@ namespace Server.Mobiles
         public WandererOfTheVoid(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a wanderer of the void corpse";
         public override string DefaultName => "a wanderer of the void";
 

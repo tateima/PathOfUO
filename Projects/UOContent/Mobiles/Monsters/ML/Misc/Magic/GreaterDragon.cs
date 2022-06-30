@@ -50,7 +50,7 @@ namespace Server.Mobiles
         public GreaterDragon(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a dragon corpse";
         public override bool StatLossAfterTame => true;
         public override string DefaultName => "a greater dragon";

@@ -78,7 +78,7 @@ namespace Server.Talent
             typeof(MageCombatant),
             typeof(MaceSpecialist),
             typeof(MountedCombat),
-            typeof(Concussion),
+            typeof(CranialStrike),
             typeof(TwoHandedMaceSpecialist),
             typeof(GroundSlam),
             typeof(ShieldFocus),
@@ -199,7 +199,7 @@ namespace Server.Talent
             RequiredSpell = Array.Empty<Type>();
             IncreaseHitChance = false;
             IncreaseParryChance = false;
-            TalentDependencyPoints = 3;
+            TalentDependencyPoints = 1;
             Level = 0;
             MaxLevel = 5;
             DisplayName = "Basic Talent";
@@ -299,6 +299,24 @@ namespace Server.Talent
 
         public virtual bool HasSkillRequirement(Mobile mobile) => true;
         public virtual bool HasUpgradeRequirement(Mobile mobile) => true;
+
+        public static BaseTalent[] GetTalentDependency(PlayerMobile player, BaseTalent talent)
+        {
+            if (talent.TalentDependency != null)
+            {
+                BaseTalent dependsOn = TalentConstructor.Construct(talent.TalentDependency) as BaseTalent;
+                if (dependsOn != null)
+                {
+                    BaseTalent hasDependency = player.GetTalent(dependsOn.GetType());
+                    return new[]
+                    {
+                        dependsOn,
+                        hasDependency
+                    };
+                }
+            }
+            return Array.Empty<BaseTalent>();
+        }
 
         public virtual bool CanApplyHitEffect(Item i)
         {
@@ -510,7 +528,7 @@ namespace Server.Talent
             }
         }
 
-        public virtual Point3D CalculatePushbackFromAnchor(Point3D anchorPosition, int distance, Mobile from)
+        public static Point3D CalculatePushbackFromAnchor(Point3D anchorPosition, int distance, Mobile from)
         {
             var newLocation = new Point3D(anchorPosition.X, anchorPosition.Y + distance, anchorPosition.Z);
             if (from.Direction.HasFlag(Direction.East))
@@ -619,7 +637,7 @@ namespace Server.Talent
             return isRangerSkill;
         }
 
-        public static List<SkillName> GetPlayerSkillNames(PlayerMobile player, bool crafting)
+        public static List<SkillName> GetPlayerSkillNames(PlayerMobile player, bool crafting, bool ranger)
         {
             List<SkillName> skillNames = new List<SkillName>();
             List<Skill> skills = new List<Skill>();
@@ -627,7 +645,11 @@ namespace Server.Talent
             foreach(var skill in skills)
             {
                 bool isCrafting = IsCraftingSkill(skill.SkillName);
-                if (crafting && isCrafting || !crafting && !isCrafting)
+                bool isRanger = IsRangerSkill(skill.SkillName);
+                if (
+                    (!ranger && crafting && isCrafting)
+                    || (!ranger && !crafting && !isCrafting)
+                    || (ranger && isRanger))
                 {
                     skillNames.Add(skill.SkillName);
                 }

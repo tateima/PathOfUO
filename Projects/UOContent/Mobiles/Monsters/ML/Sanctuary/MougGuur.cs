@@ -33,7 +33,7 @@ namespace Server.Mobiles
             : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override string CorpseName => "a Moug-Guur corpse";
         public override string DefaultName => "Moug-Guur";
 

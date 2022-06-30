@@ -99,7 +99,7 @@ namespace Server.Items
             m_AlignmentRaw = "None";
             m_TalentIndex = BaseTalent.InvalidTalentIndex;
             m_TalentLevel = 0;
-            Talent = TalentConstructor.ConstructFromIndex(m_TalentIndex);
+            Talent = m_TalentIndex < BaseTalent.InvalidTalentIndex ? TalentConstructor.ConstructFromIndex(m_TalentIndex) : null;
             Layer = (Layer)ItemData.Quality;
             m_ShardPower = 0;
             m_SocketAmount = 0;
@@ -148,7 +148,7 @@ namespace Server.Items
             set
             {
                 m_TalentIndex = value;
-                Talent = TalentConstructor.ConstructFromIndex(m_TalentIndex);
+                Talent = m_TalentIndex < BaseTalent.InvalidTalentIndex ? TalentConstructor.ConstructFromIndex(m_TalentIndex) : null;
                 InvalidateProperties();
             }
         }
@@ -2073,7 +2073,7 @@ namespace Server.Items
                 percentageBonus += talisman.Killer.DamageBonus(defender);
             }
 
-            if (holyAvenger != null && (BaseTalent.IsMobileType(OppositionGroup.UndeadGroup, defender.GetType()) || BaseTalent.IsMobileType(OppositionGroup.AbyssalGroup, defender.GetType())))
+            if (holyAvenger != null && (BaseTalent.IsMobileType(OppositionGroup.DarknessAndLight[1], defender.GetType()) || BaseTalent.IsMobileType(OppositionGroup.ChaosAndOrder[1], defender.GetType())))
             {
                 percentageBonus += holyAvenger.Level * 2;
             }
@@ -4283,7 +4283,7 @@ namespace Server.Items
                     m_AlignmentRaw = reader.ReadString();
                     m_TalentIndex = reader.ReadInt();
                     m_TalentLevel = reader.ReadInt();
-                    Talent = TalentConstructor.ConstructFromIndex(m_TalentIndex);
+                    Talent = m_TalentIndex < BaseTalent.InvalidTalentIndex ? TalentConstructor.ConstructFromIndex(m_TalentIndex) : null;
                     goto case 15;
                 case 15:
                     m_WarForged = reader.ReadBool();

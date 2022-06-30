@@ -25,6 +25,7 @@ namespace Server.Talent
             CooldownSeconds = 160;
             GumpHeight = 230;
             AddEndY = 70;
+            AddEndAdditionalDetailsY = 100;
         }
 
         public override void OnUse(Mobile from)

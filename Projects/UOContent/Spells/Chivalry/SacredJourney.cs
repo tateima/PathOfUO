@@ -107,7 +107,7 @@ namespace Server.Spells.Chivalry
                     5033
                 );
 
-                PlanarTravel.NextPlanarTravel(Caster);
+                PlanarTravel.NextPlanarTravel(Caster, 3);
 
                 Caster.PlaySound(0x1FC);
                 Caster.MoveToWorld(loc, map);

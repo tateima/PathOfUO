@@ -70,15 +70,201 @@ namespace Server
                     typeof(MLDryad),
                     typeof(Satyr)
                 },
-                UndeadGroup
+                new []
+                {
+                    typeof(AncientLich),
+                    typeof(LichLord),
+                    typeof(DarknightCreeper),
+                    typeof(RevenantLion),
+                    typeof(Revenant),
+                    typeof(PatchworkSkeleton),
+                    typeof(KhaldunRevenant),
+                    typeof(WailingBanshee),
+                    typeof(LadyOfTheSnow),
+                    typeof(SkeletalDragon),
+                    typeof(Bogle),
+                    typeof(Shade),
+                    typeof(Spectre),
+                    typeof(Wraith),
+                    typeof(BoneKnight),
+                    typeof(Ghoul),
+                    typeof(Mummy),
+                    typeof(SkeletalKnight),
+                    typeof(Skeleton),
+                    typeof(Zombie),
+                    typeof(BoneMagi),
+                    typeof(SkeletalMage),
+                    typeof(ShadowKnight),
+                    typeof(VampireBat),
+                    typeof(RestlessSoul),
+                    typeof(WailingBanshee),
+                    typeof(RottingCorpse),
+                    typeof(SpectralArmour),
+                    typeof(Lich)
+                }
             }
         );
 
-        public static Type[] UndeadGroup { get; } =
+        public static OppositionGroup DarknessAndLight { get; } = new(
+            new[]
+            {
+                new[]
+                {
+                    typeof(EtherealWarrior),
+                    typeof(Kirin),
+                    typeof(LordOaks),
+                    typeof(Silvani),
+                    typeof(ArcticOgreLord),
+                    typeof(OgreLord),
+                    typeof(Cyclops),
+                    typeof(Titan),
+                    typeof(Doppleganger),
+                    typeof(KhaldunSummoner),
+                    typeof(KhaldunZealot),
+                    typeof(EvilMageLord),
+                    typeof(Executioner),
+                    typeof(Celestial),
+                    typeof(Juggernaut),
+                    typeof(Centaur),
+                    typeof(Pixie),
+                    typeof(Treefellow),
+                    typeof(Unicorn),
+                    typeof(Wisp),
+                    typeof(MLDryad),
+                    typeof(Satyr),
+                    typeof(Ogre),
+                    typeof(Troll),
+                    typeof(Orc),
+                    typeof(OrcBomber),
+                    typeof(OrcBrute),
+                    typeof(OrcCaptain),
+                    typeof(OrcishLord),
+                    typeof(OrcishMage),
+                    typeof(SpawnedOrcishLord),
+                    typeof(Brigand),
+                    typeof(ElfBrigand),
+                    typeof(Ettin),
+                    typeof(Cursed),
+                    typeof(FrostTroll),
+                    typeof(Guardian),
+                    typeof(HeadlessOne),
+                    typeof(Ratman),
+                    typeof(RatmanArcher),
+                    typeof(RatmanMage),
+                    typeof(Savage),
+                    typeof(SavageRider),
+                    typeof(SavageShaman),
+                    typeof(EvilHealer),
+                    typeof(EvilMage),
+                    typeof(EvilWanderingHealer)
+                },
+                new []{
+                    typeof(AncientLich),
+                    typeof(LichLord),
+                    typeof(DarknightCreeper),
+                    typeof(RevenantLion),
+                    typeof(Revenant),
+                    typeof(PatchworkSkeleton),
+                    typeof(KhaldunRevenant),
+                    typeof(WailingBanshee),
+                    typeof(LadyOfTheSnow),
+                    typeof(SkeletalDragon),
+                    typeof(Bogle),
+                    typeof(Shade),
+                    typeof(Spectre),
+                    typeof(Wraith),
+                    typeof(BoneKnight),
+                    typeof(Ghoul),
+                    typeof(Mummy),
+                    typeof(SkeletalKnight),
+                    typeof(Skeleton),
+                    typeof(Zombie),
+                    typeof(BoneMagi),
+                    typeof(SkeletalMage),
+                    typeof(ShadowKnight),
+                    typeof(VampireBat),
+                    typeof(RestlessSoul),
+                    typeof(WailingBanshee),
+                    typeof(RottingCorpse),
+                    typeof(SpectralArmour),
+                    typeof(Lich)
+                }
+            }
+        );
+        public static OppositionGroup ChaosAndOrder { get; } = new(
+            new[]
+            {
+                new[]
+                {
+                    typeof(GreaterDragon),
+                    typeof(AncientWyrm),
+                    typeof(DeepSeaSerpent),
+                    typeof(Dragon),
+                    typeof(Leviathan),
+                    typeof(SeaSerpent),
+                    typeof(CrystalSeaSerpent),
+                    typeof(SerpentineDragon),
+                    typeof(ShadowWyrm),
+                    typeof(WhiteWyrm),
+                    typeof(Kraken),
+                    typeof(SilverSerpent),
+                    typeof(Drake),
+                    typeof(OphidianArchmage),
+                    typeof(OphidianKnight),
+                    typeof(OphidianMage),
+                    typeof(OphidianMatriarch),
+                    typeof(OphidianWarrior),
+                    typeof(Harpy),
+                    typeof(StoneHarpy),
+                    typeof(Lizardman),
+                    typeof(LavaLizard),
+                    typeof(Wyvern),
+                    typeof(Alligator),
+                    typeof(GiantSerpent),
+                    typeof(IceSerpent),
+                    typeof(IceSnake),
+                    typeof(Snake),
+                    typeof(LavaSnake)
+                },
+                new []
+                {
+                    typeof(BoneDemon),
+                    typeof(AbysmalHorror),
+                    typeof(CrystalDaemon),
+                    typeof(GoreFiend),
+                    typeof(MoundOfMaggots),
+                    typeof(ArcaneDaemon),
+                    typeof(Balron),
+                    typeof(ElderGazer),
+                    typeof(IceFiend),
+                    typeof(ChaosDaemon),
+                    typeof(ShadowFiend),
+                    typeof(ChaosElemental),
+                    typeof(HellHound),
+                    typeof(HellSteed),
+                    typeof(PredatorHellCat),
+                    typeof(HellCat),
+                    typeof(DemonKnight),
+                    typeof(Devourer),
+                    typeof(WandererOfTheVoid),
+                    typeof(Daemon),
+                    typeof(Gazer),
+                    typeof(Gargoyle),
+                    typeof(GargoyleDestroyer),
+                    typeof(GargoyleEnforcer),
+                    typeof(Imp),
+                    typeof(Succubus),
+                    typeof(EnslavedGargoyle),
+                    typeof(StoneGargoyle),
+                    typeof(GazerLarva),
+                    typeof(SummonedDaemon)
+                }
+            }
+        );
+
+        public static Type[] LesserUndeadGroup { get; } =
         {
-            typeof(AncientLich),
             typeof(Bogle),
-            typeof(LichLord),
             typeof(Shade),
             typeof(Spectre),
             typeof(Wraith),
@@ -91,21 +277,13 @@ namespace Server
             typeof(BoneMagi),
             typeof(SkeletalMage),
             typeof(ShadowKnight),
-            typeof(DarknightCreeper),
-            typeof(RevenantLion),
-            typeof(Revenant),
-            typeof(PatchworkSkeleton),
             typeof(VampireBat),
             typeof(RestlessSoul),
-            typeof(KhaldunRevenant),
             typeof(WailingBanshee),
-            typeof(LadyOfTheSnow),
             typeof(RottingCorpse),
             typeof(SpectralArmour),
-            typeof(SkeletalDragon),
             typeof(Lich)
         };
-
         public static Type[] ElementalGroup { get; } =
         {
             typeof(AcidElemental),
@@ -133,61 +311,40 @@ namespace Server
             typeof(VeriteElemental),
             typeof(ChaosElemental)
         };
-        public static Type[] AbyssalGroup { get; } =
+
+        public static Type[] LesserAbyssalGroup { get; } =
         {
-            typeof(BoneDemon),
             typeof(HellHound),
             typeof(HellSteed),
             typeof(PredatorHellCat),
             typeof(HellCat),
-            typeof(AbysmalHorror),
-            typeof(CrystalDaemon),
             typeof(DemonKnight),
-            typeof(GoreFiend),
             typeof(Devourer),
-            typeof(MoundOfMaggots),
             typeof(WandererOfTheVoid),
-            typeof(ArcaneDaemon),
-            typeof(Balron),
             typeof(Daemon),
-            typeof(ElderGazer),
             typeof(Gazer),
-            typeof(FireGargoyle),
             typeof(Gargoyle),
             typeof(GargoyleDestroyer),
             typeof(GargoyleEnforcer),
-            typeof(IceFiend),
             typeof(Imp),
             typeof(Succubus),
-            typeof(ChaosDaemon),
             typeof(EnslavedGargoyle),
             typeof(StoneGargoyle),
             typeof(GazerLarva),
-            typeof(ShadowFiend),
-            typeof(SummonedDaemon),
-            typeof(ChaosElemental)
+            typeof(SummonedDaemon)
         };
-        public static Type[] ReptilianGroup { get; } =
+        public static Type[] LesserReptilianGroup { get; } =
         {
-            typeof(GreaterDragon),
-            typeof(AncientWyrm),
-            typeof(DeepSeaSerpent),
-            typeof(Dragon),
+
+            typeof(SilverSerpent),
             typeof(Drake),
-            typeof(Leviathan),
             typeof(OphidianArchmage),
             typeof(OphidianKnight),
             typeof(OphidianMage),
             typeof(OphidianMatriarch),
             typeof(OphidianWarrior),
-            typeof(SeaSerpent),
-            typeof(CrystalSeaSerpent),
-            typeof(SerpentineDragon),
-            typeof(ShadowWyrm),
-            typeof(WhiteWyrm),
             typeof(Harpy),
             typeof(StoneHarpy),
-            typeof(Kraken),
             typeof(Lizardman),
             typeof(LavaLizard),
             typeof(Wyvern),
@@ -196,14 +353,18 @@ namespace Server
             typeof(IceSerpent),
             typeof(IceSnake),
             typeof(Snake),
-            typeof(LavaSnake),
-            typeof(SilverSerpent)
+            typeof(LavaSnake)
         };
 
-        public static Type[] HumanoidGroup{ get; } =
+        public static Type[] LesserHumanoidGroup { get; } =
         {
-            typeof(ArcticOgreLord),
-            typeof(OgreLord),
+            typeof(Centaur),
+            typeof(Pixie),
+            typeof(Treefellow),
+            typeof(Unicorn),
+            typeof(Wisp),
+            typeof(MLDryad),
+            typeof(Satyr),
             typeof(Ogre),
             typeof(Troll),
             typeof(Orc),
@@ -213,22 +374,13 @@ namespace Server
             typeof(OrcishLord),
             typeof(OrcishMage),
             typeof(SpawnedOrcishLord),
-            typeof(SummonedOrcBrute),
             typeof(Brigand),
             typeof(ElfBrigand),
-            typeof(Cyclops),
-            typeof(Titan),
-            typeof(Doppleganger),
-            typeof(SummonedDoppleganger),
             typeof(Ettin),
             typeof(Cursed),
-            typeof(Executioner),
             typeof(FrostTroll),
             typeof(Guardian),
             typeof(HeadlessOne),
-            typeof(Juggernaut),
-            typeof(KhaldunSummoner),
-            typeof(KhaldunZealot),
             typeof(Ratman),
             typeof(RatmanArcher),
             typeof(RatmanMage),
@@ -237,10 +389,7 @@ namespace Server
             typeof(SavageShaman),
             typeof(EvilHealer),
             typeof(EvilMage),
-            typeof(EvilMageLord),
-            typeof(EvilWanderingHealer),
-            typeof(Executioner),
-            typeof(Celestial)
+            typeof(EvilWanderingHealer)
         };
 
         public static Type[] AnimalGroup { get; } =
@@ -342,6 +491,8 @@ namespace Server
 
             return -1;
         }
+
+        public Type[] this[int i] => m_Types[i];
     }
 }
 

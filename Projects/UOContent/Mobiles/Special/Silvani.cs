@@ -44,7 +44,7 @@ namespace Server.Mobiles
 
         public override string DefaultName => "Silvani";
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.FeyAndUndead;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override bool CanFly => true;
         public override bool Unprovokable => true;

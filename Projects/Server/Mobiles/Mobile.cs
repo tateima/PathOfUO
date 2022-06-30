@@ -272,6 +272,7 @@ namespace Server
 
         private int m_HueMod = -1;
         private int m_Hunger;
+        private int m_Thirst;
 
         private bool m_InDeltaQueue;
         private int m_Kills, m_ShortTermMurders;
@@ -489,7 +490,18 @@ namespace Server
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
-        public int Thirst { get; set; }
+        public int Thirst
+        {
+            get => m_Thirst;
+            set
+            {
+                if (m_Thirst != value)
+                {
+                    m_Thirst = value;
+                    InvalidateProperties();
+                }
+            }
+        }
 
         [CommandProperty(AccessLevel.GameMaster)]
         public int BAC { get; set; }

@@ -17,7 +17,7 @@ namespace Server.Mobiles
         public EvilHealer(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override bool CanTeach => true;
 
         public override bool AlwaysMurderer => true;

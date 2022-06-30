@@ -57,7 +57,7 @@ namespace Server.Mobiles
         public SeaSerpent(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a sea serpents corpse";
         public override string DefaultName => "a sea serpent";
 

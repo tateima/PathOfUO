@@ -42,7 +42,7 @@ namespace Server.Mobiles
         public EnslavedGargoyle(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "an enslaved gargoyle corpse";
         public override string DefaultName => "an enslaved gargoyle";
 

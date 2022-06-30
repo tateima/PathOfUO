@@ -54,7 +54,7 @@ namespace Server.Mobiles
 
         public override int TreasureMapLevel => Core.AOS ? 5 : 0;
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.FeyAndUndead;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override int Feathers => 100;
 

@@ -51,7 +51,7 @@ namespace Server.Mobiles
         public OphidianKnight(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.TerathansAndOphidians, OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "an ophidian corpse";
 
         public override int Meat => 2;
@@ -59,8 +59,6 @@ namespace Server.Mobiles
         public override Poison PoisonImmune => Poison.Lethal;
         public override Poison HitPoison => Poison.Lethal;
         public override int TreasureMapLevel => 3;
-
-        public override OppositionGroup OppositionGroup => OppositionGroup.TerathansAndOphidians;
 
         public override void GenerateLoot()
         {

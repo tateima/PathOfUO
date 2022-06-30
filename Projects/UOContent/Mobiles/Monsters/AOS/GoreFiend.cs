@@ -43,6 +43,8 @@ namespace Server.Mobiles
         public override string DefaultName => "a gore fiend";
 
         public override bool BleedImmune => true;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
+
 
         public override void GenerateLoot()
         {

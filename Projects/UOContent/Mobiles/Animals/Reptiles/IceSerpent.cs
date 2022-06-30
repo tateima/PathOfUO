@@ -62,7 +62,7 @@ namespace Server.Mobiles
         public IceSerpent(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "an ice serpent corpse";
         public override string DefaultName => "a giant ice serpent";
 

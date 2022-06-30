@@ -39,7 +39,7 @@ namespace Server.Mobiles
         public Lizardman(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a lizardman corpse";
         public override InhumanSpeech SpeechType => InhumanSpeech.Lizardman;
 

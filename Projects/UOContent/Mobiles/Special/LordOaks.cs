@@ -80,7 +80,7 @@ namespace Server.Mobiles
         public override bool BardImmune => !Core.SE;
         public override bool Unprovokable => Core.SE;
         public override bool Uncalmable => Core.SE;
-        public override OppositionGroup OppositionGroup => OppositionGroup.FeyAndUndead;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override Poison PoisonImmune => Poison.Deadly;
 

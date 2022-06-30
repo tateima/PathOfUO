@@ -16,7 +16,7 @@ namespace Server.Talent
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
-            if (IsMobileType(OppositionGroup.ReptilianGroup, target.GetType()))
+            if (IsMobileType(OppositionGroup.ChaosAndOrder[0], target.GetType()))
             {
                 target.Damage(Utility.RandomMinMax(1, Level), attacker);
             }
@@ -24,7 +24,7 @@ namespace Server.Talent
 
         public override int CheckDamageAbsorptionEffect(Mobile defender, Mobile attacker, int damage)
         {
-            if (IsMobileType(OppositionGroup.ReptilianGroup, attacker.GetType()))
+            if (IsMobileType(OppositionGroup.ChaosAndOrder[0], attacker.GetType()))
             {
                 damage -= AOS.Scale(damage, Level * 5);
             }

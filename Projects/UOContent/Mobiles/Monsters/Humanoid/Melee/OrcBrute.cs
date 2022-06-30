@@ -63,7 +63,7 @@ namespace Server.Mobiles
         public override Poison PoisonImmune => Poison.Lethal;
         public override int Meat => 2;
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.SavagesAndOrcs;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override bool CanRummageCorpses => true;
         public override bool AutoDispel => true;

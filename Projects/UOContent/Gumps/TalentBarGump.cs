@@ -32,8 +32,11 @@ namespace Server.Gumps
 
             foreach (var (_, value) in player.Talents)
             {
+                BaseTalent[] dependencyMatrix = BaseTalent.GetTalentDependency(player, value);
+                BaseTalent dependsOn = dependencyMatrix.Length > 0 ? dependencyMatrix[0] : null;
+                BaseTalent hasDependency = dependencyMatrix.Length > 1 ? dependencyMatrix[1] : null;
                 if (
-                    value.CanBeUsed &&
+                    value.CanBeUsed && ((dependsOn is not null && hasDependency is not null && hasDependency.Level >= value.TalentDependencyPoints) || (dependsOn is null)) &&
                         (
                             !value.RequiresDeityFavor || (value.RequiresDeityFavor && player.HasDeityFavor && value.DeityAlignment != Deity.Alignment.None && value.DeityAlignment == player.Alignment)
                         )

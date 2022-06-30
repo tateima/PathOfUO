@@ -37,7 +37,7 @@ namespace Server.Mobiles
         public Troll(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override string CorpseName => "a troll corpse";
         public override string DefaultName => "a troll";
 

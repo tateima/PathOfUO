@@ -56,7 +56,7 @@ namespace Server.Mobiles
         public DemonKnight(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a demon knight corpse";
         public override bool IgnoreYoungProtection => Core.ML;
 

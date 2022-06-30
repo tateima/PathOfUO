@@ -41,7 +41,7 @@ namespace Server.Mobiles
         public ElderGazer(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "an elder gazer corpse";
         public override string DefaultName => "an elder gazer";
 

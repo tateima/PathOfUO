@@ -52,7 +52,7 @@ namespace Server.Mobiles
         public override string CorpseName => "a lich's corpse";
         public override string DefaultName => "a lich lord";
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.FeyAndUndead;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override bool CanRummageCorpses => true;
         public override bool BleedImmune => true;

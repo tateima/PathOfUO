@@ -7,16 +7,16 @@ namespace Server.Mobiles
     public static class Veteran
     {
         // Buffs
-        public static double GoldBuff = 1.12;
-        public static double HitsBuff = 1.28;
-        public static double StrBuff = 1.015;
-        public static double IntBuff = 1.06;
-        public static double DexBuff = 1.06;
-        public static double SkillsBuff = 1.06;
-        public static double SpeedBuff = 1.06;
+        public static double GoldBuff = 1.20;
+        public static double HitsBuff = 4.00;
+        public static double StrBuff = 1.020;
+        public static double IntBuff = 1.10;
+        public static double DexBuff = 1.10;
+        public static double SkillsBuff = 1.10;
+        public static double SpeedBuff = 1.10;
         public static double FameBuff = 1.11;
         public static double KarmaBuff = 1.11;
-        public static int DamageBuff = 3;
+        public static int DamageBuff = 4;
         public static void Convert(BaseCreature bc)
         {
             if (bc.IsVeteran)
@@ -24,7 +24,7 @@ namespace Server.Mobiles
                 return;
             }
             MonsterBuff.Convert(bc, GoldBuff, HitsBuff, StrBuff, IntBuff, DexBuff, SkillsBuff, SpeedBuff, FameBuff, KarmaBuff, DamageBuff);
-            MonsterBuff.AddLoot(bc, 3);
+            MonsterBuff.AddLoot(bc);
         }
         public static void UnConvert(BaseCreature bc)
         {

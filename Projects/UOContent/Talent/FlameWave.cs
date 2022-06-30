@@ -84,7 +84,7 @@ namespace Server.Talent
                             distance = 10;
                         }
                         var itemID = eastToWest ? 0x398C : 0x3996;
-                        var targetLoc = _flameWave.CalculatePushbackFromAnchor(from.Location, 1, target);
+                        var targetLoc = CalculatePushbackFromAnchor(from.Location, 1, target);
                         for (int i = 0; i < distance; i++)
                         {
                             var duration = TimeSpan.FromSeconds(25 + 5 * _flameWave.Level);
@@ -108,7 +108,7 @@ namespace Server.Talent
                                 var chaoticLoc = new Point3D(eastToWest ? targetLoc.X + j : targetLoc.X, eastToWest ? targetLoc.Y : targetLoc.Y + j, targetLoc.Z);
                                 new FireFieldSpell.FireFieldItem(itemID, chaoticLoc, from, from.Map, duration, j);
                             }
-                            targetLoc = _flameWave.CalculatePushbackFromAnchor(targetLoc, 1, target);
+                            targetLoc = CalculatePushbackFromAnchor(targetLoc, 1, target);
                         }
                         _flameWave.OnCooldown = true;
                         Timer.StartTimer(TimeSpan.FromSeconds(_flameWave.CooldownSeconds), _flameWave.ExpireTalentCooldown, out _flameWave._talentTimerToken);

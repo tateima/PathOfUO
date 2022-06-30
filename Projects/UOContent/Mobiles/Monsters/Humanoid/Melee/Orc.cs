@@ -77,8 +77,7 @@ namespace Server.Mobiles
         public override bool CanRummageCorpses => true;
         public override int TreasureMapLevel => 1;
         public override int Meat => 1;
-
-        public override OppositionGroup OppositionGroup => OppositionGroup.SavagesAndOrcs;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override void GenerateLoot()
         {

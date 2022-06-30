@@ -81,7 +81,7 @@ namespace Server.Items
 
         public virtual void OnGateUsed(Mobile m)
         {
-            PlanarTravel.NextPlanarTravel(m);
+            PlanarTravel.NextPlanarTravel(m, 3);
         }
 
         public virtual void UseGate(Mobile m)

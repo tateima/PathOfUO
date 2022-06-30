@@ -41,7 +41,7 @@ namespace Server.Mobiles
         public AncientWyrm(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a dragon corpse";
         public override string DefaultName => "an ancient wyrm";
 

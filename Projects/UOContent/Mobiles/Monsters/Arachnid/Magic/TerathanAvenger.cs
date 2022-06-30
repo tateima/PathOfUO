@@ -51,7 +51,7 @@ namespace Server.Mobiles
         public override int TreasureMapLevel => 3;
         public override int Meat => 2;
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.TerathansAndOphidians;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.TerathansAndOphidians };
 
         public override void GenerateLoot()
         {

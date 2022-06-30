@@ -7,7 +7,7 @@ namespace Server.Talent
         public TwoHandedMaceSpecialist()
         {
             TalentDependency = typeof(MacefightingFocus);
-            RequiredWeapon = new[] { typeof(WarHammer) };
+            RequiredWeapon = new[] { typeof(WarHammer), typeof(BaseStaff) };
             DisplayName = "Warmonger";
             Description = "Increases damage to two handed mace fighting weapons.";
             AdditionalDetail = $"{PassiveDetail} This talent causes (1-X) * 2 damage where X is the talent level.";

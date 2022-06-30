@@ -47,7 +47,7 @@ namespace Server.Mobiles
         public Wyvern(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a wyvern corpse";
         public override string DefaultName => "a wyvern";
 

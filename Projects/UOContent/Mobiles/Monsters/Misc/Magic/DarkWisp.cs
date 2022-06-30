@@ -58,7 +58,7 @@ namespace Server.Mobiles
 
         public override string DefaultName => "a wisp";
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.FeyAndUndead;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override void GenerateLoot()
         {

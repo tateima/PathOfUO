@@ -60,6 +60,8 @@ namespace Server.Mobiles
         public override string CorpseName => "a crystal daemon corpse";
         public override string DefaultName => "a crystal daemon";
 
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
+
         public override void GenerateLoot()
         {
             AddLoot(LootPack.FilthyRich, 3);

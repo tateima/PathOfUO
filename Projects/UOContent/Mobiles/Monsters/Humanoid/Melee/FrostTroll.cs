@@ -41,7 +41,7 @@ namespace Server.Mobiles
         public FrostTroll(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override string CorpseName => "a frost troll corpse";
         public override string DefaultName => "a frost troll";
 

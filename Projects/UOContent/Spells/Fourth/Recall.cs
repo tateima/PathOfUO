@@ -100,7 +100,7 @@ namespace Server.Spells.Fourth
                     --m_Book.CurCharges;
                 }
 
-                PlanarTravel.NextPlanarTravel(Caster);
+                PlanarTravel.NextPlanarTravel(Caster, 3);
 
                 Caster.PlaySound(0x1FC);
                 Caster.MoveToWorld(loc, map);

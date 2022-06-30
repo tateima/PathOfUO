@@ -10,7 +10,7 @@ namespace Server
         public static bool CanPlanarTravel(Mobile mobile) {
             return (mobile as PlayerMobile)?.NextPlanarTravel <= Core.Now;
         }
-        public static void NextPlanarTravel(Mobile mobile) {
+        public static void NextPlanarTravel(Mobile mobile, int duration) {
             if (mobile is PlayerMobile player) {
                 AstralBorn astralBorn = player.GetTalent(typeof(AstralBorn)) as AstralBorn;
                 if (astralBorn != null) {
@@ -18,7 +18,7 @@ namespace Server
                 }
                 else
                 {
-                    player.NextPlanarTravel = Core.Now.AddHours(30);
+                    player.NextPlanarTravel = Core.Now.AddHours(duration);
                 }
 
             }

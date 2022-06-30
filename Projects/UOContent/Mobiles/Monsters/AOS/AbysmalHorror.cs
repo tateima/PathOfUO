@@ -55,6 +55,7 @@ namespace Server.Mobiles
         public override bool AreaPeaceImmune => Core.SE;
         public override Poison PoisonImmune => Poison.Lethal;
         public override int TreasureMapLevel => 1;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
 
         public override WeaponAbility GetWeaponAbility() =>
             Utility.RandomBool() ? WeaponAbility.MortalStrike : WeaponAbility.WhirlwindAttack;

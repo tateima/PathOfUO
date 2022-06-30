@@ -50,7 +50,7 @@ namespace Server.Mobiles
 
         public override string CorpseName => "an ancient lich's corpse";
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.FeyAndUndead;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override bool Unprovokable => true;
         public override bool BleedImmune => true;

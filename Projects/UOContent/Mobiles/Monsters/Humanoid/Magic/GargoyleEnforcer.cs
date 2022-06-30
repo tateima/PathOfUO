@@ -47,7 +47,7 @@ namespace Server.Mobiles
         public GargoyleEnforcer(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a gargoyle corpse";
 
         public override string DefaultName => "a gargoyle enforcer";

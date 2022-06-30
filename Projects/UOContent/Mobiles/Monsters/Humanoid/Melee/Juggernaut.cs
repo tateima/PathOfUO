@@ -55,7 +55,7 @@ namespace Server.Mobiles
         public Juggernaut(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override string CorpseName => "a juggernaut corpse";
 
         public override string DefaultName => "a blackthorn juggernaut";

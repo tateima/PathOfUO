@@ -82,7 +82,7 @@ namespace Server.Mobiles
         public ElfBrigand(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override bool ClickTitle => false;
 
         public override bool AlwaysMurderer => true;

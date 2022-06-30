@@ -241,10 +241,10 @@ namespace Server.Pantheon
         {
             var validTarget = alignment switch
             {
-                Alignment.Light => BaseTalent.IsMobileType(enemy ? OppositionGroup.UndeadGroup : OppositionGroup.HumanoidGroup, type),
-                Alignment.Darkness => BaseTalent.IsMobileType(enemy ? OppositionGroup.HumanoidGroup : OppositionGroup.UndeadGroup, type),
-                Alignment.Order => BaseTalent.IsMobileType(enemy ? OppositionGroup.AbyssalGroup : OppositionGroup.ReptilianGroup, type),
-                Alignment.Chaos => BaseTalent.IsMobileType(enemy ? OppositionGroup.ReptilianGroup : OppositionGroup.AbyssalGroup, type),
+                Alignment.Light => BaseTalent.IsMobileType(enemy ? OppositionGroup.DarknessAndLight[1] : OppositionGroup.DarknessAndLight[0], type),
+                Alignment.Darkness => BaseTalent.IsMobileType(enemy ? OppositionGroup.DarknessAndLight[0] : OppositionGroup.DarknessAndLight[1], type),
+                Alignment.Order => BaseTalent.IsMobileType(enemy ? OppositionGroup.ChaosAndOrder[1] : OppositionGroup.ChaosAndOrder[0], type),
+                Alignment.Chaos => BaseTalent.IsMobileType(enemy ? OppositionGroup.ChaosAndOrder[0] : OppositionGroup.ChaosAndOrder[1], type),
                 _ => false
             };
             return validTarget;
@@ -285,6 +285,10 @@ namespace Server.Pantheon
             if (baseExp > 0 || killed is PlayerMobile)
             {
                 var scaledPoints = killed is PlayerMobile killedPlayer ? killedPlayer.Level : baseExp / 25;
+                if (scaledPoints < 1)
+                {
+                    scaledPoints = 1;
+                }
                 if (AlignmentCheck(killed, player.Alignment, false))
                 {
                     points = new[] { scaledPoints * -1 };
@@ -339,6 +343,14 @@ namespace Server.Pantheon
                 for (int i = 0; i < amount; i++)
                 {
                     BaseCreature challenger = challengers[Utility.Random(challengers.Count)] as BaseCreature;
+                    if (Utility.Random(100) < 50)
+                    {
+                        challenger.IsVeteran = true;
+                    }
+                    else
+                    {
+                        challenger.IsHeroic = true;
+                    }
                     if (amount == 1 || i == 0)
                     {
                         var challengerBuffs = 0;
@@ -556,8 +568,8 @@ namespace Server.Pantheon
         {
             if (player.NextPrayer <= DateTime.Now)
             {
-                List<SkillName> craftingSkillNames = BaseTalent.GetPlayerSkillNames(player, true);
-                List<SkillName> combatSkillNames = BaseTalent.GetPlayerSkillNames(player, false);
+                List<SkillName> craftingSkillNames = BaseTalent.GetPlayerSkillNames(player, true, false);
+                List<SkillName> combatSkillNames = BaseTalent.GetPlayerSkillNames(player, false, false);
                 if (BestowHighReward(player))
                 {
                     player.NextPrayer = DateTime.Now.AddHours(12);

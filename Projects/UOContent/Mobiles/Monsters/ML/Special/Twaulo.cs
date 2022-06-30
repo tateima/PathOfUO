@@ -65,7 +65,7 @@ namespace Server.Mobiles
 
         public override string DefaultName => "Twaulo";
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.FeyAndUndead;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override bool Unprovokable => true;
         public override Poison PoisonImmune => Poison.Regular;

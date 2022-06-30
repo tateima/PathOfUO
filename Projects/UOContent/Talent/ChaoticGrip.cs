@@ -67,7 +67,7 @@ namespace Server.Talent
                         }
                         else
                         {
-                            var location = _chaoticGrip.CalculatePushbackFromAnchor(target.Location, (int)from.GetDistanceToSqrt(target.Location)-1, from);
+                            var location = CalculatePushbackFromAnchor(target.Location, (int)from.GetDistanceToSqrt(target.Location)-1, from);
                             _chaoticGrip.ApplyManaCost(from);
                             if (Core.AOS)
                             {

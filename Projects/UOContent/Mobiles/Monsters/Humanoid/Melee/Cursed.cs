@@ -49,7 +49,7 @@ namespace Server.Mobiles
         public Cursed(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override string CorpseName => "an inhuman corpse";
         public override bool ClickTitle => false;
         public override bool ShowFameTitle => false;

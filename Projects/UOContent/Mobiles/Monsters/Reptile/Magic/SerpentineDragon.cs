@@ -48,7 +48,7 @@ namespace Server.Mobiles
         public SerpentineDragon(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a dragon corpse";
         public override string DefaultName => "a serpentine dragon";
 

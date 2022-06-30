@@ -43,7 +43,7 @@ namespace Server.Mobiles
         public Dragon(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a dragon corpse";
         public override string DefaultName => "a dragon";
 

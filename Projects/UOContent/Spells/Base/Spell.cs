@@ -6,7 +6,9 @@ using Server.Items;
 using Server.Misc;
 using Server.Mobiles;
 using Server.Network;
+using Server.Pantheon;
 using Server.Spells.Bushido;
+using Server.Spells.Chivalry;
 using Server.Spells.Fourth;
 using Server.Spells.Fifth;
 using Server.Spells.Necromancy;
@@ -877,6 +879,15 @@ namespace Server.Spells
                 if (karma != 0)
                 {
                     Titles.AwardKarma(Caster, karma, true);
+                }
+
+                if (Caster is PlayerMobile player)
+                {
+                    if (this is NecromancerSpell && Deity.AlignmentCheck(player, Deity.Alignment.Light, false)
+                        || this is PaladinSpell && Deity.AlignmentCheck(player, Deity.Alignment.Darkness, false))
+                    {
+                        Deity.RewardPoints(player, new [] { -1 }, new [] { player.Alignment });
+                    }
                 }
 
                 if (TransformationSpellHelper.UnderTransformation(Caster, typeof(VampiricEmbraceSpell)))

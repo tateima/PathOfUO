@@ -38,7 +38,7 @@ namespace Server.Mobiles
         public SummonedDaemon(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a daemon corpse";
         public override double DispelDifficulty => 125.0;
         public override double DispelFocus => 45.0;

@@ -66,7 +66,7 @@ namespace Server.Mobiles
         public KhaldunSummoner(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override bool ClickTitle => false;
         public override bool ShowFameTitle => false;
 

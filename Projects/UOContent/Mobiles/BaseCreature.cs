@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Server.Collections;
 using Server.ContextMenus;
@@ -354,6 +355,7 @@ namespace Server.Mobiles
         private bool m_Toxic;
         private bool m_SoulFeeder;
 
+        private int m_Level;
         private int m_PhysicalResistance;
         private int m_PoisonResistance;
 
@@ -381,6 +383,8 @@ namespace Server.Mobiles
             {
                 iRangePerception = DefaultRangePerception;
             }
+
+            m_Level = 1;
             m_Loyalty = MaxLoyalty; // Wonderfully Happy
             m_NextGambleTime = DateTime.Now;
             m_GambleLosses = 0;
@@ -595,6 +599,16 @@ namespace Server.Mobiles
                 InvalidateProperties();
             }
         }
+        public int Level
+        {
+            get => m_Level;
+            set
+            {
+                m_Level = value;
+                InvalidateProperties();
+            }
+        }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public int SoulFeeds { get; set; }
 
@@ -933,7 +947,7 @@ namespace Server.Mobiles
                     if (Combatant != null)
                     {
                         List<Mobile> mobilesInRange = new List<Mobile>(GetMobilesInRange(12));
-                        foreach (Mobile minion in Minions)
+                        foreach (Mobile minion in Minions.ToList())
                         {
                             if (!minion.Alive)
                             {
@@ -1030,7 +1044,7 @@ namespace Server.Mobiles
 
         public BaseAI AIObject { get; private set; }
 
-        public virtual OppositionGroup OppositionGroup => null;
+        public virtual OppositionGroup[] OppositionGroups => null;
 
         public virtual bool IsAnimatedDead
         {
@@ -1390,8 +1404,8 @@ namespace Server.Mobiles
 
         public virtual TimeSpan ReacquireDelay => TimeSpan.FromSeconds(10.0);
         public virtual bool ReacquireOnMovement => false;
-        public virtual bool AcquireOnApproach => m_Paragon;
-        public virtual int AcquireOnApproachRange => 10;
+        public virtual bool AcquireOnApproach => OppositionGroups is not null || m_Paragon;
+        public virtual int AcquireOnApproachRange => 20;
 
         public static bool Summoning { get; set; }
 
@@ -1711,9 +1725,26 @@ namespace Server.Mobiles
 
         public virtual WeaponAbility GetWeaponAbility() => null;
 
+        public bool IsOpposing(Mobile m)
+        {
+            bool opposingGroup = false;
+            if (OppositionGroups is not null)
+            {
+                foreach (var oppositionGroup in OppositionGroups)
+                {
+                    opposingGroup = oppositionGroup.IsEnemy(this, m);
+                    if (opposingGroup)
+                    {
+                        break;
+                    }
+                }
+            }
+            return opposingGroup;
+        }
+
         public virtual bool IsEnemy(Mobile m)
         {
-            if (OppositionGroup?.IsEnemy(this, m) == true)
+            if (IsOpposing(m))
             {
                 return true;
             }
@@ -1984,31 +2015,27 @@ namespace Server.Mobiles
                     MonsterBuff.MinionKarmaBuff,
                     MonsterBuff.MinionDamageBuff);
 
-                // 5% chance in Dungeons 1% chance everywhere else
-                int chance = Region.IsPartOf<DungeonRegion>() ? 500 : 100;
-
-                IsHeroic = Utility.Random(10000) < chance;
-
-                if (!IsHeroic)
-                {
-                    chance = Region.IsPartOf<DungeonRegion>() ? 2000 : 1000;
-                    IsVeteran = Utility.Random(10000) < chance;
-                }
-
                 if (DynamicExperienceValue() >= 475) // skeleton strength and up
                 {
-                    chance = 350;
+                    // 5% chance in Dungeons 1% chance everywhere else
+                    int chance = Region.IsPartOf<DungeonRegion>() ? 200 : 50;
+                    IsHeroic = Utility.Random(10000) < chance;
+
+                    if (!IsHeroic)
+                    {
+                        chance = Region.IsPartOf<DungeonRegion>() ? 2000 : 1000;
+                        IsVeteran = Utility.Random(10000) < chance;
+                    }
+                    chance = 50;
                     IsIllusionist = Utility.Random(10000) < chance;
                     IsCorruptor = Utility.Random(10000) < chance;
                     IsEthereal = Utility.Random(10000) < chance;
 
                     if (DynamicExperienceValue() <= 1700)
                     {
-                        chance = 350;
                         IsBoss = Utility.Random(10000) < chance;
                     }
-
-                    chance = 500;
+                    chance = 100;
                     IsMagicResistant = Utility.Random(10000) < chance;
                     switch (Utility.Random(4))
                     {
@@ -2025,8 +2052,6 @@ namespace Server.Mobiles
                             IsToxic = Utility.Random(10000) < chance;
                             break;
                     }
-
-                    chance = 1000;
                     IsReflective = Utility.Random(10000) < chance;
                     IsRegenerative = Utility.Random(10000) < chance;
                     IsSoulFeeder = Utility.Random(10000) < chance;
@@ -2044,6 +2069,33 @@ namespace Server.Mobiles
 
         public override void OnBeforeSpawn(Point3D location, Map m)
         {
+            int baseXp = (int)DynamicExperienceValue() + ExperienceValue;
+            // 38.4615384615
+            // level range caps at 65 levels, and there are 7 tiers divided into groups of 500
+            const double levelRangePerTier = 65.00 / 7.00;
+            double tier = baseXp / 500.00;
+            int midLevel = (int)(tier * levelRangePerTier);
+            int minLevel = midLevel - 5;
+            if (minLevel <= 1)
+            {
+                minLevel = 2;
+            }
+            MaxLevel = midLevel + 5;
+            if (MaxLevel > 80)
+            {
+                ExperienceValue += (MaxLevel - 80) * 250;
+                MaxLevel = 80;
+                minLevel = 72;
+                midLevel = 76;
+            }
+            Level = Utility.RandomMinMax(minLevel, MaxLevel);
+            if (Level == MaxLevel)
+            {
+                DamageMin = DamageMax;
+            }
+            double buff = 1.00;
+            buff += Level <= midLevel ? 0 : ((Level - midLevel)*5)/100.00;
+            MonsterBuff.Convert(this, buff, buff, buff, buff, buff, buff, 1.00, buff, buff, 0);
             CheckBuffs();
             if (Paragon.CheckConvert(this, location, m))
             {
@@ -2155,7 +2207,7 @@ namespace Server.Mobiles
                 Timer.StartTimer(TimeSpan.FromSeconds(10), mobile.RecoverAmmo);
             }
 
-            if (IsIllusionist && Utility.Random(100) < 15)
+            if (IsIllusionist && Utility.Random(100) < Utility.RandomMinMax(25, 45))
             {
                 MonsterBuff.AddIllusion(this, from);
             }
@@ -2389,7 +2441,9 @@ namespace Server.Mobiles
         {
             base.Serialize(writer);
 
-            writer.Write(29); // version
+            writer.Write(30); // version
+            // version 30
+            writer.Write(m_Level);
             // version 29
             writer.Write(SoulFeeds);
             writer.Write(m_SoulFeeder);
@@ -2551,6 +2605,10 @@ namespace Server.Mobiles
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+            if (version >= 30)
+            {
+                m_Level = reader.ReadInt();
+            }
             if (version >= 29)
             {
                 SoulFeeds = reader.ReadInt();
@@ -3120,7 +3178,7 @@ namespace Server.Mobiles
         public void DebugSay(string text)
         {
             // Moved the debug check to implementation layer so we can avoid string formatting when we do not need it
-            PublicOverheadMessage(MessageType.Regular, 41, false, text);
+            // PublicOverheadMessage(MessageType.Regular, 41, false, text);
         }
 
         /*
@@ -3645,6 +3703,9 @@ namespace Server.Mobiles
         public override void AddNameProperties(IPropertyList list)
         {
             base.AddNameProperties(list);
+            list.Add(1114057, $"Level: {Level.ToString()}");          // ~1_val~
+            list.Add(1114057, $"Level range: {(Level - 5 < 1 ? 1 : Level - 5).ToString()} - {MaxLevel.ToString()}");   // ~1_val~
+            list.Add(1114057, $"XP: {FinalExperience().ToString()}"); // ~1_val~
 
             if (IsSoulFeeder)
             {
@@ -4065,6 +4126,26 @@ namespace Server.Mobiles
             }
         }
 
+        public int FinalExperience()
+        {
+            int baseXp = (int)DynamicExperienceValue() + ExperienceValue;
+            int scaleXp = ExperienceScale(baseXp);
+            if (ExperienceValue == 0)
+            {
+                scaleXp = 0;
+            }
+
+            // int challengeRating = baseXp / 100;
+            // scaleXp += (challengeRating + challengeRating / 7) * Level;
+            return scaleXp;
+        }
+
+        public double ExperienceCompareScale(double xpScale, double xpFixed, int percent)
+        {
+            xpScale += AOS.Scale((int)xpScale, percent) > xpFixed ? AOS.Scale((int)xpScale, percent) : xpFixed;
+            return xpScale;
+        }
+
         public int ExperienceScale(int xp)
         {
             double xpScale = 0;
@@ -4076,95 +4157,84 @@ namespace Server.Mobiles
                 {
                     tierXp = 500;
                 }
-                switch(tier)
+
+                xpScale += tier switch
                 {
-                    case 1:
-                        xpScale += tierXp / 15;
-                        break;
-                    case 2:
-                        xpScale += tierXp / 7;
-                        break;
-                    case 3:
-                        xpScale += tierXp / 3;
-                        break;
-                    case 4:
-                        xpScale += tierXp / 2;
-                        break;
-                    case 5:
-                        xpScale += tierXp;
-                        break;
-                    case 6:
-                        xpScale += tierXp / 0.75;
-                        break;
-                    case 7:
-                        xpScale += tierXp / 0.5;
-                        break;
-                    default:
-                        xpScale += tierXp / 0.5;
-                        break;
-                }
+                    1 => tierXp / 7,
+                    2 => tierXp / 4,
+                    3 => tierXp / 2,
+                    4 => tierXp / 1.25,
+                    5 => tierXp,
+                    6 => tierXp / 0.6,
+                    7 => tierXp / 0.5,
+                    _ => tierXp / 0.25
+                };
                 xp -= 500;
                 tier++;
             }
 
-            if (IsParagon == true)
+
+            if (IsParagon)
             {
-                xpScale += 400;
+                xpScale = ExperienceCompareScale(xpScale, 200, 30);
             }
 
-            if (IsHeroic == true)
+            if (IsHeroic)
             {
-                xpScale += 200;
+                xpScale = ExperienceCompareScale(xpScale, 125, 15);
             }
 
-            if (IsVeteran == true)
+            if (IsVeteran)
             {
-                xpScale += 125;
+                xpScale = ExperienceCompareScale(xpScale, 33, 5);
             }
 
-            if (IsReflective == true)
+            if (IsReflective)
             {
-                xpScale += 100;
+                xpScale = ExperienceCompareScale(xpScale, 100, 15);
             }
 
-            if (IsRegenerative == true)
+            if (IsRegenerative)
             {
-                xpScale += 100;
+                xpScale = ExperienceCompareScale(xpScale, 100, 15);
             }
 
-            if (IsMagicResistant == true)
+            if (IsMagicResistant)
             {
-                xpScale += 100;
+                xpScale = ExperienceCompareScale(xpScale, 100, 15);
             }
 
-            if (IsCorruptor == true)
+            if (IsCorruptor)
             {
-                xpScale += 100;
+                xpScale = ExperienceCompareScale(xpScale, 125, 15);
+            } else if (IsCorrupted)
+            {
+                xpScale = ExperienceCompareScale(xpScale, 25, 3);
             }
 
-            if (IsEthereal == true)
+            if (IsEthereal)
             {
-                xpScale += 100;
+                xpScale = ExperienceCompareScale(xpScale, 75, 10);
             }
 
-            if (IsIllusionist == true)
+            if (IsIllusionist)
             {
-                xpScale += 100;
+                xpScale = ExperienceCompareScale(xpScale, 75, 10);
             }
 
-            if (IsBoss == true)
+            if (IsBoss)
             {
-                xpScale += 150;
+                xpScale = ExperienceCompareScale(xpScale, 125, 20);
             }
 
-            if (IsMinion == true)
+            if (IsMinion)
             {
-                xpScale += 25;
+                xpScale = ExperienceCompareScale(xpScale, 25, 3);
             }
 
             if (IsBurning || IsFrozen || IsElectrified || IsToxic)
             {
-                xpScale += 100;
+                xpScale = ExperienceCompareScale(xpScale, 75, 10);
             }
 
             return (int)xpScale;
@@ -4173,29 +4243,31 @@ namespace Server.Mobiles
 
         public double DynamicExperienceValue()
         {
-            var xp = (RawStr * 1.6) + RawDex + RawInt;
+            var xp = (RawStr > RawDex && RawStr > RawInt ? RawStr * 1.6 : RawStr) + (RawDex > RawStr && RawDex > RawInt ? RawDex * 1.6 : RawDex) + (RawInt > RawStr && RawInt > RawDex ? RawInt * 1.6 : RawInt);
 
             xp += (m_PhysicalResistance + m_FireResistance + m_ColdResistance + m_PoisonResistance + m_EnergyResistance) * 1.6;
 
-            //xp += SkillsTotal / 10.0;
+            xp += SkillsTotal / 10.0;
 
             xp += m_DamageMax * 2.4;
 
             xp += VirtualArmor * 1.8;
 
+            xp += Fame / 100.00;
+
             if (BaseInstrument.IsMageryCreature(this))
             {
-                xp += 100;
+                xp += Skills.Magery.Base;
+            }
+
+            if (Skills.Necromancy.Base > 5.0)
+            {
+                xp += Skills.Necromancy.Base;
             }
 
             if (BaseInstrument.IsFireBreathingCreature(this))
             {
-                xp += 100;
-            }
-
-            if (BaseInstrument.IsPoisonImmune(this))
-            {
-                xp += 100;
+                xp += AOS.Scale(HitsMax, 33);
             }
 
             if (this is VampireBat || this is VampireBatFamiliar)
@@ -4203,7 +4275,12 @@ namespace Server.Mobiles
                 xp += 100;
             }
 
-            xp += BaseInstrument.GetPoisonLevel(this) * 20;
+            if (BaseInstrument.IsPoisonImmune(this))
+            {
+                xp += PoisonImmune.Level * 33;
+            }
+
+            xp += BaseInstrument.GetPoisonLevel(this) * 33;
 
             if (xp > 5000)
             {
@@ -4237,7 +4314,7 @@ namespace Server.Mobiles
                 SendIncomingPacket();
                 SendIncomingPacket();
 
-                // TODO: This can be done in Parallel if there are lots of thDynamicExperienceValueem.
+                // TODO: This can be done in Parallel if there are lots of them.
                 var aggressors = Aggressors;
 
                 for (var i = 0; i < aggressors.Count; ++i)
@@ -4386,44 +4463,57 @@ namespace Server.Mobiles
                         }
                     }
                 }
-                int baseXp = (int)DynamicExperienceValue() + ExperienceValue / 10;
-                int scaleXp = ExperienceScale(baseXp);
-                if (ExperienceValue == 0)
-                {
-                    scaleXp = 0;
-                }
 
-                MaxLevel = (int)Math.Floor(baseXp / 52.0);
-                if (MaxLevel < 1)
+                if (LastKiller is not BaseGuard)
                 {
-                    MaxLevel = 2;
-                }
-                for (var i = 0; i < titles.Count; ++i)
-                {
-                    Titles.AwardFame(titles[i], fame[i], true);
-                    Titles.AwardKarma(titles[i], karma[i], true);
-                    if (titles[i] is PlayerMobile)
+                    int scaleXp = FinalExperience();
+                    int deityXp = scaleXp;
+                    for (var i = 0; i < titles.Count; ++i)
                     {
-                        PlayerMobile player = (PlayerMobile)titles[i];
-                        Deity.PointsFromExperience(player, this, baseXp);
-                        if (player.Level <= MaxLevel && scaleXp > 0 && player.Level < 60)
+                        Titles.AwardFame(titles[i], fame[i], true);
+                        Titles.AwardKarma(titles[i], karma[i], true);
+                        if (titles[i] is PlayerMobile)
                         {
-                            BaseTalent fastLearner = player.GetTalent(typeof(FastLearner));
-                            if (fastLearner != null)
+                            PlayerMobile player = (PlayerMobile)titles[i];
+                            if (player.Level <= Level && scaleXp > 0)
                             {
-                                scaleXp += AOS.Scale(scaleXp, fastLearner.Level * 2);
+                                if (Level > player.Level)
+                                {
+                                    scaleXp += (Level - player.Level) * Level;
+                                }
+                                BaseTalent fastLearner = player.GetTalent(typeof(FastLearner));
+                                if (fastLearner != null)
+                                {
+                                    scaleXp += AOS.Scale(scaleXp, fastLearner.Level * 10);
+                                }
+                                BaseTalent wisdom = player.GetTalent(typeof(Wisdom));
+                                if (wisdom != null)
+                                {
+                                    scaleXp += AOS.Scale(scaleXp, wisdom.Level * 30);
+                                }
+                                if (player.Ranger())
+                                {
+                                    scaleXp /= 2; // 50% ranger 50% normal gain
+                                    if (!player.MaxLevel())
+                                    {
+                                        player.RangerExperience += scaleXp;
+                                    }
+                                }
+                                if (!player.MaxLevel())
+                                {
+                                    player.NonCraftExperience += scaleXp;
+                                }
+                                player.SendMessage($"You slay {Name} and gain {scaleXp.ToString()} experience.");
                             }
-                            BaseTalent wisdom = player.GetTalent(typeof(Wisdom));
-                            if (wisdom != null)
+                            else
                             {
-                                scaleXp += AOS.Scale(scaleXp, wisdom.Level * 30);
+                                deityXp -= (player.Level - Level) * 2;
+                                if (deityXp < 0)
+                                {
+                                    deityXp = 0;
+                                }
                             }
-                            if (player.Ranger())
-                            {
-                                scaleXp /= 2; // 50% ranger 50% normal gain
-                                player.RangerExperience += scaleXp;
-                            }
-                            player.NonCraftExperience += scaleXp;
+                            Deity.PointsFromExperience(player, this, deityXp);
                         }
                     }
                 }
@@ -4438,13 +4528,17 @@ namespace Server.Mobiles
                         entry.Value.CheckKillEffect(this, LastKiller);
                     }
                 }
-            } else if (LastKiller is BaseCreature { IsSoulFeeder: true } creatureThatKilled)
+            } else if (LastKiller is BaseCreature creatureThatKilled)
             {
-                MonsterBuff.AddFeederStats(creatureThatKilled);
+                if (creatureThatKilled.IsSoulFeeder)
+                {
+                    MonsterBuff.AddFeederStats(creatureThatKilled);
+                } else if (!creatureThatKilled.Controlled && IsEnemy(creatureThatKilled) && creatureThatKilled.DynamicExperienceValue() < DynamicExperienceValue() && creatureThatKilled.Level <= Level)
+                {
+                    MonsterBuff.LevelUp(creatureThatKilled);
+                }
             }
-
             MonsterBuff.CheckElementalAoe(this);
-
             base.OnDeath(c);
 
             if (c is Corpse corpse)
@@ -5307,9 +5401,9 @@ namespace Server.Mobiles
 
         public virtual void RemovePetFriend(Mobile m) => Friends?.Remove(m);
 
-        public virtual bool IsFriend(Mobile m) =>
-            OppositionGroup?.IsEnemy(this, m) != true && m is BaseCreature c && m_Team == c.m_Team
-            && (_summoned || m_Controlled) == (c._summoned || c.m_Controlled);
+        public virtual bool IsFriend(Mobile m) => !IsOpposing(m) && m is BaseCreature c && m_Team == c.m_Team
+                                                  && (_summoned || m_Controlled) == (c._summoned || c.m_Controlled);
+
 
         public virtual Allegiance GetFactionAllegiance(Mobile mob)
         {
@@ -5347,26 +5441,93 @@ namespace Server.Mobiles
 
         public virtual void AlterDamageScalarFrom(Mobile caster, ref double scalar)
         {
+            AlterDamageFromByLevel(caster, ref scalar);
         }
 
         public virtual void AlterDamageScalarTo(Mobile target, ref double scalar)
         {
+            AlterDamageToByLevel(target, ref scalar);
         }
 
         public virtual void AlterSpellDamageFrom(Mobile from, ref int damage)
         {
+            AlterDamageFromByLevel(from, ref damage);
         }
 
         public virtual void AlterSpellDamageTo(Mobile to, ref int damage)
         {
+            AlterDamageToByLevel(to, ref damage);
         }
 
         public virtual void AlterMeleeDamageFrom(Mobile from, ref int damage)
         {
+            AlterDamageFromByLevel(from, ref damage);
         }
 
         public virtual void AlterMeleeDamageTo(Mobile to, ref int damage)
         {
+            AlterDamageToByLevel(to, ref damage);
+        }
+
+        public void AlterDamageToByLevel(Mobile to, ref int damage)
+        {
+            damage = to switch
+            {
+                PlayerMobile player   => CalculateDamageFromLevels(player.Level, damage),
+                BaseCreature creature => CalculateDamageFromLevels(creature.Level, damage),
+                _                     => damage
+            };
+        }
+        public void AlterDamageToByLevel(Mobile to, ref double damage)
+        {
+            damage = to switch
+            {
+                PlayerMobile player   => CalculateDamageFromLevels(player.Level, damage),
+                BaseCreature creature => CalculateDamageFromLevels(creature.Level, damage),
+                _                     => damage
+            };
+        }
+        public void AlterDamageFromByLevel(Mobile from, ref int damage)
+        {
+            damage = from switch
+            {
+                PlayerMobile player   => CalculateDamageFromLevels(player.Level , damage),
+                BaseCreature creature => CalculateDamageFromLevels(creature.Level, damage),
+                _                     => damage
+            };
+        }
+        public void AlterDamageFromByLevel(Mobile from, ref double damage)
+        {
+            damage = from switch
+            {
+                PlayerMobile player   => CalculateDamageFromLevels(player.Level, damage),
+                BaseCreature creature => CalculateDamageFromLevels(creature.Level, damage),
+                _                     => damage
+            };
+        }
+
+        public int CalculateDamageFromLevels(int opponentLevel, int damage)
+        {
+            if (Level > opponentLevel + 2)
+            {
+                damage += Level - opponentLevel;
+            } else if (Level < opponentLevel - 2)
+            {
+                damage -= opponentLevel - Level;
+            }
+            return damage;
+        }
+
+        public double CalculateDamageFromLevels(int opponentLevel, double damage)
+        {
+            if (Level > opponentLevel + 2)
+            {
+                damage += Level - opponentLevel;
+            } else if (Level < opponentLevel - 2)
+            {
+                damage -= opponentLevel - Level;
+            }
+            return damage;
         }
 
         public virtual bool CheckFoodPreference(Item f) =>

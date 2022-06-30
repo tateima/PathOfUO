@@ -49,7 +49,7 @@ namespace Server.Mobiles
         public override string CorpseName => "a dark guardians' corpse";
         public override string DefaultName => "a dark guardian";
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.FeyAndUndead;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override int TreasureMapLevel => 2;
         public override bool BleedImmune => true;

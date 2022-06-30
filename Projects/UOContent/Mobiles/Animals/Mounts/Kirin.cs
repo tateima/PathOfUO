@@ -57,7 +57,7 @@ namespace Server.Mobiles
 
         public override TimeSpan MountAbilityDelay => TimeSpan.FromHours(1.0);
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.FeyAndUndead;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override int Meat => 3;
         public override int Hides => 10;

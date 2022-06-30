@@ -42,8 +42,12 @@ namespace Server.Gumps
             }
             else if (page == 2)
             {
-                var book = new BookOfAlignments();
-                from.AddToBackpack(book);
+                var bookExist = from.Backpack?.FindItemByType(typeof(BookOfAlignments));
+                if (bookExist is null)
+                {
+                    var book = new BookOfAlignments();
+                    from.AddToBackpack(book);
+                }
                 descriptionWidth = 210;
                 imageX = 260;
                 width = 400;
@@ -316,7 +320,7 @@ namespace Server.Gumps
             }
         }
 
-        private class Option
+        public class Option
         {
             public int ButtonId { get; set; }
             public int ButtonX { get; set; }

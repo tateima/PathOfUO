@@ -55,7 +55,7 @@ namespace Server.Talent
 
                     if (Utility.Random(100) < Level * 2 && mobile is BaseCreature creature &&
                         creature.DynamicExperienceValue() <= 1000 && IsMobileType(
-                            OppositionGroup.UndeadGroup,
+                            OppositionGroup.DarknessAndLight[1],
                             mobile.GetType()
                         ))
                     {

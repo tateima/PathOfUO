@@ -3,38 +3,37 @@ using Server.Talent;
 
 namespace Server.Mobiles
 {
-    public abstract class BaseGuard : Mobile
+    public abstract class BaseGuard : BaseCreature
     {
-        public BaseGuard(Mobile target)
+        public  AIType AiType;
+        public BaseGuard() : base(AIType.AI_Melee, FightMode.None)
         {
-            if (target != null)
-            {
-                Location = target.Location;
-                Map = target.Map;
-
-                Effects.SendLocationParticles(
-                    EffectItem.Create(Location, Map, EffectItem.DefaultDuration),
-                    0x3728,
-                    10,
-                    10,
-                    5023
-                );
-            }
         }
 
         public BaseGuard(Serial serial) : base(serial)
         {
         }
 
-        public abstract Mobile Focus { get; set; }
-
         public override bool HandlesOnSpeech(Mobile from) => true;
+
 
         public override void OnSpeech(SpeechEventArgs e)
         {
             if (Deleted || !e.Mobile.CheckAlive())
             {
                 return;
+            }
+
+            if (e.Mobile.InRange(this, 10))
+            {
+                if (!e.Handled)
+                {
+                    if (e.Speech.ToLower().Contains("guards") && e.Mobile.Combatant is not null)
+                    {
+                        Combatant = e.Mobile.Combatant;
+                        e.Handled = true;
+                    }
+                }
             }
 
             if (e.Mobile.InRange(this, 2))
@@ -86,13 +85,13 @@ namespace Server.Mobiles
             {
                 if (m is BaseGuard g)
                 {
-                    if (g.Focus == null) // idling
+                    if (g.Combatant == null) // idling
                     {
-                        g.Focus = target;
+                        g.Combatant = target;
 
                         --amount;
                     }
-                    else if (g.Focus == target && !onlyAdditional)
+                    else if (g.Combatant == target && !onlyAdditional)
                     {
                         --amount;
                     }

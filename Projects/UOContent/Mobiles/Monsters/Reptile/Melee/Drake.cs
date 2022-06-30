@@ -44,7 +44,7 @@ namespace Server.Mobiles
         public Drake(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a drake corpse";
         public override string DefaultName => "a drake";
 

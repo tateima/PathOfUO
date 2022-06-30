@@ -44,7 +44,7 @@ namespace Server.Mobiles
         public override string CorpseName => "a chaos daemon corpse";
 
         public override string DefaultName => "a chaos daemon";
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override WeaponAbility GetWeaponAbility() => WeaponAbility.CrushingBlow;
 
         public override void GenerateLoot()

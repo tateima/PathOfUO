@@ -44,7 +44,7 @@ namespace Server.Mobiles
         public Devourer(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a devourer of souls corpse";
         public override string DefaultName => "a devourer of souls";
 

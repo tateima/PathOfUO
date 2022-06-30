@@ -71,7 +71,7 @@ namespace Server.Mobiles
         public override bool AlwaysMurderer => true;
         public override bool ShowFameTitle => false;
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.SavagesAndOrcs;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override void GenerateLoot()
         {

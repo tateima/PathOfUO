@@ -43,7 +43,7 @@ namespace Server.Mobiles
         public SilverSerpent(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a silver serpent corpse";
         public override Faction FactionAllegiance => TrueBritannians.Instance;
         public override Ethic EthicAllegiance => Ethic.Hero;

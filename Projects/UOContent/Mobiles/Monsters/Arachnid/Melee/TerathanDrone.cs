@@ -49,7 +49,7 @@ namespace Server.Mobiles
 
         public override int Meat => 4;
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.TerathansAndOphidians;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.TerathansAndOphidians };
 
         public override void GenerateLoot()
         {

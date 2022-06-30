@@ -42,7 +42,7 @@ namespace Server.Mobiles
                 PackItem(new GargoylesPickaxe());
             }
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public StoneGargoyle(Serial serial) : base(serial)
         {
         }

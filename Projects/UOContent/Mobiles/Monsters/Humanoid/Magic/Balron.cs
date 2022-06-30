@@ -50,7 +50,7 @@ namespace Server.Mobiles
         }
 
         public override string CorpseName => "a balron corpse";
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override bool CanRummageCorpses => true;
         public override Poison PoisonImmune => Poison.Deadly;
         public override int TreasureMapLevel => 5;

@@ -41,7 +41,7 @@ namespace Server.Mobiles
         public Succubus(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a succubus corpse";
         public override string DefaultName => "a succubus";
 

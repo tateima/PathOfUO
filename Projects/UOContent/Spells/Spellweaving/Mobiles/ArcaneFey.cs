@@ -44,7 +44,7 @@ namespace Server.Mobiles
         public override double DispelDifficulty => 70.0;
         public override double DispelFocus => 20.0;
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.FeyAndUndead;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override bool InitialInnocent => true;
 
         public override void Serialize(IGenericWriter writer)

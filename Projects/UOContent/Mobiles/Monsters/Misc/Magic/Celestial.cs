@@ -48,7 +48,7 @@ namespace Server.Mobiles
         public Celestial(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override string CorpseName => "a celestial corpse";
         public override double DispelDifficulty => 150.5;
         public override double DispelFocus => 45.0;

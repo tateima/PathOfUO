@@ -43,7 +43,7 @@ namespace Server.Mobiles
         public OgreLord(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override string CorpseName => "an ogre lords corpse";
         public override Faction FactionAllegiance => Minax.Instance;
         public override Ethic EthicAllegiance => Ethic.Evil;

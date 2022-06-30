@@ -40,7 +40,7 @@ namespace Server.Mobiles
 
         public override string CorpseName => "an ice fiend corpse";
         public override string DefaultName => "an ice fiend";
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override int TreasureMapLevel => 4;
         public override int Meat => 1;
         public override bool CanFly => true;

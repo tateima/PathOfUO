@@ -448,7 +448,9 @@ namespace Server.Items
 
             var entry = list.Entries[listEntry];
 
-            if (!m_Mobile.InRange(m_Moongate.GetWorldLocation(), 1) || m_Mobile.Map != m_Moongate.Map)
+            if (!PlanarTravel.CanPlanarTravel(m_Mobile)) {
+                m_Mobile.LocalOverheadMessage(MessageType.Regular, 0x22, false, PlanarTravel.NO_TRAVEL_MESSAGE);
+            } else if (!m_Mobile.InRange(m_Moongate.GetWorldLocation(), 1) || m_Mobile.Map != m_Moongate.Map)
             {
                 m_Mobile.SendLocalizedMessage(1019002); // You are too far away to use the gate.
             }
@@ -485,6 +487,8 @@ namespace Server.Items
                 m_Mobile.Hidden = true;
 
                 m_Mobile.MoveToWorld(entry.Location, list.Map);
+
+                PlanarTravel.NextPlanarTravel(m_Mobile, 1);
 
                 Effects.PlaySound(entry.Location, list.Map, 0x1FE);
             }

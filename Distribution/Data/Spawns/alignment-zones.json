@@ -1,0 +1,50 @@
+[
+  {
+    "type": "Order",
+    "location": [1764, 2352, 0],
+    "map": "Felucca",
+    "distance": 100
+  },
+  {
+    "type": "Order",
+    "location": [1764, 2352, 0],
+    "map": "Trammel",
+    "distance": 100
+  },
+  {
+    "type": "Light",
+    "location": [2587, 986, 0],
+    "map": "Felucca",
+    "distance": 100
+  },
+  {
+    "type": "Light",
+    "location": [2587, 986, 0],
+    "map": "Trammel",
+    "distance": 100
+  },
+  {
+    "type": "Chaos",
+    "location": [1602, 2366, 0],
+    "map": "Felucca",
+    "distance": 100
+  },
+  {
+    "type": "Chaos",
+    "location": [1602, 2366, 0],
+    "map": "Trammel",
+    "distance": 100
+  },
+  {
+    "type": "Darkness",
+    "location": [2436, 1098, 0],
+    "map": "Felucca",
+    "distance": 100
+  },
+  {
+    "type": "Darkness",
+    "location": [2436, 1098, 0],
+    "map": "Trammel",
+    "distance": 100
+  }
+]

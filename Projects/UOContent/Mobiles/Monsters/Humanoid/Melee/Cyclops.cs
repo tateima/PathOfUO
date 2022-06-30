@@ -38,7 +38,7 @@ namespace Server.Mobiles
         public Cyclops(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override string CorpseName => "a cyclopean corpse";
         public override string DefaultName => "a cyclopean warrior";
 

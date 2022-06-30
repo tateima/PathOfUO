@@ -49,7 +49,7 @@ namespace Server.Mobiles
         public RatmanMage(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override string CorpseName => "a glowing ratman corpse";
         public override InhumanSpeech SpeechType => InhumanSpeech.Ratman;
 

@@ -34,7 +34,7 @@ namespace Server.Mobiles
         public MoundOfMaggots(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a maggoty corpse";
         public override string DefaultName => "a mound of maggots";
 

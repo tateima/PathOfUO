@@ -41,7 +41,7 @@ namespace Server.Mobiles
         public Alligator(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "an alligator corpse";
         public override string DefaultName => "an alligator";
 

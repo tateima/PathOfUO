@@ -46,7 +46,7 @@ namespace Server.Mobiles
         public RatmanArcher(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override string CorpseName => "a ratman archer corpse";
         public override InhumanSpeech SpeechType => InhumanSpeech.Ratman;
 

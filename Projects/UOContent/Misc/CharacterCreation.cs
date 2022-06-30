@@ -6,6 +6,8 @@ using Server.Items;
 using Server.Logging;
 using Server.Mobiles;
 using Server.Network;
+using Server.Pantheon;
+using Server.Talent;
 
 namespace Server.Misc
 {
@@ -149,9 +151,6 @@ namespace Server.Misc
             newChar.Race = Core.Expansion >= args.Race.RequiredExpansion ? args.Race : Race.DefaultRace;
             newChar.Hue = newChar.Race.ClipSkinHue(args.Hue & 0x3FFF) | 0x8000;
             newChar.Hunger = 20;
-            ((PlayerMobile)newChar).TalentPoints = 1;
-            ((PlayerMobile)newChar).CraftSkillPoints = 6;
-            ((PlayerMobile)newChar).NonCraftSkillPoints = 6;
 
             var young = false;
 
@@ -171,6 +170,50 @@ namespace Server.Misc
 
             SetStats(newChar, state, args.Stats, args.Profession);
             SetSkills(newChar, args.Skills, args.Profession, args.ShirtHue, args.PantsHue);
+
+            List<SkillName> craftingSkillNames = BaseTalent.GetPlayerSkillNames((PlayerMobile)newChar, true, false);
+            List<SkillName> combatSkillNames = BaseTalent.GetPlayerSkillNames((PlayerMobile)newChar, false, false);
+            List<SkillName> rangerSkilLNames = BaseTalent.GetPlayerSkillNames((PlayerMobile)newChar, false, true);
+            if (craftingSkillNames.Count > 0 && combatSkillNames.Count > 0)
+            {
+                if (rangerSkilLNames.Count > 0)
+                {
+                    ((PlayerMobile)newChar).RangerSkillPoints = 4;
+                    ((PlayerMobile)newChar).CraftSkillPoints = 4;
+                    ((PlayerMobile)newChar).NonCraftSkillPoints = 4;
+                }
+                else
+                {
+                    ((PlayerMobile)newChar).CraftSkillPoints = 6;
+                    ((PlayerMobile)newChar).NonCraftSkillPoints = 6;
+                }
+            } else if (craftingSkillNames.Count > 0)
+            {
+                if (rangerSkilLNames.Count > 0)
+                {
+                    ((PlayerMobile)newChar).RangerSkillPoints = 6;
+                    ((PlayerMobile)newChar).CraftSkillPoints = 6;
+                }
+                else
+                {
+                    ((PlayerMobile)newChar).CraftSkillPoints = 12;
+                }
+            }
+            else
+            {
+                if (rangerSkilLNames.Count > 0)
+                {
+                    ((PlayerMobile)newChar).RangerSkillPoints = 6;
+                    ((PlayerMobile)newChar).NonCraftSkillPoints = 6;
+                }
+                else
+                {
+                    ((PlayerMobile)newChar).NonCraftSkillPoints = 12;
+                }
+            }
+
+            ((PlayerMobile)newChar).TalentPoints = 1;
+
 
             var race = newChar.Race;
 

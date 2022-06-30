@@ -18,7 +18,7 @@ namespace Server.Talent
 
         public override int CheckDamageAbsorptionEffect(Mobile defender, Mobile attacker, int damage)
         {
-            if (IsMobileType(OppositionGroup.HumanoidGroup, attacker.GetType()) || attacker is PlayerMobile)
+            if (IsMobileType(OppositionGroup.DarknessAndLight[0], attacker.GetType()) || attacker is PlayerMobile)
             {
                 damage -= AOS.Scale(damage, Level * 5);
             }
@@ -27,7 +27,7 @@ namespace Server.Talent
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
         {
-            if (IsMobileType(OppositionGroup.HumanoidGroup, target.GetType()) || target is PlayerMobile)
+            if (IsMobileType(OppositionGroup.DarknessAndLight[0], target.GetType()) || target is PlayerMobile)
             {
                 target.Damage(Utility.RandomMinMax(1, Level), attacker);
             }

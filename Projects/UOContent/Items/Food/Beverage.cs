@@ -438,7 +438,7 @@ public partial class BoneBroth : BaseBeverage
                          9502,
                          0
                      );
-                     if (BaseTalent.IsMobileType(OppositionGroup.AbyssalGroup, mobile.GetType()) || BaseTalent.IsMobileType(OppositionGroup.UndeadGroup, mobile.GetType())) {
+                     if (BaseTalent.IsMobileType(OppositionGroup.ChaosAndOrder[1], mobile.GetType()) || BaseTalent.IsMobileType(OppositionGroup.DarknessAndLight[1], mobile.GetType())) {
                          mobile.Damage(Utility.RandomMinMax(2,9), from);
                      } else {
                          mobile.Heal(Utility.RandomMinMax(2,9), mobile);
@@ -1327,7 +1327,7 @@ public abstract partial class BaseBeverage : Item, IHasQuantity
             }
             if (from.Thirst < 20)
             {
-                from.Thirst += 1;
+                from.Thirst += 2;
             }
 
             if (ContainsAlcohol)

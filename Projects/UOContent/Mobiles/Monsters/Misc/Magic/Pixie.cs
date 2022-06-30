@@ -55,7 +55,7 @@ namespace Server.Mobiles
         public override int Hides => 5;
         public override int Meat => 1;
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.FeyAndUndead;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override void GenerateLoot()
         {

@@ -76,7 +76,7 @@ namespace Server
     }
 
     [PropertyObject]
-    public class Skill
+    public class Skill : IComparable<Skill>
     {
         private ushort m_Base;
         private ushort m_Cap;
@@ -316,6 +316,20 @@ namespace Server
 
                 return value;
             }
+        }
+
+        public int CompareTo(Skill? other)
+        {
+            if (Base < other?.Base)
+            {
+                return 1;
+            }
+            if (Base > other?.Base)
+            {
+                return -1;
+            }
+
+            return 0;
         }
 
         public override string ToString() => $"[{Name}: {Base}]";

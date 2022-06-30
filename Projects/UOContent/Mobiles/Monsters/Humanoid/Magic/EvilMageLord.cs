@@ -53,7 +53,7 @@ namespace Server.Mobiles
                 EquipItem(new Sandals());
             }
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override string CorpseName => "an evil mage lord corpse";
 
         public override bool CanRummageCorpses => true;

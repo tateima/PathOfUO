@@ -3,9 +3,9 @@ using Server.Items;
 
 namespace Server.Talent
 {
-    public class Concussion : BaseTalent
+    public class CranialStrike : BaseTalent
     {
-        public Concussion()
+        public CranialStrike()
         {
             TalentDependency = typeof(MaceSpecialist);
             RequiredWeaponSkill = SkillName.Macing;
@@ -14,7 +14,7 @@ namespace Server.Talent
                 typeof(Mace), typeof(Maul), typeof(Club), typeof(DiamondMace), typeof(MagicWand), typeof(HammerPick),
                 typeof(Scepter), typeof(WarMace)
             };
-            DisplayName = "Concussion";
+            DisplayName = "Cranial strike";
             CanBeUsed = true;
             Description = "Next hit drains 50% + level * 2 mana for 20 seconds.";
             StamRequired = 15;
@@ -36,7 +36,7 @@ namespace Server.Talent
                 target.AddStatMod(
                     new StatMod(
                         StatType.Int,
-                        "ConcussionTalent",
+                        "CranialStrike",
                         -AOS.Scale(target.RawInt, 50 + Level * 2),
                         TimeSpan.FromSeconds(20)
                     )

@@ -14,5 +14,14 @@ namespace Server.Talent
             GumpHeight = 230;
             AddEndY = 130;
         }
+        public override void UpdateMobile(Mobile mobile)
+        {
+            if (mobile.Skills.Tactics.Base > 0.0)
+            {
+                // transfer the skills over
+                mobile.Skills.EvalInt.Base += mobile.Skills.Tactics.Base;
+                mobile.Skills.Tactics.Base = 0.0;
+            }
+        }
     }
 }

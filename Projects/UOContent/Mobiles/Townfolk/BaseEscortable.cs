@@ -14,6 +14,7 @@ namespace Server.Mobiles
 {
     public class BaseEscortable : BaseCreature
     {
+        private TimerExecutionToken _banditTimer;
         public static readonly TimeSpan EscortDelay = TimeSpan.FromMinutes(5.0);
 
         public static readonly TimeSpan AbandonDelay =
@@ -307,12 +308,36 @@ namespace Server.Mobiles
                     "Lead on! Payment will be made when we arrive in {0}.",
                     dest.Name == "Ocllo" && m.Map == Map.Trammel ? "Haven" : dest.Name
                 );
+                Timer.StartTimer(TimeSpan.FromMinutes(1), HandleBanditEncounter, out _banditTimer);
                 EscortTable[m] = this;
                 StartFollow();
                 return true;
             }
 
             return false;
+        }
+
+        public void HandleBanditEncounter()
+        {
+            if (Utility.Random(100) < 15)
+            {
+                int amount = Utility.RandomMinMax(2, 4);
+                for (int i = 0; i < amount; i++)
+                {
+                    Brigand bandit = new Brigand();
+                    Point3D location = Location;
+                    location.X += Utility.RandomBool() ? Utility.RandomMinMax(3, 5) : Utility.RandomMinMax(-5, -3);
+                    location.Y += Utility.RandomBool() ? Utility.RandomMinMax(3, 5) : Utility.RandomMinMax(-5, -3);
+                    bandit.MoveToWorld(location, Map);
+                    Paralyze(TimeSpan.FromMinutes(1));
+                    var escorter = GetEscorter();
+                    if (escorter is not null)
+                    {
+                        SayTo(escorter, "Help me! Bandits are here!");
+                    }
+                }
+            }
+            Timer.StartTimer(TimeSpan.FromMinutes(1), HandleBanditEncounter, out _banditTimer);
         }
 
         public override bool HandlesOnSpeech(Mobile from) =>
@@ -485,6 +510,7 @@ namespace Server.Mobiles
                     1042809,
                     escorter.Name
                 ); // We have arrived! I thank thee, ~1_PLAYER_NAME~! I have no further need of thy services. Here is thy pay.
+                _banditTimer.Cancel();
 
                 // not going anywhere
                 m_Destination = null;

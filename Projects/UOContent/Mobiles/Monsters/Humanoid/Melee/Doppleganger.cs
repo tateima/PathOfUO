@@ -35,7 +35,7 @@ namespace Server.Mobiles
         public Doppleganger(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override string CorpseName => "a doppleganger corpse";
         public override string DefaultName => "a doppleganger";
 

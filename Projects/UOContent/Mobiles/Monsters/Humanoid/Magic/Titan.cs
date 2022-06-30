@@ -46,7 +46,7 @@ namespace Server.Mobiles
         public Titan(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override string CorpseName => "a titans corpse";
         public override string DefaultName => "a titan";
 

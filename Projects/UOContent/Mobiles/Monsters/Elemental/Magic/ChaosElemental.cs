@@ -52,7 +52,7 @@ namespace Server.Mobiles
         public ChaosElemental(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a chaos elemental corpse";
         public override double DispelDifficulty => 150.5;
         public override double DispelFocus => 45.0;

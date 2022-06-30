@@ -43,7 +43,7 @@ namespace Server.Mobiles
         public ArcaneDaemon(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "an arcane daemon corpse";
 
         public override string DefaultName => "an arcane daemon";

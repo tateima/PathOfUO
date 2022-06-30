@@ -17,18 +17,18 @@ namespace Server.Mobiles
         public static readonly int CorruptionRange = 12;
 
         public static double BossGoldBuff = 1.15;
-        public static double BossHitsBuff = 1.51;
-        public static double BossStrBuff = 1.15;
-        public static double BossIntBuff = 1.15;
-        public static double BossDexBuff = 1.15;
-        public static double BossSkillsBuff = 1.09;
-        public static double BossSpeedBuff = 1.09;
+        public static double BossHitsBuff = 6.0;
+        public static double BossStrBuff = 1.35;
+        public static double BossIntBuff = 1.35;
+        public static double BossDexBuff = 1.35;
+        public static double BossSkillsBuff = 1.3;
+        public static double BossSpeedBuff = 1.3;
         public static double BossFameBuff = 1.15;
         public static double BossKarmaBuff = 1.17;
-        public static int BossDamageBuff = 2;
+        public static int BossDamageBuff = 4;
 
         public static double MinionGoldBuff = 1.07;
-        public static double MinionHitsBuff = 1.08;
+        public static double MinionHitsBuff = 3.08;
         public static double MinionStrBuff = 1.07;
         public static double MinionIntBuff = 1.07;
         public static double MinionDexBuff = 1.07;
@@ -36,7 +36,7 @@ namespace Server.Mobiles
         public static double MinionSpeedBuff = 1.07;
         public static double MinionFameBuff = 1.09;
         public static double MinionKarmaBuff = 1.09;
-        public static int MinionDamageBuff = 1;
+        public static int MinionDamageBuff = 2;
 
         public static double NoBuff = 1.0;
 
@@ -155,7 +155,7 @@ namespace Server.Mobiles
                     bc.Backpack.AddItem(new IcyHeart());
                 }
             }
-            AddLoot(bc, Utility.Random(2, 4));
+            AddLoot(bc);
             new ElementalDamageTimer(bc).Start();
         }
         public static void RemoveElementalProperties(BaseCreature bc)
@@ -185,7 +185,7 @@ namespace Server.Mobiles
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
             Convert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff);
-            AddLoot(bc, Utility.Random(2, 4));
+            AddLoot(bc);
         }
         public static void RemoveEthereal(BaseCreature bc)
         {
@@ -195,7 +195,7 @@ namespace Server.Mobiles
         public static void AddCorrupted(BaseCreature bc)
         {
             CheckHues(bc);
-            Convert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, 1);
+            Convert(bc, NoBuff, MinionHitsBuff, NoBuff, NoBuff, NoBuff, MinionSkillsBuff, NoBuff, NoBuff, NoBuff, 1);
 
         }
         public static void RemoveCorrupted(BaseCreature bc)
@@ -208,7 +208,7 @@ namespace Server.Mobiles
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
             Convert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff);
-            AddLoot(bc, Utility.Random(2, 4));
+            AddLoot(bc);
             new CorruptorTimer(bc).Start();
         }
         public static void RemoveCorruptor(BaseCreature bc)
@@ -224,7 +224,7 @@ namespace Server.Mobiles
             {
                 illusion.MoveToWorld(bc.Location, bc.Map);
                 illusion.Attack(@from);
-                illusion.SetHits(Utility.Random(5, 15));
+                illusion.SetHits(Utility.RandomMinMax(25, 45));
                 illusion.ExperienceValue = 0;
                 illusion.Hue = IllusionistHue;
                 if (illusion.Backpack != null)
@@ -236,6 +236,8 @@ namespace Server.Mobiles
 
                     illusion.Name = bc.Name;
                 }
+
+                illusion.Combatant = from;
             }
 
             bc.PublicOverheadMessage(
@@ -251,7 +253,7 @@ namespace Server.Mobiles
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
             Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0);
-            AddLoot(bc, Utility.Random(2, 4));
+            AddLoot(bc);
         }
         public static void RemoveIllusionist(BaseCreature bc)
         {
@@ -262,17 +264,19 @@ namespace Server.Mobiles
         {
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
-            AddLoot(bc, Utility.Random(1, 3));
+            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0);
+            AddLoot(bc);
             new RegenerativeTimer(bc).Start();
         }
         public static void RemoveRegenerative(BaseCreature bc)
         {
             CheckHues(bc);
+            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0);
         }
         public static void AddReflective(BaseCreature bc)
         {
             bc.Name = MonsterName.Generate();
-            AddLoot(bc, Utility.Random(1, 3));
+            AddLoot(bc);
             Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0);
             CheckHues(bc);
         }
@@ -290,7 +294,7 @@ namespace Server.Mobiles
             bc.SetResistance(ResistanceType.Energy, 100);
             bc.Skills.MagicResist.Base = 120.0;
             Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0);
-            AddLoot(bc, Utility.Random(1, 3));
+            AddLoot(bc);
         }
         public static void RemoveMagicResistant(BaseCreature bc)
         {
@@ -316,7 +320,7 @@ namespace Server.Mobiles
             for (int i = 0; i < bc.NumberOfMinions; ++i)
             {
                 BaseCreature minion = Activator.CreateInstance(monsterType) as BaseCreature;
-                Point3D point = new Point3D(bc.Location.X + Utility.Random(2, 3), bc.Location.Y + Utility.Random(2, 3), bc.Y);
+                Point3D point = new Point3D(bc.Location.X + Utility.RandomMinMax(2, 3), bc.Location.Y + Utility.RandomMinMax(2, 3), bc.Y);
                 int attempts = 10;
                 while (!bc.InLOS(point))
                 {
@@ -326,7 +330,7 @@ namespace Server.Mobiles
                     }
                     else
                     {
-                        point = new Point3D(bc.Location.X + Utility.Random(2, 3), bc.Location.Y + Utility.Random(2, 3), bc.Y);
+                        point = new Point3D(bc.Location.X + Utility.RandomMinMax(2, 3), bc.Location.Y + Utility.RandomMinMax(2, 3), bc.Y);
                     }
                     attempts--;
                 }
@@ -350,7 +354,7 @@ namespace Server.Mobiles
                         MinionKarmaBuff,
                         MinionDamageBuff
                     );
-                    AddLoot(minion, 1);
+                    AddLoot(minion);
                     minions.Add(minion);
                 }
             }
@@ -360,36 +364,41 @@ namespace Server.Mobiles
         {
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
-            bc.NumberOfMinions = Utility.Random(4, 6);
+            bc.NumberOfMinions = Utility.RandomMinMax(4, 6);
             bc.SetResistance(ResistanceType.Physical, 100);
             Convert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff);
-            AddLoot(bc, Utility.Random(2, 4));
+            AddLoot(bc);
         }
-        public static void AddLoot(BaseCreature bc, int lootLevel)
+        public static void AddLoot(BaseCreature bc)
         {
-            int rand = Utility.Random(1, 3);
-            switch (lootLevel)
+            int dynamicXp = (int)bc.DynamicExperienceValue();
+            int lootRating = dynamicXp / 355;
+            if (lootRating > 7)
             {
-                case 1:
-                    bc.ForceRandomLoot(LootPack.Poor, rand);
+                lootRating = 7;
+            }
+            switch (lootRating)
+            {
+                default:
+                    bc.ForceRandomLoot(LootPack.Meager, 1);
                     break;
                 case 2:
-                    bc.ForceRandomLoot(LootPack.Meager, rand);
+                    bc.ForceRandomLoot(LootPack.Average, Utility.RandomMinMax(1, 2));
                     break;
                 case 3:
-                    bc.ForceRandomLoot(LootPack.Average, rand);
+                    bc.ForceRandomLoot(LootPack.Average, Utility.RandomMinMax(2, 4));
                     break;
                 case 4:
-                    bc.ForceRandomLoot(LootPack.Rich, rand);
+                    bc.ForceRandomLoot(LootPack.Rich, Utility.RandomMinMax(1, 2));
                     break;
                 case 5:
-                    bc.ForceRandomLoot(LootPack.FilthyRich, rand);
+                    bc.ForceRandomLoot(LootPack.FilthyRich, Utility.RandomMinMax(1, 2));
                     break;
                 case 6:
-                    bc.ForceRandomLoot(LootPack.UltraRich, rand);
+                    bc.ForceRandomLoot(LootPack.UltraRich, Utility.RandomMinMax(1, 2));
                     break;
                 case 7:
-                    bc.ForceRandomLoot(LootPack.SuperBoss, rand);
+                    bc.ForceRandomLoot(LootPack.UltraRich, Utility.RandomMinMax(2, 4));
                     break;
             }
         }
@@ -563,7 +572,7 @@ namespace Server.Mobiles
             int energyDam = 0;
             if (owner.IsElectrified)
             {
-                damage = Utility.Random(3, 5);
+                damage = Utility.RandomMinMax(3, 5);
                 energyDam = 100;
                 sound = 0x5C3;
                 Effects.SendLocationParticles(
@@ -578,19 +587,19 @@ namespace Server.Mobiles
                );
                if (CheckElementalEffect())
                 {
-                    Blindness.BlindTarget(mobile, Utility.Random(5, 7), "* Blinded by electrical shock *");
+                    Blindness.BlindTarget(mobile, Utility.RandomMinMax(5, 7), "* Blinded by electrical shock *");
                 }
             }
             else if (owner.IsBurning)
             {
-                damage = Utility.Random(5, 12);
+                damage = Utility.RandomMinMax(5, 12);
                 fireDam = 100;
                 Effects.SendLocationEffect(mobile, 0x398F, 16, 10, 0);
                 sound = 0x5CF;
             }
             else if (owner.IsToxic)
             {
-                damage = Utility.Random(3, 5);
+                damage = Utility.RandomMinMax(3, 5);
                 if (CheckElementalEffect())
                 {
                     Poison poison = GetPoison();
@@ -602,7 +611,7 @@ namespace Server.Mobiles
             }
             else if (owner.IsFrozen)
             {
-                damage = Utility.Random(3, 5);
+                damage = Utility.RandomMinMax(3, 5);
                 PlayerMobile player = null;
                 int frozenAvoidanceChance = 0;
                 if (mobile is PlayerMobile) {
@@ -619,7 +628,7 @@ namespace Server.Mobiles
 
                 if (CheckElementalEffect() && !(Utility.Random(100) < frozenAvoidanceChance))
                 {
-                    mobile.Freeze(TimeSpan.FromSeconds(Utility.Random(5, 7)));
+                    mobile.Freeze(TimeSpan.FromSeconds(Utility.RandomMinMax(5, 7)));
                     mobile.PublicOverheadMessage(
                     MessageType.Regular,
                     0x3B2,
@@ -668,10 +677,94 @@ namespace Server.Mobiles
         {
             foreach (Mobile mobile in owner.GetMobilesInRange(8))
             {
-                if (mobile != owner && mobile is PlayerMobile && owner.InLOS(mobile))
+                if (mobile != owner && (mobile is PlayerMobile || owner.IsEnemy(mobile)) && owner.InLOS(mobile))
                 {
                     CheckElementalAttack(owner, mobile);
                     mobile.RevealingAction();
+                }
+            }
+        }
+
+        public static void LevelUp(BaseCreature bc)
+        {
+            if (bc.Level < 70)
+            {
+                bc.Level++;
+                if (!bc.Controlled)
+                {
+                    if (!bc.IsVeteran)
+                    {
+                        bc.IsVeteran = true;
+                    } else if (bc.IsVeteran && !bc.IsHeroic)
+                    {
+                        bc.IsVeteran = false;
+                        bc.IsHeroic = true;
+                    } else if (bc.IsHeroic)
+                    {
+                        int buffs = 0;
+                        while (buffs < 3)
+                        {
+                            switch (Utility.RandomMinMax(1,9))
+                            {
+                                case 1:
+                                    if (!bc.IsBurning)
+                                    {
+                                        bc.IsBurning = true;
+                                    }
+                                    break;
+                                case 2:
+                                    if (!bc.IsFrozen)
+                                    {
+                                        bc.IsFrozen = true;
+                                    }
+                                    break;
+                                case 3:
+                                    if (!bc.IsToxic)
+                                    {
+                                        bc.IsToxic = true;
+                                    }
+                                    break;
+                                case 4:
+                                    if (!bc.IsElectrified)
+                                    {
+                                        bc.IsElectrified = true;
+                                    }
+                                    break;
+                                case 5:
+                                    if (!bc.IsEthereal)
+                                    {
+                                        bc.IsEthereal = true;
+                                    }
+                                    break;
+                                case 6:
+                                    if (!bc.IsIllusionist)
+                                    {
+                                        bc.IsIllusionist = true;
+                                    }
+                                    break;
+                                case 7:
+                                    if (!bc.IsReflective)
+                                    {
+                                        bc.IsReflective = true;
+                                    }
+                                    break;
+                                case 8:
+                                    if (!bc.IsRegenerative)
+                                    {
+                                        bc.IsRegenerative = true;
+                                    }
+                                    break;
+                                default:
+                                    if (!bc.IsMagicResistant)
+                                    {
+                                        bc.IsMagicResistant = true;
+                                    }
+                                    break;
+                            }
+                            buffs++;
+                        }
+                    }
+                    bc.Hits = bc.HitsMax;
                 }
             }
         }
@@ -705,7 +798,9 @@ namespace Server.Mobiles
             {
                 if (!m_Owner.Deleted && m_Owner.IsRegenerative && m_Owner.Map != Map.Internal)
                 {
-                    m_Owner.Hits += Utility.Random(1, 3);
+                    int staticGrowth = Utility.RandomMinMax(6, 8);
+                    int dynamicGrowth = AOS.Scale(m_Owner.HitsMax, 1);
+                    m_Owner.Hits += staticGrowth > dynamicGrowth ? staticGrowth : dynamicGrowth;
                     Delay = Interval = m_Owner.HitsMax < m_Owner.HitsMax * .75 ? FastRegenRate : CPUSaverRate;
                 }
                 else
@@ -762,12 +857,18 @@ namespace Server.Mobiles
                             {
                                 continue;
                             }
+
+                            if (creature.IsCorrupted && m_Owner.Combatant is not null && !m_Owner.IsEnemy(creature))
+                            {
+                                creature.Combatant = m_Owner.Combatant;
+                            }
                             creature.IsCorrupted = true;
                         } else if (mobile is PlayerMobile player) {
                             if (CheckElementalEffect(5 + m_Modifier))
                             {
                                 m_Modifier = 0;
                                 player.SendSound(0x37D);
+                                player.Paralyze(TimeSpan.FromSeconds(10));
                                 player.Fear(Utility.Random(10));
                             }
                             else

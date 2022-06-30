@@ -3,11 +3,13 @@ using Server.Items;
 
 namespace Server.Mobiles
 {
-    public abstract class BaseShieldGuard : BaseCreature
+    public abstract class BaseShieldGuard : BaseGuard
     {
-        public BaseShieldGuard() : base(AIType.AI_Melee, FightMode.Aggressor, 14)
+        public BaseShieldGuard()
         {
-            InitStats(1000, 1000, 1000);
+            AiType = AIType.AI_Melee;
+            FightMode = FightMode.Aggressor;
+            InitStats(Utility.RandomMinMax(75, 150), Utility.RandomMinMax(75, 150), Utility.RandomMinMax(75, 150));
             Title = "the guard";
 
             SetSpeed(0.5, 2.0);
@@ -97,16 +99,6 @@ namespace Server.Mobiles
         public abstract BaseShield Shield { get; }
         public abstract int SignupNumber { get; }
         public abstract GuildType Type { get; }
-
-        public override bool HandlesOnSpeech(Mobile from)
-        {
-            if (from.InRange(Location, 2))
-            {
-                return true;
-            }
-
-            return base.HandlesOnSpeech(from);
-        }
 
         public override void OnSpeech(SpeechEventArgs e)
         {

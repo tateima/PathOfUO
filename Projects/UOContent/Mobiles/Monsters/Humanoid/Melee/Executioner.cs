@@ -62,7 +62,7 @@ namespace Server.Mobiles
         public Executioner(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override bool AlwaysMurderer => true;
 
         public override void GenerateLoot()

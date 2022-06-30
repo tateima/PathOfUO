@@ -42,7 +42,7 @@ namespace Server.Mobiles
         public Ogre(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override string CorpseName => "an ogre corpse";
         public override string DefaultName => "an ogre";
 

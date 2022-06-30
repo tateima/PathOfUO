@@ -1,5 +1,6 @@
 using Server.Guilds;
 using Server.Items;
+using Server.Pantheon;
 
 namespace Server.Mobiles
 {
@@ -18,8 +19,8 @@ namespace Server.Mobiles
         public override BaseShield Shield => new ChaosShield();
         public override int SignupNumber => 1007140; // Sign up with a guild of chaos if thou art interested.
         public override GuildType Type => GuildType.Chaos;
-
         public override bool BardImmune => true;
+
 
         public override void Serialize(IGenericWriter writer)
         {

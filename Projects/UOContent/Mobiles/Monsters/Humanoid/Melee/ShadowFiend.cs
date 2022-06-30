@@ -49,7 +49,7 @@ namespace Server.Mobiles
         public ShadowFiend(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override bool DeleteCorpseOnDeath => true;
 
         public override string DefaultName => "a shadow fiend";

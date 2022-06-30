@@ -180,10 +180,7 @@ namespace Server.Items
             {
                 if (_talentIndex != value)
                 {
-                    if (_talentIndex < BaseTalent.InvalidTalentIndex)
-                    {
-                        Talent = TalentConstructor.ConstructFromIndex(_talentIndex);
-                    }
+                    Talent = _talentIndex < BaseTalent.InvalidTalentIndex ? TalentConstructor.ConstructFromIndex(_talentIndex) : null;
                     _talentIndex = value;
                     InvalidateProperties();
                     this.MarkDirty();
@@ -822,7 +819,7 @@ namespace Server.Items
             if (_alignmentRaw != null)
             {
                 list.Add(1114057, $"Alignment: {AlignmentRaw}"); // ~1_val~
-                if (_talentIndex < BaseTalent.InvalidTalentIndex)
+                if (_talentIndex < BaseTalent.InvalidTalentIndex && TalentLevel > 0)
                 {
                     list.Add(1114057, $"{Talent.DisplayName} + {TalentLevel.ToString()}"); // ~1_val~
                 }
@@ -1110,10 +1107,7 @@ namespace Server.Items
                 _hitPoints = _maxHitPoints = Utility.RandomMinMax(InitMinHits, InitMaxHits);
             }
 
-            if (_talentIndex < BaseTalent.InvalidTalentIndex)
-            {
-                Talent = TalentConstructor.ConstructFromIndex(_talentIndex);
-            }
+            Talent = _talentIndex < BaseTalent.InvalidTalentIndex ? TalentConstructor.ConstructFromIndex(_talentIndex) : null;
 
             if (Parent is Mobile parent)
             {

@@ -51,7 +51,7 @@ namespace Server.Mobiles
         public override Poison HitPoison => Poison.Lethal;
         public override int TreasureMapLevel => 5;
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.FeyAndUndead;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override void GenerateLoot()
         {

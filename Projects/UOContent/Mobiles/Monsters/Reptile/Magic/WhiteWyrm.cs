@@ -44,7 +44,7 @@ namespace Server.Mobiles
         public WhiteWyrm(Serial serial) : base(serial)
         {
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a white wyrm corpse";
         public override string DefaultName => "a white wyrm";
 

@@ -43,7 +43,7 @@ namespace Server.Mobiles
             PackItem(new Bone());
             // TODO: Body parts
         }
-
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public GiantSerpent(Serial serial) : base(serial)
         {
         }

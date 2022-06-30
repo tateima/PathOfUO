@@ -81,7 +81,7 @@ namespace Server.Mobiles
                 if (player.Backpack?.ConsumeTotal(typeof(Gold), requiredGold) == true || Banker.Withdraw(player, requiredGold))
                 {
                     player.ResetTalents();
-                    player.ResetSkills();
+                    player.SendGump(new SkillResetGump(player));
                     remaining--;
                     player.FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
                     PlaySound(0x202);

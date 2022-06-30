@@ -1,10 +1,12 @@
 using Server.Guilds;
 using Server.Items;
+using Server.Pantheon;
 
 namespace Server.Mobiles
 {
     public class OrderGuard : BaseShieldGuard
     {
+
         [Constructible]
         public OrderGuard()
         {
@@ -20,7 +22,6 @@ namespace Server.Mobiles
         public override GuildType Type => GuildType.Order;
 
         public override bool BardImmune => true;
-
         public override void Serialize(IGenericWriter writer)
         {
             base.Serialize(writer);

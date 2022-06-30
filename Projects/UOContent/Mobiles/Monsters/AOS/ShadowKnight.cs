@@ -56,7 +56,7 @@ namespace Server.Mobiles
 
         public override bool IgnoreYoungProtection => Core.ML;
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.FeyAndUndead;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
 
         public override bool BardImmune => !Core.SE;
         public override bool Unprovokable => Core.SE;

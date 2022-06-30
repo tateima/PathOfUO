@@ -47,7 +47,7 @@ namespace Server.Mobiles
         public override Poison PoisonImmune => Poison.Greater;
         public override int TreasureMapLevel => 4;
 
-        public override OppositionGroup OppositionGroup => OppositionGroup.TerathansAndOphidians;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.TerathansAndOphidians, OppositionGroup.ChaosAndOrder };
 
         public override void GenerateLoot()
         {

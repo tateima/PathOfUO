@@ -83,25 +83,18 @@ namespace Server.Gumps
                             }
                         }
                     }
-                    BaseTalent dependsOn = null;
-                    BaseTalent hasDependency = null;
+                    BaseTalent[] dependencyMatrix = BaseTalent.GetTalentDependency(player, talent);
+                    BaseTalent dependsOn = dependencyMatrix.Length > 0 ? dependencyMatrix[0] : null;
+                    BaseTalent hasDependency = dependencyMatrix.Length > 1 ? dependencyMatrix[1] : null;
                     BaseTalent used = player.GetTalent(talent.GetType());
-                    if (talent.TalentDependency != null)
-                    {
-                        dependsOn = TalentConstructor.Construct(talent.TalentDependency) as BaseTalent;
-                        if (dependsOn != null)
-                        {
-                            hasDependency = player.GetTalent(dependsOn.GetType());
-                        }
-                    }
                     int talentLevel = (used != null && used.Level > 0) ? used.Level : 0;
                     AddHtml(x, y, 200, 45, $"<BASEFONT COLOR=#FFFFE5>{talent.DisplayName}: ({talentLevel}/{talent.MaxLevel})</FONT>");
                     int hue = 0;
                     if (
                         talent.DeityAlignment != Deity.Alignment.None && talent.DeityAlignment != player.Alignment
                         ||
-                        (talentLevel == 0 && (dependsOn != null && hasDependency == null) || (blockedBy != null && hasBlocker != null) || !talent.HasSkillRequirement(@from)
-                            || (hasDependency != null && hasDependency.Level < talent.TalentDependencyPoints && hasDependency.Level != hasDependency.MaxLevel)
+                        (talentLevel == 0 && (dependsOn is not null && hasDependency is null) || (blockedBy != null && hasBlocker != null) || !talent.HasSkillRequirement(@from)
+                         || (hasDependency is not null && hasDependency.Level < talent.TalentDependencyPoints)
                         ))
                     {
                         hue = 0x3E8;
@@ -124,7 +117,7 @@ namespace Server.Gumps
                     }
                     AddButton(x, y + 20, 1531, 1532, 2000 + i, GumpButtonType.Reply, 0);
                     y += 40;
-                    string requirements = (dependsOn != null) ? $"<BR>Requires {dependsOn.DisplayName}" : "";
+                    string requirements = (dependsOn is not null) ? $"<BR>Requires {dependsOn.DisplayName}" : "";
                     blockedByStr = (blockedByStr.Length > 1) ? $"<BR>Blocks: {blockedByStr}" : "";
                     AddHtml(x, y, 200, talent.GumpHeight, $"<BASEFONT COLOR=#FFFFE5>{talent.Description}{requirements}{blockedByStr}</FONT>");
                 }
