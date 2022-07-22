@@ -83,7 +83,7 @@ namespace Server.Spells.Necromancy
                 var duration = TimeSpan.FromSeconds((GetDamageSkill(Caster) - GetResistSkill(m)) / 8 + 8);
                 m.CheckSkill(SkillName.MagicResist, 0.0, 120.0); // Skill check for gain
                 duration *= ReagentsScale();
-                timer = new ExpireTimer(Caster, m, duration);
+                var timer = new ExpireTimer(Caster, m, duration);
                 timer.Start();
 
                 BuffInfo.AddBuff(Caster, new BuffInfo(BuffIcon.BloodOathCaster, 1075659, duration, Caster, m.Name));

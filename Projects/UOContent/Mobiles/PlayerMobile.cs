@@ -3199,7 +3199,7 @@ namespace Server.Mobiles
                 dismountChance -= mountedCombat.ModifySpellMultiplier();
             }
             if (Mounted && Utility.Random(100) < dismountChance) {
-                Dismount.DismountPlayer(from, this, 30);
+                Dismount.DoDismount(from, this, TimeSpan.Zero);
             }
 
             base.OnDamage(amount, from, willKill);

@@ -64,7 +64,7 @@ namespace Server.Spells.Necromancy
                 SpellMindScalar(ref playerScalar);
                 SpellMindScalar(ref mobileScalar);
 
-                SetMindRotScalar(Caster, m, m.Player ? playerScalar : mobileScalar, duration);
+                SetMindRotScalar(Caster, m, m.Player ? playerScalar : mobileScalar, TimeSpan.FromSeconds(duration));
 
                 HarmfulSpell(m);
             }
