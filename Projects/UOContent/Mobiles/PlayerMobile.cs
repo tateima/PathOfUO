@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using Server.Accounting;
+using Server.Collections;
 using Server.ContextMenus;
 using Server.Engines.BulkOrders;
 using Server.Engines.ConPVP;
@@ -3533,19 +3534,19 @@ namespace Server.Mobiles
 
             if (m_BuffTable != null)
             {
-                var list = new List<BuffInfo>();
+                using var queue = PooledRefQueue<BuffInfo>.Create();
 
                 foreach (var buff in m_BuffTable.Values)
                 {
                     if (!buff.RetainThroughDeath)
                     {
-                        list.Add(buff);
+                        queue.Enqueue(buff);
                     }
                 }
 
-                for (var i = 0; i < list.Count; i++)
+                while (queue.Count > 0)
                 {
-                    RemoveBuff(list[i]);
+                    RemoveBuff(queue.Dequeue());
                 }
             }
             // delete all players bank items, they wont need them
@@ -3701,7 +3702,7 @@ namespace Server.Mobiles
                 amount = AOS.Scale(amount, 100 - shieldFocus.Level*2);
             }
 
-            if (EvilOmenSpell.TryEndEffect(this))
+            if (EvilOmenSpell.EndEffect(this))
             {
                 double modifier = 1.25;
                 if (from is PlayerMobile attacker)
@@ -5149,7 +5150,7 @@ namespace Server.Mobiles
                 return ApplyPoisonResult.Immune;
             }
 
-            if (EvilOmenSpell.TryEndEffect(this))
+            if (EvilOmenSpell.EndEffect(this))
             {
                 poison = PoisonImpl.IncreaseLevel(poison);
             }

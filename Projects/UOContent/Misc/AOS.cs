@@ -166,23 +166,20 @@ namespace Server
                 }
             }
 
-            if (from?.Player != true && m.Player && m.Mount is SwampDragon pet)
+            if (from?.Player != true && m.Player && m.Mount is SwampDragon { HasBarding: true } pet)
             {
-                if (pet.HasBarding)
+                var percent = pet.BardingExceptional ? 20 : 10;
+                var absorbed = Scale(totalDamage, percent);
+
+                totalDamage -= absorbed;
+                pet.BardingHP -= absorbed;
+
+                if (pet.BardingHP < 0)
                 {
-                    var percent = pet.BardingExceptional ? 20 : 10;
-                    var absorbed = Scale(totalDamage, percent);
+                    pet.HasBarding = false;
+                    pet.BardingHP = 0;
 
-                    totalDamage -= absorbed;
-                    pet.BardingHP -= absorbed;
-
-                    if (pet.BardingHP < 0)
-                    {
-                        pet.HasBarding = false;
-                        pet.BardingHP = 0;
-
-                        m.SendLocalizedMessage(1053031); // Your dragon's barding has been destroyed!
-                    }
+                    m.SendLocalizedMessage(1053031); // Your dragon's barding has been destroyed!
                 }
             }
 
@@ -212,6 +209,11 @@ namespace Server
                         );
                     }
                 }
+            }
+
+            if (totalDamage <= 0)
+            {
+                return 0;
             }
 
             m.Damage(totalDamage, from);
@@ -957,7 +959,7 @@ namespace Server
 
     public sealed class AosSkillBonuses : BaseAttributes
     {
-        private List<SkillMod> m_Mods;
+        private HashSet<SkillMod> m_Mods;
 
         public AosSkillBonuses(Item owner) : base(owner)
         {
@@ -1070,7 +1072,7 @@ namespace Server
                     continue;
                 }
 
-                m_Mods ??= new List<SkillMod>();
+                m_Mods ??= new HashSet<SkillMod>();
 
                 SkillMod sk = new DefaultSkillMod(skill, true, bonus);
                 sk.ObeyCap = true;
@@ -1086,10 +1088,10 @@ namespace Server
                 return;
             }
 
-            for (var i = 0; i < m_Mods.Count; ++i)
+            foreach (var mod in m_Mods)
             {
-                var m = m_Mods[i].Owner;
-                m_Mods[i].Remove();
+                var m = mod.Owner;
+                mod.Remove();
 
                 if (Core.ML)
                 {

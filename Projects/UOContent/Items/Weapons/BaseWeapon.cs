@@ -2235,7 +2235,6 @@ namespace Server.Items
                 var lifeLeech = 0;
                 var stamLeech = 0;
                 var manaLeech = 0;
-                int wraithLeech;
 
                 if ((int)(AosWeaponAttributes.GetValue(attacker, AosWeaponAttribute.HitLeechHits) * propertyBonus) >
                     Utility.Random(100))
@@ -2274,7 +2273,7 @@ namespace Server.Items
                 if (context?.Type == typeof(WraithFormSpell))
                 {
                     // Wraith form gives an additional 5-20% mana leech
-                    wraithLeech = 5 + (int)(15 * attacker.Skills.SpiritSpeak.Value / 100);
+                    var wraithLeech = 5 + (int)(15 * attacker.Skills.SpiritSpeak.Value / 100);
 
                     // Mana leeched by the Wraith Form spell is actually stolen, not just leeched.
                     if (darkAffinity != null)

@@ -1329,7 +1329,7 @@ public static class CharacterCreation
                 {
                     if (gargoyle)
                     {
-                        // EquipItem(m, new Boomerang());
+                        EquipItem(m, new Boomerang());
                     }
 
                     break;

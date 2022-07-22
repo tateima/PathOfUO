@@ -1948,7 +1948,7 @@ namespace Server.Mobiles
                 amount = (int)(amount * BonusPetDamageScalar);
             }
 
-            if (EvilOmenSpell.TryEndEffect(this))
+            if (EvilOmenSpell.EndEffect(this))
             {
                 double modifier = 1.25;
                 if (from is PlayerMobile attacker)
@@ -2121,7 +2121,7 @@ namespace Server.Mobiles
                 return ApplyPoisonResult.Immune;
             }
 
-            if (EvilOmenSpell.TryEndEffect(this))
+            if (EvilOmenSpell.EndEffect(this))
             {
                 poison = PoisonImpl.IncreaseLevel(poison);
             }
@@ -2797,7 +2797,7 @@ namespace Server.Mobiles
                 if (_summoned)
                 {
                     SummonEnd = reader.ReadDeltaTime();
-                    new UnsummonTimer(m_ControlMaster, this, SummonEnd - Core.Now).Start();
+                    new UnsummonTimer(this, SummonEnd - Core.Now).Start();
                 }
 
                 ControlSlots = reader.ReadInt();
@@ -4770,8 +4770,7 @@ namespace Server.Mobiles
                 }
             }
 
-            new UnsummonTimer(caster, creature, duration).Start();
-            creature.SummonEnd = Core.Now + duration;
+            new UnsummonTimer(creature, duration).Start();            creature.SummonEnd = Core.Now + duration;
 
             creature.MoveToWorld(p, caster.Map);
 
