@@ -176,10 +176,8 @@ namespace Server.SkillHandlers
                                 }
                                 else
                                 {
-                                    if (resonance != null)
-                                    {
-                                        resonance.CheckHitEffect(from, creature, 0);
-                                    }
+                                    int resonanceDamage = 0;
+                                    resonance?.CheckHitEffect(from, creature, ref resonanceDamage);
                                     from.SendLocalizedMessage(501602); // Your music succeeds, as you start a fight.
                                     m_Instrument.PlayInstrumentWell(from);
                                     m_Instrument.ConsumeUse(from);

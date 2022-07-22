@@ -43,6 +43,7 @@ namespace Server.Talent
                     {
                         OverrideDispellable = true
                     };
+                    creature.SetLevel();
                     SpellHelper.Summon(
                         creature,
                         from,

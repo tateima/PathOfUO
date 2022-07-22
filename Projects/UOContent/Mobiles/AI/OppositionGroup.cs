@@ -110,6 +110,7 @@ namespace Server
             {
                 new[]
                 {
+                    typeof(Wisp),
                     typeof(EtherealWarrior),
                     typeof(Kirin),
                     typeof(LordOaks),
@@ -129,7 +130,6 @@ namespace Server
                     typeof(Pixie),
                     typeof(Treefellow),
                     typeof(Unicorn),
-                    typeof(Wisp),
                     typeof(MLDryad),
                     typeof(Satyr),
                     typeof(Ogre),
@@ -159,6 +159,7 @@ namespace Server
                     typeof(EvilWanderingHealer)
                 },
                 new []{
+                    typeof(DarkWisp),
                     typeof(AncientLich),
                     typeof(LichLord),
                     typeof(DarknightCreeper),

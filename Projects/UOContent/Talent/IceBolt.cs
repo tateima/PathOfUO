@@ -23,7 +23,7 @@ namespace Server.Talent
             AddEndY = 80;
         }
 
-        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
             if (Activated && attacker.Mana >= ManaRequired)
             {

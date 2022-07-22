@@ -1283,7 +1283,7 @@ namespace Server.Items
             var defWeapon = defender.Weapon as BaseWeapon;
             bool blinded = Blindness.BlindMobile(attacker);
             bool feared = Fear.FearedMobile(attacker);
-            if (feared) {
+            if (feared || blinded) {
                 return false;
             }
             var atkSkill = attacker.Skills[atkWeapon?.Skill ?? SkillName.Wrestling];
@@ -1440,9 +1440,6 @@ namespace Server.Items
             {
                 chance = 0.02;
             }
-            if (blinded) {
-                chance /= 4; // 75% less chance of hitting when blinded
-            }
             return attacker.CheckSkill(atkSkill.SkillName, chance);
         }
 
@@ -1477,7 +1474,7 @@ namespace Server.Items
                 {
                     holyAvengerBonus += holyAvenger.Level;
                 }
-            } else if (m is BaseCreature creature && creature.TalentEffect is Zealot)
+            } else if (m is BaseCreature { TalentEffect: Zealot } creature)
             {
                 zealotBonus += creature.TalentEffect.Level * 5;
             }
@@ -1494,7 +1491,7 @@ namespace Server.Items
 
                 if (DivineFurySpell.UnderEffect(m))
                 {
-                    bonus += 10 + holyAvengerBonus;
+                    bonus += 10;
                 }
 
                 // Bonus granted by successful use of Honorable Execution.
@@ -1534,6 +1531,8 @@ namespace Server.Items
                 bonus += handFinesseBonus;
 
                 bonus += zealotBonus;
+
+                bonus += holyAvengerBonus;
 
                 if (bonus > 60)
                 {
@@ -1584,12 +1583,14 @@ namespace Server.Items
 
                 if (DivineFurySpell.UnderEffect(m))
                 {
-                    bonus += 10 + holyAvengerBonus;
+                    bonus += 10;
                 }
 
                 bonus += handFinesseBonus;
 
                 bonus += zealotBonus;
+
+                bonus += holyAvengerBonus;
 
                 var discordanceEffect = 0;
 
@@ -1622,8 +1623,9 @@ namespace Server.Items
             else
             {
                 // add hand finesse to speed divided by 2 (a total max of 5 points)
-                speed += handFinesseBonus / 2;
-                speed += zealotBonus / 2;
+                speed += handFinesseBonus / 2.00;
+                speed += zealotBonus / 2.00;
+                speed += holyAvengerBonus / 2.00;
 
                 var v = (m.Stam + 100) * (int)speed;
                 if (slowed)
@@ -1655,8 +1657,9 @@ namespace Server.Items
             var bushidoNonRacial = defender.Skills.Bushido.NonRacialValue;
             var bushido = defender.Skills.Bushido.Value;
             var weapon = defender.Weapon as BaseWeapon;
+            bool blinded = Blindness.BlindMobile(defender);
             var feared = Fear.FearedMobile(defender);
-            if (feared) {
+            if (feared || blinded) {
                 return false;
             }
             double chance;
@@ -1958,6 +1961,13 @@ namespace Server.Items
                 darkAffinity = attackingPlayer.GetTalent(typeof(DarkAffinity));
                 handFinesse = attackingPlayer.GetTalent(typeof(HandFinesse));
                 holyAvenger = attackingPlayer.GetTalent(typeof(HolyAvenger));
+                foreach (var (_, value) in (attackingPlayer.Talents))
+                {
+                    if (value.CanApplyHitEffect(this))
+                    {
+                        value.CheckHitEffect(attacker, defender, ref damage);
+                    }
+                }
             }
 
             /*
@@ -2075,7 +2085,7 @@ namespace Server.Items
 
             if (holyAvenger != null && (BaseTalent.IsMobileType(OppositionGroup.DarknessAndLight[1], defender.GetType()) || BaseTalent.IsMobileType(OppositionGroup.ChaosAndOrder[1], defender.GetType())))
             {
-                percentageBonus += holyAvenger.Level * 2;
+                percentageBonus += Utility.RandomMinMax(1, holyAvenger.Level * 2);
             }
 
             percentageBonus = Math.Min(percentageBonus, 300);
@@ -2473,6 +2483,7 @@ namespace Server.Items
                         ((PlayerMobile)defender).Fear(Utility.Random(7));
                     }
                 }
+
                 if (ShardPower > 0)
                 {
                     int elementalDamage = Utility.Random(ShardPower);
@@ -2487,6 +2498,7 @@ namespace Server.Items
                             elementalDamage *= 2;
                         }
                     }
+
                     if (Burning)
                     {
                         fireDam = 100;
@@ -2497,6 +2509,7 @@ namespace Server.Items
                         {
                             MonsterBuff.CheckFreezeHue(defender, defender.Hue);
                         }
+
                         coldDam = 100;
                     }
                     else if (Toxic)
@@ -2506,6 +2519,7 @@ namespace Server.Items
                             Poison poison = MonsterBuff.GetPoison();
                             defender.ApplyPoison(attacker, poison);
                         }
+
                         poisonDam = 100;
                     }
                     else if (Electrified)
@@ -2521,14 +2535,6 @@ namespace Server.Items
                     else
                     {
                         defender.Damage(elementalDamage, attacker);
-                    }
-                }
-
-                foreach (var (_, value) in ((PlayerMobile)attacker).Talents)
-                {
-                    if (value.CanApplyHitEffect(this))
-                    {
-                        value.CheckHitEffect(attacker, defender, damageGiven);
                     }
                 }
             }

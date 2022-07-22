@@ -213,13 +213,30 @@ namespace Server.Items
             ),
             new BookPageInfo(
                 "You should",
-                "choose this carefully",
-                "as it cannot go back.",
-                "For some, being neutral",
+                "choose this carefully,",
+                "reconversion is difficult.",
+                " For some, being neutral",
                 "is also the right path.",
-                "Though if you do wish",
-                "to commit yourself",
-                "be sure to pray daily."
+                "Those who do not choose ",
+                "a strict path focus ",
+                "instead on themselves."
+            ),
+            new BookPageInfo(
+                "This means they",
+                "will develop their talents ",
+                "more than those who align.",
+                "Those who do align with ",
+                "the pantheon shall gain ",
+                "access to unique abilities ",
+                "they would otherwise not ",
+                "be able to execute."
+            ),
+            new BookPageInfo(
+                "Finally, know this ",
+                "should one seek an alignment ",
+                "to follow, creatures with ",
+                "identical alignments will not ",
+                "see you as an enemy."
             )
         );
 

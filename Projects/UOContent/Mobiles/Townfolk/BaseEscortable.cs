@@ -329,6 +329,7 @@ namespace Server.Mobiles
                     location.X += Utility.RandomBool() ? Utility.RandomMinMax(3, 5) : Utility.RandomMinMax(-5, -3);
                     location.Y += Utility.RandomBool() ? Utility.RandomMinMax(3, 5) : Utility.RandomMinMax(-5, -3);
                     bandit.MoveToWorld(location, Map);
+                    bandit.SetLevel();
                     Paralyze(TimeSpan.FromMinutes(1));
                     var escorter = GetEscorter();
                     if (escorter is not null)

@@ -88,7 +88,8 @@ namespace Server.Talent
                             {
                                 success = true;
                                 var attempts = 10;
-                                resonance?.CheckHitEffect(from, creature, 0);
+                                int resonanceDamage = 0;
+                                resonance?.CheckHitEffect(from, creature, ref resonanceDamage);
                                 var resolved = false;
                                 while (!resolved)
                                 {

@@ -58,10 +58,10 @@ namespace Server.Talent
                     2  => new BoneKnight(),
                     3  => new Ghoul(),
                     4  => new Mummy(),
-                    5 => new SkeletalKnight(),
-                    6 => new Skeleton(),
-                    7 => new Zombie(),
-                    8 => new RottingCorpse(),
+                    5  => new SkeletalKnight(),
+                    6  => new Skeleton(),
+                    7  => new Zombie(),
+                    8  => new RottingCorpse(),
                     _  => null
                 };
             }
@@ -69,9 +69,7 @@ namespace Server.Talent
             {
                 undead = Utility.RandomMinMax(1, 16) switch
                 {
-                    1  => new AncientLich(),
                     2  => new Bogle(),
-                    3  => new LichLord(),
                     4  => new Shade(),
                     5  => new Spectre(),
                     6  => new Wraith(),
@@ -83,8 +81,6 @@ namespace Server.Talent
                     12 => new Zombie(),
                     13 => new BoneMagi(),
                     14 => new SkeletalMage(),
-                    15 => new RottingCorpse(),
-                    16 => new Lich(),
                     _  => null
                 };
             }
@@ -102,7 +98,7 @@ namespace Server.Talent
                     undead = TransferMobileStats(victim, undead);
 
                     EmptyCreatureBackpack(undead);
-
+                    undead.SetLevel();
                     SpellHelper.Summon(undead, killer, 0x1FE, TimeSpan.FromMinutes(2), false, false);
                     undead.Say("Master...");
                     Effects.PlaySound(killer.Location, killer.Map, 0x1FB);

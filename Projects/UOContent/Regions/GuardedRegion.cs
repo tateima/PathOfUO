@@ -194,6 +194,7 @@ namespace Server.Regions
                     var guard = m_GuardType.CreateInstance<object>() as BaseGuard;
                     if (guard is not null)
                     {
+                        guard.SetLevel();
                         guard.MoveToWorld(focus.Location, focus.Map);
                         FocusCheck(focus, guard);
                         Timer.StartTimer(TimeSpan.FromMinutes(2), guard.Delete);

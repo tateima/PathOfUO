@@ -1,10 +1,103 @@
 using System;
 using System.Collections.Generic;
+using Server.ContextMenus;
 using Server.Engines.BulkOrders;
 using Server.Items;
+using Server.Targeting;
 
 namespace Server.Mobiles
 {
+    public class RepairGearEntry : ContextMenuEntry
+    {
+        private readonly PlayerMobile _playerMobile;
+        private readonly Blacksmith _blacksmith;
+
+        public RepairGearEntry(PlayerMobile from, Blacksmith blacksmith)
+            : base(1116795, -1) // Repair weapons and armor
+        {
+            _playerMobile = from;
+            _blacksmith = blacksmith;
+        }
+
+        public override void OnClick()
+        {
+            Container bank = _playerMobile.FindBankNoCreate();
+            _playerMobile.Target = new InternalTarget(_playerMobile, _blacksmith);
+            _blacksmith.SayTo(_playerMobile, "What do you wish me to repair?");
+        }
+
+        private class InternalTarget : Target
+        {
+            private readonly PlayerMobile _playerMobile;
+            private readonly Blacksmith _blacksmith;
+
+            public InternalTarget(PlayerMobile mobile, Blacksmith blacksmith) : base(
+                8,
+                false,
+                TargetFlags.None
+            )
+            {
+                _playerMobile = mobile;
+                _blacksmith = blacksmith;
+            }
+
+            private void ChargeForRepair(int cost)
+            {
+
+            }
+            private bool AffordableRepair(int cost)
+            {
+                bool hasGoldInPack = _playerMobile.Backpack?.GetAmount(typeof(Gold)) >= cost;
+                return cost < Banker.GetBalance(_playerMobile) || hasGoldInPack;
+            }
+            protected override void OnTarget(Mobile from, object targeted)
+            {
+                if (targeted is IDurability durableItem && durableItem.HitPoints < durableItem.MaxHitPoints)
+                {
+                    int cost = (durableItem.MaxHitPoints - durableItem.HitPoints) * 8;
+                    bool hasGoldInPack = _playerMobile.Backpack?.GetAmount(typeof(Gold)) >= cost;
+                    if (cost > 0 && (cost < Banker.GetBalance(_playerMobile) || hasGoldInPack))
+                    {
+                        int coins = cost;
+                        if (hasGoldInPack)
+                        {
+                            while (coins > 0)
+                            {
+                                if (_playerMobile?.Backpack.FindItemByType(typeof(Gold)) is Gold gold)
+                                {
+                                    if (coins > gold?.Amount)
+                                    {
+                                        coins -= gold.Amount;
+                                        gold.Delete();
+                                    }
+                                    else
+                                    {
+                                        gold.Amount -= coins;
+                                        coins = 0;
+                                    }
+                                }
+                            }
+                        } else
+                        {
+                            Banker.Withdraw(_playerMobile, cost);
+                        }
+                        durableItem.MaxHitPoints -= 1;
+                        durableItem.HitPoints = durableItem.MaxHitPoints;
+                        _playerMobile.PlaySound(0x02A);
+                        _blacksmith.SayTo(_playerMobile, $"Thank thee, this has cost you {cost.ToString()} gold coins.");
+                    }
+                    else
+                    {
+                        _blacksmith.SayTo(_playerMobile, $"Thou does not have {cost.ToString()} gold.");
+                    }
+                }
+                else
+                {
+                    _blacksmith.SayTo(_playerMobile, "I cannot repair this for you.");
+                }
+            }
+        }
+    }
     public class Blacksmith : BaseVendor
     {
         private readonly List<SBInfo> m_SBInfos = new();
@@ -146,6 +239,14 @@ namespace Server.Mobiles
             {
                 mobile.NextSmithBulkOrder = TimeSpan.Zero;
             }
+        }
+        public override void AddCustomContextEntries(Mobile from, List<ContextMenuEntry> list)
+        {
+            if (from.Alive)
+            {
+                list.Add(new RepairGearEntry((PlayerMobile)from, this));
+            }
+            base.AddCustomContextEntries(from, list);
         }
     }
 }

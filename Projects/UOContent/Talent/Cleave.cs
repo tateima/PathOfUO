@@ -22,7 +22,7 @@ namespace Server.Talent
             AddEndY = 105;
         }
 
-        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
             if (Activated && attacker.Stam > StamRequired + 1)
             {
@@ -46,7 +46,7 @@ namespace Server.Talent
 
                 if (!hitAnotherMobile)
                 {
-                    target.Damage(AOS.Scale(damage, 25), attacker);
+                    damage += AOS.Scale(damage, 25);
                 }
                 ApplyStaminaCost(attacker);
                 Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);

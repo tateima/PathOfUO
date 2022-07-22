@@ -38,7 +38,7 @@ namespace Server.Gumps
                 if (
                     value.CanBeUsed && ((dependsOn is not null && hasDependency is not null && hasDependency.Level >= value.TalentDependencyPoints) || (dependsOn is null)) &&
                         (
-                            !value.RequiresDeityFavor || (value.RequiresDeityFavor && player.HasDeityFavor && value.DeityAlignment != Deity.Alignment.None && value.DeityAlignment == player.Alignment)
+                            !value.RequiresDeityFavor || (value.RequiresDeityFavor && player.HasDeityFavor && value.DeityAlignment != Deity.Alignment.None && value.DeityAlignment == player.CombatAlignment)
                         )
                 )
                 {

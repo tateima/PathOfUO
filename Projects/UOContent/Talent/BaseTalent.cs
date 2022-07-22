@@ -287,7 +287,7 @@ namespace Server.Talent
 
         public int ImageID { get; set; }
 
-        public virtual void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        public virtual void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
         }
 
@@ -409,11 +409,15 @@ namespace Server.Talent
         }
 
 
-        public void CriticalStrike(Mobile mobile, Mobile target, int damage)
+        public static void CriticalStrike(ref int damage)
         {
-            target.Damage(damage * 2, mobile);
+            damage *= 2;
         }
 
+        public static void CriticalStrike(ref double damage)
+        {
+            damage *= 2.0;
+        }
 
         public virtual void OnUse(Mobile from)
         {
@@ -635,6 +639,24 @@ namespace Server.Talent
                 }
             }
             return isRangerSkill;
+        }
+
+        public static bool IsLoreSkill(SkillName skillToCheck)
+        {
+            bool isLoreSkill = false;
+            var group =  SkillsGumpGroup.Groups.FirstOrDefault(group => group.Name == "Lore & Knowledge");
+            if (group is not null)
+            {
+                foreach (SkillName loreSkill in group.Skills)
+                {
+                    if (loreSkill == skillToCheck)
+                    {
+                        isLoreSkill = true;
+                        break;
+                    }
+                }
+            }
+            return isLoreSkill;
         }
 
         public static List<SkillName> GetPlayerSkillNames(PlayerMobile player, bool crafting, bool ranger)

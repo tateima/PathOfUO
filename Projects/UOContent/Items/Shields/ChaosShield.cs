@@ -1,4 +1,5 @@
 using Server.Guilds;
+using Server.Pantheon;
 
 namespace Server.Items
 {
@@ -13,6 +14,7 @@ namespace Server.Items
             }
 
             Weight = 5.0;
+            AlignmentRaw = Deity.Alignment.Chaos.ToString();
         }
 
         public ChaosShield(Serial serial) : base(serial)

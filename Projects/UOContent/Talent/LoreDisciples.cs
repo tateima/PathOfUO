@@ -49,12 +49,14 @@ namespace Server.Talent
                     // its a talent, no need for animation timer, just a single animation is fine
                     from.Animate(269, 7, 1, true, false, 0);
                     var disciples = new List<Mobile>();
+                    var loreTeacher = ((PlayerMobile)from).GetTalent(typeof(LoreTeacher));
+                    int level = loreTeacher?.Level > Level ? loreTeacher.Level : 0;
+                    int modifier = LoreSeeker.GetLoreModifier(from, level);
                     for (var i = 0; i < Level; i++)
                     {
                         BaseCreature disciple = null;
-                        var loreTeacher = ((PlayerMobile)from).GetTalent(typeof(LoreTeacher));
-                        MobilePercentagePerPoint += loreTeacher?.Level > Level ? loreTeacher.Level : 0;
-                        var skillIncrease = loreTeacher != null ? loreTeacher.Level * 2 : 0.0;
+                        MobilePercentagePerPoint += modifier;
+                        var skillIncrease = modifier * 2;
                         switch (Utility.RandomMinMax(1, 6))
                         {
                             case 1:
@@ -93,6 +95,7 @@ namespace Server.Talent
                         if (disciple != null)
                         {
                             disciple = (BaseCreature)ScaleMobileStats(disciple);
+                            disciple.SetLevel();
                             EmptyCreatureBackpack(disciple);
                             SpellHelper.Summon(disciple, from, 0x1FE, TimeSpan.FromMinutes(2), false, false);
                             disciple.OverrideDispellable = true;

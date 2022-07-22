@@ -179,10 +179,8 @@ namespace Server.SkillHandlers
                             if (from is PlayerMobile player)
                             {
                                 BaseTalent resonance = player.GetTalent(typeof(Resonance));
-                                if (resonance != null)
-                                {
-                                    resonance.CheckHitEffect(player, bc, 0);
-                                }
+                                int resonanceDamage = 0;
+                                resonance?.CheckHitEffect(player, bc, ref resonanceDamage);
                                 BaseTalent sonicAffinity = player.GetTalent(typeof(SonicAffinity));
                                 if (sonicAffinity != null)
                                 {

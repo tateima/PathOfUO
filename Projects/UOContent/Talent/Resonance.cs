@@ -22,11 +22,47 @@ namespace Server.Talent
 
         public override bool HasSkillRequirement(Mobile mobile) => mobile.Skills.Musicianship.Value >= 60.0;
 
-        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
-            target.Damage(Utility.RandomMinMax(1, Level) * 2, attacker);
+            damage += Utility.RandomMinMax(1, Level) * 2;
+            if (Core.AOS)
+            {
+                AOS.Damage(
+                    target,
+                    attacker,
+                    damage,
+                    true,
+                    0,
+                    0,
+                    0,
+                    0,
+                    100
+                );
+            }
+            else
+            {
+                target.Damage(damage, attacker);
+            }
         }
 
+        public int SlayerDamage(int baseDamage, SlayerName slayer, Mobile other)
+        {
+            var entry = SlayerGroup.GetEntryByName(slayer);
+
+            if (entry != null)
+            {
+                if (entry.Slays(other))
+                {
+                    baseDamage += Utility.RandomMinMax(1, 10);
+                }
+                else if (entry.Group.OppositionSuperSlays(other))
+                {
+                    baseDamage += Utility.RandomMinMax(10, 20);
+                }
+            }
+
+            return baseDamage;
+        }
         public override void OnUse(Mobile from)
         {
             if (!OnCooldown)
@@ -73,6 +109,16 @@ namespace Server.Talent
                             {
                                 // increase damage further by 3 points per level of sonic affinity
                                 baseDamage += sonicAffinity.Level * 3;
+                            }
+
+                            if (instrument.Slayer != SlayerName.None)
+                            {
+                                baseDamage = SlayerDamage(baseDamage, instrument.Slayer, other);
+                            }
+
+                            if (instrument.Slayer2 != SlayerName.None)
+                            {
+                                baseDamage = SlayerDamage(baseDamage, instrument.Slayer2, other);
                             }
 
                             var scalar = from.Skills.Musicianship.Value / 200;

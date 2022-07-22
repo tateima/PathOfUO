@@ -24,7 +24,7 @@ namespace Server.Talent
 
         public override bool HasSkillRequirement(Mobile mobile) => mobile.Skills.Alchemy.Value >= 70.0;
 
-        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
             if (attacker.Backpack != null && HasSkillRequirement(attacker) && attacker.Mana >= ManaRequired)
             {

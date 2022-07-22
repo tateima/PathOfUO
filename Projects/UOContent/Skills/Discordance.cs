@@ -318,11 +318,8 @@ namespace Server.SkillHandlers
                             );
 
                             m_Table[targ] = info;
-
-                            if (resonance != null)
-                            {
-                                resonance.CheckHitEffect(from, targ, 0);
-                            }
+                            int resonanceDamage = 0;
+                            resonance?.CheckHitEffect(from, targ, ref resonanceDamage);
                         }
                         else
                         {

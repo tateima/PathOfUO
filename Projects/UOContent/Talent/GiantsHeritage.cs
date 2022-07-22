@@ -22,12 +22,12 @@ namespace Server.Talent
             AddEndAdditionalDetailsY = 100;
         }
 
-        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
             if (Activated)
             {
                 var extraDamage = (int)(attacker.Stam * SpecialDamageScalar);
-                target.Damage(extraDamage, attacker);
+                damage += extraDamage;
                 attacker.Stam -= 10 + Utility.Random(10);
                 if (attacker.Stam < 10)
                 {

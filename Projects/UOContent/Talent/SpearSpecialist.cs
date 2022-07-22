@@ -18,10 +18,10 @@ namespace Server.Talent
             AddEndY = 80;
         }
 
-        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
             // 2 damage per point because 2H
-            target.Damage(Utility.RandomMinMax(1, Level) * 2, attacker);
+            damage += Utility.RandomMinMax(1, Level) * 2;
         }
     }
 }

@@ -1,4 +1,5 @@
 using Server.Guilds;
+using Server.Pantheon;
 
 namespace Server.Items
 {
@@ -13,6 +14,7 @@ namespace Server.Items
             }
 
             Weight = 7.0;
+            AlignmentRaw = Deity.Alignment.Order.ToString();
         }
 
         public OrderShield(Serial serial) : base(serial)

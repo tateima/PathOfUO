@@ -4,6 +4,7 @@ using Server.Items;
 using Server.Talent;
 using Server.Utilities;
 using Server.Network;
+using Server.Pantheon;
 
 namespace Server.Mobiles
 {
@@ -17,23 +18,23 @@ namespace Server.Mobiles
         public static readonly int CorruptionRange = 12;
 
         public static double BossGoldBuff = 1.15;
-        public static double BossHitsBuff = 6.0;
-        public static double BossStrBuff = 1.35;
-        public static double BossIntBuff = 1.35;
-        public static double BossDexBuff = 1.35;
-        public static double BossSkillsBuff = 1.3;
+        public static double BossHitsBuff = 3;
+        public static double BossStrBuff = 1.05;
+        public static double BossIntBuff = 1.20;
+        public static double BossDexBuff = 1.20;
+        public static double BossSkillsBuff = 1.20;
         public static double BossSpeedBuff = 1.3;
-        public static double BossFameBuff = 1.15;
+        public static double BossFameBuff = 1.05;
         public static double BossKarmaBuff = 1.17;
         public static int BossDamageBuff = 4;
 
         public static double MinionGoldBuff = 1.07;
-        public static double MinionHitsBuff = 3.08;
+        public static double MinionHitsBuff = 2.5;
         public static double MinionStrBuff = 1.07;
         public static double MinionIntBuff = 1.07;
         public static double MinionDexBuff = 1.07;
         public static double MinionSkillsBuff = 1.07;
-        public static double MinionSpeedBuff = 1.07;
+        public static double MinionSpeedBuff = 1.02;
         public static double MinionFameBuff = 1.09;
         public static double MinionKarmaBuff = 1.09;
         public static int MinionDamageBuff = 2;
@@ -127,6 +128,10 @@ namespace Server.Mobiles
                     MinionDamageBuff
                 );
                 bc.PublicOverheadMessage(MessageType.Regular, 0x0481, false, "* This creature grows in strength *");
+            }
+            else
+            {
+                AddLoot(bc);
             }
         }
 
@@ -236,7 +241,7 @@ namespace Server.Mobiles
 
                     illusion.Name = bc.Name;
                 }
-
+                illusion.SetLevel();
                 illusion.Combatant = from;
             }
 
@@ -337,6 +342,7 @@ namespace Server.Mobiles
 
                 if (minion != null)
                 {
+                    minion.SetLevel();
                     minion.MoveToWorld(point, bc.Map);
                     minion.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
                     minion.PlaySound(0x1FE);
@@ -364,8 +370,12 @@ namespace Server.Mobiles
         {
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
-            bc.NumberOfMinions = Utility.RandomMinMax(4, 6);
-            bc.SetResistance(ResistanceType.Physical, 100);
+            bc.NumberOfMinions = Utility.RandomMinMax(3, 5);
+            bc.SetResistance(ResistanceType.Cold, bc.BaseColdResistance + 15);
+            bc.SetResistance(ResistanceType.Poison, bc.BasePoisonResistance + 15);
+            bc.SetResistance(ResistanceType.Energy, bc.BaseEnergyResistance + 15);
+            bc.SetResistance(ResistanceType.Fire, bc.BaseFireResistance + 15);
+            bc.SetResistance(ResistanceType.Physical, bc.BasePhysicalResistance + 25);
             Convert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff);
             AddLoot(bc);
         }
@@ -418,7 +428,11 @@ namespace Server.Mobiles
         {
             CheckHues(bc);
             DespawnMinions(bc);
-            bc.SetResistance(ResistanceType.Physical, 0);
+            bc.SetResistance(ResistanceType.Cold, bc.BaseColdResistance - 15);
+            bc.SetResistance(ResistanceType.Poison, bc.BasePoisonResistance - 15);
+            bc.SetResistance(ResistanceType.Energy, bc.BaseEnergyResistance - 15);
+            bc.SetResistance(ResistanceType.Fire, bc.BaseFireResistance - 15);
+            bc.SetResistance(ResistanceType.Physical, bc.BasePhysicalResistance - 25);
             UnConvert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff);
         }
         public static void Convert(BaseCreature bc, double goldBuff, double hitsBuff, double strBuff, double intBuff, double dexBuff, double skillsBuff, double speedBuff, double fameBuff, double karmaBuff, int damageBuff)
@@ -798,8 +812,8 @@ namespace Server.Mobiles
             {
                 if (!m_Owner.Deleted && m_Owner.IsRegenerative && m_Owner.Map != Map.Internal)
                 {
-                    int staticGrowth = Utility.RandomMinMax(6, 8);
-                    int dynamicGrowth = AOS.Scale(m_Owner.HitsMax, 1);
+                    int staticGrowth = Utility.RandomMinMax(8, 10);
+                    int dynamicGrowth = AOS.Scale(m_Owner.HitsMax, 2);
                     m_Owner.Hits += staticGrowth > dynamicGrowth ? staticGrowth : dynamicGrowth;
                     Delay = Interval = m_Owner.HitsMax < m_Owner.HitsMax * .75 ? FastRegenRate : CPUSaverRate;
                 }

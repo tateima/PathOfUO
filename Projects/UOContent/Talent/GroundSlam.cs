@@ -21,7 +21,7 @@ namespace Server.Talent
             AddEndY = 80;
         }
 
-        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
             if (Activated)
             {
@@ -50,7 +50,15 @@ namespace Server.Talent
                     }
 
                     mobile.MoveToWorld(newMobileLocation, mobile.Map);
-                    mobile.Damage(Level, attacker);
+                    if (mobile == target)
+                    {
+                        damage += Level;
+                    }
+                    else
+                    {
+                        mobile.Damage(Level, attacker);
+                    }
+
                     if (mobile is BaseCreature creature)
                     {
                         SlowCreature(creature, 0, false);

@@ -123,6 +123,7 @@ namespace Server.Mobiles
             {
                 damage *= 3;
             }
+            base.AlterMeleeDamageTo(to, ref damage);
         }
 
         public override void Serialize(IGenericWriter writer)

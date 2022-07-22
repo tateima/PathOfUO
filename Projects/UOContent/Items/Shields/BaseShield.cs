@@ -176,12 +176,17 @@ namespace Server.Items
             {
                 if (owner is PlayerMobile owningPlayer && weapon.Parent is Mobile attacker)
                 {
+                    int shieldDamage = 0;
                     foreach (KeyValuePair<Type, BaseTalent> entry in owningPlayer.Talents)
                     {
                         if (entry.Value.CanApplyHitEffect(this))
                         {
-                            entry.Value.CheckHitEffect(owner, (Mobile)weapon.Parent, damage);
+                            entry.Value.CheckHitEffect(owner, (Mobile)weapon.Parent, ref shieldDamage);
                         }
+                    }
+                    if (shieldDamage > 0)
+                    {
+                        ((Mobile)weapon.Parent).Damage(shieldDamage, owner);
                     }
                 }
             }

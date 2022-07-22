@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 using Server.Items;
+using Server.Mobiles;
 using CPA = Server.CommandPropertyAttribute;
 
 using static Server.Attributes;
@@ -329,6 +330,7 @@ namespace Server.Commands
                         }
                         else if (built is Mobile m)
                         {
+                            CheckSetCreatureLevel(m);
                             m.MoveToWorld(new Point3D(start.X, start.Y, start.Z), map);
                         }
                     }
@@ -361,6 +363,7 @@ namespace Server.Commands
                             }
                             else if (built is Mobile m)
                             {
+                                CheckSetCreatureLevel(m);
                                 m.MoveToWorld(new Point3D(x, y, z), map);
                             }
                         }
@@ -375,6 +378,14 @@ namespace Server.Commands
             {
                 Console.WriteLine(ex);
                 return 0;
+            }
+        }
+
+        public static void CheckSetCreatureLevel(Mobile built)
+        {
+            if (built is BaseCreature creature)
+            {
+                creature.SetLevel();
             }
         }
 

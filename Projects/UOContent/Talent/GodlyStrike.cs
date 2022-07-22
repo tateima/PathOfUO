@@ -22,7 +22,7 @@ namespace Server.Talent
             AddEndY = 100;
         }
 
-        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
             if (Activated && attacker.Stam > StamRequired + 1)
             {
@@ -31,7 +31,7 @@ namespace Server.Talent
                 ApplyStaminaCost(attacker);
                 target.PlaySound(0x206);
                 target.Paralyze(TimeSpan.FromSeconds(Level * 5));
-                CriticalStrike(attacker, target, damage);
+                CriticalStrike(ref damage);
                 Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds - Level * 10), ExpireTalentCooldown, out _talentTimerToken);
             }
         }

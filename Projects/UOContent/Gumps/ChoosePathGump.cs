@@ -10,9 +10,14 @@ namespace Server.Gumps
     public class ChoosePathGump : Gump
     {
         private readonly bool _createStaterSkills;
-        public ChoosePathGump(Mobile from, int page, bool createStaterSkills) : base(0, 0)
+        private readonly bool _alignmentChange;
+        private readonly Deity.Alignment _currentAlignment;
+
+        public ChoosePathGump(Mobile from, int page, bool createStaterSkills, bool alignmentChange, Deity.Alignment currentAlignment) : base(0, 0)
         {
             _createStaterSkills = createStaterSkills;
+            _currentAlignment = currentAlignment;
+            _alignmentChange = alignmentChange;
             if (from == null)
             {
                 from.CloseGump<ChoosePathGump>();
@@ -98,6 +103,12 @@ namespace Server.Gumps
                 AddButton(option.ButtonX, option.ButtonY, 0xFA5, 0xFA7, option.ButtonId);
                 AddHtml(option.X, option.Y, 100, 50, $"<BASEFONT COLOR=#FFFFE5>{option.Text}</FONT>");
             }
+        }
+
+        public void CurrentlyAligned(PlayerMobile player, ref int page)
+        {
+            player.SendMessage("You are already aligned to this deity choice.");
+            page = 2;
         }
         public override void OnResponse(NetState state, RelayInfo info)
         {
@@ -264,25 +275,78 @@ namespace Server.Gumps
                         }
                         break;
                     case 9: // deity
-                        player.Alignment = Deity.Alignment.Charity;
+                        if (_currentAlignment is Deity.Alignment.Charity)
+                        {
+                            CurrentlyAligned(player, ref page);
+                        }
+                        else
+                        {
+                            player.Alignment = Deity.Alignment.Charity;
+                        }
                         break;
                     case 10:
-                        player.Alignment = Deity.Alignment.Greed;
+                        if (_currentAlignment is Deity.Alignment.Greed)
+                        {
+                            CurrentlyAligned(player, ref page);
+                        }
+                        else
+                        {
+                            player.Alignment = Deity.Alignment.Greed;
+                        }
                         break;
                     case 11:
-                        player.Alignment = Deity.Alignment.Order;
+                        if (_currentAlignment is Deity.Alignment.Order)
+                        {
+                            CurrentlyAligned(player, ref page);
+                        }
+                        else
+                        {
+                            player.Alignment = Deity.Alignment.Order;
+                        }
+
                         break;
                     case 12:
-                        player.Alignment = Deity.Alignment.Chaos;
+                        if (_currentAlignment is Deity.Alignment.Chaos)
+                        {
+                            CurrentlyAligned(player, ref page);
+                        }
+                        else
+                        {
+                            player.Alignment = Deity.Alignment.Chaos;
+                        }
+
                         break;
                     case 13:
-                        player.Alignment = Deity.Alignment.Light;
+                        if (_currentAlignment is Deity.Alignment.Light)
+                        {
+                            CurrentlyAligned(player, ref page);
+                        }
+                        else
+                        {
+                            player.Alignment = Deity.Alignment.Light;
+                        }
+
                         break;
                     case 14:
-                        player.Alignment = Deity.Alignment.Darkness;
+                        if (_currentAlignment is Deity.Alignment.Darkness)
+                        {
+                            CurrentlyAligned(player, ref page);
+                        }
+                        else
+                        {
+                            player.Alignment = Deity.Alignment.Darkness;
+                        }
+
                         break;
                     case 15:
-                        player.Alignment = Deity.Alignment.None;
+                        if (_currentAlignment is Deity.Alignment.None)
+                        {
+                            CurrentlyAligned(player, ref page);
+                        }
+                        else
+                        {
+                            player.Alignment = Deity.Alignment.None;
+                        }
                         break;
                     case 16:
                         page = 0;
@@ -299,11 +363,30 @@ namespace Server.Gumps
 
                 if (page > 0)
                 {
-                    player.SendGump(new ChoosePathGump(player, page, _createStaterSkills));
+                    player.SendGump(new ChoosePathGump(player, page, _createStaterSkills, _alignmentChange, _currentAlignment));
                 }
                 else
                 {
                     player.CloseGump<ChoosePathGump>();
+                    if (_alignmentChange)
+                    {
+                        if (
+                            player.Level >= 5
+                            && (_currentAlignment is Deity.Alignment.None && player.Alignment is not Deity.Alignment.None
+                                || _currentAlignment is not Deity.Alignment.None && player.Alignment is Deity.Alignment.None)
+                        )
+                        {
+                            player.SendMessage("Your talents have been reset as a result of your alignment change.");
+                            player.ResetTalents();
+                            int talentAmount = (int)Math.Floor((double)player.Level / 5);
+                            // if the player was not aligned and is over level 5, remove a talent point for every 5 levels
+                            // otherwise add new talent points as that is the perk for non aligned
+                            player.TalentPoints +=
+                                _currentAlignment is Deity.Alignment.None && player.Alignment is not Deity.Alignment.None
+                                    ? talentAmount * -1
+                                    : talentAmount;
+                        }
+                    }
                     if (_createStaterSkills)
                     {
                         player.StarterSkills = new Skills(player);

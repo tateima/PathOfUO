@@ -17,12 +17,12 @@ namespace Server.Talent
             AddEndY = 80;
         }
 
-        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
             if (Utility.Random(100) < Level)
             {
                 // critical damage them with the same damage again
-                CriticalStrike(attacker, target, damage);
+                CriticalStrike(ref damage);
             }
         }
     }

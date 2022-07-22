@@ -102,6 +102,16 @@ namespace Server.Gumps
                     AddLabel(110, 60, 0, m_SkillGroup.Name);
                     AddLabel(90, 80, 0, "Skill Pts: " + player.CraftSkillPoints.ToString() + "C/" + player.NonCraftSkillPoints.ToString() + "NC/" + player.RangerSkillPoints.ToString() + "R");
                     y = 100;
+                    double maxSkill = player.Level switch
+                    {
+                        <= 10 => 70.00,
+                        <= 20 => 80.00,
+                        <= 30 => 85.00,
+                        <= 40 => 90.00,
+                        <= 50 => 95.00,
+                        <= 60 => 98.00,
+                        _     => 100.00
+                    };
                     for (int i = 0; i < m_SkillGroup.Skills.Length; ++i)
                     {
                         int buttonX = 220;
@@ -119,9 +129,9 @@ namespace Server.Gumps
                         if (skill != null)
                         {
                             double currentSkillValue = player.Skills[m_SkillGroup.Skills[i]].Base;
-                            if (skill.Lock != SkillLock.Locked && currentSkillValue < 120.0)
+                            if (skill.Lock != SkillLock.Locked && currentSkillValue < maxSkill)
                             {
-                                AddLabel(x, y, 0, skill.Name + " " + currentSkillValue.ToString());
+                                AddLabel(x, y, 0, skill.Name + " " + currentSkillValue);
                                 if (
                                     (BaseTalent.IsCraftingSkill(m_SkillGroup.Skills[i]) && player.CraftSkillPoints > 0)
                                     ||
@@ -135,7 +145,7 @@ namespace Server.Gumps
                             }
                             else
                             {
-                                AddLabel(x, y, 0, skill.Name + " " + currentSkillValue + " - Locked");
+                                AddLabel(x, y, 0, $"{skill.Name} {currentSkillValue}/{maxSkill}");
                             }
                             y += 20;
                         }
@@ -240,6 +250,7 @@ namespace Server.Gumps
                             Skill skill = player.Skills[m_SkillGroup.Skills[info.ButtonID - 200]];
                             if (skill != null)
                             {
+                                double amount = 1.0;
                                 if (BaseTalent.IsCraftingSkill(m_SkillGroup.Skills[info.ButtonID - 200]))
                                 {
                                     player.CraftSkillPoints--;
@@ -250,9 +261,17 @@ namespace Server.Gumps
                                 }
                                 else
                                 {
+                                    if (BaseTalent.IsLoreSkill(m_SkillGroup.Skills[info.ButtonID - 200]))
+                                    {
+                                        var loreSeeker = player.GetTalent(typeof(LoreSeeker)) as LoreSeeker;
+                                        if (loreSeeker?.Level > 0)
+                                        {
+                                            amount += loreSeeker.Level;
+                                        }
+                                    }
                                     player.NonCraftSkillPoints--;
                                 }
-                                player.Skills[m_SkillGroup.Skills[info.ButtonID - 200]].Base++;
+                                player.Skills[m_SkillGroup.Skills[info.ButtonID - 200]].Base += amount;
                             }
                         }
                         else

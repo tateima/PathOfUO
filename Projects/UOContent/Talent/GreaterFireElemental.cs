@@ -61,6 +61,7 @@ namespace Server.Talent
                         var creature = (BaseCreature)ScaleMobile(new SummonedFireElemental());
                         creature.Name = "a greater fire lord";
                         creature.OverrideDispellable = true;
+                        creature.SetLevel();
                         SpellHelper.Summon(creature, from, 0x217, TimeSpan.FromMinutes(2), false, false);
                     }
                     else
@@ -68,6 +69,7 @@ namespace Server.Talent
                         var creature = (BaseCreature)ScaleMobile(new FireElemental());
                         creature.Name = "a greater fire lord";
                         creature.OverrideDispellable = true;
+                        creature.SetLevel();
                         SpellHelper.Summon(creature, from, 0x217, TimeSpan.FromMinutes(2), false, false);
                     }
 

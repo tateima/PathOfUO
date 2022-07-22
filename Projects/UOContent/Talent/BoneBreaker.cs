@@ -19,7 +19,7 @@ namespace Server.Talent
             AddEndY = 100;
         }
 
-        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
             if (Activated && attacker.Stam > StamRequired + 1)
             {

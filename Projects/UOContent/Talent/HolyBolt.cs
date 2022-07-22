@@ -13,7 +13,7 @@ namespace Server.Talent
             CanBeUsed = true;
             DisplayName = "Holy bolt";
             Description = "Fires a bolt of pure holy damage towards a target. Requires 85+ chivalry.";
-            AdditionalDetail = "Each level increases damage or healing done by 3 points.";
+            AdditionalDetail = "Each level increases damage or healing done by 5 points. The damage cannot be resisted.";
             CooldownSeconds = 30;
             ManaRequired = 30;
             ImageID = 389;
@@ -79,18 +79,12 @@ namespace Server.Talent
                     from.SendSound(0x1E0);
                     if (from == mobile)
                     {
-                        SpellHelper.Heal(_level * 3, from, from, false);
+                        SpellHelper.Heal(_level * 5, from, from, false);
                     }
                     else
                     {
-                        if (Core.AOS)
-                        {
-                            AOS.Damage(mobile, _level * 3, true, 0, 100, 0, 0, 0);
-                        }
-                        else
-                        {
-                            mobile.Damage(_level * 3, from);
-                        }
+                        // ignore AOS resistances
+                        mobile.Damage(_level * 5, from);
                     }
 
                     _talent.OnCooldown = true;

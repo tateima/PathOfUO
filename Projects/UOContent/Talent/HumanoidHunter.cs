@@ -25,11 +25,11 @@ namespace Server.Talent
             return damage;
         }
 
-        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
             if (IsMobileType(OppositionGroup.DarknessAndLight[0], target.GetType()) || target is PlayerMobile)
             {
-                target.Damage(Utility.RandomMinMax(1, Level), attacker);
+                damage += Utility.RandomMinMax(1, Level);
             }
         }
     }

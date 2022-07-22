@@ -5,30 +5,30 @@ namespace Server.Mobiles
 {
     public class OrcishMage : BaseCreature
     {
-        private bool IsNecromancer { get; set; }
+        public bool IsShaman { get; set; }
         [Constructible]
         public OrcishMage() : base(AIType.AI_Mage)
         {
             Body = 140;
             BaseSoundID = 0x45A;
-            IsNecromancer = Utility.Random(100) < 10;
+            IsShaman = Utility.Random(100) < 10;
             int resistanceBuffs = 0;
             int skillBuffs = 0;
             int fameBuff = 0;
             SetDex(91, 115);
             SetStr(116, 150);
-            if (IsNecromancer)
+            if (IsShaman)
             {
                 Hue = 0x322;
                 SetInt(181, 1055);
                 SetHits(170, 190);
                 SetDamageType(ResistanceType.Cold, 100);
-                SetSkill(SkillName.Necromancy, 90.1, 95.5);
+                SetSkill(SkillName.Magery, 90.1, 95.5);
                 resistanceBuffs = 20;
                 skillBuffs = 10;
-                fameBuff = 2000;
+                fameBuff = 4000;
                 SetDamage(3, 6);
-                PackItem(new BagOfNecroReagents());
+                PackItem(new BagOfReagents());
             }
             else
             {
@@ -67,10 +67,10 @@ namespace Server.Mobiles
         {
         }
 
-        public override string CorpseName => IsNecromancer ? "a dark orc corpse" : "a glowing orc corpse";
+        public override string CorpseName => IsShaman ? "a dark orc corpse" : "a glowing orc corpse";
         public override InhumanSpeech SpeechType => InhumanSpeech.Orc;
 
-        public override string DefaultName => IsNecromancer ? "an orcish necromancer" : "an orcish mage";
+        public override string DefaultName => IsShaman ? "an orcish shaman" : "an orcish mage";
 
         public override bool CanRummageCorpses => true;
         public override int TreasureMapLevel => 1;

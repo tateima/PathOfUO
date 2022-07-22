@@ -189,7 +189,9 @@ namespace Server.Mobiles
         private TimerExecutionToken _challengeTimer;
 
         private Deity.Alignment m_Alignment;
+        private Deity.Alignment m_CombatAlignment;
         private int m_DeityPoints;
+        private int m_FailedDeityPrayers;
         private DateTime m_NextDeityChallenge;
         private DateTime m_NextPrayer;
         private DateTime m_LastDeityDecay;
@@ -234,7 +236,9 @@ namespace Server.Mobiles
         {
             StarterSkills = new Skills(this);
             m_Alignment = Deity.Alignment.None;
+            m_CombatAlignment = Deity.Alignment.None;
             m_DeityPoints = 0;
+            m_FailedDeityPrayers = 0;
             m_NextPrayer = DateTime.Now.AddDays(-1);
             m_DeityChallengers = new List<Mobile>();
             m_NextDeityChallenge = DateTime.Now.AddDays(-1);
@@ -311,12 +315,24 @@ namespace Server.Mobiles
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
+        public Deity.Alignment CombatAlignment
+        {
+            get => m_CombatAlignment;
+            set
+            {
+                m_CombatAlignment = value;
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
         public Deity.Alignment Alignment
         {
             get => m_Alignment;
             set
             {
                 m_Alignment = value;
+                m_CombatAlignment = value;
                 InvalidateProperties();
             }
         }
@@ -370,6 +386,13 @@ namespace Server.Mobiles
         {
             get => m_DeityPoints;
             set => m_DeityPoints = value;
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int FailedDeityPrayers
+        {
+            get => m_FailedDeityPrayers;
+            set => m_FailedDeityPrayers = value;
         }
 
         public BaseTalent TalentEffect { get; set; }
@@ -453,9 +476,11 @@ namespace Server.Mobiles
                 {
                     remainingExp = 0;
                 }
-                NonCraftSkillPoints += (int)Math.Round(nonCraftingContr*14, MidpointRounding.AwayFromZero);
-                CraftSkillPoints += (int)Math.Round(craftingContr*14, MidpointRounding.AwayFromZero);
-                RangerSkillPoints += (int)Math.Round(rangerContr*14, MidpointRounding.AwayFromZero);
+
+                int numberOfSkills = Level > 10 ? 12 : 14;
+                NonCraftSkillPoints += (int)Math.Round(nonCraftingContr*numberOfSkills, MidpointRounding.AwayFromZero);
+                CraftSkillPoints += (int)Math.Round(craftingContr*numberOfSkills, MidpointRounding.AwayFromZero);
+                RangerSkillPoints += (int)Math.Round(rangerContr*numberOfSkills, MidpointRounding.AwayFromZero);
                 if (Level < 5 || Level % 5 == 0)
                 {
                     StatPoints += 5;
@@ -464,7 +489,15 @@ namespace Server.Mobiles
                 {
                     StatPoints += 2;
                 }
-                TalentPoints += 1;
+
+                if (Level % 5 == 0 && Alignment is Deity.Alignment.None)
+                {
+                    TalentPoints += 2;
+                }
+                else
+                {
+                    TalentPoints += 1;
+                }
 
                 // reset craft and non craft experience for next level tracking
                 m_CraftExperience = (int)(remainingExp * craftingContr);
@@ -1729,6 +1762,7 @@ namespace Server.Mobiles
 
             if (from is PlayerMobile mobile)
             {
+                mobile.CombatAlignment = mobile.Alignment;
                 if (!mobile.Neutral())
                 {
                     mobile.DeityDecay();
@@ -1784,11 +1818,19 @@ namespace Server.Mobiles
                 }
             }
         }
+
+        public void ResetCombatAlignment()
+        {
+            CombatAlignment = Alignment;
+        }
         public void DeityDecay()
         {
-            if (m_LastDeityDecay < DateTime.Now.AddSeconds(-599))
+            const int nextDecayInSeconds = 10 * 60;
+            int levelModifier = (int)Math.Floor((double)Level / 10);
+            int levelModifierInSeconds = levelModifier * 60;
+            if (m_LastDeityDecay < DateTime.Now.AddSeconds((nextDecayInSeconds-1)-levelModifierInSeconds))
             {
-                DeityPoints -= 1 + Level / 10;
+                DeityPoints -= 1 + levelModifier;
                 LastDeityDecay = DateTime.Now;
                 if (DeityPoints <= 0)
                 {
@@ -1803,7 +1845,7 @@ namespace Server.Mobiles
                     }
                 }
             }
-            Timer.StartTimer(TimeSpan.FromMinutes(10), DeityDecay, out _deityDecayTimer);
+            Timer.StartTimer(TimeSpan.FromSeconds(nextDecayInSeconds-levelModifierInSeconds), DeityDecay, out _deityDecayTimer);
         }
 
         public void RestCheck()
@@ -2552,16 +2594,33 @@ namespace Server.Mobiles
             }
 
             int totalPoints = nonCraftPoints + craftPoints + rangerPoints;
+            int level = 1;
             while (totalPoints > 0)
             {
-                NonCraftSkillPoints += combatRatio;
-                CraftSkillPoints += craftingRatio;
-                RangerSkillPoints += rangerRatio;
-                totalPoints -= 14;
+                NonCraftSkillPoints += GetSkillLevelRatio(combatRatio, level);
+                CraftSkillPoints += GetSkillLevelRatio(craftingRatio, level);
+                RangerSkillPoints += GetSkillLevelRatio(rangerRatio, level);
+                totalPoints -= level > 10 ? 12 : 14;
+                level++;
             }
             // NonCraftSkillPoints += nonCraftPoints;
             // CraftSkillPoints += craftPoints;
             // RangerSkillPoints += rangerPoints;
+        }
+
+        public int GetSkillLevelRatio(int ratio, int level)
+        {
+            return level switch
+            {
+                > 10 => ratio switch
+                {
+                    14 => 12,
+                    7 =>  6,
+                    5 =>  4,
+                    _ => ratio
+                },
+                _     => ratio
+            };
         }
 
         public void ResetTalents()
@@ -3765,6 +3824,9 @@ namespace Server.Mobiles
             var version = reader.ReadInt();
             switch (version)
             {
+                case 40:
+                    m_FailedDeityPrayers = reader.ReadInt();
+                    goto case 39;
                 case 39:
                     m_DeityChallengers = reader.ReadEntityList<Mobile>();
                     m_NextDeityChallenge = reader.ReadDateTime();
@@ -4176,7 +4238,8 @@ namespace Server.Mobiles
 
             base.Serialize(writer);
 
-            writer.Write(39); // version
+            writer.Write(40); // version
+            writer.Write(m_FailedDeityPrayers);
             writer.Write(m_DeityChallengers);
             writer.Write(m_NextDeityChallenge);
             StarterSkills.Serialize(writer);
@@ -4447,8 +4510,8 @@ namespace Server.Mobiles
         {
             base.GetProperties(list);
 
-            list.Add(1114057, $"Level: {Level.ToString()}"); // ~1_val~
-            list.Add(1114057, $"Alignment: {Alignment.ToString()}"); // ~1_val~
+            list.Add(1114057, $"Level: {Level.ToString()}");                // ~1_val~
+            list.Add(1114057, $"Alignment: {CombatAlignment.ToString()}"); // ~1_val~
             if (!Neutral())
             {
                 list.Add(1114057, $"Deity loyalty: {DeityPoints.ToString()}"); // ~1_val~

@@ -106,6 +106,7 @@ namespace Server.Mobiles
                 to.FixedParticles(0x377A, 1, 32, 0x26da, 0, 0, 0);
                 Mana -= 15;
             }
+            base.AlterMeleeDamageTo(to, ref damage);
         }
 
         public override void OnDamage(int amount, Mobile from, bool willKill)

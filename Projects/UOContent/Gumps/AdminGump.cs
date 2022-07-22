@@ -2135,7 +2135,7 @@ namespace Server.Gumps
                                     }
                                     else
                                     {
-                                        if (Core.ML)
+                                        if (Core.ML || Core.AOS)
                                         {
                                             InvokeCommand("GenerateSpawners Data/Spawns/uoml/malas/*.json");
                                         }

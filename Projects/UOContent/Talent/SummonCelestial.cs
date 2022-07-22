@@ -21,7 +21,7 @@ namespace Server.Talent
             Description =
                 "Summon a celestial being to assist you for 5 minutes.";
             AdditionalDetail = "The power of the celestial increases by 5% per level. Only players with light alignment can use this.";
-            ImageID = 413;
+            ImageID = 414;
             CooldownSeconds = 300;
             ManaRequired = 60;
             GumpHeight = 230;
@@ -59,6 +59,7 @@ namespace Server.Talent
                     from.Animate(269, 7, 1, true, false, 0);
 
                     var creature = (BaseCreature)ScaleMobile(new Celestial());
+                    creature.SetLevel();
                     SpellHelper.Summon(creature, from, 0x217, TimeSpan.FromMinutes(5), false, false);
                     EmptyCreatureBackpack(creature);
                     _summoned = creature;

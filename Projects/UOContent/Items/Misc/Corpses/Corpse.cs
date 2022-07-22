@@ -290,7 +290,7 @@ namespace Server.Items
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
-        public Mobile Owner { get; private set; }
+        public Mobile Owner { get; set; }
 
         public override bool DisplaysContent => false;
 

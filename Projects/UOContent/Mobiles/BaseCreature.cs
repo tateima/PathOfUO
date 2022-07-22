@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Server.Collections;
@@ -1732,6 +1733,7 @@ namespace Server.Mobiles
             {
                 foreach (var oppositionGroup in OppositionGroups)
                 {
+
                     opposingGroup = oppositionGroup.IsEnemy(this, m);
                     if (opposingGroup)
                     {
@@ -1767,7 +1769,7 @@ namespace Server.Mobiles
                 return false;
             }
 
-            if (m is PlayerMobile mobile && mobile.HonorActive)
+            if (m is PlayerMobile mobile && (mobile.HonorActive || Deity.AlignmentCheck(this, mobile.CombatAlignment, false)))
             {
                 return false;
             }
@@ -1903,6 +1905,8 @@ namespace Server.Mobiles
 
         public override void Damage(int amount, Mobile from = null, bool informMount = true)
         {
+            AlterDamageFromByLevel(from, ref amount);
+            AlterDamageFromBuffs(true, ref amount);
             var oldHits = Hits;
             if (IsEthereal && Utility.Random(100) < 30)
             {
@@ -2067,12 +2071,12 @@ namespace Server.Mobiles
             }
         }
 
-        public override void OnBeforeSpawn(Point3D location, Map m)
+        public void SetLevel()
         {
             int baseXp = (int)DynamicExperienceValue() + ExperienceValue;
             // 38.4615384615
             // level range caps at 65 levels, and there are 7 tiers divided into groups of 500
-            const double levelRangePerTier = 65.00 / 7.00;
+            double levelRangePerTier = Math.Floor(65.00 / 7.00);
             double tier = baseXp / 500.00;
             int midLevel = (int)(tier * levelRangePerTier);
             int minLevel = midLevel - 5;
@@ -2080,7 +2084,9 @@ namespace Server.Mobiles
             {
                 minLevel = 2;
             }
-            MaxLevel = midLevel + 5;
+
+            int maxLevelModifier = (int)Math.Ceiling(tier);
+            MaxLevel = midLevel + maxLevelModifier;
             if (MaxLevel > 80)
             {
                 ExperienceValue += (MaxLevel - 80) * 250;
@@ -2089,13 +2095,16 @@ namespace Server.Mobiles
                 midLevel = 76;
             }
             Level = Utility.RandomMinMax(minLevel, MaxLevel);
-            if (Level == MaxLevel)
-            {
-                DamageMin = DamageMax;
-            }
             double buff = 1.00;
             buff += Level <= midLevel ? 0 : ((Level - midLevel)*5)/100.00;
+            SetHits(Hits + Utility.RandomMinMax(1, Level));
+            VirtualArmorMod += Level <= midLevel ? 0 : Level - midLevel;
             MonsterBuff.Convert(this, buff, buff, buff, buff, buff, buff, 1.00, buff, buff, 0);
+        }
+
+        public override void OnBeforeSpawn(Point3D location, Map m)
+        {
+            SetLevel();
             CheckBuffs();
             if (Paragon.CheckConvert(this, location, m))
             {
@@ -2148,11 +2157,28 @@ namespace Server.Mobiles
             }
         }
 
+        public override void OnHitsChange(int oldValue)
+        {
+            base.OnHitsChange(oldValue);
+            InvalidateProperties();
+        }
+
+        public override void OnManaChange(int oldValue)
+        {
+            base.OnManaChange(oldValue);
+            InvalidateProperties();
+        }
+
         public override void OnDamage(int amount, Mobile from, bool willKill)
         {
             if (BardPacified && (HitsMax - Hits) * 0.001 > Utility.RandomDouble())
             {
                 Unpacify();
+            }
+
+            if ((BaseInstrument.IsMageryCreature(this) || Skills.Necromancy.Base > 5.0) && Hits >= AOS.Scale(HitsMax, 45))
+            {
+                Mana += amount / 2;
             }
 
             if (TalentEffect?.HasDamageAbsorptionEffect == true)
@@ -3243,6 +3269,13 @@ namespace Server.Mobiles
         {
             base.AggressiveAction(aggressor, criminal);
 
+            if (aggressor is PlayerMobile player && IsFriend(aggressor))
+            {
+                player.CombatAlignment = Deity.Alignment.None;
+                Timer.StartTimer(TimeSpan.FromMinutes(15), player.ResetCombatAlignment);
+                player.SendMessage("You have committed an aggressive action towards an aligned creature! Your alignment is temporarily removed.");
+            }
+
             if (ControlMaster != null && NotorietyHandlers.CheckAggressor(ControlMaster.Aggressors, aggressor))
             {
                 aggressor.Aggressors.Add(AggressorInfo.Create(this, aggressor, true));
@@ -3704,8 +3737,12 @@ namespace Server.Mobiles
         {
             base.AddNameProperties(list);
             list.Add(1114057, $"Level: {Level.ToString()}");          // ~1_val~
+            list.Add(1114057, $"Alignment: {Deity.GetCreatureAlignment(GetType()).ToString()}");   // ~1_val~
             list.Add(1114057, $"Level range: {(Level - 5 < 1 ? 1 : Level - 5).ToString()} - {MaxLevel.ToString()}");   // ~1_val~
             list.Add(1114057, $"XP: {FinalExperience().ToString()}"); // ~1_val~
+            list.Add(1114057, $"Mana: {Mana.ToString()}/{ManaMax.ToString()}"); // ~1_val~
+            list.Add(1114057, $"Hits: {Hits.ToString()}/{HitsMax.ToString()}"); // ~1_val~
+            list.Add(1114057, $"Stamina: {Stam.ToString()}/{StamMax.ToString()}"); // ~1_val~
 
             if (IsSoulFeeder)
             {
@@ -3892,11 +3929,11 @@ namespace Server.Mobiles
                     }
                 }
             }
-            if (Utility.Random(7200 - (int)DynamicExperienceValue()) < 1 && DynamicExperienceValue() >= 1200) {
+            if (Utility.Random(4200 - (int)DynamicExperienceValue()) < 1 && DynamicExperienceValue() >= 1200) {
                 RuneWord runeWord = new RuneWord();
                 PackItem(runeWord);
             }
-            if (Utility.Random(5000 - (int)DynamicExperienceValue()) < 1 && MonsterBuff.CanDropShards(this))
+            if (Utility.Random(2200 - (int)DynamicExperienceValue()) < 1 && MonsterBuff.CanDropShards(this))
             {
                 if (IsFrozen)
                 {
@@ -4160,13 +4197,13 @@ namespace Server.Mobiles
 
                 xpScale += tier switch
                 {
-                    1 => tierXp / 7,
-                    2 => tierXp / 4,
-                    3 => tierXp / 2,
-                    4 => tierXp / 1.25,
+                    1 => tierXp / 9,
+                    2 => tierXp / 6,
+                    3 => tierXp / 2.5,
+                    4 => tierXp / 1.65,
                     5 => tierXp,
                     6 => tierXp / 0.6,
-                    7 => tierXp / 0.5,
+                    7 => tierXp / 0.45,
                     _ => tierXp / 0.25
                 };
                 xp -= 500;
@@ -4232,6 +4269,11 @@ namespace Server.Mobiles
                 xpScale = ExperienceCompareScale(xpScale, 25, 3);
             }
 
+            if (IsSoulFeeder)
+            {
+                xpScale = ExperienceCompareScale(xpScale, 50, 7);
+            }
+
             if (IsBurning || IsFrozen || IsElectrified || IsToxic)
             {
                 xpScale = ExperienceCompareScale(xpScale, 75, 10);
@@ -4243,15 +4285,20 @@ namespace Server.Mobiles
 
         public double DynamicExperienceValue()
         {
-            var xp = (RawStr > RawDex && RawStr > RawInt ? RawStr * 1.6 : RawStr) + (RawDex > RawStr && RawDex > RawInt ? RawDex * 1.6 : RawDex) + (RawInt > RawStr && RawInt > RawDex ? RawInt * 1.6 : RawInt);
+            var xp = (RawStr > RawDex && RawStr > RawInt ? RawStr * 1.8 : RawStr) + (RawDex > RawStr && RawDex > RawInt ? RawDex * 1.8 : RawDex) + (RawInt > RawStr && RawInt > RawDex ? RawInt * 1.8 : RawInt);
 
-            xp += (m_PhysicalResistance + m_FireResistance + m_ColdResistance + m_PoisonResistance + m_EnergyResistance) * 1.6;
+            xp += (m_PhysicalResistance > 45 ? m_PhysicalResistance * 1.6 : m_PhysicalResistance);
+            xp += (m_FireResistance > 45 ? m_FireResistance * 1.6 : m_FireResistance);
+            xp += (m_ColdResistance > 45 ? m_ColdResistance * 1.6 : m_ColdResistance);
+            xp += (m_PoisonResistance > 45 ? m_PoisonResistance * 1.6 : m_PoisonResistance);
+            xp += (m_EnergyResistance > 45 ? m_EnergyResistance * 1.6 : m_EnergyResistance);
 
             xp += SkillsTotal / 10.0;
 
-            xp += m_DamageMax * 2.4;
+            xp += m_DamageMax * 4.5;
+            xp += m_DamageMin * 4.5;
 
-            xp += VirtualArmor * 1.8;
+            xp += VirtualArmor * 2.5;
 
             xp += Fame / 100.00;
 
@@ -4265,6 +4312,11 @@ namespace Server.Mobiles
                 xp += Skills.Necromancy.Base;
             }
 
+            if (Skills.Tactics.Base >= 90.0)
+            {
+                xp += Skills.Tactics.Base;
+            }
+
             if (BaseInstrument.IsFireBreathingCreature(this))
             {
                 xp += AOS.Scale(HitsMax, 33);
@@ -4275,12 +4327,12 @@ namespace Server.Mobiles
                 xp += 100;
             }
 
-            if (BaseInstrument.IsPoisonImmune(this))
+            xp += BaseInstrument.GetPoisonLevel(this) * 33;
+
+            if (BaseInstrument.IsPoisonImmune(this) && xp >= 1200)
             {
                 xp += PoisonImmune.Level * 33;
             }
-
-            xp += BaseInstrument.GetPoisonLevel(this) * 33;
 
             if (xp > 5000)
             {
@@ -4373,6 +4425,7 @@ namespace Server.Mobiles
 
                 var list = GetLootingRights(DamageEntries, HitsMax);
                 var titles = new List<Mobile>();
+                var damage = new List<int>();
                 var fame = new List<int>();
                 var karma = new List<int>();
 
@@ -4425,6 +4478,8 @@ namespace Server.Mobiles
                         karma.Add(totalKarma);
                     }
 
+                    damage.Add(ds.m_Damage);
+
                     OnKilledBy(ds.m_Mobile);
 
                     if (!givenFactionKill)
@@ -4464,57 +4519,60 @@ namespace Server.Mobiles
                     }
                 }
 
-                if (LastKiller is not BaseGuard)
+                int scaleXp = FinalExperience();
+                for (var i = 0; i < titles.Count; ++i)
                 {
-                    int scaleXp = FinalExperience();
-                    int deityXp = scaleXp;
-                    for (var i = 0; i < titles.Count; ++i)
+                    int percentKill = (damage[i] / HitsMax) * 100;
+                    if (percentKill > 100)
                     {
-                        Titles.AwardFame(titles[i], fame[i], true);
-                        Titles.AwardKarma(titles[i], karma[i], true);
-                        if (titles[i] is PlayerMobile)
+                        percentKill = 100;
+                    }
+                    int contributedXp = AOS.Scale(scaleXp, percentKill);
+                    int deityXp = contributedXp;
+                    Titles.AwardFame(titles[i], fame[i], true);
+                    Titles.AwardKarma(titles[i], karma[i], true);
+                    if (titles[i] is PlayerMobile)
+                    {
+                        PlayerMobile player = (PlayerMobile)titles[i];
+                        if (player.Level <= Level && contributedXp > 0)
                         {
-                            PlayerMobile player = (PlayerMobile)titles[i];
-                            if (player.Level <= Level && scaleXp > 0)
+                            if (Level > player.Level + 5)
                             {
-                                if (Level > player.Level)
-                                {
-                                    scaleXp += (Level - player.Level) * Level;
-                                }
-                                BaseTalent fastLearner = player.GetTalent(typeof(FastLearner));
-                                if (fastLearner != null)
-                                {
-                                    scaleXp += AOS.Scale(scaleXp, fastLearner.Level * 10);
-                                }
-                                BaseTalent wisdom = player.GetTalent(typeof(Wisdom));
-                                if (wisdom != null)
-                                {
-                                    scaleXp += AOS.Scale(scaleXp, wisdom.Level * 30);
-                                }
-                                if (player.Ranger())
-                                {
-                                    scaleXp /= 2; // 50% ranger 50% normal gain
-                                    if (!player.MaxLevel())
-                                    {
-                                        player.RangerExperience += scaleXp;
-                                    }
-                                }
+                                contributedXp += (Level - player.Level) * Level;
+                            }
+                            BaseTalent fastLearner = player.GetTalent(typeof(FastLearner));
+                            if (fastLearner != null)
+                            {
+                                contributedXp += AOS.Scale(contributedXp, fastLearner.Level * 10);
+                            }
+                            BaseTalent wisdom = player.GetTalent(typeof(Wisdom));
+                            if (wisdom != null)
+                            {
+                                contributedXp += AOS.Scale(contributedXp, wisdom.Level * 30);
+                            }
+                            if (player.Ranger())
+                            {
+                                contributedXp /= 2; // 50% ranger 50% normal gain
                                 if (!player.MaxLevel())
                                 {
-                                    player.NonCraftExperience += scaleXp;
+                                    player.RangerExperience += contributedXp;
                                 }
-                                player.SendMessage($"You slay {Name} and gain {scaleXp.ToString()} experience.");
                             }
-                            else
+                            if (!player.MaxLevel())
                             {
-                                deityXp -= (player.Level - Level) * 2;
-                                if (deityXp < 0)
-                                {
-                                    deityXp = 0;
-                                }
+                                player.NonCraftExperience += contributedXp;
                             }
-                            Deity.PointsFromExperience(player, this, deityXp);
+                            player.SendMessage($"You slay {Name} and gain {contributedXp.ToString()} experience.");
                         }
+                        else
+                        {
+                            deityXp -= (player.Level - Level) * 2;
+                            if (deityXp < 0)
+                            {
+                                deityXp = 0;
+                            }
+                        }
+                        Deity.PointsFromExperience(player, this, deityXp);
                     }
                 }
             }
@@ -5401,8 +5459,9 @@ namespace Server.Mobiles
 
         public virtual void RemovePetFriend(Mobile m) => Friends?.Remove(m);
 
-        public virtual bool IsFriend(Mobile m) => !IsOpposing(m) && m is BaseCreature c && m_Team == c.m_Team
-                                                  && (_summoned || m_Controlled) == (c._summoned || c.m_Controlled);
+        public virtual bool IsFriend(Mobile m) => (m is PlayerMobile player && Deity.AlignmentCheck(this, player.CombatAlignment, false))
+                                                  || (!IsOpposing(m) && m is BaseCreature c && m_Team == c.m_Team
+                                                      && (_summoned || m_Controlled) == (c._summoned || c.m_Controlled));
 
 
         public virtual Allegiance GetFactionAllegiance(Mobile mob)
@@ -5441,40 +5500,69 @@ namespace Server.Mobiles
 
         public virtual void AlterDamageScalarFrom(Mobile caster, ref double scalar)
         {
-            AlterDamageFromByLevel(caster, ref scalar);
         }
 
         public virtual void AlterDamageScalarTo(Mobile target, ref double scalar)
         {
             AlterDamageToByLevel(target, ref scalar);
+            AlterScalarFromBuffs(false, ref scalar);
         }
 
         public virtual void AlterSpellDamageFrom(Mobile from, ref int damage)
         {
-            AlterDamageFromByLevel(from, ref damage);
+            // AlterDamageFromByLevel(from, ref damage);
         }
 
         public virtual void AlterSpellDamageTo(Mobile to, ref int damage)
         {
-            AlterDamageToByLevel(to, ref damage);
+            // AlterDamageToByLevel(to, ref damage);
         }
 
         public virtual void AlterMeleeDamageFrom(Mobile from, ref int damage)
         {
-            AlterDamageFromByLevel(from, ref damage);
         }
 
         public virtual void AlterMeleeDamageTo(Mobile to, ref int damage)
         {
-            AlterDamageToByLevel(to, ref damage);
+            if (
+                !((BaseInstrument.IsMageryCreature(this) || Skills.Necromancy.Base > 5.0) && to.Skills.MagicResist.Base < 70 || Mana <= 10)
+                || Skills.Tactics.Base >= 90)
+            {
+                AlterDamageToByLevel(to, ref damage);
+            }
+            AlterDamageFromBuffs(false, ref damage);
+        }
+
+        public void AlterScalarFromBuffs(bool defending, ref double scalar)
+        {
+            if (IsHeroic || IsBoss)
+            {
+                scalar += (defending) ? -0.2 : 0.2;
+            }
+            if (IsVeteran || IsCorruptor)
+            {
+                scalar += (defending) ? -0.1 : 0.1;
+            }
+        }
+
+        public void AlterDamageFromBuffs(bool defending, ref int scalar)
+        {
+            if (IsHeroic || IsBoss)
+            {
+                scalar += (defending) ? -2 : 2;
+            }
+            if (IsVeteran || IsCorruptor)
+            {
+                scalar += (defending) ? -1 : 1;
+            }
         }
 
         public void AlterDamageToByLevel(Mobile to, ref int damage)
         {
             damage = to switch
             {
-                PlayerMobile player   => CalculateDamageFromLevels(player.Level, damage),
-                BaseCreature creature => CalculateDamageFromLevels(creature.Level, damage),
+                PlayerMobile player   => CalculateDamageFromLevels(player.Level, Level, damage, false),
+                BaseCreature creature => CalculateDamageFromLevels(creature.Level, Level, damage, false),
                 _                     => damage
             };
         }
@@ -5482,8 +5570,8 @@ namespace Server.Mobiles
         {
             damage = to switch
             {
-                PlayerMobile player   => CalculateDamageFromLevels(player.Level, damage),
-                BaseCreature creature => CalculateDamageFromLevels(creature.Level, damage),
+                PlayerMobile player   => CalculateDamageFromLevels(player.Level, Level, damage, false),
+                BaseCreature creature => CalculateDamageFromLevels(creature.Level, Level, damage, false),
                 _                     => damage
             };
         }
@@ -5491,8 +5579,8 @@ namespace Server.Mobiles
         {
             damage = from switch
             {
-                PlayerMobile player   => CalculateDamageFromLevels(player.Level , damage),
-                BaseCreature creature => CalculateDamageFromLevels(creature.Level, damage),
+                PlayerMobile player   => CalculateDamageFromLevels(Level, player.Level , damage, true),
+                BaseCreature creature => CalculateDamageFromLevels(Level, creature.Level, damage, false),
                 _                     => damage
             };
         }
@@ -5500,33 +5588,83 @@ namespace Server.Mobiles
         {
             damage = from switch
             {
-                PlayerMobile player   => CalculateDamageFromLevels(player.Level, damage),
-                BaseCreature creature => CalculateDamageFromLevels(creature.Level, damage),
+                PlayerMobile player   => CalculateDamageFromLevels(Level, player.Level, damage, true),
+                BaseCreature creature => CalculateDamageFromLevels(Level, creature.Level, damage, false),
                 _                     => damage
             };
         }
 
-        public int CalculateDamageFromLevels(int opponentLevel, int damage)
+        public bool CheckCriticalStrike(int defenderLevel, int attackerLevel) => attackerLevel > defenderLevel + 5 && Utility.Random(135) < attackerLevel - defenderLevel;
+
+        public int CalculateDamageFromLevels(int defenderLevel, int attackerLevel, int damage, bool attackingPlayer)
         {
-            if (Level > opponentLevel + 2)
+
+            if (attackerLevel > defenderLevel + 2 && !attackingPlayer)
             {
-                damage += Level - opponentLevel;
-            } else if (Level < opponentLevel - 2)
+                damage += attackerLevel - defenderLevel + 1;
+                if (CheckCriticalStrike(defenderLevel, attackerLevel))
+                {
+                    BaseTalent.CriticalStrike(ref damage);
+                }
+            } else if (attackerLevel < defenderLevel - 2)
             {
-                damage -= opponentLevel - Level;
+                if (damage > 5)
+                {
+                    damage -= defenderLevel - attackerLevel - 1;
+                }
             }
+
+            if (!attackingPlayer)
+            {
+                if (IsHeroic || IsBoss)
+                {
+                    damage += 2;
+                }
+                if (IsVeteran)
+                {
+                    damage += 1;
+                }
+            }
+
+            if (damage <= 0)
+            {
+                damage = 1;
+            }
+
             return damage;
         }
 
-        public double CalculateDamageFromLevels(int opponentLevel, double damage)
+        public double CalculateDamageFromLevels(int defenderLevel, int attackerLevel, double damage, bool attackingPlayer)
         {
-            if (Level > opponentLevel + 2)
+            if (attackerLevel > defenderLevel + 2 && !attackingPlayer)
             {
-                damage += Level - opponentLevel;
-            } else if (Level < opponentLevel - 2)
+                damage += (attackerLevel - defenderLevel) / 50.00;
+                if (CheckCriticalStrike(defenderLevel, attackerLevel))
+                {
+                    BaseTalent.CriticalStrike(ref damage);
+                }
+            } else if (attackerLevel < defenderLevel - 2)
             {
-                damage -= opponentLevel - Level;
+                damage -= (defenderLevel - attackerLevel) / 100.00;
             }
+
+            if (!attackingPlayer)
+            {
+                if (IsHeroic || IsBoss)
+                {
+                    damage += 0.2;
+                }
+                if (IsVeteran)
+                {
+                    damage += 0.1;
+                }
+            }
+
+            if (damage <= 0)
+            {
+                damage = 0.1;
+            }
+
             return damage;
         }
 

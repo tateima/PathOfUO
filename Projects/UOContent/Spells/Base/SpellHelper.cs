@@ -1006,7 +1006,7 @@ namespace Server.Spells
         {
             var dmg = (int)damage;
             SpellWard spellWard = null;
-            if (spell.Caster is PlayerMobile player)
+            if (from is PlayerMobile player && from != target)
             {
                 BaseTalent spellMind = player.GetTalent(typeof(SpellMind));
                 if (spellMind != null)
@@ -1014,6 +1014,7 @@ namespace Server.Spells
                     dmg += spellMind.ModifySpellMultiplier();
                 }
             }
+
             if (target is PlayerMobile targetPlayer)
             {
                 spellWard = (SpellWard)targetPlayer.GetTalent(typeof(SpellWard));

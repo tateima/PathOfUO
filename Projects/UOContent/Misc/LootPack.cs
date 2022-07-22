@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Server.Items;
 using Server.Mobiles;
+using Server.Pantheon;
 using Server.Utilities;
 
 namespace Server
@@ -161,6 +162,10 @@ namespace Server
              {
                  if (!item.Stackable || !cont.TryDropItem(from, item, false))
                  {
+                     if (item is IPantheonItem pantheonItem && string.Equals(pantheonItem.AlignmentRaw, Deity.Alignment.None.ToString()))
+                     {
+                         pantheonItem.AlignmentRaw = Deity.GetCreatureAlignment(from.GetType()).ToString();
+                     }
                      cont.DropItem(item);
                  }
              }

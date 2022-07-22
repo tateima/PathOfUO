@@ -232,8 +232,8 @@ public class MageAI : BaseAI
     public void OnFailedMove()
     {
         if (!m_Mobile.DisallowAllMoves && (SmartAI
-                ? Utility.Random(4) == 0
-                : ScaleBySkill(TeleportChance, SkillName.Magery) > Utility.RandomDouble()))
+            ? Utility.Random(4) == 0
+            : ScaleBySkill(TeleportChance, SkillName.Magery) > Utility.RandomDouble()))
         {
             m_Mobile.Target?.Cancel(m_Mobile, TargetCancelType.Canceled);
 
@@ -563,6 +563,7 @@ public class MageAI : BaseAI
                 m_Mobile.DebugSay("I don't have a spell to use!");
             }
         }
+
         return spell;
     }
 
@@ -571,29 +572,55 @@ public class MageAI : BaseAI
         if (!m_Mobile.Controlled && !m_Mobile.Summoned && m_Mobile.Mana >= 40 && IsMasterNecromancer && !_summonCooldown)
         {
             m_Mobile.DebugSay("Attempting to summon something");
-            m_Mobile.Mana -= 40;
             BaseCreature creature = MasterOfDeath.RandomUndead(true);
-            Point3D combatantLocation = m_Mobile.Combatant.Location;
-            combatantLocation.X += Utility.RandomMinMax(1, 3);
-            combatantLocation.Y += Utility.RandomMinMax(1, 3);
-            creature.MoveToWorld(combatantLocation, m_Mobile.Map);
-            Effects.PlaySound(m_Mobile.Location, m_Mobile.Map, 0x1FB);
-            Effects.SendLocationParticles(
-                EffectItem.Create(creature.Location, creature.Map, EffectItem.DefaultDuration),
-                0x37CC,
-                1,
-                40,
-                97,
-                3,
-                9917,
-                0
-            );
-            _summonCooldown = true;
-            Timer.StartTimer(TimeSpan.FromSeconds(30), ExpireSummonCooldown);
+            TrySummon(creature);
             return true;
         }
 
         return false;
+    }
+
+    private bool CheckShamanicRitual()
+    {
+        if (!m_Mobile.Controlled && !m_Mobile.Summoned && m_Mobile.Mana >= 40 && !_summonCooldown && m_Mobile is OrcishMage
+        {
+            IsShaman: true
+        })
+        {
+            BaseCreature creature = Utility.RandomMinMax(1, 4) switch
+            {
+                1 => new OrcBomber(),
+                2 => new OrcCaptain(),
+                3 => new OrcishLord(),
+                _ => new Orc()
+            };
+            TrySummon(creature);
+            return true;
+        }
+        return false;
+    }
+
+    public void TrySummon(BaseCreature creature)
+    {
+        m_Mobile.Mana -= 40;
+        Point3D combatantLocation = m_Mobile.Combatant.Location;
+        combatantLocation.X += Utility.RandomMinMax(1, 3);
+        combatantLocation.Y += Utility.RandomMinMax(1, 3);
+        creature.MoveToWorld(combatantLocation, m_Mobile.Map);
+        creature.SetLevel();
+        Effects.PlaySound(m_Mobile.Location, m_Mobile.Map, 0x1FB);
+        Effects.SendLocationParticles(
+            EffectItem.Create(creature.Location, creature.Map, EffectItem.DefaultDuration),
+            0x37CC,
+            1,
+            40,
+            97,
+            3,
+            9917,
+            0
+        );
+        _summonCooldown = true;
+        Timer.StartTimer(TimeSpan.FromSeconds(30), ExpireSummonCooldown);
     }
 
     public void ExpireSummonCooldown()
@@ -798,6 +825,11 @@ public class MageAI : BaseAI
         }
 
         if (CheckSummon())
+        {
+            return true;
+        }
+
+        if (CheckShamanicRitual())
         {
             return true;
         }

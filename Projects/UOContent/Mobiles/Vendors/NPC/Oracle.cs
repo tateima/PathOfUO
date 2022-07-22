@@ -60,8 +60,7 @@ namespace Server.Mobiles
                 {
                     DeleteAlignmentItems(player.Backpack.Items);
                 }
-
-                player.SendGump(new ChoosePathGump(player, 2, false));
+                player.SendGump(new ChoosePathGump(player, 2, false, true, player.Alignment));
             }
             else
             {
@@ -124,7 +123,7 @@ namespace Server.Mobiles
                     base.OnSpeech(e);
                 }
                 if (!e.Handled) {
-                    SayTo(player, "I do not understand thee. If you wish to reset your path, speak 'reset path', to change your alignment, speak 'new alignment', to receive a challenge, speak 'seek challenge'");
+                    SayTo(player, "I do not understand thee. If you wish to reset your talents and skills, speak 'reset path', to change your alignment, speak 'new alignment', to receive a challenge, speak 'seek challenge'");
                 }
             }
         }

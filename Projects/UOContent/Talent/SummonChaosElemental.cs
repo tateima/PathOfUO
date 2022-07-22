@@ -45,6 +45,7 @@ namespace Server.Talent
                     from.Animate(269, 7, 1, true, false, 0);
 
                     var creature = (BaseCreature)ScaleMobile(new ChaosElemental());
+                    creature.SetLevel();
                     SpellHelper.Summon(creature, from, 0x217, TimeSpan.FromMinutes(5), false, false);
                     EmptyCreatureBackpack(creature);
                     _summoned = creature;

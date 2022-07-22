@@ -42,6 +42,7 @@ namespace Server.Mobiles
         public override string DefaultName => "an ettin";
 
         public override bool CanRummageCorpses => true;
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override int TreasureMapLevel => 1;
         public override int Meat => 4;
 

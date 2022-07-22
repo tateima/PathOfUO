@@ -213,8 +213,6 @@ namespace Server.Pantheon
             }
         }
 
-
-
         public static bool AlignmentCheck(Mobile mobile, Alignment alignment, bool enemy)
         {
             if (mobile is BaseCreature)
@@ -235,6 +233,26 @@ namespace Server.Pantheon
             }
 
             return false;
+        }
+
+        public static Alignment GetCreatureAlignment(Type type)
+        {
+            Alignment alignment = Alignment.None;
+            foreach (var alignmentType in new[]
+                {
+                    Alignment.Light,
+                    Alignment.Darkness,
+                    Alignment.Chaos,
+                    Alignment.Order
+                }
+            )
+            {
+                if (CreatureAlignmentCheck(type, alignmentType, false))
+                {
+                    alignment = alignmentType;
+                }
+            }
+            return alignment;
         }
 
         public static bool CreatureAlignmentCheck(Type type, Alignment alignment, bool enemy)
@@ -291,7 +309,7 @@ namespace Server.Pantheon
                 }
                 if (AlignmentCheck(killed, player.Alignment, false))
                 {
-                    points = new[] { scaledPoints * -1 };
+                    points = new[] { scaledPoints * -3 };
                 } else if (AlignmentCheck(killed, player.Alignment, true))
                 {
                     points = new[] { scaledPoints };
@@ -572,22 +590,29 @@ namespace Server.Pantheon
                 List<SkillName> combatSkillNames = BaseTalent.GetPlayerSkillNames(player, false, false);
                 if (BestowHighReward(player))
                 {
+                    player.FailedDeityPrayers = 0;
                     player.NextPrayer = DateTime.Now.AddHours(12);
                     player.DeityPoints -= 1000;
                     return;
                 }
                 if (BestowMediumReward(player, craftingSkillNames, combatSkillNames))
                 {
+                    player.FailedDeityPrayers = 0;
                     player.NextPrayer = DateTime.Now.AddHours(6);
                     player.DeityPoints -= 500;
                     return;
                 }
                 if (BestowLowReward(player, craftingSkillNames, combatSkillNames))
                 {
+                    player.FailedDeityPrayers = 0;
                     player.DeityPoints -= 100;
                 }
                 else
                 {
+                    if (player.DeityPoints >= 100)
+                    {
+                        player.FailedDeityPrayers++;
+                    }
                     player.SendMessage("You have not appeased your deity enough.");
                 }
                 player.NextPrayer = DateTime.Now.AddHours(1);
@@ -605,7 +630,7 @@ namespace Server.Pantheon
 
         public static bool TrySacrifice(PlayerMobile player, int chance, LootPack? lootPack, Item? item)
         {
-            if (Utility.Random(100) < chance)
+            if (Utility.Random(100) < chance + player.FailedDeityPrayers)
             {
                 BaseCreature sacrifice = player.Alignment switch
                 {
@@ -632,7 +657,7 @@ namespace Server.Pantheon
                     sacrifice.MoveToWorld(newLocation, player.Map);
                     Effect(sacrifice, player.Alignment);
                     sacrifice.Kill();
-                    sacrifice.LastKiller = player;
+                    ((Corpse)sacrifice.Corpse).Owner = player;
                     RewardMessage(player);
                     return true;
                 }
@@ -748,7 +773,7 @@ namespace Server.Pantheon
         {
             if (player.DeityPoints > 1000)
             {
-                if (Utility.Random(800) < 1)
+                if (Utility.Random(500) < 1 + player.FailedDeityPrayers)
                 {
                     var excludedTalents = ExcludedTalents(player.Alignment);
                     // Charity and Greed has no talent exclusions, but only allow + 1
@@ -772,14 +797,14 @@ namespace Server.Pantheon
                     RewardMessage(player);
                     return true;
                 }
-                if (Utility.Random(500) < 1)
+                if (Utility.Random(400) < 1 + player.FailedDeityPrayers)
                 {
                     var rune = new RuneWord();
                     player.AddToBackpack(rune);
                     RewardMessage(player);
                     return true;
                 }
-                if (Utility.Random(100) < 5)
+                if (Utility.Random(100) < 5 + player.FailedDeityPrayers)
                 {
                     BaseCreature mount = Utility.RandomBool() ? new Horse() : new Llama();
                     mount = player.Alignment switch

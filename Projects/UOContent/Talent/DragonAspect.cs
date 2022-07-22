@@ -21,7 +21,7 @@ namespace Server.Talent
             AddEndAdditionalDetailsY = 110;
         }
 
-        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
             CheckDragonEffect(attacker, target);
         }

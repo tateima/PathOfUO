@@ -15,13 +15,14 @@ namespace Server
                 player.Blind(duration, blindMessage);
             }
         }
-        public static bool BlindMobile(Mobile from) {
-            bool blinded = false;
-            if (from is BaseCreature creature) {
-                blinded = creature.Blinded;
-            } else if (from is PlayerMobile player) {
-                blinded = player.Blinded;
-            }
+        public static bool BlindMobile(Mobile from)
+        {
+            bool blinded = @from switch
+            {
+                BaseCreature creature => creature.Blinded,
+                PlayerMobile player   => player.Blinded,
+                _                     => false
+            };
             return blinded;
         }
         public static Mobile GetBlindTarget(Mobile mobile, int distance) {

@@ -11,11 +11,11 @@ namespace Server.Talent
             AddEndY = 45;
         }
 
-        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
             if (IsMobileType(OppositionGroup.AnimalGroup, target.GetType()))
             {
-                target.Damage(Utility.RandomMinMax(1, Level), attacker);
+                damage += Utility.RandomMinMax(1, Level);
             }
         }
     }

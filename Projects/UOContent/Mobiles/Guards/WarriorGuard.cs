@@ -9,7 +9,7 @@ namespace Server.Mobiles
         public WarriorGuard() : base()
         {
             AiType = AIType.AI_Melee;
-            InitStats(Utility.RandomMinMax(75, 150), Utility.RandomMinMax(75, 150), Utility.RandomMinMax(75, 150));
+            InitStats(Utility.RandomMinMax(75, 250), Utility.RandomMinMax(75, 250), Utility.RandomMinMax(75, 250));
             Title = "the guard";
 
             SpeechHue = Utility.RandomDyedHue();

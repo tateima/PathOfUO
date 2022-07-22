@@ -1,5 +1,6 @@
 using System;
 using Server.Gumps;
+using Server.Pantheon;
 
 namespace Server.Misc
 {
@@ -59,7 +60,7 @@ namespace Server.Misc
             {
                 if (!m_ShowedPathChoice)
                 {
-                    m_Mobile.SendGump(new ChoosePathGump(m_Mobile, 1, true));
+                    m_Mobile.SendGump(new ChoosePathGump(m_Mobile, 1, true, false, Deity.Alignment.None));
                     m_ShowedPathChoice = true;
                 }
                 m_Mobile.SendMessage(0x35, m_Messages[m_State++]);

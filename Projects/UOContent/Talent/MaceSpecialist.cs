@@ -21,9 +21,9 @@ namespace Server.Talent
             AddEndY = 90;
         }
 
-        public override void CheckHitEffect(Mobile attacker, Mobile target, int damage)
+        public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
-            target.Damage(Utility.RandomMinMax(1, Level), attacker);
+            damage += Utility.RandomMinMax(1, Level);
         }
     }
 }
