@@ -1,5 +1,6 @@
 using System;
 using Server.Items;
+using Server.Mobiles;
 
 namespace Server.Talent
 {
@@ -34,6 +35,7 @@ namespace Server.Talent
                 {
                     reflected = 1;
                 }
+                AlterDamage(target, (PlayerMobile)defender, ref reflected);
                 target.Damage(reflected, defender);
                 defender.PlaySound(0x213);
                 Effects.SendLocationParticles(

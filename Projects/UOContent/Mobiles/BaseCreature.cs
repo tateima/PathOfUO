@@ -1905,8 +1905,6 @@ namespace Server.Mobiles
 
         public override void Damage(int amount, Mobile from = null, bool informMount = true)
         {
-            AlterDamageFromByLevel(from, ref amount);
-            AlterDamageFromBuffs(true, ref amount);
             var oldHits = Hits;
             if (IsEthereal && Utility.Random(100) < 30)
             {
@@ -1915,7 +1913,7 @@ namespace Server.Mobiles
                     MessageType.Regular,
                     0x3B2,
                     false,
-                    "*The creature absorbs your attack *"
+                    "* The creature absorbs your attack *"
                 );
             }
             bool corruptionOffset = false;
@@ -1923,7 +1921,7 @@ namespace Server.Mobiles
             {
                 foreach (Mobile mobile in GetMobilesInRange(MonsterBuff.CorruptionRange))
                 {
-                    if (mobile is BaseCreature creature && creature.IsCorrupted)
+                    if (mobile is BaseCreature { IsCorrupted: true } && mobile != this)
                     {
                         corruptionOffset = true;
                         mobile.Damage(amount, from);
@@ -1957,7 +1955,7 @@ namespace Server.Mobiles
                     if (darkAffinity != null)
                     {
                         // increase damage by 1% for each point in dark affinity
-                        modifier += darkAffinity.Level / 100;
+                        modifier += darkAffinity.Level / 100.00;
                     }
                 }
                 amount = (int)(amount * modifier);
@@ -4534,11 +4532,15 @@ namespace Server.Mobiles
                     if (titles[i] is PlayerMobile)
                     {
                         PlayerMobile player = (PlayerMobile)titles[i];
-                        if (player.Level <= Level && contributedXp > 0)
+                        if (Level >= player.Level - 2)
                         {
                             if (Level > player.Level + 5)
                             {
                                 contributedXp += (Level - player.Level) * Level;
+                            }
+                            else if (Level < player.Level)
+                            {
+                                contributedXp /= player.Level + 1 - Level;
                             }
                             BaseTalent fastLearner = player.GetTalent(typeof(FastLearner));
                             if (fastLearner != null)
@@ -5509,7 +5511,8 @@ namespace Server.Mobiles
 
         public virtual void AlterSpellDamageFrom(Mobile from, ref int damage)
         {
-            // AlterDamageFromByLevel(from, ref damage);
+            AlterDamageFromByLevel(from, ref damage);
+            AlterDamageFromBuffs(true, ref damage);
         }
 
         public virtual void AlterSpellDamageTo(Mobile to, ref int damage)
@@ -5519,6 +5522,8 @@ namespace Server.Mobiles
 
         public virtual void AlterMeleeDamageFrom(Mobile from, ref int damage)
         {
+            AlterDamageFromByLevel(from, ref damage);
+            AlterDamageFromBuffs(true, ref damage);
         }
 
         public virtual void AlterMeleeDamageTo(Mobile to, ref int damage)

@@ -83,7 +83,7 @@ namespace Server.Talent
                         {
                             continue;
                         }
-
+                        AlterDamage(mobile, player, ref healAmount);
                         mobile.Damage(healAmount, player);
                         mobile.DoHarmful(player);
                         Effects.SendLocationParticles(

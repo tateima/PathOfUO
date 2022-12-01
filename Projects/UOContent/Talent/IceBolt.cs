@@ -52,6 +52,7 @@ namespace Server.Talent
 
         public void IceDamage(Mobile attacker, Mobile target, int damage, int modifier)
         {
+            AlterDamage(target, (PlayerMobile)attacker, ref damage);
             if (Core.AOS)
             {
                 AOS.Damage(target, AOS.Scale(damage, Level * modifier), 0, 0, 100, 0, 0);

@@ -1,5 +1,6 @@
 using System;
 using Server.Items;
+using Server.Mobiles;
 
 namespace Server.Talent
 {
@@ -35,7 +36,9 @@ namespace Server.Talent
                     defender.SendSound(0x140);
                     attacker.FixedEffect(0x37B9, 10, 16);
                     attacker.Paralyze(TimeSpan.FromSeconds(Level * 2));
-                    attacker.Damage(Utility.Random(Level), defender);
+                    int shieldDamage = Utility.RandomMinMax(1, Level);
+                    AlterDamage(attacker, (PlayerMobile)defender, ref shieldDamage);
+                    attacker.Damage(shieldDamage, defender);
                     Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                 }
             }

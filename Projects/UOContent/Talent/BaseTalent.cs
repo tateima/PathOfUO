@@ -749,5 +749,21 @@ namespace Server.Talent
                 baseCreature.TalentEffect = baseTalent;
             }
         }
+
+        public void AlterDamage(Mobile to, PlayerMobile player, ref int amount)
+        {
+            if (to is BaseCreature creature)
+            {
+                creature.AlterDamageFromByLevel(player, ref amount);
+            }
+        }
+
+        public void AlterDamage(Mobile to, PlayerMobile player, ref double amount)
+        {
+            if (to is BaseCreature creature)
+            {
+                creature.AlterDamageFromByLevel(player, ref amount);
+            }
+        }
     }
 }

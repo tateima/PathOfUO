@@ -1,4 +1,5 @@
 using Server.Items;
+using Server.Mobiles;
 
 namespace Server.Talent
 {
@@ -26,6 +27,7 @@ namespace Server.Talent
                 if (targetWeapon.CheckHit(target, attacker))
                 {
                     attacker.PlaySound(0x235);
+                    AlterDamage(attacker, (PlayerMobile)target, ref modifier);
                     attacker.Damage(modifier, target);
                 }
             }

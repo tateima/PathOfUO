@@ -91,6 +91,7 @@ namespace Server.Talent
                 {
                     damage = 1;
                 }
+                AlterDamage(target, (PlayerMobile)attacker, ref damage);
                 AOS.Damage(
                     target,
                     attacker,

@@ -40,6 +40,7 @@ namespace Server.Talent
                     }
 
                     hitAnotherMobile = true;
+                    AlterDamage(mobile, (PlayerMobile)attacker, ref damage);
                     mobile.Damage(AOS.Scale(damage, 50 + Level * 2), attacker);
                     break;
                 }

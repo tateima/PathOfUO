@@ -25,6 +25,7 @@ namespace Server.Talent
         public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
             damage += Utility.RandomMinMax(1, Level) * 2;
+            AlterDamage(target, (PlayerMobile)attacker, ref damage);
             if (Core.AOS)
             {
                 AOS.Damage(
@@ -123,6 +124,7 @@ namespace Server.Talent
 
                             var scalar = from.Skills.Musicianship.Value / 200;
                             AOS.Scale(baseDamage, 100 + (int)(scalar * 10));
+                            AlterDamage(other, (PlayerMobile)from, ref baseDamage);
                             if (Core.AOS)
                             {
                                 AOS.Damage(other, baseDamage, 0, 0, 0, 0, 100);

@@ -50,14 +50,9 @@ namespace Server.Talent
                     }
 
                     mobile.MoveToWorld(newMobileLocation, mobile.Map);
-                    if (mobile == target)
-                    {
-                        damage += Level;
-                    }
-                    else
-                    {
-                        mobile.Damage(Level, attacker);
-                    }
+                    int slamDamage = (mobile == target) ? damage + Level : Level;
+                    AlterDamage(mobile, (PlayerMobile)attacker, ref slamDamage);
+                    mobile.Damage(damage, attacker);
 
                     if (mobile is BaseCreature creature)
                     {

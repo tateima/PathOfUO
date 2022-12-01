@@ -1,4 +1,5 @@
 using System;
+using Server.Mobiles;
 using Server.Network;
 using Server.Spells;
 using Server.Targeting;
@@ -83,8 +84,10 @@ namespace Server.Talent
                     }
                     else
                     {
+                        int damage = _level * 5;
+                        _talent.AlterDamage(mobile, (PlayerMobile)from, ref damage);
                         // ignore AOS resistances
-                        mobile.Damage(_level * 5, from);
+                        mobile.Damage(damage, from);
                     }
 
                     _talent.OnCooldown = true;

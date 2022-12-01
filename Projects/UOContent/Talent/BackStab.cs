@@ -1,5 +1,6 @@
 using System;
 using Server.Items;
+using Server.Mobiles;
 
 namespace Server.Talent
 {
@@ -57,7 +58,9 @@ namespace Server.Talent
                     target.PlaySound(0x525);
                     if (backstabWeapon.CheckHit(target, attacker))
                     {
-                        attacker.Damage(backstabWeapon.MaxDamage + Level, target);
+                        int damage = backstabWeapon.MaxDamage + Level;
+                        AlterDamage(attacker, (PlayerMobile)target, ref damage);
+                        attacker.Damage(damage, target);
                     }
                 }
                 else

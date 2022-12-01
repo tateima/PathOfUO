@@ -75,6 +75,9 @@ namespace Server.Talent
                         {
                             continue;
                         }
+
+                        int damage = _damage;
+                        _wellOfDeath.AlterDamage(mobile, (PlayerMobile)_mobile, ref damage);
                         if (Core.AOS)
                         {
                             AOS.Damage(mobile, _mobile, _damage, 0, 0, 50, 0, 50);
