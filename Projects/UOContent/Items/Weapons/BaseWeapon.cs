@@ -26,7 +26,7 @@ namespace Server.Items
         SlayerName Slayer2 { get; set; }
     }
 
-    public abstract class BaseWeapon : Item, IWeapon, IFactionItem, ICraftable, ISlayer, IDurability, IPantheonItem
+    public abstract class BaseWeapon : Item, IWeapon, IFactionItem, ICraftable, ISlayer, IDurability, IPantheonItem, IAosItem
     {
         private static bool _enableInstaHit;
 
@@ -614,7 +614,7 @@ namespace Server.Items
                         }
                         else if (m_SkillMod == null && Parent is Mobile mobile)
                         {
-                            m_SkillMod = new DefaultSkillMod(AccuracySkill, true, (int)m_AccuracyLevel * 5);
+                            m_SkillMod = new DefaultSkillMod(AccuracySkill, "WeaponAccuracy", true, (int)m_AccuracyLevel * 5);
                             mobile.AddSkillMod(m_SkillMod);
                         }
                         else if (m_SkillMod != null)
@@ -659,14 +659,7 @@ namespace Server.Items
 
                 if (Quality == WeaponQuality.Exceptional)
                 {
-                    if (Attributes.WeaponDamage > 35)
-                    {
-                        Attributes.WeaponDamage -= 20;
-                    }
-                    else
-                    {
-                        Attributes.WeaponDamage = 15;
-                    }
+                    Attributes.WeaponDamage = 35;
 
                     if (Core.ML)
                     {
@@ -1146,7 +1139,7 @@ namespace Server.Items
             {
                 m_SkillMod?.Remove();
 
-                m_SkillMod = new DefaultSkillMod(AccuracySkill, true, (int)m_AccuracyLevel * 5);
+                m_SkillMod = new DefaultSkillMod(AccuracySkill, "WeaponAccuracy", true, (int)m_AccuracyLevel * 5);
                 from.AddSkillMod(m_SkillMod);
             }
 
@@ -1154,7 +1147,7 @@ namespace Server.Items
             {
                 m_MageMod?.Remove();
 
-                m_MageMod = new DefaultSkillMod(SkillName.Magery, true, -30 + WeaponAttributes.MageWeapon);
+                m_MageMod = new DefaultSkillMod(SkillName.Magery, "MageWeapon", true, -30 + WeaponAttributes.MageWeapon);
                 from.AddSkillMod(m_MageMod);
             }
             return true;
@@ -1651,7 +1644,7 @@ namespace Server.Items
                 return false;
             }
 
-            var shield = defender.FindItemOnLayer(Layer.TwoHanded) as BaseShield;
+            var shield = defender.FindItemOnLayer<BaseShield>(Layer.TwoHanded);
 
             var parry = defender.Skills.Parry.Value;
             var bushidoNonRacial = defender.Skills.Bushido.NonRacialValue;
@@ -1795,7 +1788,8 @@ namespace Server.Items
                         defender.Stam += Utility.RandomMinMax(1, (int)(bushido / 5));
                     }
 
-                    var shield = defender.FindItemOnLayer(Layer.TwoHanded) as BaseShield;
+                    var shield = defender.FindItemOnLayer<BaseShield>(Layer.TwoHanded);
+
                     shield?.OnHit(this, damage);
                 }
             }
@@ -2127,9 +2121,11 @@ namespace Server.Items
                 out var direct
             );
 
-            if (Core.ML && this is BaseRanged && attacker.FindItemOnLayer(Layer.Cloak) is BaseQuiver quiver)
+            if (Core.ML && this is BaseRanged)
             {
-                quiver.AlterBowDamage(ref phys, ref fire, ref cold, ref pois, ref nrgy, ref chaos, ref direct);
+                attacker
+                    .FindItemOnLayer<BaseQuiver>(Layer.Cloak)
+                    ?.AlterBowDamage(ref phys, ref fire, ref cold, ref pois, ref nrgy, ref chaos, ref direct);
             }
 
             if (Consecrated)
@@ -2276,10 +2272,6 @@ namespace Server.Items
                     var wraithLeech = 5 + (int)(15 * attacker.Skills.SpiritSpeak.Value / 100);
 
                     // Mana leeched by the Wraith Form spell is actually stolen, not just leeched.
-                    if (darkAffinity != null)
-                    {
-                        wraithLeech += darkAffinity.Level / 2;
-                    }
                     defender.Mana -= AOS.Scale(damageGiven, wraithLeech);
 
                     manaLeech += wraithLeech;
@@ -2309,9 +2301,14 @@ namespace Server.Items
             // check for hand finesse weapon damage save 1% per level
             bool handFinesseSave = (handFinesse != null && Utility.Random(100) < handFinesse.Level);
 
-            if (m_MaxHits > 0 && (MaxRange <= 1 && !handFinesseSave && defender is Slime or AcidElemental |Utility.RandomDouble() < .04)) // Stratics says 50% chance, seems more like 4%..
+            var isAcidMonster =
+                m_MaxHits > 0 && MaxRange <= 1 && Attributes.SpellChanneling == 0 &&
+                defender is Slime or AcidElemental;
+
+            // Stratics says 50% chance, seems more like 4%..
+            if (isAcidMonster || Utility.Random(25) == 0)
             {
-                if (MaxRange <= 1 && defender is Slime or AcidElemental)
+                if (isAcidMonster)
                 {
                     attacker.LocalOverheadMessage(MessageType.Regular, 0x3B2, 500263); // *Acid blood scars your weapon!*
                 }
@@ -2319,24 +2316,26 @@ namespace Server.Items
                 if (Core.AOS && WeaponAttributes.SelfRepair > Utility.Random(10))
                 {
                     HitPoints += 2;
-                }
-                else if (m_Hits > 0)
+                } else if (!handFinesseSave)
                 {
-                    --HitPoints;
-                }
-                else if (m_MaxHits > 1)
-                {
-                    --MaxHitPoints;
-
-                    if (Parent is Mobile mobile)
+                    if (m_Hits > 0)
                     {
-                        // Your equipment is severely damaged.
-                        mobile.LocalOverheadMessage(MessageType.Regular, 0x3B2, 1061121);
+                        --HitPoints;
                     }
-                }
-                else
-                {
-                    Delete();
+                    else if (m_MaxHits > 1)
+                    {
+                        --MaxHitPoints;
+
+                        if (Parent is Mobile mobile)
+                        {
+                            // Your equipment is severely damaged.
+                            mobile.LocalOverheadMessage(MessageType.Regular, 0x3B2, 1061121);
+                        }
+                    }
+                    else
+                    {
+                        Delete();
+                    }
                 }
             }
 
@@ -2447,8 +2446,8 @@ namespace Server.Items
                 }
             }
 
-            bcAtt?.OnGaveMeleeAttack(defender);
-            bcDef?.OnGotMeleeAttack(attacker);
+            bcAtt?.OnGaveMeleeAttack(defender, damage);
+            bcDef?.OnGotMeleeAttack(attacker, damage);
 
             a?.OnHit(attacker, defender, damage);
             move?.OnHit(attacker, defender, damage);
@@ -2849,27 +2848,8 @@ namespace Server.Items
             };
         }
 
-        public virtual int GetDamageBonus()
-        {
-            var quality = m_Quality switch
-            {
-                WeaponQuality.Low         => -20,
-                WeaponQuality.Exceptional => 20,
-                _                         => 0
-            };
-
-            var damageLevel = m_DamageLevel switch
-            {
-                WeaponDamageLevel.Ruin  => 15,
-                WeaponDamageLevel.Might => 20,
-                WeaponDamageLevel.Force => 25,
-                WeaponDamageLevel.Power => 30,
-                WeaponDamageLevel.Vanq  => 35,
-                _                       => 0
-            };
-
-            return VirtualDamageBonus + quality + damageLevel;
-        }
+        // Note: AOS quality/damage bonuses removed since they are incorporated into the crafting already
+        public virtual int GetDamageBonus() => VirtualDamageBonus;
 
         public virtual double ScaleDamageAOS(Mobile attacker, double damage, bool checkSkills)
         {
@@ -2956,10 +2936,9 @@ namespace Server.Items
                 damageBonus = 100;
             }
 
-            var totalBonus = strengthBonus + anatomyBonus + tacticsBonus + lumberBonus +
-                             (GetDamageBonus() + damageBonus) / 100.0;
+            var totalBonus = strengthBonus + anatomyBonus + tacticsBonus + lumberBonus + damageBonus + GetDamageBonus();
 
-            return damage + (int)(damage * totalBonus);
+            return damage + damage * totalBonus / 100.0;
         }
 
         public virtual int ComputeDamageAOS(Mobile attacker, Mobile defender) =>
@@ -4533,7 +4512,7 @@ namespace Server.Items
 
                         if (UseSkillMod && m_AccuracyLevel != WeaponAccuracyLevel.Regular && parentMobile != null)
                         {
-                            m_SkillMod = new DefaultSkillMod(AccuracySkill, true, (int)m_AccuracyLevel * 5);
+                            m_SkillMod = new DefaultSkillMod(AccuracySkill, "WeaponAccuracy", true, (int)m_AccuracyLevel * 5);
                             parentMobile.AddSkillMod(m_SkillMod);
                         }
 
@@ -4545,7 +4524,7 @@ namespace Server.Items
                         if (Core.AOS && WeaponAttributes.MageWeapon != 0 && WeaponAttributes.MageWeapon != 30 &&
                             parentMobile != null)
                         {
-                            m_MageMod = new DefaultSkillMod(SkillName.Magery, true, -30 + WeaponAttributes.MageWeapon);
+                            m_MageMod = new DefaultSkillMod(SkillName.Magery, "MageWeapon", true, -30 + WeaponAttributes.MageWeapon);
                             parentMobile.AddSkillMod(m_MageMod);
                         }
 
@@ -4700,7 +4679,7 @@ namespace Server.Items
 
                         if (UseSkillMod && m_AccuracyLevel != WeaponAccuracyLevel.Regular && parentMobile != null)
                         {
-                            m_SkillMod = new DefaultSkillMod(AccuracySkill, true, (int)m_AccuracyLevel * 5);
+                            m_SkillMod = new DefaultSkillMod(AccuracySkill, "WeaponAccuracy", true, (int)m_AccuracyLevel * 5);
                             parentMobile.AddSkillMod(m_SkillMod);
                         }
 

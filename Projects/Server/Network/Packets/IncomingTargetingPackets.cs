@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2020 - ModernUO Development Team                       *
+ * Copyright 2019-2022 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: IncomingTargetingPackets.cs                                     *
  *                                                                       *
@@ -61,11 +61,7 @@ public static class IncomingTargetingPackets
                 // User pressed escape
                 t.Cancel(from, TargetCancelType.Canceled);
             }
-            else if (t.TargetID != targetID)
-            {
-                // Sanity, prevent fake target
-            }
-            else
+            else if (t.TargetID == targetID)
             {
                 object toTarget;
 

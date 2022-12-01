@@ -10,8 +10,8 @@ namespace Server.Spells.Bushido
         public override int BaseMana => 0;
         public override double RequiredSkill => 25.0;
 
-        public override TextDefinition AbilityMessage =>
-            new(1063122); // You better kill your enemy with your next hit or you'll be rather sorry...
+        // You better kill your enemy with your next hit or you'll be rather sorry...
+        public override TextDefinition AbilityMessage { get; } = 1063122;
 
         public override double GetDamageScalar(Mobile attacker, Mobile defender) =>
             // TODO: 20 -> Perfection
@@ -46,18 +46,18 @@ namespace Server.Spells.Bushido
             {
                 var mods = new List<object>
                 {
-                    new ResistanceMod(ResistanceType.Physical, -40),
-                    new ResistanceMod(ResistanceType.Fire, -40),
-                    new ResistanceMod(ResistanceType.Cold, -40),
-                    new ResistanceMod(ResistanceType.Poison, -40),
-                    new ResistanceMod(ResistanceType.Energy, -40)
+                    new ResistanceMod(ResistanceType.Physical, "PhysicalResistHonorableExecution", -40),
+                    new ResistanceMod(ResistanceType.Fire, "FireResistHonorableExecution", -40),
+                    new ResistanceMod(ResistanceType.Cold, "ColdResistHonorableExecution", -40),
+                    new ResistanceMod(ResistanceType.Poison, "PoisonResistHonorableExecution", -40),
+                    new ResistanceMod(ResistanceType.Energy, "EnergyResistHonorableExecution", -40)
                 };
 
                 var resSpells = attacker.Skills.MagicResist.Value;
 
                 if (resSpells > 0.0)
                 {
-                    mods.Add(new DefaultSkillMod(SkillName.MagicResist, true, -resSpells));
+                    mods.Add(new DefaultSkillMod(SkillName.MagicResist, "MagicResistHonorableExecution", true, -resSpells));
                 }
 
                 timer = new HonorableExecutionTimer(attacker, mods);

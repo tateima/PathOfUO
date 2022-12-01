@@ -27,16 +27,13 @@ namespace Server.Items
     }
 
     [SerializationGenerator(7, false)]
-    public abstract partial class BaseClothing : Item, IDyable, IScissorable, IFactionItem, ICraftable, IWearableDurability, IPantheonItem
+    public abstract partial class BaseClothing : Item, IDyable, IScissorable, IFactionItem, ICraftable, IWearableDurability, IPantheonItem, IAosItem
     {
-        [SerializableField(0, "private", "private")]
-        private CraftResource _rawResource;
-
         [SerializableFieldSaveFlag(0)]
-        private bool ShouldSerializeResource() => _rawResource != DefaultResource;
+        private bool ShouldSerializeResource() => _resource != DefaultResource;
 
-        [SerializableField(1)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster, canModify: true)]")]
+        [SerializableField(1, setter: "private")]
+        [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         private AosAttributes _attributes;
 
         [SerializableFieldSaveFlag(1)]
@@ -45,8 +42,8 @@ namespace Server.Items
         [SerializableFieldDefault(1)]
         private AosAttributes AttributesDefaultValue() => new(this);
 
-        [SerializableField(2)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster, canModify: true)]")]
+        [SerializableField(2, setter: "private")]
+        [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         private AosArmorAttributes _clothingAttributes;
 
         [SerializableFieldSaveFlag(2)]
@@ -56,7 +53,7 @@ namespace Server.Items
         private AosArmorAttributes ClothingAttributesDefaultValue() => new(this);
 
         [SerializableField(3, setter: "private")]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster, canModify: true)]")]
+        [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         private AosSkillBonuses _skillBonuses;
 
         [SerializableFieldSaveFlag(3)]
@@ -66,7 +63,7 @@ namespace Server.Items
         private AosSkillBonuses SkillBonusesDefaultValue() => new(this);
 
         [SerializableField(4, setter: "private")]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster, canModify: true)]")]
+        [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         private AosElementAttributes _resistances;
 
         [SerializableFieldSaveFlag(4)]
@@ -78,17 +75,14 @@ namespace Server.Items
         [EncodedInt]
         [InvalidateProperties]
         [SerializableField(5)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
+        [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _maxHitPoints;
 
         [SerializableFieldSaveFlag(5)]
         private bool ShouldSerializeMaxHitPoints() => _maxHitPoints != 0;
 
-        // Field 6
-        private int _hitPoints;
-
         [SerializableField(7)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
+        [SerializedCommandProperty(AccessLevel.GameMaster)]
         private bool _playerConstructed;
 
         [SerializableFieldSaveFlag(7)]
@@ -96,7 +90,7 @@ namespace Server.Items
 
         [InvalidateProperties]
         [SerializableField(8)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
+        [SerializedCommandProperty(AccessLevel.GameMaster)]
         private string _crafter;
 
         [SerializableFieldSaveFlag(8)]
@@ -104,7 +98,7 @@ namespace Server.Items
 
         [InvalidateProperties]
         [SerializableField(9)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
+        [SerializedCommandProperty(AccessLevel.GameMaster)]
         private ClothingQuality _quality = ClothingQuality.Regular;
 
         [SerializableFieldSaveFlag(9)]
@@ -220,7 +214,7 @@ namespace Server.Items
             Layer = layer;
             Hue = hue;
 
-            _rawResource = DefaultResource;
+            _resource = DefaultResource;
 
             _hitPoints = _maxHitPoints = Utility.RandomMinMax(InitMinHits, InitMaxHits);
             _talentLevel = 0;
@@ -234,20 +228,21 @@ namespace Server.Items
             Resistances = new AosElementAttributes(this);
         }
 
+        [SerializableProperty(0)]
         [CommandProperty(AccessLevel.GameMaster)]
         public CraftResource Resource
         {
-            get => _rawResource;
+            get => _resource;
             set
             {
-                RawResource = value;
-                Hue = CraftResources.GetHue(_rawResource);
+                _resource = value;
+                Hue = CraftResources.GetHue(_resource);
                 InvalidateProperties();
                 this.MarkDirty();
             }
         }
 
-        [SerializableField(10)]
+        [SerializableProperty(10, useField: nameof(_strReq))]
         [CommandProperty(AccessLevel.GameMaster)]
         public int StrRequirement
         {
@@ -381,7 +376,7 @@ namespace Server.Items
                 {
                     try
                     {
-                        var info = CraftResources.GetInfo(_rawResource);
+                        var info = CraftResources.GetInfo(_resource);
 
                         Type resourceType = null;
                         if (info?.ResourceTypes.Length > 0)
@@ -411,7 +406,7 @@ namespace Server.Items
         public virtual bool CanFortify => true;
 
         [EncodedInt]
-        [SerializableField(6)]
+        [SerializableProperty(6)]
         [CommandProperty(AccessLevel.GameMaster)]
         public int HitPoints
         {
@@ -548,7 +543,7 @@ namespace Server.Items
                     }
                     else
                     {
-                        from.SendMessage("Only {0} may use this.", RequiredRace.PluralName);
+                        from.SendMessage($"Only {RequiredRace.PluralName} may use this.");
                     }
 
                     return false;
@@ -660,7 +655,7 @@ namespace Server.Items
                         }
                         else
                         {
-                            m.SendMessage("Only {0} may use this.", clothing.RequiredRace.PluralName);
+                            m.SendMessage($"Only {clothing.RequiredRace.PluralName} may use this.");
                         }
 
                         m.AddToBackpack(clothing);
@@ -767,7 +762,7 @@ namespace Server.Items
 
         public override void AddNameProperty(IPropertyList list)
         {
-            var oreType = _rawResource switch
+            var oreType = _resource switch
             {
                 CraftResource.DullCopper    => 1053108,
                 CraftResource.ShadowIron    => 1053107,

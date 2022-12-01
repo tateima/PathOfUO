@@ -5,8 +5,7 @@ namespace Server.Mobiles
     public class RedDeath : SkeletalMount
     {
         [Constructible]
-        public RedDeath()
-            : base("Red Death")
+        public RedDeath() : base()
         {
             IsParagon = true;
 
@@ -52,18 +51,19 @@ namespace Server.Mobiles
             }
         }
 
-        public RedDeath(Serial serial)
-            : base(serial)
+        public RedDeath(Serial serial) : base(serial)
         {
         }
+
+        public override string DefaultName => "Red Death";
 
         public override string CorpseName => "a Red Death corpse";
 
         public override bool GivesMLMinorArtifact => true;
         public override bool AlwaysMurderer => true;
-        public override bool HasBreath => true;
-        public override int BreathChaosDamage => 100;
-        public override int BreathFireDamage => 0;
+
+        private static MonsterAbility[] _abilities = { MonsterAbilities.ChaosBreath };
+        public override MonsterAbility[] GetMonsterAbilities() => _abilities;
 
         public override void GenerateLoot()
         {

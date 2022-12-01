@@ -163,11 +163,11 @@ namespace Server.Mobiles
 
         public override int GetDeathSound() => 0x59c;
 
-        public override void OnGaveMeleeAttack(Mobile defender)
+        public override void OnGaveMeleeAttack(Mobile defender, int damage)
         {
-            base.OnGaveMeleeAttack(defender);
+            base.OnGaveMeleeAttack(defender, damage);
 
-            if (Utility.RandomDouble() <= 0.2)
+            if (Utility.RandomDouble() < 0.2)
             {
                 Earthquake();
             }

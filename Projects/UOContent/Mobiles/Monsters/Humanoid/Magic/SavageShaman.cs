@@ -117,9 +117,9 @@ namespace Server.Mobiles
             base.AlterMeleeDamageTo(to, ref damage);
         }
 
-        public override void OnGotMeleeAttack(Mobile attacker)
+        public override void OnGotMeleeAttack(Mobile attacker, int damage)
         {
-            base.OnGotMeleeAttack(attacker);
+            base.OnGotMeleeAttack(attacker, damage);
 
             if (Utility.RandomDouble() < 0.1)
             {

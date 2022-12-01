@@ -247,8 +247,7 @@ namespace Server.Mobiles
             if (escorter == null)
             {
                 Say(
-                    "I am looking to go to {0}, will you take me?",
-                    dest.Name == "Ocllo" && m.Map == Map.Trammel ? "Haven" : dest.Name
+                    $"I am looking to go to {(dest.Name == "Ocllo" && m.Map == Map.Trammel ? "Haven" : dest.Name)}, will you take me?"
                 );
                 return true;
             }
@@ -256,8 +255,7 @@ namespace Server.Mobiles
             if (escorter == m)
             {
                 Say(
-                    "Lead on! Payment will be made when we arrive in {0}.",
-                    dest.Name == "Ocllo" && m.Map == Map.Trammel ? "Haven" : dest.Name
+                    $"Lead on! Payment will be made when we arrive in {(dest.Name == "Ocllo" && m.Map == Map.Trammel ? "Haven" : dest.Name)}."
                 );
                 return true;
             }
@@ -291,7 +289,15 @@ namespace Server.Mobiles
                 var minutes =
                     (int)Math.Ceiling((mobile.LastEscortTime + EscortDelay - Core.Now).TotalMinutes);
 
-                Say("You must rest {0} minute{1} before we set out on this journey.", minutes, minutes == 1 ? "" : "s");
+                if (minutes == 1)
+                {
+                    Say($"You must rest {minutes} minute before we set out on this journey.");
+                }
+                else
+                {
+                    Say($"You must rest {minutes} minutes before we set out on this journey.");
+                }
+
                 return false;
             }
 
@@ -305,8 +311,7 @@ namespace Server.Mobiles
                 }
 
                 Say(
-                    "Lead on! Payment will be made when we arrive in {0}.",
-                    dest.Name == "Ocllo" && m.Map == Map.Trammel ? "Haven" : dest.Name
+                    $"Lead on! Payment will be made when we arrive in {(dest.Name == "Ocllo" && m.Map == Map.Trammel ? "Haven" : dest.Name)}."
                 );
                 Timer.StartTimer(TimeSpan.FromMinutes(1), HandleBanditEncounter, out _banditTimer);
                 EscortTable[m] = this;

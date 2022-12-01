@@ -38,7 +38,7 @@ namespace Server.Spells.Chivalry
 
         public override bool ClearHandsOnCast => false;
 
-        // public override int CastDelayBase => 1;
+        public override TimeSpan CastDelayMinimum => TimeSpan.FromSeconds(Core.SA ? 0.5 : 0.25);
 
         public override int CastRecoveryBase => 7;
         public bool CheckLightAffinity()
@@ -87,20 +87,15 @@ namespace Server.Spells.Chivalry
 
             if (Caster.TithingPoints < RequiredTithing)
             {
-                Caster.SendLocalizedMessage(
-                    1060173,
-                    RequiredTithing
-                        .ToString()
-                ); // You must have at least ~1_TITHE_REQUIREMENT~ Tithing Points to use this ability,
+                // You must have at least ~1_TITHE_REQUIREMENT~ Tithing Points to use this ability,
+                Caster.SendLocalizedMessage(1060173, RequiredTithing.ToString());
                 return false;
             }
 
             if (Caster.Mana < mana)
             {
-                Caster.SendLocalizedMessage(
-                    1060174,
-                    mana.ToString()
-                ); // You must have at least ~1_MANA_REQUIREMENT~ Mana to use this ability.
+                // You must have at least ~1_MANA_REQUIREMENT~ Mana to use this ability.
+                Caster.SendLocalizedMessage(1060174, mana.ToString());
                 return false;
             }
 
@@ -120,20 +115,15 @@ namespace Server.Spells.Chivalry
 
             if (Caster.TithingPoints < requiredTithing)
             {
-                Caster.SendLocalizedMessage(
-                    1060173,
-                    RequiredTithing
-                        .ToString()
-                ); // You must have at least ~1_TITHE_REQUIREMENT~ Tithing Points to use this ability,
+                // You must have at least ~1_TITHE_REQUIREMENT~ Tithing Points to use this ability,
+                Caster.SendLocalizedMessage(1060173, RequiredTithing.ToString());
                 return false;
             }
 
             if (Caster.Mana < mana)
             {
-                Caster.SendLocalizedMessage(
-                    1060174,
-                    mana.ToString()
-                ); // You must have at least ~1_MANA_REQUIREMENT~ Mana to use this ability.
+                // You must have at least ~1_MANA_REQUIREMENT~ Mana to use this ability.
+                Caster.SendLocalizedMessage(1060174, mana.ToString());
                 return false;
             }
 

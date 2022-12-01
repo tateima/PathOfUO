@@ -130,7 +130,7 @@ namespace Server.Mobiles
             m_Damage = damage;
         }
 
-        public int CompareTo(DamageStore ds) => ds?.m_Damage ?? 0 - m_Damage;
+        public int CompareTo(DamageStore ds) => (ds?.m_Damage ?? 0).CompareTo(m_Damage);
     }
 
     [AttributeUsage(AttributeTargets.Class)]
@@ -329,7 +329,6 @@ namespace Server.Mobiles
 
         private long m_NextAura;
 
-        private long m_NextBreathTime;
         private long m_NextHealOwnerTime = Core.TickCount;
 
         private long m_NextHealTime = Core.TickCount;
@@ -1410,9 +1409,7 @@ namespace Server.Mobiles
 
         public static bool Summoning { get; set; }
 
-        public virtual bool CanBreath => HasBreath && !Summoned;
-        public virtual bool IsDispellable => Summoned && !IsAnimatedDead && !OverrideDispellable;
-
+        public virtual bool IsDispellable => Summoned && !IsAnimatedDead;
         public virtual bool OverrideDispellable { get; set; }
 
         // If they are following a waypoint, they'll continue to follow it even if players aren't around
@@ -1579,52 +1576,8 @@ namespace Server.Mobiles
         [CommandProperty(AccessLevel.GameMaster)]
         public int DirectDamage { get; set; }
 
-        // Must be overridden in subclass to enable
-        public virtual bool HasBreath => false;
-
-        // Base damage given is: CurrentHitPoints * BreathDamageScalar
-        public virtual double BreathDamageScalar => Core.AOS ? 0.16 : 0.05;
-
-        // Min/max seconds until next breath
-        public virtual double BreathMinDelay => 30.0;
-        public virtual double BreathMaxDelay => 45.0;
-
-        // Creature stops moving for 1.0 seconds while breathing
-        public virtual double BreathStallTime => 1.0;
-
-        // Effect is sent 1.3 seconds after BreathAngerSound and BreathAngerAnimation is played
-        public virtual double BreathEffectDelay => 1.3;
-
-        // Damage is given 1.0 seconds after effect is sent
-        public virtual double BreathDamageDelay => 1.0;
-
-        public virtual int BreathRange => RangePerception;
-
-        // Damage types
-        public virtual int BreathChaosDamage => 0;
-        public virtual int BreathPhysicalDamage => 0;
-        public virtual int BreathFireDamage => 100;
-        public virtual int BreathColdDamage => 0;
-        public virtual int BreathPoisonDamage => 0;
-        public virtual int BreathEnergyDamage => 0;
-
         // Is immune to breath damages
         public virtual bool BreathImmune => false;
-
-        // Effect details and sound
-        public virtual int BreathEffectItemID => 0x36D4;
-        public virtual int BreathEffectSpeed => 5;
-        public virtual int BreathEffectDuration => 0;
-        public virtual bool BreathEffectExplodes => false;
-        public virtual bool BreathEffectFixedDir => false;
-        public virtual int BreathEffectHue => 0;
-        public virtual int BreathEffectRenderMode => 0;
-
-        public virtual int BreathEffectSound => 0x227;
-
-        // Anger sound/animations
-        public virtual int BreathAngerSound => GetAngerSound();
-        public virtual int BreathAngerAnimation => 12;
 
         public virtual bool CanFlee => !m_Paragon;
 
@@ -1721,6 +1674,172 @@ namespace Server.Mobiles
                 }
 
                 return m_MLQuests;
+            }
+        }
+
+        public virtual MonsterAbility[] GetMonsterAbilities() => null;
+
+        public virtual MonsterAbility GetAbility(MonsterAbilityType type)
+        {
+            var abilities = GetMonsterAbilities();
+
+            if (abilities == null)
+            {
+                return null;
+            }
+
+            for (var i = 0; i < abilities.Length; i++)
+            {
+                var ability = abilities[i];
+                if (ability is MonsterAbilityGroup group)
+                {
+                    ability = group.GetAbilityWithType(type);
+                    if (ability != null)
+                    {
+                        return ability;
+                    }
+                }
+                else if (ability.AbilityType == type)
+                {
+                    return ability;
+                }
+            }
+
+            return null;
+        }
+
+        public virtual bool HasAbility(MonsterAbility ability)
+        {
+            if (ability == null)
+            {
+                return false;
+            }
+
+            var abilities = GetMonsterAbilities();
+
+            if (abilities == null)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < abilities.Length; i++)
+            {
+                if (abilities[i] == ability || (ability as MonsterAbilityGroup)?.HasAbility(ability) == true)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public virtual bool TriggerAbility(MonsterAbilityTrigger trigger, Mobile defender)
+        {
+            var abilities = GetMonsterAbilities();
+
+            if (abilities == null)
+            {
+                return false;
+            }
+
+            var triggered = false;
+            for (var i = 0; i < abilities.Length; i++)
+            {
+                var ability = abilities[i];
+                if (ability.WillTrigger(trigger) && ability.CanTrigger(this, trigger))
+                {
+                    ability.Trigger(trigger, this, defender);
+                    triggered = true;
+                }
+            }
+
+            return triggered;
+        }
+
+        public virtual void TriggerAbilityMove(MonsterAbilityTrigger trigger, Mobile defender, Direction d)
+        {
+            var abilities = GetMonsterAbilities();
+
+            if (abilities == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < abilities.Length; i++)
+            {
+                var ability = abilities[i];
+                if (ability.WillTrigger(trigger) && ability.CanTrigger(this, trigger))
+                {
+                    ability.Move(this, d);
+                }
+            }
+        }
+
+        public virtual void TriggerAbilityAlterDamage(MonsterAbilityTrigger trigger, Mobile defender, ref int damage)
+        {
+            var abilities = GetMonsterAbilities();
+
+            if (abilities == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < abilities.Length; i++)
+            {
+                var ability = abilities[i];
+                if (ability.WillTrigger(trigger) && ability.CanTrigger(this, trigger))
+                {
+                    if ((trigger & MonsterAbilityTrigger.GiveMeleeDamage) != 0)
+                    {
+                        ability.AlterMeleeDamageTo(this, defender, ref damage);
+                    }
+
+                    if ((trigger & MonsterAbilityTrigger.TakeMeleeDamage) != 0)
+                    {
+                        ability.AlterMeleeDamageFrom(this, defender, ref damage);
+                    }
+
+                    if ((trigger & MonsterAbilityTrigger.GiveSpellDamage) != 0)
+                    {
+                        ability.AlterSpellDamageTo(this, defender, ref damage);
+                    }
+
+                    if ((trigger & MonsterAbilityTrigger.TakeSpellDamage) != 0)
+                    {
+                        ability.AlterSpellDamageFrom(this, defender, ref damage);
+                    }
+                }
+            }
+        }
+
+        public virtual void TriggerAbilityAlterDamageScalar(
+            MonsterAbilityTrigger trigger,
+            Mobile defender,
+            ref double scalar
+        )
+        {
+            var abilities = GetMonsterAbilities();
+
+            if (abilities == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < abilities.Length; i++)
+            {
+                var ability = abilities[i];
+                if (ability.WillTrigger(trigger) && ability.CanTrigger(this, trigger))
+                {
+                    if ((trigger & MonsterAbilityTrigger.GiveSpellDamage) != 0)
+                    {
+                        ability.AlterSpellDamageScalarTo(this, defender, ref scalar);
+                    }
+
+                    if ((trigger & MonsterAbilityTrigger.TakeSpellDamage) != 0)
+                    {
+                        ability.AlterSpellDamageScalarFrom(this, defender, ref scalar);
+                    }
+                }
             }
         }
 
@@ -2239,12 +2358,19 @@ namespace Server.Mobiles
             base.OnDamage(amount, from, willKill);
         }
 
-        public virtual void OnDamagedBySpell(Mobile from)
+        public virtual void OnDamagedBySpell(Mobile from, int damage)
         {
             if (CanBeDistracted && ControlOrder == OrderType.Follow)
             {
                 CheckDistracted(from);
             }
+
+            TriggerAbility(MonsterAbilityTrigger.TakeSpellDamage, from);
+        }
+
+        public virtual void OnDamageSpell(Mobile defender, int damage)
+        {
+            TriggerAbility(MonsterAbilityTrigger.GiveSpellDamage, defender);
         }
 
         public virtual void OnHarmfulSpell(Mobile from)
@@ -3122,13 +3248,26 @@ namespace Server.Mobiles
             }
         }
 
-        public virtual void OnGotMeleeAttack(Mobile attacker)
+        public virtual void OnGotMeleeAttack(Mobile attacker, int damage)
         {
             if (AutoDispel && attacker is BaseCreature creature && creature.IsDispellable &&
                 AutoDispelChance > Utility.RandomDouble())
             {
                 Dispel(creature);
             }
+
+            TriggerAbility(MonsterAbilityTrigger.TakeMeleeDamage, attacker);
+        }
+
+        public override bool Move(Direction d)
+        {
+            if (!base.Move(d))
+            {
+                return false;
+            }
+
+            TriggerAbilityMove(MonsterAbilityTrigger.Movement, this, d);
+            return true;
         }
 
         public virtual void Dispel(Mobile m)
@@ -3145,7 +3284,7 @@ namespace Server.Mobiles
             m.Delete();
         }
 
-        public virtual void OnGaveMeleeAttack(Mobile defender)
+        public virtual void OnGaveMeleeAttack(Mobile defender, int damage)
         {
             var p = m_Paragon ? PoisonImpl.IncreaseLevel(HitPoison) : HitPoison;
 
@@ -3164,6 +3303,8 @@ namespace Server.Mobiles
             {
                 Dispel(creature);
             }
+
+            TriggerAbility(MonsterAbilityTrigger.GiveMeleeDamage, defender);
 
             MonsterBuff.CheckElementalAttack(this, defender);
 
@@ -3869,6 +4010,8 @@ namespace Server.Mobiles
 
         public override bool OnBeforeDeath()
         {
+            TriggerAbility(MonsterAbilityTrigger.Death, null);
+
             var treasureLevel = TreasureMapLevel;
 
             if (treasureLevel == 1 && Map == Map.Trammel && TreasureMap.IsInHavenIsland(this))
@@ -3894,7 +4037,7 @@ namespace Server.Mobiles
                     {
                         PackItem(new ParagonChest(Name, treasureLevel));
                     }
-                    else if ((Map == Map.Felucca || Map == Map.Trammel) && Utility.RandomDouble() <= TreasureMap.LootChance)
+                    else if ((Map == Map.Felucca || Map == Map.Trammel) && Utility.RandomDouble() < TreasureMap.LootChance)
                     {
                         PackItem(new TreasureMap(treasureLevel, Map));
                     }
@@ -4030,6 +4173,7 @@ namespace Server.Mobiles
         public static List<DamageStore> GetLootingRights(List<DamageEntry> damageEntries, int hitsMax)
         {
             var rights = new List<DamageStore>();
+            DamageStore firstDamager = null;
 
             for (var i = damageEntries.Count - 1; i >= 0; --i)
             {
@@ -4070,12 +4214,15 @@ namespace Server.Mobiles
                         {
                             ds.m_Damage += subEntry.DamageGiven;
                             needNewSubEntry = false;
+                            firstDamager = ds;
                         }
                     }
 
                     if (needNewSubEntry)
                     {
-                        rights.Add(new DamageStore(master, subEntry.DamageGiven));
+                        var ds = new DamageStore(master, subEntry.DamageGiven);
+                        rights.Add(ds);
+                        firstDamager = ds;
                     }
 
                     damage -= subEntry.DamageGiven;
@@ -4083,7 +4230,7 @@ namespace Server.Mobiles
 
                 var m = de.Damager;
 
-                if (m?.Deleted != false || !m.Player)
+                if (m is not { Deleted: false, Player: true })
                 {
                     continue;
                 }
@@ -4103,19 +4250,25 @@ namespace Server.Mobiles
                     {
                         ds.m_Damage += damage;
                         needNewEntry = false;
+                        firstDamager = ds;
                     }
                 }
 
                 if (needNewEntry)
                 {
-                    rights.Add(new DamageStore(m, damage));
+                    var ds = new DamageStore(m, damage);
+                    rights.Add(ds);
+                    firstDamager = ds;
                 }
             }
 
+            // Handle damage rights per Five on Friday: https://www.uoguide.com/Five_on_Friday_-_January_19,_2007
             if (rights.Count > 0)
             {
-                // This would be the first valid person attacking it.  Gets a 25% bonus.  Per 1/19/07 Five on Friday
-                rights[0].m_Damage = (int)(rights[0].m_Damage * 1.25);
+                if (firstDamager != null)
+                {
+                    firstDamager.m_Damage = (int)(firstDamager.m_Damage * 1.25);
+                }
 
                 if (rights.Count > 1)
                 {
@@ -4635,11 +4788,11 @@ namespace Server.Mobiles
                 {
                     if (target.Title == null)
                     {
-                        SendMessage("{0} cannot be harmed.", target.Name);
+                        SendMessage($"{target.Name} cannot be harmed.");
                     }
                     else
                     {
-                        SendMessage("{0} {1} cannot be harmed.", target.Name, target.Title);
+                        SendMessage($"{target.Name} {target.Title} cannot be harmed.");
                     }
                 }
 
@@ -4806,24 +4959,8 @@ namespace Server.Mobiles
                 m_NextRummageTime = tc + (int)TimeSpan.FromMinutes(delay).TotalMilliseconds;
             }
 
-            // tested: controlled dragons do breath fire, what about summoned skeletal dragons?
-            if (CanBreath && tc - m_NextBreathTime >= 0)
-            {
-                var target = Combatant;
-
-                if (target?.Alive == true && !target.IsDeadBondedPet && CanBeHarmful(target) && target.Map == Map &&
-                    !IsDeadBondedPet && target.InRange(this, BreathRange) && InLOS(target) && !BardPacified)
-                {
-                    if (Core.TickCount - m_NextBreathTime < 30000 && Utility.RandomBool())
-                    {
-                        BreathStart(target);
-                    }
-
-                    m_NextBreathTime = tc + (int)TimeSpan
-                        .FromSeconds(BreathMinDelay + Utility.RandomDouble() * (BreathMaxDelay - BreathMinDelay))
-                        .TotalMilliseconds;
-                }
-            }
+            // Fire breath, etc.
+            TriggerAbility(MonsterAbilityTrigger.Think, Combatant);
 
             if ((CanHeal || CanHealOwner) && Alive && !IsHealing && !BardPacified)
             {
@@ -5046,8 +5183,23 @@ namespace Server.Mobiles
 
         public static void TeleportPets(Mobile master, Point3D loc, Map map, bool onlyBonded = false)
         {
-            using var queue = PooledRefQueue<Mobile>.Create();
+            if (master is PlayerMobile pm)
+            {
+                for (var i = 0; i < pm.AllFollowers.Count; i++)
+                {
+                    var m = pm.AllFollowers[i];
+                    if (m.Map == master.Map && master.InRange(m, 3) && m is BaseCreature
+                            { Controlled: true, ControlOrder: OrderType.Guard or OrderType.Follow or OrderType.Come } pet &&
+                        pet.ControlMaster == master && (!onlyBonded || pet.IsBonded))
+                    {
+                        m.MoveToWorld(loc, map);
+                    }
+                }
 
+                return;
+            }
+
+            using var queue = PooledRefQueue<Mobile>.Create();
             var eable = master.GetMobilesInRange(3);
             foreach (var m in eable)
             {
@@ -5058,7 +5210,6 @@ namespace Server.Mobiles
                     queue.Enqueue(pet);
                 }
             }
-
             eable.Free();
 
             while (queue.Count > 0)
@@ -5207,7 +5358,7 @@ namespace Server.Mobiles
 
         public static void Configure()
         {
-            BondingEnabled = ServerConfiguration.GetOrUpdateSetting("taming.enableBonding", true);
+            BondingEnabled = ServerConfiguration.GetSetting("taming.enableBonding", Core.LBR);
         }
 
         public void BeginDeleteTimer()
@@ -5227,161 +5378,6 @@ namespace Server.Mobiles
                 m_DeleteTimer.Stop();
                 m_DeleteTimer = null;
             }
-        }
-
-        public virtual void BreathStart(Mobile target)
-        {
-            BreathStallMovement();
-            BreathPlayAngerSound();
-            BreathPlayAngerAnimation();
-
-            Direction = GetDirectionTo(target);
-
-            Timer.StartTimer(TimeSpan.FromSeconds(BreathEffectDelay), () => BreathEffect_Callback(target));
-        }
-
-        public virtual void BreathStallMovement()
-        {
-            if (AIObject != null)
-            {
-                AIObject.NextMove = Core.TickCount + (int)(BreathStallTime * 1000);
-            }
-        }
-
-        public virtual void BreathPlayAngerSound()
-        {
-            PlaySound(BreathAngerSound);
-        }
-
-        public virtual void BreathPlayAngerAnimation()
-        {
-            Animate(BreathAngerAnimation, 5, 1, true, false, 0);
-        }
-
-        public virtual void BreathEffect_Callback(Mobile target)
-        {
-            if (!target.Alive || !CanBeHarmful(target))
-            {
-                return;
-            }
-
-            BreathPlayEffectSound();
-            BreathPlayEffect(target);
-
-            Timer.StartTimer(TimeSpan.FromSeconds(BreathDamageDelay), () => BreathDamage_Callback(target));
-        }
-
-        public virtual void BreathPlayEffectSound()
-        {
-            PlaySound(BreathEffectSound);
-        }
-
-        public virtual void BreathPlayEffect(Mobile target)
-        {
-            Effects.SendMovingEffect(
-                this,
-                target,
-                BreathEffectItemID,
-                BreathEffectSpeed,
-                BreathEffectDuration,
-                BreathEffectFixedDir,
-                BreathEffectExplodes,
-                BreathEffectHue,
-                BreathEffectRenderMode
-            );
-        }
-
-        public virtual void BreathDamage_Callback(Mobile target)
-        {
-            if (target is BaseCreature creature && creature.BreathImmune)
-            {
-                return;
-            }
-
-            if (CanBeHarmful(target))
-            {
-                DoHarmful(target);
-                BreathDealDamage(target);
-            }
-        }
-
-        public virtual void BreathDealDamage(Mobile target)
-        {
-            if (!Evasion.CheckSpellEvasion(target))
-            {
-                var physDamage = BreathPhysicalDamage;
-                var fireDamage = BreathFireDamage;
-                var coldDamage = BreathColdDamage;
-                var poisDamage = BreathPoisonDamage;
-                var nrgyDamage = BreathEnergyDamage;
-
-                if (BreathChaosDamage > 0)
-                {
-                    switch (Utility.Random(5))
-                    {
-                        case 0:
-                            {
-                                physDamage += BreathChaosDamage;
-                                break;
-                            }
-                        case 1:
-                            {
-                                fireDamage += BreathChaosDamage;
-                                break;
-                            }
-                        case 2:
-                            {
-                                coldDamage += BreathChaosDamage;
-                                break;
-                            }
-                        case 3:
-                            {
-                                poisDamage += BreathChaosDamage;
-                                break;
-                            }
-                        case 4:
-                            {
-                                nrgyDamage += BreathChaosDamage;
-                                break;
-                            }
-                    }
-                }
-
-                if (physDamage == 0 && fireDamage == 0 && coldDamage == 0 && poisDamage == 0 && nrgyDamage == 0)
-                {
-                    target.Damage(BreathComputeDamage(), this); // Unresistable damage even in AOS
-                }
-                else
-                {
-                    AOS.Damage(
-                        target,
-                        this,
-                        BreathComputeDamage(),
-                        physDamage,
-                        fireDamage,
-                        coldDamage,
-                        poisDamage,
-                        nrgyDamage
-                    );
-                }
-            }
-        }
-
-        public virtual int BreathComputeDamage()
-        {
-            var damage = (int)(Hits * BreathDamageScalar);
-
-            if (IsParagon)
-            {
-                damage = (int)(damage / Paragon.HitsBuff);
-            }
-
-            if (damage > 200)
-            {
-                damage = 200;
-            }
-
-            return damage;
         }
 
         public void SpillAcid(int amount)
@@ -5501,33 +5497,39 @@ namespace Server.Mobiles
 
         public virtual void AlterDamageScalarFrom(Mobile caster, ref double scalar)
         {
+            TriggerAbilityAlterDamageScalar(MonsterAbilityTrigger.TakeSpellDamage, caster, ref scalar);
         }
 
         public virtual void AlterDamageScalarTo(Mobile target, ref double scalar)
         {
+            TriggerAbilityAlterDamageScalar(MonsterAbilityTrigger.GiveSpellDamage, target, ref scalar);
             AlterDamageToByLevel(target, ref scalar);
             AlterScalarFromBuffs(false, ref scalar);
         }
 
         public virtual void AlterSpellDamageFrom(Mobile from, ref int damage)
         {
+            TriggerAbilityAlterDamage(MonsterAbilityTrigger.TakeSpellDamage, from, ref damage);
             AlterDamageFromByLevel(from, ref damage);
             AlterDamageFromBuffs(true, ref damage);
         }
 
         public virtual void AlterSpellDamageTo(Mobile to, ref int damage)
         {
+            TriggerAbilityAlterDamage(MonsterAbilityTrigger.GiveSpellDamage, to, ref damage);
             // AlterDamageToByLevel(to, ref damage);
         }
 
         public virtual void AlterMeleeDamageFrom(Mobile from, ref int damage)
         {
+            TriggerAbilityAlterDamage(MonsterAbilityTrigger.TakeMeleeDamage, from, ref damage);
             AlterDamageFromByLevel(from, ref damage);
             AlterDamageFromBuffs(true, ref damage);
         }
 
         public virtual void AlterMeleeDamageTo(Mobile to, ref int damage)
         {
+            TriggerAbilityAlterDamage(MonsterAbilityTrigger.GiveMeleeDamage, to, ref damage);
             if (
                 !((BaseInstrument.IsMageryCreature(this) || Skills.Necromancy.Base > 5.0) && to.Skills.MagicResist.Base < 70 || Mana <= 10)
                 || Skills.Tactics.Base >= 90)
@@ -5710,16 +5712,11 @@ namespace Server.Mobiles
 
                     if (amount > 0)
                     {
-                        int stamGain;
-
-                        if (f is Gold)
+                        int stamGain = f switch
                         {
-                            stamGain = amount - 50;
-                        }
-                        else
-                        {
-                            stamGain = amount * 15 - 50;
-                        }
+                            Gold => amount - 50,
+                            _    => amount * 15 - 50
+                        };
 
                         if (stamGain > 0)
                         {
@@ -5737,7 +5734,7 @@ namespace Server.Mobiles
                         {
                             for (var i = 0; i < amount; ++i)
                             {
-                                if (m_Loyalty < MaxLoyalty && Utility.RandomDouble() <= 0.5)
+                                if (m_Loyalty < MaxLoyalty && Utility.RandomBool())
                                 {
                                     m_Loyalty += 10;
                                 }
@@ -6316,7 +6313,7 @@ namespace Server.Mobiles
 
         public void PackNecroScroll(int index)
         {
-            if (!Core.AOS || Utility.RandomDouble() >= 0.05)
+            if (!Core.AOS || Utility.RandomDouble() < 0.95)
             {
                 return;
             }
@@ -6345,7 +6342,7 @@ namespace Server.Mobiles
         }
 
         // If this needs to be serialized, recommend creating a hash or registry id. Don't serialize strings.
-        public virtual string SpeedClass => null;
+        public virtual SpeedLevel SpeedClass => SpeedLevel.None;
 
         public virtual void GetSpeeds(out double activeSpeed, out double passiveSpeed)
         {

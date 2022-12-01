@@ -21,7 +21,12 @@ namespace Server.Spells.Necromancy
         {
         }
 
-        public override TimeSpan CastDelayBase => TimeSpan.FromSeconds(1.5);
+        public override TimeSpan CastDelayBase => TimeSpan.FromSeconds(Core.Expansion switch
+        {
+            >= Expansion.SA => 1.25,
+            >= Expansion.ML => 1.5,
+            _ => 1.0
+        });
 
         public override double RequiredSkill => 60.0;
 
@@ -44,33 +49,39 @@ namespace Server.Spells.Necromancy
                     using var pool = PooledRefQueue<Mobile>.Create();
 
                     var cbc = Caster as BaseCreature;
-                    var isMonster = cbc?.Controlled == false && !cbc.Summoned;
+                    var isMonster = cbc?.Controlled == false && (cbc.IsAnimatedDead || !cbc.Summoned);
 
                     var eable = Caster.GetMobilesInRange(Core.ML ? 4 : 5);
-                    foreach (var m in eable)
+                    foreach (var targ in eable)
                     {
-                        if (Caster == m || !Caster.InLOS(m) || (!isMonster && !SpellHelper.ValidIndirectTarget(Caster, m)) ||
-                            !Caster.CanBeHarmful(m, false))
+                        if (targ == Caster
+                            || !Caster.InLOS(targ)
+                            || !isMonster && !SpellHelper.ValidIndirectTarget(Caster, targ)
+                            || !Caster.CanBeHarmful(targ, false))
                         {
                             continue;
                         }
 
-                        if (isMonster)
+                        if (isMonster && targ.Player)
                         {
-                            if (m is BaseCreature bc)
+                            continue;
+                        }
+
+                        // Animate dead casting poison strike shouldn't hit: familiars or player or pets
+                        if (targ is BaseCreature bc)
+                        {
+                            if (bc.IsAnimatedDead)
                             {
-                                if (!bc.Controlled && !bc.Summoned && bc.Team == cbc.Team)
-                                {
-                                    continue;
-                                }
+                                continue;
                             }
-                            else if (!m.Player)
+
+                            if (isMonster && (bc.Controlled || bc.Summoned || bc.Team == cbc.Team || bc.IsNecroFamiliar))
                             {
                                 continue;
                             }
                         }
 
-                        pool.Enqueue(m);
+                        pool.Enqueue(targ);
                     }
 
                     eable.Free();

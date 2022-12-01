@@ -11,7 +11,7 @@ namespace Server.Items
     public abstract partial class BaseHat : BaseClothing, IShipwreckedItem
     {
         [SerializableField(0)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
+        [SerializedCommandProperty(AccessLevel.GameMaster)]
         private bool _isShipwreckedItem;
 
 

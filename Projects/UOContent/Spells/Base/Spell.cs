@@ -485,28 +485,28 @@ namespace Server.Spells
                 return;
             }
 
-            if (!firstCircle && !Core.AOS && (this as MagerySpell)?.Circle == SpellCircle.First)
+            if (State == SpellState.None || !firstCircle && !Core.AOS && (this as MagerySpell)?.Circle == SpellCircle.First)
             {
                 return;
             }
 
+            var wasCasting = IsCasting; // Copy SpellState before resetting it to none
             State = SpellState.None;
             Caster.Spell = null;
 
-            if (State == SpellState.Casting)
-            {
-                OnDisturb(type, true);
+            OnDisturb(type, wasCasting);
 
+            if (wasCasting)
+            {
                 _castTimer?.Stop();
                 _animTimer?.Stop();
-
                 Caster.NextSpellTime = Core.TickCount + (int)GetDisturbRecovery().TotalMilliseconds;
             }
-            else if (State == SpellState.Sequencing)
+            else
             {
-                OnDisturb(type, false);
                 Target.Cancel(Caster);
             }
+
             if (Core.AOS && Caster.Player && type == DisturbType.Hurt)
             {
                 DoHurtFizzle();
@@ -788,6 +788,13 @@ namespace Server.Spells
             if (EssenceOfWindSpell.IsDebuffed(Caster))
             {
                 fc -= EssenceOfWindSpell.GetFCMalus(Caster);
+            }
+
+            if (Core.SA)
+            {
+                // At some point OSI added 0.25s to every spell. This makes the minimum 0.5s
+                // Note: This is done after multiplying for summon creature & blade spirits.
+                fc--;
             }
 
             var fcDelay = TimeSpan.FromSeconds(-(CastDelayFastScalar * fc * CastDelaySecondsPerTick));

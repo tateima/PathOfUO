@@ -61,7 +61,7 @@ namespace Server.Engines.MLQuests.Items
         {
             AddBaseLoot(Loot.MLArmorTypes, Loot.JewelryTypes, m_TalismanType);
 
-            if (Utility.RandomDouble() < 0.50)
+            if (Utility.RandomBool())
             {
                 AddRecipe(DefTailoring.CraftSystem);
             }
@@ -94,7 +94,7 @@ namespace Server.Engines.MLQuests.Items
         {
             AddBaseLoot(Loot.MLWeaponTypes, Loot.JewelryTypes, m_TalismanType);
 
-            if (Utility.RandomDouble() < 0.50)
+            if (Utility.RandomBool())
             {
                 AddRecipe(DefBlacksmithy.CraftSystem);
             }
@@ -190,7 +190,7 @@ namespace Server.Engines.MLQuests.Items
         {
             AddBaseLoot(Loot.MLArmorTypes, Loot.MLWeaponTypes, Loot.MLRangedWeaponTypes, Loot.JewelryTypes, m_TalismanType);
 
-            if (Utility.RandomDouble() < 0.50)
+            if (Utility.RandomBool())
             {
                 switch (Utility.Random(6))
                 {
@@ -236,7 +236,7 @@ namespace Server.Engines.MLQuests.Items
         {
             AddBaseLoot(Loot.MLRangedWeaponTypes, Loot.JewelryTypes, m_TalismanType);
 
-            if (Utility.RandomDouble() < 0.50)
+            if (Utility.RandomBool())
             {
                 AddRecipe(DefBowFletching.CraftSystem);
             }
@@ -271,7 +271,7 @@ namespace Server.Engines.MLQuests.Items
         {
             AddBaseLoot(Loot.MLArmorTypes, Loot.MLWeaponTypes, Loot.MLRangedWeaponTypes, Loot.JewelryTypes, m_TalismanType);
 
-            if (Utility.RandomDouble() < 0.50)
+            if (Utility.RandomBool())
             {
                 AddRecipe(DefCarpentry.CraftSystem);
             }

@@ -12,12 +12,12 @@ namespace Server.Items
     {
         [SerializableField(0)]
         [InvalidateProperties]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
+        [SerializedCommandProperty(AccessLevel.GameMaster)]
         private bool _balanced;
 
         [SerializableField(1)]
         [InvalidateProperties]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
+        [SerializedCommandProperty(AccessLevel.GameMaster)]
         private int _velocity;
 
         private TimerExecutionToken _recoveryTimerToken;
@@ -95,7 +95,7 @@ namespace Server.Items
         public override void OnHit(Mobile attacker, Mobile defender, double damageBonus = 1)
         {
             if (attacker.Player && !defender.Player && (defender.Body.IsAnimal || defender.Body.IsMonster) &&
-                Utility.RandomDouble() <= 0.4)
+                Utility.RandomDouble() < 0.4)
             {
                 defender.AddToBackpack(Ammo);
             }
@@ -125,7 +125,7 @@ namespace Server.Items
 
         public override void OnMiss(Mobile attacker, Mobile defender)
         {
-            if (attacker.Player)
+            if (attacker.Player && Utility.RandomDouble() < 0.4)
             {
                 double modifier = 0.4;
                 BaseTalent carefulShooter = ((PlayerMobile)attacker).GetTalent(typeof(CarefulShooter));
@@ -178,7 +178,7 @@ namespace Server.Items
         {
             if (attacker.Player)
             {
-                var quiver = attacker.FindItemOnLayer(Layer.Cloak) as BaseQuiver;
+                var quiver = attacker.FindItemOnLayer<BaseQuiver>(Layer.Cloak);
                 var pack = attacker.Backpack;
 
                 if (quiver == null || Utility.Random(100) >= quiver.LowerAmmoCost)

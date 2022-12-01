@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2021 - ModernUO Development Team                       *
+ * Copyright 2019-2022 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: Timer.TimerWheel.cs                                             *
  *                                                                       *
@@ -15,6 +15,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -22,17 +23,21 @@ namespace Server;
 
 public partial class Timer
 {
+#if DEBUG_TIMERS
+    private const int _chainExecutionThreshold = 512;
+#endif
     private const int _ringSizePowerOf2 = 12;
     private const int _ringSize = 1 << _ringSizePowerOf2; // 4096
     private const int _ringLayers = 3;
     private const int _tickRatePowerOf2 = 3;
     private const int _tickRate = 1 << _tickRatePowerOf2; // 8ms
+    private const long _maxDuration = (long)_tickRate << (_ringSizePowerOf2 * _ringLayers - 1);
 
-    private static readonly Timer[][] _rings = new Timer[_ringLayers][];
-    private static readonly int[] _ringIndexes = new int[_ringLayers];
+    private static Timer[][] _rings = new Timer[_ringLayers][];
+    private static int[] _ringIndexes = new int[_ringLayers];
+    private static Timer[] _executingRings = new Timer[_ringLayers];
 
     private static long _lastTickTurned = -1;
-    private static bool _timerWheelExecuting;
 
     public static void Init(long tickCount)
     {
@@ -58,10 +63,7 @@ public partial class Timer
 
     private static void Turn()
     {
-        _timerWheelExecuting = true;
         var turnNextWheel = false;
-
-        var _executingRings = new Timer[_ringLayers];
 
         // Detach the chain from the timer wheel. This allows adding timers to the same slot during execution.
         for (var i = 0; i < _ringLayers; i++)
@@ -87,15 +89,19 @@ public partial class Timer
 
         for (var i = 0; i < _ringLayers; i++)
         {
-            var timer = _executingRings[i];
-            if (timer == null)
+#if DEBUG_TIMERS
+            var executionCount = 0;
+#endif
+            while (_executingRings[i] != null)
             {
-                continue;
-            }
+#if DEBUG_TIMERS
+                executionCount++;
+#endif
 
-            do
-            {
-                var next = timer._nextTimer;
+                var timer = _executingRings[i];
+
+                // Set the executing timer to the next in the link list because we will be detaching.
+                _executingRings[i] = timer._nextTimer;
 
                 timer.Detach();
 
@@ -117,12 +123,18 @@ public partial class Timer
                 {
                     timer.OnDetach();
                 }
-
-                timer = next;
-            } while (timer != null);
+            }
+#if DEBUG_TIMERS
+            if (executionCount > _chainExecutionThreshold)
+            {
+                logger.Warning(
+                    "Timer threshold of {Threshold} met. Executed {Count} timers sequentially.",
+                    _chainExecutionThreshold,
+                    executionCount
+                );
+            }
+#endif
         }
-
-        _timerWheelExecuting = false;
     }
 
     private static void Execute(Timer timer)
@@ -154,9 +166,7 @@ public partial class Timer
 
     private static void AddTimer(Timer timer, long delay)
     {
-#if DEBUG_TIMERS
         var originalDelay = delay;
-#endif
         delay = Math.Max(0, delay);
 
         var resolutionPowerOf2 = _tickRatePowerOf2;
@@ -165,10 +175,13 @@ public partial class Timer
             var resolution = 1L << resolutionPowerOf2;
             var nextResolutionPowerOf2 = resolutionPowerOf2 + _ringSizePowerOf2;
             var max = 1L << nextResolutionPowerOf2;
-            if (delay < max)
+            var lastRing = i == _ringLayers - 1;
+
+            if (delay < max || lastRing)
             {
+                var ringIndex = _ringIndexes[i];
                 var remaining = delay & (resolution - 1);
-                var slot = (delay >> resolutionPowerOf2) + _ringIndexes[i] + (remaining > 0 ? 1 : 0);
+                var slot = (delay >> resolutionPowerOf2) + ringIndex + (remaining > 0 ? 1 : 0);
 
                 // Round up if we have a delay of 0
                 if (delay == 0)
@@ -180,6 +193,21 @@ public partial class Timer
                 if (slot >= _ringSize)
                 {
                     slot -= _ringSize;
+
+                    // Slot should only be more than 4096 if we are on the last ring and the timer is more than max capacity
+                    // In this case, we will just throw it on the last slot.
+                    if (lastRing && slot > _ringSize)
+                    {
+                        logger.Error(
+                            $"Timer {{Timer}} has a duration of {{Duration}}ms, more than max capacity of {{MaxDuration}}ms.{Environment.NewLine}{{StackTrace}}",
+                            timer.GetType(),
+                            originalDelay,
+                            _maxDuration,
+                            new StackTrace()
+                        );
+
+                        slot = Math.Max(0, ringIndex - 1);
+                    }
                 }
 
                 timer.Attach(_rings[i][slot]);
@@ -196,17 +224,12 @@ public partial class Timer
             delay -= resolution * (_ringSize - _ringIndexes[i]);
             resolutionPowerOf2 = nextResolutionPowerOf2;
         }
-
-        // TODO: Handle timers > 17yrs
-#if DEBUG_TIMERS
-        logger.Error("Timer is more than max duration. ({Duration})", originalDelay);
-#endif
     }
 
     public static void DumpInfo(TextWriter tw)
     {
-        tw.WriteLine($"Date: {Core.Now.ToLocalTime()}\n");
-        tw.WriteLine($"Pool - Count: {_poolCount - _timerPoolDepletionAmount}; Size {_poolCapacity}\n");
+        tw.WriteLine($"Date: {Core.Now.ToLocalTime()}{Environment.NewLine}");
+        tw.WriteLine($"Pool - Count: {_poolCount}; Capacity {_poolCapacity}{Environment.NewLine}");
 
         var total = 0.0;
         var hash = new Dictionary<string, int>();
@@ -230,7 +253,7 @@ public partial class Timer
 
                     total++;
 
-                    t = t?._nextTimer;
+                    t = t._nextTimer;
                 }
             }
         }

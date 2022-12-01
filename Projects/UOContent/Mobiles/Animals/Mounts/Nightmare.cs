@@ -4,13 +4,10 @@ namespace Server.Mobiles
 {
     public class Nightmare : BaseMount
     {
+        public override string DefaultName => "a nightmare";
+
         [Constructible]
-        public Nightmare(string name = "a nightmare") : base(
-            name,
-            0x74,
-            0x3EA7,
-            AIType.AI_Mage
-        )
+        public Nightmare() : base(0x74, 0x3EA7, AIType.AI_Mage)
         {
             BaseSoundID = Core.AOS ? 0xA8 : 0x16A;
 
@@ -95,13 +92,14 @@ namespace Server.Mobiles
         }
 
         public override string CorpseName => "a nightmare corpse";
-
-        public override bool HasBreath => true; // fire breath enabled
         public override int Meat => 5;
         public override int Hides => 10;
         public override HideType HideType => HideType.Barbed;
         public override FoodType FavoriteFood => FoodType.Meat;
         public override bool CanAngerOnTame => true;
+
+        private static MonsterAbility[] _abilities = { MonsterAbilities.FireBreath };
+        public override MonsterAbility[] GetMonsterAbilities() => _abilities;
 
         public override void GenerateLoot()
         {

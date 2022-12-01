@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright (C) 2019-2021 - ModernUO Development Team                   *
+ * Copyright 2019-2022 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: Timer.DelayCall.cs                                              *
  *                                                                       *
@@ -16,8 +16,8 @@
 using System;
 #if DEBUG_TIMERS
 using System.Collections.Generic;
-#endif
 using System.Diagnostics;
+#endif
 using System.Runtime.CompilerServices;
 
 namespace Server;
@@ -75,7 +75,7 @@ public partial class Timer
         t.Start();
 
 #if DEBUG_TIMERS
-        DelayCallTimer._stackTraces[t.GetHashCode()] = $"{callback.Method.Name}\n{new StackTrace()}";
+        DelayCallTimer._stackTraces[t.GetHashCode()] = $"{callback.Method.Name}{Environment.NewLine}{new StackTrace()}";
 #endif
     }
 
@@ -102,7 +102,7 @@ public partial class Timer
         t.Start();
 
 #if DEBUG_TIMERS
-        DelayCallTimer._stackTraces[t.GetHashCode()] = $"{callback.Method.Name}\n{new StackTrace()}";
+        DelayCallTimer._stackTraces[t.GetHashCode()] = $"{callback.Method.Name}{Environment.NewLine}{new StackTrace()}";
 #endif
         token = new TimerExecutionToken(t);
     }
@@ -144,11 +144,7 @@ public partial class Timer
 
         internal override void OnDetach()
         {
-            if (Running)
-            {
-                logger.Error("Timer is returned while still running!\n{StackTrace}", new StackTrace());
-                return;
-            }
+            base.OnDetach();
 
             if (_returnOnDetach)
             {
@@ -177,10 +173,6 @@ public partial class Timer
             var timer = GetFromPool();
             if (timer != null)
             {
-#if DEBUG_TIMERS
-                logger.Information("Getting from pool: ({Count} / {Capacity})", _poolCount, _poolCapacity);
-#endif
-
                 timer.Init(delay, interval, count);
                 timer._continuation = callback;
                 timer._returnOnDetach = false;
@@ -191,10 +183,8 @@ public partial class Timer
                 return timer;
             }
 
-            _timerPoolDepletionAmount++;
-
 #if DEBUG_TIMERS
-            logger.Warning("Timer pool depleted and timer was allocated.\n{StackTrace}", new StackTrace());
+            logger.Warning($"Timer pool depleted and timer was allocated.{Environment.NewLine}{{StackTrace}}", new StackTrace());
 #endif
             return new DelayCallTimer(delay, interval, count, callback);
         }
@@ -208,7 +198,7 @@ public partial class Timer
         {
             if (!_allowFinalization)
             {
-                logger.Warning("Pooled timer was not returned to the pool.\n{StackTrace}", _stackTraces[GetHashCode()]);
+                logger.Warning($"Pooled timer was not returned to the pool.{Environment.NewLine}{{StackTrace}}", _stackTraces[GetHashCode()]);
             }
         }
 #endif

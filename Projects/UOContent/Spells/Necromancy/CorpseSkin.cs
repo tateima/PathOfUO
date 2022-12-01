@@ -68,12 +68,13 @@ namespace Server.Spells.Necromancy
                 m.CheckSkill(SkillName.MagicResist, 0.0, 120.0); // Skill check for gain
 
                 var duration = TimeSpan.FromSeconds((ss - mr) / 2.5 + 40.0);
+
                 ResistanceMod[] mods =
                 {
-                    new(ResistanceType.Fire, -(int)(15.0 * ReagentsScale())),
-                    new(ResistanceType.Poison, -(int)(15.0 * ReagentsScale())),
-                    new(ResistanceType.Cold, +(int)(10.0 * ReagentsScale())),
-                    new(ResistanceType.Physical, +(int)(10.0 * ReagentsScale()))
+                    new(ResistanceType.Fire, "FireResistCorpseSkinSpell", -15),
+                    new(ResistanceType.Poison, "PoisonResistCorpseSkinSpell", -15),
+                    new(ResistanceType.Cold, "ColdResistCorpseSkinSpell", +10),
+                    new(ResistanceType.Physical, "PhysicalResistCorpseSkinSpell", +10)
                 };
                 duration *= ReagentsScale();
 

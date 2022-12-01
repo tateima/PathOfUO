@@ -4,8 +4,10 @@ namespace Server.Mobiles
 {
     public class Reptalon : BaseMount
     {
+        public override string DefaultName => "a reptalon";
+
         [Constructible]
-        public Reptalon() : base("a reptalon", 0x114, 0x3E90, AIType.AI_Melee)
+        public Reptalon() : base(0x114, 0x3E90, AIType.AI_Melee)
         {
             BaseSoundID = 0x16A;
 
@@ -46,11 +48,13 @@ namespace Server.Mobiles
         public override int TreasureMapLevel => 5;
         public override int Meat => 5;
         public override int Hides => 10;
-        public override bool CanBreath => true;
         public override bool CanAngerOnTame => true;
         public override bool StatLossAfterTame => true;
         public override FoodType FavoriteFood => FoodType.Meat;
         public override bool CanFly => true;
+
+        private static MonsterAbility[] _abilities = { MonsterAbilities.FireBreath };
+        public override MonsterAbility[] GetMonsterAbilities() => _abilities;
 
         public override void GenerateLoot()
         {
