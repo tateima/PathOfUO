@@ -98,7 +98,7 @@ public partial class BoneBroth : BaseBeverage
         {
             from.SendMessage("You feel a slight increase in magic resistance");
             m_Mobile = from;
-            m_Mod = new DefaultSkillMod(SkillName.MagicResist, true, 2);
+            m_Mod = new DefaultSkillMod(SkillName.MagicResist, "BoneBroth", true, 2);
             m_Mobile.AddSkillMod(m_Mod);
             Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
             base.OnDoubleClick(from);
@@ -148,7 +148,7 @@ public partial class BoneBroth : BaseBeverage
          {
              from.SendMessage("You feel a slight increase in alchemy.");
              m_Mobile = from;
-             m_Mod = new DefaultSkillMod(SkillName.Alchemy, true, 2);
+             m_Mod = new DefaultSkillMod(SkillName.Alchemy, "EnchantedMilk", true, 2);
              m_Mobile.AddSkillMod(m_Mod);
              Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
              base.OnDoubleClick(from);
@@ -534,7 +534,7 @@ public partial class BoneBroth : BaseBeverage
          {
              from.SendMessage("You feel a slight increase in tactics");
              m_Mobile = from;
-             m_Mod = new DefaultSkillMod(SkillName.Tactics, true, 2);
+             m_Mod = new DefaultSkillMod(SkillName.Tactics, "BlackSambucca", true, 2);
              m_Mobile.AddSkillMod(m_Mod);
              Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
          }
@@ -583,7 +583,7 @@ public partial class BoneBroth : BaseBeverage
          {
              from.SendMessage("You feel a slight increase in parrying");
              m_Mobile = from;
-             m_Mod = new DefaultSkillMod(SkillName.Parry, true, 2);
+             m_Mod = new DefaultSkillMod(SkillName.Parry, "SoldiersBrew", true, 2);
              m_Mobile.AddSkillMod(m_Mod);
              Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
          }
@@ -630,8 +630,8 @@ public partial class BoneBroth : BaseBeverage
          {
              from.SendMessage("You feel a slight increase in stealth");
              m_Mobile = from;
-             m_Mod_Stealth = new DefaultSkillMod(SkillName.Stealth, true, 2);
-             m_Mod_Hiding = new DefaultSkillMod(SkillName.Hiding, true, 2);
+             m_Mod_Stealth = new DefaultSkillMod(SkillName.Stealth, "NinjasBrewStealth",true, 2);
+             m_Mod_Hiding = new DefaultSkillMod(SkillName.Hiding, "NinjasBrewHiding", true, 2);
              m_Mobile.AddSkillMod(m_Mod_Stealth);
              m_Mobile.AddSkillMod(m_Mod_Hiding);
              Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
@@ -683,8 +683,8 @@ public partial class BoneBroth : BaseBeverage
          {
              from.SendMessage("You feel a slight increase in healing");
              m_Mobile = from;
-             m_Mod_Anatomy = new DefaultSkillMod(SkillName.Anatomy, true, 2);
-             m_Mod_Healing = new DefaultSkillMod(SkillName.Healing, true, 2);
+             m_Mod_Anatomy = new DefaultSkillMod(SkillName.Anatomy, "HealersBrewAnatomy", true, 2);
+             m_Mod_Healing = new DefaultSkillMod(SkillName.Healing, "HealersBrewHealing", true, 2);
              m_Mobile.AddSkillMod(m_Mod_Anatomy);
              m_Mobile.AddSkillMod(m_Mod_Healing);
              Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
@@ -773,7 +773,7 @@ public partial class BoneBroth : BaseBeverage
          {
              from.SendMessage("You feel a slight increase in fishing");
              m_Mobile = from;
-             m_Mod = new DefaultSkillMod(SkillName.Fishing, true, 2);
+             m_Mod = new DefaultSkillMod(SkillName.Fishing, "PiratesBrew", true, 2);
              m_Mobile.AddSkillMod(m_Mod);
              Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
          }
@@ -818,7 +818,7 @@ public partial class BoneBroth : BaseBeverage
          {
              from.SendMessage("You feel a slight increase in wrestling.");
              m_Mobile = from;
-             m_Mod = new DefaultSkillMod(SkillName.Wrestling, true, 2);
+             m_Mod = new DefaultSkillMod(SkillName.Wrestling, "Guinness", true, 2);
              m_Mobile.AddSkillMod(m_Mod);
              Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
          }

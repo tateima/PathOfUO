@@ -3415,7 +3415,7 @@ namespace Server.Mobiles
                 if (c is Corpse corpse)
                 {
                     corpse.Criminal = true;
-                    corpse.PreviousLife = typeof(PlayerMobile);
+                    corpse.PreviousLife = typeof(PlayerMobile).ToString();
                 }
 
                 if (Stealing.ClassicMode)

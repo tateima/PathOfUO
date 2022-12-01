@@ -34,7 +34,7 @@ namespace Server.Talent
         {
             if (!OnCooldown)
             {
-                _resistanceMod = new ResistanceMod(ResistanceType.Cold, Level * 5);
+                _resistanceMod = new ResistanceMod(ResistanceType.Cold, "DarkAffinity", Level * 5);
                 _mobile = from;
                 OnCooldown = true;
                 _mobile.AddResistanceMod(_resistanceMod);

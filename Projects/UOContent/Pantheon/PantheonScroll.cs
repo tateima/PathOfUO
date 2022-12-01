@@ -10,28 +10,10 @@ namespace Server.Items
     {
         [InvalidateProperties]
         [SerializableField(0)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
         private string _alignmentRaw;
 
-        // [SerializableField(1)]
-        // [CommandProperty(AccessLevel.GameMaster)]
-        // public string AlignmentRaw
-        // {
-        //     get => _alignmentRaw;
-        //     set
-        //     {
-        //         if (_alignmentRaw is not null)
-        //         {
-        //             _alignmentRaw = value;
-        //             InvalidateProperties();
-        //             this.MarkDirty();
-        //         }
-        //     }
-        // }
-
-        private int _talentIndex;
         [EncodedInt]
-        [SerializableField(1)]
+        [SerializableProperty(1)]
         [CommandProperty(AccessLevel.GameMaster)]
         public int TalentIndex
         {
@@ -47,10 +29,9 @@ namespace Server.Items
                 }
             }
         }
-        private int _talentLevel;
 
         [EncodedInt]
-        [SerializableField(2)]
+        [SerializableProperty(2)]
         [CommandProperty(AccessLevel.GameMaster)]
         public int TalentLevel
         {

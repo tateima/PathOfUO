@@ -89,6 +89,8 @@ namespace Server.Mobiles
         {
         }
 
+        public override Mobile Focus { get; set; }
+
         public override void Serialize(IGenericWriter writer)
         {
             base.Serialize(writer);

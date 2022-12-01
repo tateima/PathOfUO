@@ -10,14 +10,12 @@ namespace Server.Items
     public partial class HauntedScroll : Item
     {
         [SerializableField(0)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
         public Point2D _chapterLocation;
 
         [SerializableFieldSaveFlag(0)]
         private bool ShouldSerializeChapterLocation() => _chapterLocation.X > 0 || _chapterLocation.Y > 0;
 
         [SerializableField(1)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
         [InvalidateProperties]
         public int _hookNumber;
 
@@ -26,7 +24,6 @@ namespace Server.Items
 
 
         [SerializableField(2)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
         [InvalidateProperties]
         public string[] _content;
 
@@ -34,7 +31,6 @@ namespace Server.Items
         private bool ShouldSerializeContent() => _content.Length > 0;
 
         [SerializableField(3)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
         [InvalidateProperties]
         public string _mapKey;
 
@@ -42,7 +38,6 @@ namespace Server.Items
         private bool ShouldSerializeMapKey() => _mapKey != null;
 
         [SerializableField(4)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
         [InvalidateProperties]
         public string _protagonist;
 

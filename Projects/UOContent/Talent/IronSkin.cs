@@ -32,7 +32,7 @@ namespace Server.Talent
                 }
                 else
                 {
-                    ResMod = new ResistanceMod(ResistanceType.Physical, Level * 5);
+                    ResMod = new ResistanceMod(ResistanceType.Physical, "IronSkin", Level * 5);
                     _mobile = from;
                     OnCooldown = true;
                     if (Core.AOS)

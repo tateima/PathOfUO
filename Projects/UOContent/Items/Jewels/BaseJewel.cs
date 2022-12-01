@@ -35,7 +35,7 @@ public abstract partial class BaseJewel : Item, ICraftable, IAosItem
     [SerializedCommandProperty(AccessLevel.GameMaster)]
     private GemType _gemType;
 
-    [SerializableField(4, setter: "private")]
+    [SerializableField(4)]
     [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
     private AosAttributes _attributes;
 
@@ -43,14 +43,12 @@ public abstract partial class BaseJewel : Item, ICraftable, IAosItem
     [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
     private AosElementAttributes _resistances;
 
-    [SerializableField(6, setter: "private")]
+    [SerializableField(6)]
     [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
     private AosSkillBonuses _skillBonuses;
 
-    private int _socketAmount = 0;
-
     [EncodedInt]
-    [SerializableField(7)]
+    [SerializableProperty(7)]
     [CommandProperty(AccessLevel.GameMaster)]
     public int SocketAmount
     {
@@ -69,9 +67,8 @@ public abstract partial class BaseJewel : Item, ICraftable, IAosItem
     [SerializableFieldSaveFlag(7)]
     private bool ShouldSerializeSocketAmount() => _socketAmount != 0;
 
-    private string _sockets = "";
     [EncodedInt]
-    [SerializableField(8)]
+    [SerializableProperty(8)]
     [CommandProperty(AccessLevel.GameMaster)]
     public string Sockets
     {
@@ -93,9 +90,7 @@ public abstract partial class BaseJewel : Item, ICraftable, IAosItem
     [SerializableFieldSaveFlag(8)]
     private bool ShouldSerializeSockets() => !string.IsNullOrEmpty(_sockets);
 
-    private bool _enchanted;
-
-    [SerializableField(9)]
+    [SerializableProperty(9)]
     [CommandProperty(AccessLevel.GameMaster)]
     public bool Enchanted
     {
@@ -113,7 +108,6 @@ public abstract partial class BaseJewel : Item, ICraftable, IAosItem
 
     [InvalidateProperties]
     [SerializableField(10)]
-    [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster, canModify: true)]")]
     private string _alignmentRaw;
 
     [SerializableFieldSaveFlag(10)]
@@ -121,10 +115,8 @@ public abstract partial class BaseJewel : Item, ICraftable, IAosItem
 
     public Deity.Alignment Alignment() => Deity.AlignmentFromString(_alignmentRaw);
 
-    private int _talentIndex;
-
     [EncodedInt]
-    [SerializableField(11)]
+    [SerializableProperty(11)]
     [CommandProperty(AccessLevel.GameMaster)]
     public int TalentIndex
     {
@@ -143,10 +135,8 @@ public abstract partial class BaseJewel : Item, ICraftable, IAosItem
 
     public BaseTalent Talent { get; set; }
 
-    private int _talentLevel;
-
     [EncodedInt]
-    [SerializableField(12)]
+    [SerializableProperty(12)]
     [CommandProperty(AccessLevel.GameMaster)]
     public int TalentLevel
     {
@@ -164,7 +154,6 @@ public abstract partial class BaseJewel : Item, ICraftable, IAosItem
 
     [InvalidateProperties]
     [SerializableField(13)]
-    [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
     private string _crafter;
 
     [SerializableFieldSaveFlag(13)]

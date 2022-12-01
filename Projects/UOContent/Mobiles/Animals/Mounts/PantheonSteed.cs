@@ -6,7 +6,7 @@ namespace Server.Mobiles
     public class PantheonSteed : Horse, IPantheonMount
     {
         [Constructible]
-        public PantheonSteed(string name = "a pantheon steed") : base(name)
+        public PantheonSteed(string name = "a pantheon steed")
         {
             SetStr(22, 150);
             SetDex(56, 175);

@@ -38,7 +38,7 @@ namespace Server.Talent
         {
             if (!OnCooldown)
             {
-                ResMod = new ResistanceMod(ResistanceType.Fire, Level * 5);
+                ResMod = new ResistanceMod(ResistanceType.Fire, "FireAffinity", Level * 5);
                 _mobile = from;
                 OnCooldown = true;
                 if (Core.AOS)

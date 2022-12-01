@@ -34,7 +34,7 @@ public partial class Chilli : Food
     public bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in fire resistance");
         m_Mobile = from;
-        m_Mod = new ResistanceMod(ResistanceType.Fire, +1);
+        m_Mod = new ResistanceMod(ResistanceType.Fire, "Chilli", +1);
         m_Mobile.AddResistanceMod(m_Mod);
         Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
         return base.Eat(from);
@@ -66,7 +66,7 @@ public partial class FrozenCabbage : Food
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in cold resistance");
         m_Mobile = from;
-        m_Mod = new ResistanceMod(ResistanceType.Cold, +5);
+        m_Mod = new ResistanceMod(ResistanceType.Cold, "FrozenCabbage", +5);
         m_Mobile.AddResistanceMod(m_Mod);
         Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
         return base.Eat(from);

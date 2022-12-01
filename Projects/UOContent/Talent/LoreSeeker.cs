@@ -59,7 +59,7 @@ namespace Server.Talent
                 if (values.Length > 0)
                 {
                     var randomResistanceType = (ResistanceType)values.GetValue(Utility.Random(values.Length));
-                    ResMod = new ResistanceMod(randomResistanceType, -(modifier * 2));
+                    ResMod = new ResistanceMod(randomResistanceType, "LoreSeeker", -(modifier * 2));
                     target.AddResistanceMod(ResMod);
                     _mobile = target;
                     Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);

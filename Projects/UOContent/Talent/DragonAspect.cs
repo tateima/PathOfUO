@@ -35,7 +35,7 @@ namespace Server.Talent
                     m.RemoveResistanceMod(ResMod);
                 }
 
-                ResMod = new ResistanceMod(ResistanceType.Fire, Level * 5);
+                ResMod = new ResistanceMod(ResistanceType.Fire, "DragonAspect", Level * 5);
                 m.AddResistanceMod(ResMod);
             }
         }

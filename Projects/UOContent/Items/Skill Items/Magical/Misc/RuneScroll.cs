@@ -7,7 +7,6 @@ namespace Server.Items
     public sealed partial class RuneScroll : Item
     {
         [SerializableField(0)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster, canModify: true)]")]
         private string _type;
         [SerializableFieldSaveFlag(0)]
         private bool ShouldSerializeType() => !string.IsNullOrEmpty(_type);
@@ -15,7 +14,6 @@ namespace Server.Items
         private string TypeDefaultValue() => "";
 
         [SerializableField(1)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster, canModify: true)]")]
         private string _symbolType;
         [SerializableFieldSaveFlag(1)]
         private bool ShouldSerializeSymbolType() => !string.IsNullOrEmpty(_symbolType);
@@ -23,7 +21,6 @@ namespace Server.Items
         private string SymbolTypeDefaultValue() => "";
 
         [SerializableField(2)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
         private string _runeWordName;
         [SerializableFieldSaveFlag(2)]
         private bool ShouldSerializeRuneWordName() => !string.IsNullOrEmpty(_runeWordName);
@@ -32,7 +29,6 @@ namespace Server.Items
 
         [InvalidateProperties]
         [SerializableField(3)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
         private bool _identified;
         [SerializableFieldSaveFlag(3)]
         private bool ShouldSerializeIdentified() => true;

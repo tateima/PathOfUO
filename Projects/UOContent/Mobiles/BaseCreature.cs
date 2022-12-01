@@ -4756,7 +4756,7 @@ namespace Server.Mobiles
 
             if (c is Corpse corpse)
             {
-                corpse.PreviousLife = GetType();
+                corpse.PreviousLife = GetType().ToString();
             }
             if (DeleteCorpseOnDeath)
             {

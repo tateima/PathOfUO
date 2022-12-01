@@ -79,7 +79,7 @@ namespace Server.Talent
                             _ally = target;
                             // get their three highest skills and increase them
                             GetTopSkills(_ally, ref skills, 3);
-                            _skillMods = GetTopDefaultSkillMods(skills, 5.0 * _zealot.Level);
+                            _skillMods = GetTopDefaultSkillMods(skills, 5.0 * _zealot.Level, "Zealot");
                             foreach (var skillMod in _skillMods)
                             {
                                 _ally.AddSkillMod(skillMod);

@@ -18,7 +18,7 @@ namespace Server.Items
     [SerializationGenerator(9, false)]
     public abstract partial class BaseArmor : Item, IScissorable, IFactionItem, ICraftable, IWearableDurability, IAosItem, IPantheonItem
     {
-        [SerializableField(0, setter: "private")]
+        [SerializableField(0)]
         [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         private AosAttributes _attributes;
 
@@ -28,7 +28,7 @@ namespace Server.Items
         [SerializableFieldDefault(0)]
         private AosAttributes AttributesDefaultValue() => new(this);
 
-        [SerializableField(1, setter: "private")]
+        [SerializableField(1)]
         [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         private AosArmorAttributes _armorAttributes;
 
@@ -136,7 +136,7 @@ namespace Server.Items
         // Field 22
         private AMA _meditate = (AMA)(-1);
 
-        [SerializableField(23, setter: "private")]
+        [SerializableField(23)]
         [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         public AosSkillBonuses _skillBonuses;
 
@@ -153,11 +153,8 @@ namespace Server.Items
         [SerializableFieldSaveFlag(24)]
         private bool ShouldSerializePlayerConstructed() => _playerConstructed;
 
-        // Field 25
-        private int _shardPower;
-
         [EncodedInt]
-        [SerializableField(25)]
+        [SerializableProperty(25)]
         [CommandProperty(AccessLevel.GameMaster)]
         public int ShardPower
         {
@@ -179,11 +176,8 @@ namespace Server.Items
         [SerializableFieldSaveFlag(25)]
         private bool ShouldSerializeShardPower() => _shardPower != 0;
 
-        // Field 26
-        private int _socketAmount = 0;
-
         [EncodedInt]
-        [SerializableField(26)]
+        [SerializableProperty(26)]
         [CommandProperty(AccessLevel.GameMaster)]
         public int SocketAmount
         {
@@ -204,11 +198,8 @@ namespace Server.Items
         [SerializableFieldSaveFlag(26)]
         private bool ShouldSerializeSocketAmount() => _socketAmount != 0;
 
-         // Field 27
-         private string _sockets = "";
-
         [EncodedInt]
-        [SerializableField(27)]
+        [SerializableProperty(27)]
         [CommandProperty(AccessLevel.GameMaster)]
         public string Sockets
         {
@@ -231,9 +222,7 @@ namespace Server.Items
         [SerializableFieldSaveFlag(27)]
         private bool ShouldSerializeSockets() => !string.IsNullOrEmpty(_sockets);
 
-        private bool _enchanted;
-
-        [SerializableField(28)]
+        [SerializableProperty(28)]
         [CommandProperty(AccessLevel.GameMaster)]
         public bool Enchanted
         {
@@ -249,9 +238,7 @@ namespace Server.Items
         [SerializableFieldSaveFlag(28)]
         private bool ShouldSerializeEnchanted() => _enchanted;
 
-        private bool _warforged;
-
-        [SerializableField(29)]
+        [SerializableProperty(29)]
         [CommandProperty(AccessLevel.GameMaster)]
         public bool Warforged
         {
@@ -269,7 +256,6 @@ namespace Server.Items
 
         [InvalidateProperties]
         [SerializableField(30)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
         private string _alignmentRaw;
 
         [SerializableFieldSaveFlag(30)]
@@ -277,9 +263,8 @@ namespace Server.Items
 
         public Deity.Alignment Alignment() => Deity.AlignmentFromString(_alignmentRaw);
 
-        private int _talentIndex;
         [EncodedInt]
-        [SerializableField(31)]
+        [SerializableProperty(31)]
         [CommandProperty(AccessLevel.GameMaster)]
         public int TalentIndex
         {
@@ -298,10 +283,8 @@ namespace Server.Items
 
         public BaseTalent Talent { get; set; }
 
-        private int _talentLevel;
-
         [EncodedInt]
-        [SerializableField(32)]
+        [SerializableProperty(32)]
         [CommandProperty(AccessLevel.GameMaster)]
         public int TalentLevel
         {

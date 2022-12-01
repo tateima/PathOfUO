@@ -61,7 +61,7 @@ namespace Server.Talent
                     Mobile previousLife = null;
                     try
                     {
-                        previousLife = corpse.PreviousLife.CreateInstance<Mobile>();
+                        previousLife = corpse.PreviousLifeType.CreateInstance<Mobile>();
                     }
                     catch
                     {

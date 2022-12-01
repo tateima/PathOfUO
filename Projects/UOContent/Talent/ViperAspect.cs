@@ -30,7 +30,7 @@ namespace Server.Talent
         {
             if (!OnCooldown)
             {
-                ResMod = new ResistanceMod(ResistanceType.Poison, Level * 5);
+                ResMod = new ResistanceMod(ResistanceType.Poison, "ViperAspect", Level * 5);
                 _mobile = from;
                 OnCooldown = true;
                 if (Core.AOS)

@@ -14,6 +14,8 @@ namespace Server.Mobiles
         {
         }
 
+        public abstract Mobile Focus { get; set; }
+
         public override bool HandlesOnSpeech(Mobile from) => true;
 
 

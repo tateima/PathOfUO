@@ -167,7 +167,7 @@ public partial class GarlicBread : Food
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in energy resistance");
         m_Mobile = from;
-        m_Mod = new ResistanceMod(ResistanceType.Energy, +1);
+        m_Mod = new ResistanceMod(ResistanceType.Energy, "GarlicBread", +1);
         m_Mobile.AddResistanceMod(m_Mod);
         Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
         return base.Eat(from);
@@ -196,9 +196,9 @@ public partial class SingingFillet : Food
         m_Mobile = from;
         m_Mod = Utility.RandomMinMax(1, 3) switch
         {
-            1 => new DefaultSkillMod(SkillName.Peacemaking, true, 5),
-            2 => new DefaultSkillMod(SkillName.Discordance, true, 5),
-            3 => new DefaultSkillMod(SkillName.Provocation, true, 5),
+            1 => new DefaultSkillMod(SkillName.Peacemaking, "SingingFilletPeacemaking", true, 5),
+            2 => new DefaultSkillMod(SkillName.Discordance, "SingingFilletDiscordance", true, 5),
+            3 => new DefaultSkillMod(SkillName.Provocation, "SingingFilletProvocation", true, 5),
             _ => m_Mod
         };
         m_Mobile.AddSkillMod(m_Mod);
@@ -232,7 +232,7 @@ public partial class IronRichCheese : Food
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in physical resistance");
         m_Mobile = from;
-        m_Mod = new ResistanceMod(ResistanceType.Physical, +1);
+        m_Mod = new ResistanceMod(ResistanceType.Physical, "IronRichCheese", +1);
         m_Mobile.AddResistanceMod(m_Mod);
         Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
         return base.Eat(from);
@@ -264,7 +264,7 @@ public partial class SourDough : Food
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in poison resistance");
         m_Mobile = from;
-        m_Mod = new ResistanceMod(ResistanceType.Poison, +1);
+        m_Mod = new ResistanceMod(ResistanceType.Poison, "SourDough", +1);
         m_Mobile.AddResistanceMod(m_Mod);
         Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
         return base.Eat(from);
@@ -293,7 +293,7 @@ public partial class BraveEggs : Food
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in swordsman skill");
         m_Mobile = from;
-        m_Mod = new DefaultSkillMod(SkillName.Swords, true, 5);
+        m_Mod = new DefaultSkillMod(SkillName.Swords, "BraveEggs", true, 5);
         m_Mobile.AddSkillMod(m_Mod);
         Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
         return base.Eat(from);
@@ -322,7 +322,7 @@ public partial class StickyChicken : Food
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in taming skill");
         m_Mobile = from;
-        m_Mod = new DefaultSkillMod(SkillName.AnimalTaming, true, 5);
+        m_Mod = new DefaultSkillMod(SkillName.AnimalTaming, "StickyChicken", true, 5);
         m_Mobile.AddSkillMod(m_Mod);
         Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
         return base.Eat(from);
@@ -353,7 +353,7 @@ public partial class DecoratedRoastPig : Food
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in macing skill");
         m_Mobile = from;
-        m_Mod = new DefaultSkillMod(SkillName.Macing, true, 5);
+        m_Mod = new DefaultSkillMod(SkillName.Macing, "DecoratedRoastPig", true, 5);
         m_Mobile.AddSkillMod(m_Mod);
         Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
         return base.Eat(from);
@@ -440,7 +440,7 @@ public partial class MandrakeCake : Food
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in magery skill");
         m_Mobile = from;
-        m_Mod = new DefaultSkillMod(SkillName.Magery, true, 5);
+        m_Mod = new DefaultSkillMod(SkillName.Magery, "MandrakeCake", true, 5);
         m_Mobile.AddSkillMod(m_Mod);
         Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
         return base.Eat(from);
@@ -472,7 +472,7 @@ public partial class BatEncrustedRibs : Food
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in fencing skill");
         m_Mobile = from;
-        m_Mod = new DefaultSkillMod(SkillName.Fencing, true, 5);
+        m_Mod = new DefaultSkillMod(SkillName.Fencing, "BatEncrustedRibs", true, 5);
         m_Mobile.AddSkillMod(m_Mod);
         Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
         return base.Eat(from);
@@ -505,7 +505,7 @@ public partial class AthletesPie : Food
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in anatomy skill");
         m_Mobile = from;
-        m_Mod = new DefaultSkillMod(SkillName.Anatomy, true, 5);
+        m_Mod = new DefaultSkillMod(SkillName.Anatomy, "AthletesPie", true, 5);
         m_Mobile.AddSkillMod(m_Mod);
         Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
         return base.Eat(from);
@@ -540,7 +540,7 @@ public partial class LemonPie : Food
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in archery skill");
         m_Mobile = from;
-        m_Mod = new DefaultSkillMod(SkillName.Archery, true, 5);
+        m_Mod = new DefaultSkillMod(SkillName.Archery, "LemonPie", true, 5);
         m_Mobile.AddSkillMod(m_Mod);
         Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
         return base.Eat(from);
@@ -573,7 +573,7 @@ public partial class PhilosophersQuiche : Food
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in evaluating intelligence skill");
         m_Mobile = from;
-        m_Mod = new DefaultSkillMod(SkillName.EvalInt, true, 5);
+        m_Mod = new DefaultSkillMod(SkillName.EvalInt, "PhilosophersQuiche", true, 5);
         m_Mobile.AddSkillMod(m_Mod);
         Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
         return base.Eat(from);
@@ -605,7 +605,7 @@ public partial class SacrificialLambLeg : Food
     public override bool Eat(Mobile from) {
         from.SendMessage("You feel a slight increase in necromancy skill");
         m_Mobile = from;
-        m_Mod = new DefaultSkillMod(SkillName.Necromancy, true, 5);
+        m_Mod = new DefaultSkillMod(SkillName.Necromancy, "SacrificialLambLeg", true, 5);
         m_Mobile.AddSkillMod(m_Mod);
         Timer.StartTimer(TimeSpan.FromMinutes(10), ExpireBuff);
         return base.Eat(from);

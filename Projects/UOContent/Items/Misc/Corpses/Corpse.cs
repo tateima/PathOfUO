@@ -109,7 +109,7 @@ public partial class Corpse : Container, ICarvable
     [SerializableField(7, setter: "private")]
     private List<Mobile> _aggressors;
 
-    [SerializableField(8, setter: "private")]
+    [SerializableField(8)]
     [SerializedCommandProperty(AccessLevel.GameMaster)]
     private Mobile _owner;
 
@@ -136,9 +136,7 @@ public partial class Corpse : Container, ICarvable
     [SerializedCommandProperty(AccessLevel.GameMaster)]
     private string _previousLife;
 
-    public static Type PreviousLife => Type.GetType(_previousLife);
-
-    // Type.GetType()
+    public Type PreviousLifeType => Type.GetType(_previousLife);
 
     // Why was this public?
     // public override bool IsPublicContainer => true;
@@ -307,9 +305,6 @@ public partial class Corpse : Container, ICarvable
         get => GetFlag(CorpseFlag.Criminal);
         set => SetFlag(CorpseFlag.Criminal, value);
     }
-
-    [CommandProperty(AccessLevel.GameMaster)]
-    public Mobile Owner { get; set; }
 
     public override bool DisplaysContent => false;
 

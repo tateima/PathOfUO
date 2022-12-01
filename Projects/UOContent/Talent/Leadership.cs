@@ -36,7 +36,7 @@ namespace Server.Talent
                     follower.AddStatMod(new StatMod(StatType.All, StatModNames[0], Level*5, TimeSpan.Zero));
                     List<Skill> skills = new List<Skill>();
                     GetTopSkills(follower, ref skills, 3);
-                    List<DefaultSkillMod> skillMods = GetTopDefaultSkillMods(skills, 10.0 * Level);
+                    List<DefaultSkillMod> skillMods = GetTopDefaultSkillMods(skills, 10.0 * Level, "Leadership");
                     foreach (var skillMod in skillMods)
                     {
                         follower.AddSkillMod(skillMod);

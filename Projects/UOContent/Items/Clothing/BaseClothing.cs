@@ -32,7 +32,7 @@ namespace Server.Items
         [SerializableFieldSaveFlag(0)]
         private bool ShouldSerializeResource() => _resource != DefaultResource;
 
-        [SerializableField(1, setter: "private")]
+        [SerializableField(1)]
         [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         private AosAttributes _attributes;
 
@@ -42,7 +42,7 @@ namespace Server.Items
         [SerializableFieldDefault(1)]
         private AosAttributes AttributesDefaultValue() => new(this);
 
-        [SerializableField(2, setter: "private")]
+        [SerializableField(2)]
         [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         private AosArmorAttributes _clothingAttributes;
 
@@ -52,7 +52,7 @@ namespace Server.Items
         [SerializableFieldDefault(2)]
         private AosArmorAttributes ClothingAttributesDefaultValue() => new(this);
 
-        [SerializableField(3, setter: "private")]
+        [SerializableField(3)]
         [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         private AosSkillBonuses _skillBonuses;
 
@@ -106,11 +106,8 @@ namespace Server.Items
 
         // Field 10
         private int _strReq = -1;
-
-        private int _pocketAmount;
-
         [EncodedInt]
-        [SerializableField(11)]
+        [SerializableProperty(11)]
         [CommandProperty(AccessLevel.GameMaster)]
         public int PocketAmount
         {
@@ -129,12 +126,10 @@ namespace Server.Items
         [SerializableFieldSaveFlag(11)]
         private bool ShouldSerializePocketAmount() => _pocketAmount != 0;
 
-        private string _pockets = "";
-
         public string[] PocketArray => _pockets.Split(',');
 
         [EncodedInt]
-        [SerializableField(12)]
+        [SerializableProperty(12)]
         [CommandProperty(AccessLevel.GameMaster)]
         public string Pockets
         {
@@ -155,7 +150,6 @@ namespace Server.Items
 
         [InvalidateProperties]
         [SerializableField(13)]
-        [SerializableFieldAttr("[CommandProperty(AccessLevel.GameMaster)]")]
         private string _alignmentRaw;
 
         [SerializableFieldSaveFlag(13)]
@@ -163,9 +157,8 @@ namespace Server.Items
 
         public Deity.Alignment Alignment() => Deity.AlignmentFromString(_alignmentRaw);
 
-        private int _talentIndex;
         [EncodedInt]
-        [SerializableField(14)]
+        [SerializableProperty(14)]
         [CommandProperty(AccessLevel.GameMaster)]
         public int TalentIndex
         {
@@ -184,10 +177,8 @@ namespace Server.Items
 
         public BaseTalent Talent { get; set; }
 
-        private int _talentLevel;
-
         [EncodedInt]
-        [SerializableField(15)]
+        [SerializableProperty(15)]
         [CommandProperty(AccessLevel.GameMaster)]
         public int TalentLevel
         {

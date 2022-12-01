@@ -22,6 +22,8 @@ namespace Server.Mobiles
         public override bool BardImmune => true;
 
 
+        public override Mobile Focus { get; set; }
+
         public override void Serialize(IGenericWriter writer)
         {
             base.Serialize(writer);

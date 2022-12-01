@@ -728,12 +728,14 @@ namespace Server.Talent
                 }
             }
         }
-        public static List<DefaultSkillMod> GetTopDefaultSkillMods(List<Skill> skills, double modifier)
+        public static List<DefaultSkillMod> GetTopDefaultSkillMods(List<Skill> skills, double modifier, string name)
         {
             List<DefaultSkillMod> skillMods = new List<DefaultSkillMod>();
+            int affix = 0;
             foreach (var skill in skills)
             {
-                skillMods.Add(new DefaultSkillMod(skill.SkillName, true, modifier));
+                skillMods.Add(new DefaultSkillMod(skill.SkillName, name + affix,  true, modifier));
+                affix++;
             }
 
             return skillMods;

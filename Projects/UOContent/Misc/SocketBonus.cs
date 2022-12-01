@@ -1704,131 +1704,131 @@ namespace Server.Misc
             if (IsGem(item)) {
                 if (item is Diamond)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Physical, +6));
+                    types.Add(new ResistanceMod(ResistanceType.Physical, "Diamond", +6));
                 }
                 else if (item is BlueDiamond)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Physical, +9));
+                    types.Add(new ResistanceMod(ResistanceType.Physical,"BlueDiamond", +9));
                 }
                 else if (item is WhitePearl)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Energy, +9));
+                    types.Add(new ResistanceMod(ResistanceType.Energy, "WhitePearl", +9));
                 }
                 else if (item is Amber)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Fire, +3));
-                    types.Add(new ResistanceMod(ResistanceType.Energy, +3));
+                    types.Add(new ResistanceMod(ResistanceType.Fire, "AmberFire", +3));
+                    types.Add(new ResistanceMod(ResistanceType.Energy, "AmberEnergy", +3));
                 }
                 else if (item is BrilliantAmber)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Fire, +6));
-                    types.Add(new ResistanceMod(ResistanceType.Energy, +6));
+                    types.Add(new ResistanceMod(ResistanceType.Fire, "BrilliantAmberFire", +6));
+                    types.Add(new ResistanceMod(ResistanceType.Energy, "BrilliantAmberEnergy", +6));
                 }
                 else if (item is Citrine)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Energy, +3));
-                    types.Add(new ResistanceMod(ResistanceType.Poison, +3));
+                    types.Add(new ResistanceMod(ResistanceType.Energy, "CitrineEnergy", +3));
+                    types.Add(new ResistanceMod(ResistanceType.Poison, "CitrinePoison", +3));
                 }
                 else if (item is EcruCitrine)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Energy, +6));
-                    types.Add(new ResistanceMod(ResistanceType.Poison, +6));
+                    types.Add(new ResistanceMod(ResistanceType.Energy, "EcruCitrineEnergy", +6));
+                    types.Add(new ResistanceMod(ResistanceType.Poison, "EcruCitrinePoison", +6));
                 }
                 else if (item is Tourmaline)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Cold, +3));
-                    types.Add(new ResistanceMod(ResistanceType.Fire, +3));
+                    types.Add(new ResistanceMod(ResistanceType.Cold, "TourmalineCold", +3));
+                    types.Add(new ResistanceMod(ResistanceType.Fire, "TourmalineFire", +3));
                 }
                 else if (item is Turquoise)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Cold, +6));
-                    types.Add(new ResistanceMod(ResistanceType.Fire, +6));
+                    types.Add(new ResistanceMod(ResistanceType.Cold, "TurquoiseCold", +6));
+                    types.Add(new ResistanceMod(ResistanceType.Fire, "TurquoiseFire", +6));
                 }
                 else if (item is StarSapphire)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Cold, +3));
-                    types.Add(new ResistanceMod(ResistanceType.Energy, +3));
+                    types.Add(new ResistanceMod(ResistanceType.Cold, "StarSapphireCold", +3));
+                    types.Add(new ResistanceMod(ResistanceType.Energy, "StarSapphireEnergy", +3));
                 }
                 else if (item is DarkSapphire)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Cold, +6));
-                    types.Add(new ResistanceMod(ResistanceType.Energy, +6));
+                    types.Add(new ResistanceMod(ResistanceType.Cold, "DarkSapphireCold", +6));
+                    types.Add(new ResistanceMod(ResistanceType.Energy, "DarkSapphireEnergy", +6));
                 }
                 else if (item is Ruby)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Fire, +6));
+                    types.Add(new ResistanceMod(ResistanceType.Fire, "Ruby", +6));
                 }
                 else if (item is FireRuby)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Fire, +9));
+                    types.Add(new ResistanceMod(ResistanceType.Fire, "FireRuby", +9));
                 }
                 else if (item is Emerald)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Poison, +6));
+                    types.Add(new ResistanceMod(ResistanceType.Poison, "Emerald", +6));
                 }
                 else if (item is PerfectEmerald)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Poison, +9));
+                    types.Add(new ResistanceMod(ResistanceType.Poison, "PerfectEmerald", +9));
                 }
                 else if (item is Sapphire)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Cold, +6));
+                    types.Add(new ResistanceMod(ResistanceType.Cold, "SapphireCold", +6));
                 } else if (item is Amethyst)
                 {
-                    types.Add(new ResistanceMod(ResistanceType.Energy, +6));
+                    types.Add(new ResistanceMod(ResistanceType.Energy, "AmethystEnergy", +6));
                 }
             } else if (item is RuneWord rune) {
                 switch (rune.Name) {
                     case "Amn":
-                        types.Add(new ResistanceMod(ResistanceType.Physical, +14));
+                        types.Add(new ResistanceMod(ResistanceType.Physical, "Amn", +14));
                     break;
                     case "Ort":
-                        types.Add(new ResistanceMod(ResistanceType.Poison, +14));
+                        types.Add(new ResistanceMod(ResistanceType.Poison, "Ort", +14));
                     break;
                     case "Nex":
-                        types.Add(new ResistanceMod(ResistanceType.Cold, +14));
+                        types.Add(new ResistanceMod(ResistanceType.Cold, "NexCold", +14));
                     break;
                     case "Um":
-                        types.Add(new ResistanceMod(ResistanceType.Energy, +14));
+                        types.Add(new ResistanceMod(ResistanceType.Energy, "Um", +14));
                     break;
                     case "Drux":
-                        types.Add(new ResistanceMod(ResistanceType.Fire, +14));
+                        types.Add(new ResistanceMod(ResistanceType.Fire, "Drux", +14));
                     break;
                     case "Vas":
-                        types.Add(new ResistanceMod(ResistanceType.Fire, +8));
-                        types.Add(new ResistanceMod(ResistanceType.Energy, +8));
+                        types.Add(new ResistanceMod(ResistanceType.Fire, "VasFire", +8));
+                        types.Add(new ResistanceMod(ResistanceType.Energy, "VasEnergy", +8));
                     break;
                     case "Hem":
-                        types.Add(new ResistanceMod(ResistanceType.Fire, +8));
-                        types.Add(new ResistanceMod(ResistanceType.Poison, +8));
+                        types.Add(new ResistanceMod(ResistanceType.Fire, "HemFire", +8));
+                        types.Add(new ResistanceMod(ResistanceType.Poison, "HemPoison", +8));
                     break;
                     case "Zaq":
-                        types.Add(new ResistanceMod(ResistanceType.Fire, +8));
-                        types.Add(new ResistanceMod(ResistanceType.Cold, +8));
+                        types.Add(new ResistanceMod(ResistanceType.Fire, "ZaqFire", +8));
+                        types.Add(new ResistanceMod(ResistanceType.Cold, "ZaqCold", +8));
                     break;
                     case "Vax":
-                        types.Add(new ResistanceMod(ResistanceType.Poison, +8));
-                        types.Add(new ResistanceMod(ResistanceType.Energy, +8));
+                        types.Add(new ResistanceMod(ResistanceType.Poison,"VaxPoison", +8));
+                        types.Add(new ResistanceMod(ResistanceType.Energy, "VaxEnergy", +8));
                     break;
                     case "Doth":
-                        types.Add(new ResistanceMod(ResistanceType.Poison, +8));
-                        types.Add(new ResistanceMod(ResistanceType.Cold, +8));
+                        types.Add(new ResistanceMod(ResistanceType.Poison, "DothPoison", +8));
+                        types.Add(new ResistanceMod(ResistanceType.Cold, "DothCold", +8));
                     break;
                     case "Zet":
-                        types.Add(new ResistanceMod(ResistanceType.Physical, +8));
-                        types.Add(new ResistanceMod(ResistanceType.Poison, +8));
+                        types.Add(new ResistanceMod(ResistanceType.Physical, "ZetPhysical", +8));
+                        types.Add(new ResistanceMod(ResistanceType.Poison, "ZetPoison", +8));
                     break;
                     case "Mar":
-                        types.Add(new ResistanceMod(ResistanceType.Physical, +8));
-                        types.Add(new ResistanceMod(ResistanceType.Fire, +8));
+                        types.Add(new ResistanceMod(ResistanceType.Physical,"MarPhysical", +8));
+                        types.Add(new ResistanceMod(ResistanceType.Fire, "MarFire", +8));
                     break;
                     case "Leq":
-                        types.Add(new ResistanceMod(ResistanceType.Physical, +8));
-                        types.Add(new ResistanceMod(ResistanceType.Energy, +8));
+                        types.Add(new ResistanceMod(ResistanceType.Physical, "LeqPhysical", +8));
+                        types.Add(new ResistanceMod(ResistanceType.Energy, "LeqEnergy", +8));
                     break;
                     case "Pax":
-                        types.Add(new ResistanceMod(ResistanceType.Physical, +8));
-                        types.Add(new ResistanceMod(ResistanceType.Cold, +8));
+                        types.Add(new ResistanceMod(ResistanceType.Physical, "PaxPhysical", +8));
+                        types.Add(new ResistanceMod(ResistanceType.Cold, "PaxCold",+8));
                     break;
                 }
 

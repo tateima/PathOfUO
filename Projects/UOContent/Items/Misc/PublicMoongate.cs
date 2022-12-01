@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ModernUO.Serialization;
+using Server;
 using Server.Factions;
 using Server.Gumps;
 using Server.Mobiles;
@@ -450,8 +451,8 @@ public class MoongateGump : Gump
 
         var entry = list.Entries[listEntry];
 
-        if (!PlanarTravel.CanPlanarTravel(m_Mobile)) {
-            m_Mobile.LocalOverheadMessage(MessageType.Regular, 0x22, false, PlanarTravel.NO_TRAVEL_MESSAGE);
+        if (!PlanarTravel.CanPlanarTravel(_mobile)) {
+            _mobile.LocalOverheadMessage(MessageType.Regular, 0x22, false, PlanarTravel.NO_TRAVEL_MESSAGE);
         } else if (!_mobile.InRange(_moongate.GetWorldLocation(), 1) || _mobile.Map != _moongate.Map)
         {
             _mobile.SendLocalizedMessage(1019002); // You are too far away to use the gate.
@@ -490,7 +491,7 @@ public class MoongateGump : Gump
 
             _mobile.MoveToWorld(entry.Location, list.Map);
 
-            PlanarTravel.NextPlanarTravel(m_Mobile, 1);
+            PlanarTravel.NextPlanarTravel(_mobile, 1);
 
             Effects.PlaySound(entry.Location, list.Map, 0x1FE);
         }

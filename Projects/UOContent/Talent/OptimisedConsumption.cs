@@ -25,7 +25,7 @@ namespace Server.Talent
                 var group = SkillsGumpGroup.Groups.FirstOrDefault(group => group.Name == "Combat Ratings");
                 if (group != null)
                 {
-                    Timer drunkTimer = new DrunkTimer(mobile, group.Skills.Select(skill => new DefaultSkillMod(skill, true, Level * 2)).Cast<SkillMod>().ToArray());
+                    Timer drunkTimer = new DrunkTimer(mobile, group.Skills.Select(skill => new DefaultSkillMod(skill, "OptimisedConsumption", true, Level * 2)).Cast<SkillMod>().ToArray());
                     drunkTimer.Start();
                 }
             }
