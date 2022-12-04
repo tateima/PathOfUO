@@ -221,7 +221,7 @@ namespace Server.Spells
             {
                 foreach (KeyValuePair<Type, BaseTalent> entry in player.Talents)
                 {
-                    if (entry.Value.CanScaleSpellDamage(this))
+                    if (entry.Value.CanScaleSpellDamage(this) && entry.Value.HasSkillRequirement(Caster))
                     {
                         entry.Value.CheckSpellEffect(Caster, m);
                     }
@@ -257,7 +257,7 @@ namespace Server.Spells
                 PlayerMobile player = (PlayerMobile)Caster;
                 foreach (KeyValuePair<Type, BaseTalent> entry in player.Talents)
                 {
-                    if (entry.Value.CanScaleSpellDamage(this))
+                    if (entry.Value.CanScaleSpellDamage(this) && entry.Value.HasSkillRequirement(Caster))
                     {
                         multiplier += entry.Value.ModifySpellMultiplier();
                     }
@@ -353,7 +353,7 @@ namespace Server.Spells
                 PlayerMobile player = (PlayerMobile)Caster;
                 foreach (KeyValuePair<Type, BaseTalent> entry in player.Talents)
                 {
-                    if (entry.Value.CanScaleSpellDamage(this))
+                    if (entry.Value.CanScaleSpellDamage(this) && entry.Value.HasSkillRequirement(Caster))
                     {
                         // add 1% for each talent point
                         scalar += entry.Value.ModifySpellScalar();

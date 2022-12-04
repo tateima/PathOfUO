@@ -44,7 +44,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (from.FindItemOnLayer(Layer.TwoHanded) is BaseShield)
+            if (from.FindItemOnLayer(Layer.TwoHanded) is BaseShield && HasSkillRequirement(from))
             {
                 if (!Activated && !OnCooldown)
                 {
@@ -55,7 +55,7 @@ namespace Server.Talent
             }
             else
             {
-                from.SendMessage("You require a shield equipped to use this talent.");
+                from.SendMessage("You cannot use this talent right now.");
             }
         }
     }

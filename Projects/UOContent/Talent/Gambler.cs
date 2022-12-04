@@ -33,10 +33,14 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 from.SendMessage("Whom do you wish to gamble with?");
                 from.Target = new InternalTarget(from, this);
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
 

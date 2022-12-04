@@ -35,9 +35,13 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 CheckHeal(from as PlayerMobile);
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
 

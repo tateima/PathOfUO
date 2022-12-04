@@ -28,7 +28,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 if (from.Mana > ManaRequired)
                 {
@@ -38,6 +38,10 @@ namespace Server.Talent
                 {
                     from.SendMessage($"You need {ManaRequired.ToString()} mana to use {DisplayName}.");
                 }
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
         private class InternalTarget : Target

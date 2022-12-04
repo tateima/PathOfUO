@@ -26,7 +26,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 if (from.Mana < ManaRequired)
                 {
@@ -38,6 +38,10 @@ namespace Server.Talent
                     from.Animate(269, 7, 1, true, false, 0);
                     from.Target = new InternalTarget(this, Level);
                 }
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
 

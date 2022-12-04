@@ -29,7 +29,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 Container bank = from.FindBankNoCreate();
                 int bankGold = Banker.GetBalance(from);
@@ -47,6 +47,10 @@ namespace Server.Talent
                 {
                     from.SendMessage($"You need {(3000 - Level * 1000).ToString()} gold in your bank to use {DisplayName}.");
                 }
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
 

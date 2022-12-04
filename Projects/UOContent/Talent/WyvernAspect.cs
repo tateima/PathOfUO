@@ -22,7 +22,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown && !Activated && from.Mana > ManaRequired)
+            if (!OnCooldown && !Activated && from.Mana > ManaRequired && HasSkillRequirement(from))
             {
                 ApplyManaCost(from);
                 OnCooldown = true;
@@ -32,7 +32,7 @@ namespace Server.Talent
             }
             else
             {
-                from.SendMessage($"You need {ManaRequired.ToString()} mana to complete this poisonous ritual.");
+                from.SendMessage(FailedRequirements);
             }
         }
 

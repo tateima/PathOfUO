@@ -29,7 +29,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 if (from.Stam > StamRequired + 1)
                 {
@@ -44,6 +44,10 @@ namespace Server.Talent
                 {
                     from.SendMessage($"You need {StamRequired.ToString()} stamina to use {DisplayName}.");
                 }
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
 

@@ -99,8 +99,16 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            from.SendMessage("What item do you wish to disenchant?");
-            from.Target = new InternalTarget(this);
+            if (HasSkillRequirement(from))
+            {
+                from.SendMessage("What item do you wish to disenchant?");
+                from.Target = new InternalTarget(this);
+            }
+            else
+            {
+                from.SendMessage("You don't have the necessary skills to disenchant items.");
+            }
+
         }
 
         private class InternalTarget : Target

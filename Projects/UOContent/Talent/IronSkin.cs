@@ -24,7 +24,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 if (from.Mana < ManaRequired)
                 {
@@ -45,6 +45,10 @@ namespace Server.Talent
                     Timer.StartTimer(TimeSpan.FromSeconds(60 + Utility.Random(20)), ExpireBuff, out _);
                     Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds - Level * 5), ExpireTalentCooldown, out _talentTimerToken);
                 }
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
 

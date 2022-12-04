@@ -20,8 +20,15 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            from.SendMessage("What food do you wish to experiment with?");
-            from.Target = new InternalTarget(from, this);
+            if (HasSkillRequirement(from))
+            {
+                from.SendMessage("What food do you wish to experiment with?");
+                from.Target = new InternalTarget(from, this);
+            }
+            else
+            {
+                from.SendMessage("You don't have the skills to experiment with food.");
+            }
         }
 
         private class InternalTarget : Target

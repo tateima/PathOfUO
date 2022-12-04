@@ -263,6 +263,17 @@ namespace Server
             }
         );
 
+        public static Type[] SeaCreatures { get; } =
+        {
+            typeof(Dolphin),
+            typeof(SeaSerpent),
+            typeof(DeepSeaSerpent),
+            typeof(SeaHorse),
+            typeof(CrystalSeaSerpent),
+            typeof(Kraken),
+            typeof(WaterElemental)
+        };
+
         public static Type[] LesserUndeadGroup { get; } =
         {
             typeof(Bogle),

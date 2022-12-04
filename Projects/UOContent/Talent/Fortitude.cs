@@ -21,7 +21,10 @@ namespace Server.Talent
         public override void UpdateMobile(Mobile mobile)
         {
             ResetMobileMods(mobile);
-            mobile.AddStatMod(new StatMod(StatType.All, StatModNames[0], 5, TimeSpan.Zero));
+            if (HasSkillRequirement(mobile))
+            {
+                mobile.AddStatMod(new StatMod(StatType.All, StatModNames[0], 5, TimeSpan.Zero));
+            }
         }
     }
 }

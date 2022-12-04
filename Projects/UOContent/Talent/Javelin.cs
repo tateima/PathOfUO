@@ -26,7 +26,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (from.Stam >= StamRequired + 1)
+            if (from.Stam >= StamRequired + 1 && HasSkillRequirement(from))
             {
                 var weapon = from.Weapon as BaseWeapon;
                 if (!OnCooldown && weapon?.Skill == RequiredWeaponSkill && weapon is BaseSpear)
@@ -41,7 +41,7 @@ namespace Server.Talent
             }
             else
             {
-                from.SendMessage("You do not have enough stamina.");
+                from.SendMessage(FailedRequirements);
             }
 
         }

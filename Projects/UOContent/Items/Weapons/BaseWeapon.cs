@@ -1291,9 +1291,9 @@ namespace Server.Items
             if (attacker is PlayerMobile player)
             {
                 holyAvenger = player.GetTalent(typeof(HolyAvenger));
-                foreach (var (_, value) in player.Talents)
+                foreach (var (_, value) in player.MergedTalents)
                 {
-                    if (value.IncreaseHitChance && value.CanApplyHitEffect(this))
+                    if (value.IncreaseHitChance && value.CanApplyHitEffect(this) && value.HasSkillRequirement(attacker))
                     {
                         bonus += value.GetHitChanceModifier();
                     }
@@ -1736,9 +1736,9 @@ namespace Server.Items
                 {
                     damage = player.TalentEffect.CheckDamageAbsorptionEffect(player, attacker, damage);
                 }
-                foreach (var (_, value) in player.Talents)
+                foreach (var (_, value) in player.MergedTalents)
                 {
-                    if (value.HasDamageAbsorptionEffect)
+                    if (value.HasDamageAbsorptionEffect && value.HasSkillRequirement(player))
                     {
                         damage = value.CheckDamageAbsorptionEffect(player, attacker, damage);
                     }
@@ -1950,18 +1950,20 @@ namespace Server.Items
             BaseTalent darkAffinity = null;
             BaseTalent handFinesse = null;
             BaseTalent holyAvenger = null;
+            bool combatShrine = false;
             if (attacker is PlayerMobile attackingPlayer)
             {
                 darkAffinity = attackingPlayer.GetTalent(typeof(DarkAffinity));
                 handFinesse = attackingPlayer.GetTalent(typeof(HandFinesse));
                 holyAvenger = attackingPlayer.GetTalent(typeof(HolyAvenger));
-                foreach (var (_, value) in (attackingPlayer.Talents))
+                foreach (var (_, value) in (attackingPlayer.MergedTalents))
                 {
-                    if (value.CanApplyHitEffect(this))
+                    if (value.CanApplyHitEffect(this) && value.HasSkillRequirement(attacker))
                     {
                         value.CheckHitEffect(attacker, defender, ref damage);
                     }
                 }
+                combatShrine = attackingPlayer.Shrine?.GetShrineType() is ShrineType.Combat;
             }
 
             /*
@@ -2083,6 +2085,11 @@ namespace Server.Items
             }
 
             percentageBonus = Math.Min(percentageBonus, 300);
+
+            if (combatShrine)
+            {
+                percentageBonus += 20;
+            }
 
             damage = AOS.Scale(damage, 100 + percentageBonus);
 
@@ -2538,9 +2545,13 @@ namespace Server.Items
             }
             if (defender is PlayerMobile playerMobile)
             {
-                foreach (var (_, value) in playerMobile.Talents)
+                if (playerMobile.Shrine?.GetShrineType() is ShrineType.Protection)
                 {
-                    if (value.HasDefenseEffect)
+                    damageGiven = AOS.Scale(damageGiven, 80);
+                }
+                foreach (var (_, value) in playerMobile.MergedTalents)
+                {
+                    if (value.HasDefenseEffect && value.HasSkillRequirement(playerMobile))
                     {
                         value.CheckDefenseEffect(playerMobile, attacker, damageGiven);
                     }
@@ -2749,18 +2760,18 @@ namespace Server.Items
             }
             if (attacker is PlayerMobile attackingPlayer)
             {
-                foreach (var (_, value) in attackingPlayer.Talents)
+                foreach (var (_, value) in attackingPlayer.MergedTalents)
                 {
-                    if (value.CanApplyHitEffect(this))
+                    if (value.CanApplyHitEffect(this) && value.HasSkillRequirement(attacker))
                     {
                         value.CheckMissEffect(attacker, defender);
                     }
                 }
             }
             if (defender is PlayerMobile defendingPlayer) {
-                foreach (var (_, value) in defendingPlayer.Talents)
+                foreach (var (_, value) in defendingPlayer.MergedTalents)
                 {
-                    if (value.CanApplyHitEffect((BaseWeapon)defender.Weapon))
+                    if (value.CanApplyHitEffect((BaseWeapon)defender.Weapon) && value.HasSkillRequirement(defender))
                     {
                         value.CheckDefenderMissEffect(attacker, defender);
                     }

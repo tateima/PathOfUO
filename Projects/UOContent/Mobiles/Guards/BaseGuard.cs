@@ -43,30 +43,29 @@ namespace Server.Mobiles
                 string speech = e.Speech.ToLower();
                 PlayerMobile player = (PlayerMobile)e.Mobile;
                 Detective detective = player.GetTalent(typeof(Detective)) as Detective;
-                CaseNote note = Detective.GetPlayerCaseNote(player);
-                if (!e.Handled) {
-                    if (string.Equals(speech, "give me a case")) {
-                        e.Handled = true;
-                        if (detective != null) {
+                if (detective?.HasSkillRequirement(e.Mobile) != null)
+                {
+                    CaseNote note = Detective.GetPlayerCaseNote(player);
+                    if (!e.Handled) {
+                        if (string.Equals(speech, "give me a case")) {
+                            e.Handled = true;
                             if (note != null) {
                                 SayTo(player, "Thy already have an active case");
                             } else {
                                 Detective.GiveCaseNote(player);
                                 SayTo(player, "Here is a new active case");
                             }
-                        } else {
-                            SayTo(player, "Thou art not talented enough for this operation");
+                        } else if (string.Equals(speech, "here are my case notes")) {
+                            e.Handled = true;
+                            if (note != null && detective.GiveRewards(player, note)) {
+                                SayTo(player, "Thank thee for your assistance, here is your reward");
+                            } else {
+                                SayTo(player, "Thou has no case notes to show me");
+                            }
                         }
-                    } else if (string.Equals(speech, "here are my case notes")) {
-                        e.Handled = true;
-                        if (detective != null && note != null && detective.GiveRewards(player, note)) {
-                            SayTo(player, "Thank thee for your assistance, here is your reward");
-                        } else {
-                            SayTo(player, "Thou has no case notes to show me");
+                        if (!e.Handled) {
+                            SayTo(player, "I do not understand thee. If you wish to give me a case say 'here is my case'. If you wish to receive a new case say 'give me a case'.");
                         }
-                    }
-                    if (!e.Handled && detective != null) {
-                        SayTo(player, "I do not understand thee. If you wish to give me a case say 'here is my case'. If you wish to receive a new case say 'give me a case'.");
                     }
                 }
                 else

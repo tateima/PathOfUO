@@ -58,13 +58,17 @@ namespace Server.Talent
             {
                 from.SendMessage("You cannot use a mana shield at this time.");
             }
-            else if (!OnCooldown)
+            else if (!OnCooldown && HasSkillRequirement(from))
             {
                 Activated = true;
                 OnCooldown = true;
                 from.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
                 from.PlaySound(0x1E8);
                 Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds - Level * 5), ExpireTalentCooldown, out _talentTimerToken);
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
     }

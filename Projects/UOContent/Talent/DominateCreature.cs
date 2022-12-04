@@ -54,7 +54,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown && from.Mana > ManaRequired)
+            if (!OnCooldown && from.Mana > ManaRequired && HasSkillRequirement(from))
             {
                 BaseInstrument instrument = null;
                 from.Backpack?.FindItemsByType<BaseInstrument>()
@@ -80,7 +80,7 @@ namespace Server.Talent
             }
             else
             {
-                from.SendMessage($"You require {ManaRequired.ToString()} mana to dominate this creatures mind.");
+                from.SendMessage(FailedRequirements);
             }
         }
 

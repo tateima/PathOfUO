@@ -22,7 +22,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile mobile)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(mobile))
             {
                 var slave = new Slave();
                 EmptyCreatureBackpack(slave);
@@ -36,6 +36,10 @@ namespace Server.Talent
                 slave.PlaySound(0x1FE);
                 Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                 OnCooldown = true;
+            }
+            else
+            {
+                mobile.SendMessage(FailedRequirements);
             }
         }
     }

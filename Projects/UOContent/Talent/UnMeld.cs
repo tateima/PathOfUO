@@ -23,11 +23,15 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 OnCooldown = true;
-                from.SendMessage("What item do you wish to attempt the un meld?");
+                from.SendMessage("What item do you wish to attempt the unmeld?");
                 from.Target = new InternalTarget(this);
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
 

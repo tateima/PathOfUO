@@ -37,7 +37,7 @@ namespace Server.Talent
                 {
                     from.SendMessage($"You require {ManaRequired.ToString()} mana to conjure a storm.");
                 }
-                else if (!Activated && !OnCooldown)
+                else if (!Activated && !OnCooldown && HasSkillRequirement(from))
                 {
                     _mobile = from;
                     Activated = true;
@@ -45,6 +45,10 @@ namespace Server.Talent
                     RemainingBolts = Level * 3 + Utility.Random(Level);
                     Timer.StartTimer(TimeSpan.FromSeconds(Utility.Random(7, 10)), CheckStorm, out _talentTimerToken);
                     from.PlaySound(0x5CE);
+                }
+                else
+                {
+                    from.SendMessage("You do not have the required skill to use this talent.");
                 }
             }
         }

@@ -26,7 +26,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 var canCast = true;
                 if (from.Mana < ManaRequired)
@@ -111,6 +111,10 @@ namespace Server.Talent
                     from.SendMessage("Whom do you wish them to attack?");
                     from.Target = new InternalTarget(disciples);
                 }
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
 

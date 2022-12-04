@@ -89,7 +89,7 @@ namespace Server.Talent
 
         public override void CheckKillEffect(Mobile victim, Mobile killer)
         {
-            if (Utility.Random(100) < Level * 5)
+            if (Utility.Random(100) < Level * 5 && HasSkillRequirement(killer))
             {
                 var undead = RandomUndead();
                 if (undead != null)

@@ -61,10 +61,10 @@ namespace Server.Talent
                 {
                     int skillRange = (int) from.Skills.DetectHidden.Value / 20;
                     if (from.InRange(clue.Location, skillRange) && from.CheckSkill(
-                        SkillName.DetectHidden,
-                        clue.Difficulty - Utility.Random(10),
-                        clue.Difficulty
-                    ))
+                            SkillName.DetectHidden,
+                            clue.Difficulty - Utility.Random(10),
+                            clue.Difficulty
+                        ))
                     {
                         clue.CreateClueItem();
                         from.PublicOverheadMessage(

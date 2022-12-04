@@ -4490,7 +4490,7 @@ public class Mobile : IHued, IComparable<Mobile>, ISpawnable, IObjectPropertyLis
     {
     }
 
-    public virtual void Resurrect()
+    public virtual void Resurrect(bool force = false)
     {
         if (!Alive)
         {

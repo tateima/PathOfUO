@@ -110,7 +110,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 from.RevealingAction();
                 var inventive = ((PlayerMobile)from).GetTalent(typeof(Inventive));
@@ -156,6 +156,10 @@ namespace Server.Talent
                 SpellHelper.Summon(_construct, from, 0x042, TimeSpan.FromMinutes(modifier), false, false);
                 Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                 OnCooldown = true;
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
 

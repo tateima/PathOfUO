@@ -1,11 +1,6 @@
 using System;
-using Org.BouncyCastle.Bcpg.Sig;
-using Server.Items;
 using Server.Mobiles;
-using Server.Spells;
-using Server.Network;
 using Server.Pantheon;
-using Server.Spells.Fourth;
 using Server.Targeting;
 
 namespace Server.Talent
@@ -51,7 +46,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 if (from.Mana > ManaRequired - Level * 20)
                 {
@@ -61,6 +56,10 @@ namespace Server.Talent
                 {
                     from.SendMessage($"You need {(ManaRequired - Level * 20).ToString()} mana to use {DisplayName}.");
                 }
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
         private void CheckSetBuff(BloodLink? bloodLink)

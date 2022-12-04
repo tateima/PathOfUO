@@ -37,7 +37,7 @@ namespace Server.Gumps
         public override void OnClick()
         {
             _From.PlaySound(0x24A);
-            Deity.BestowFavor(_From);
+            Deity.BestowFavor(_From, _From.Alignment);
         }
     }
     public class CharacterSheetMenuEntry : ContextMenuEntry

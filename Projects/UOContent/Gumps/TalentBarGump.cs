@@ -30,17 +30,9 @@ namespace Server.Gumps
             PlayerMobile player = (PlayerMobile)from;
             m_UseableTalents = new List<BaseTalent>();
 
-            foreach (var (_, value) in player.Talents)
+            foreach (var (_, value) in player.MergedTalents)
             {
-                BaseTalent[] dependencyMatrix = BaseTalent.GetTalentDependency(player, value);
-                BaseTalent dependsOn = dependencyMatrix.Length > 0 ? dependencyMatrix[0] : null;
-                BaseTalent hasDependency = dependencyMatrix.Length > 1 ? dependencyMatrix[1] : null;
-                if (
-                    value.CanBeUsed && ((dependsOn is not null && hasDependency is not null && hasDependency.Level >= value.TalentDependencyPoints) || (dependsOn is null)) &&
-                        (
-                            !value.RequiresDeityFavor || (value.RequiresDeityFavor && player.HasDeityFavor && value.DeityAlignment != Deity.Alignment.None && value.DeityAlignment == player.CombatAlignment)
-                        )
-                )
+                if (IsUseableTalent(player, value))
                 {
                     m_UseableTalents.Add(value);
                 }
@@ -114,7 +106,26 @@ namespace Server.Gumps
                 }
                 y += 100;
             }
-            Timer.StartTimer(TimeSpan.FromSeconds(5), UpdateGump, out _talentBarExecutionToken);
+            Timer.StartTimer(TimeSpan.FromSeconds(7), UpdateGump, out _talentBarExecutionToken);
+        }
+
+        public bool IsUseableTalent(PlayerMobile player, BaseTalent value)
+        {
+            if (value is not null)
+            {
+                BaseTalent[] dependencyMatrix = BaseTalent.GetTalentDependency(player, value);
+                BaseTalent dependsOn = dependencyMatrix.Length > 0 ? dependencyMatrix[0] : null;
+                BaseTalent hasDependency = dependencyMatrix.Length > 1 ? dependencyMatrix[1] : null;
+                return value.CanBeUsed &&
+                       ((dependsOn is not null && hasDependency is not null &&
+                         hasDependency.Level >= value.TalentDependencyPoints) || (dependsOn is null)) &&
+                       (
+                           !value.RequiresDeityFavor || (value.RequiresDeityFavor && player.HasDeityFavor &&
+                                                         value.DeityAlignment != Deity.Alignment.None &&
+                                                         value.DeityAlignment == player.CombatAlignment)
+                       );
+            }
+            return false;
         }
 
         public void UpdateGump()

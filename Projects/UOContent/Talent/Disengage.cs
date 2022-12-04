@@ -20,7 +20,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown && from.Stam >= StamRequired)
+            if (!OnCooldown && from.Stam >= StamRequired && HasSkillRequirement(from))
             {
                 var attackerPosition = from.Location;
                 if (from.Direction != Direction.Running)
@@ -37,6 +37,10 @@ namespace Server.Talent
                     from.PlaySound(0x525);
                     Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                 }
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
     }

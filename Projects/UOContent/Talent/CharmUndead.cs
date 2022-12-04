@@ -44,7 +44,7 @@ namespace Server.Talent
 
         public bool CheckCharm(Mobile from)
         {
-            if (!OnCooldown && Activated)
+            if (!OnCooldown && Activated && HasSkillRequirement(from))
             {
                 foreach (var mobile in from.GetMobilesInRange(5))
                 {
@@ -71,6 +71,10 @@ namespace Server.Talent
                         return true;
                     }
                 }
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
 
             return false;

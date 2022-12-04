@@ -1025,9 +1025,9 @@ namespace Server.Spells
                 {
                     dmg = targetPlayer.TalentEffect.CheckDamageAbsorptionEffect(target, from, dmg);
                 }
-                foreach (var (_, value) in targetPlayer.Talents)
+                foreach (var (_, value) in targetPlayer.MergedTalents)
                 {
-                    if (value.HasDamageAbsorptionEffect && value.CanAbsorbSpells)
+                    if (value.HasDamageAbsorptionEffect && value.CanAbsorbSpells && value.HasSkillRequirement(target))
                     {
                         dmg = value.CheckDamageAbsorptionEffect(target, from, dmg);
                     }

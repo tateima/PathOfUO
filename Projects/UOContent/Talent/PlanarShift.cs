@@ -30,7 +30,7 @@ namespace Server.Talent
                 if (from.Mana < ManaRequired)
                 {
                     from.SendMessage($"You require {ManaRequired.ToString()} mana to shift planes.");
-                } else if (!Activated && !OnCooldown)
+                } else if (!Activated && !OnCooldown && HasSkillRequirement(from))
                 {
                     Activated = true;
                     OnCooldown = true;

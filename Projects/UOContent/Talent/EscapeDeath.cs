@@ -19,7 +19,7 @@ namespace Server.Talent
 
         public override void CheckBeforeDeathEffect(Mobile target)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(target))
             {
                 target.SendSound(0x200);
                 OnCooldown = true;

@@ -4,6 +4,8 @@ using Server.ContextMenus;
 using Server.Talent;
 using Server.Mobiles;
 using System;
+using System.Linq;
+using System.Reflection;
 
 namespace Server.Items;
 
@@ -150,6 +152,21 @@ public abstract partial class Food : Item
         }
 
         return true;
+    }
+
+    public static Food RandomFood(int amount)
+    {
+        var foodTypes = Assembly.GetExecutingAssembly()
+            .GetTypes()
+            .Where(t => t.Namespace?.Contains("Food") == true);
+        var foodsArray = foodTypes as Type[] ?? foodTypes.ToArray();
+        var foodType = foodsArray[Utility.Random(foodsArray.Length)];
+        if (Activator.CreateInstance(foodType) is Food food)
+        {
+            food.Amount = amount;
+            return food;
+        }
+        return null;
     }
 }
 [SerializationGenerator(0, false)]

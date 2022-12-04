@@ -24,25 +24,28 @@ namespace Server.Talent
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
-            damage += Utility.RandomMinMax(1, Level) * 2;
-            AlterDamage(target, (PlayerMobile)attacker, ref damage);
-            if (Core.AOS)
+            if (HasSkillRequirement(attacker))
             {
-                AOS.Damage(
-                    target,
-                    attacker,
-                    damage,
-                    true,
-                    0,
-                    0,
-                    0,
-                    0,
-                    100
-                );
-            }
-            else
-            {
-                target.Damage(damage, attacker);
+                damage += Utility.RandomMinMax(1, Level) * 2;
+                AlterDamage(target, (PlayerMobile)attacker, ref damage);
+                if (Core.AOS)
+                {
+                    AOS.Damage(
+                        target,
+                        attacker,
+                        damage,
+                        true,
+                        0,
+                        0,
+                        0,
+                        0,
+                        100
+                    );
+                }
+                else
+                {
+                    target.Damage(damage, attacker);
+                }
             }
         }
 
@@ -66,7 +69,7 @@ namespace Server.Talent
         }
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 var sonicAffinity = ((PlayerMobile)from).GetTalent(typeof(SonicAffinity));
                 BaseInstrument instrument = null;
@@ -155,6 +158,10 @@ namespace Server.Talent
                 {
                     from.SendMessage("You require an instrument to use this talent");
                 }
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
     }

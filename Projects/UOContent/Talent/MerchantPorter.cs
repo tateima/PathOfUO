@@ -46,11 +46,15 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 OnCooldown = true;
                 from.SendGump(new MerchantPorterGump(from));
                 Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds - Level), ExpireTalentCooldown, out _talentTimerToken);
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
     }

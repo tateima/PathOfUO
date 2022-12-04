@@ -7,6 +7,7 @@ using Server.Accounting;
 using Server.Buffers;
 using Server.Commands;
 using Server.Misc;
+using Server.Mobiles;
 using Server.Multis;
 using Server.Network;
 using Server.Prompts;
@@ -3937,7 +3938,14 @@ namespace Server.Gumps
                                         from,
                                         $"{from.AccessLevel} {CommandLogging.Format(from)} resurrecting {CommandLogging.Format(m)}"
                                     );
-                                    m.Resurrect();
+                                    if (m is PlayerMobile)
+                                    {
+                                        m.Resurrect(true);
+                                    }
+                                    else
+                                    {
+                                        m.Resurrect();
+                                    }
                                     notice = "They have been resurrected.";
                                     break;
                                 }

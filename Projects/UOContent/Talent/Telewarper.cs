@@ -20,7 +20,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 var current = @from.Backpack?.FindItemByType<TelewarperDevice>() ?? @from.BankBox?.FindItemByType<TelewarperDevice>();
                 if (current != null)
@@ -34,6 +34,10 @@ namespace Server.Talent
                     from.AddToBackpack(device);
                     Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                 }
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
     }

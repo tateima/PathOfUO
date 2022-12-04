@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using ModernUO.Serialization;
 using Server;
 using Server.Engines.Plants;
@@ -1536,6 +1538,21 @@ public abstract partial class BaseBeverage : Item, IHasQuantity
 
             from.SendLocalizedMessage(500850); // You feel sober.
         }
+    }
+
+    public static BaseBeverage RandomBeverage(int amount)
+    {
+        var beverageTypes = Assembly.GetExecutingAssembly()
+            .GetTypes()
+            .Where(t => t.Namespace?.Contains("BaseBeverage") == true);
+        var beverageArray = beverageTypes as Type[] ?? beverageTypes.ToArray();
+        var beverageType = beverageArray[Utility.Random(beverageArray.Length)];
+        if (Activator.CreateInstance(beverageType) is BaseBeverage beverage)
+        {
+            beverage.Amount = amount;
+            return beverage;
+        }
+        return null;
     }
 
     private class HeaveTimer : Timer

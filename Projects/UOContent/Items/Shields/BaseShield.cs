@@ -82,7 +82,7 @@ public partial class BaseShield : BaseArmor
                 int shieldDamage = 0;
                 foreach (KeyValuePair<Type, BaseTalent> entry in owningPlayer.Talents)
                 {
-                    if (entry.Value.CanApplyHitEffect(this))
+                    if (entry.Value.CanApplyHitEffect(this) && entry.Value.HasSkillRequirement(owner))
                     {
                         entry.Value.CheckHitEffect(owner, (Mobile)weapon.Parent, ref shieldDamage);
                     }

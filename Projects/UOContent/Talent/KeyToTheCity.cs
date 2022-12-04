@@ -25,7 +25,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown && from.Mana > ManaRequired)
+            if (!OnCooldown && from.Mana > ManaRequired && HasSkillRequirement(from))
             {
                 ApplyManaCost(from);
                 Activated = true;
@@ -38,7 +38,7 @@ namespace Server.Talent
             }
             else
             {
-                from.SendMessage($"You need {ManaRequired.ToString()} mana to craft this special key.");
+                from.SendMessage(FailedRequirements);
             }
         }
 

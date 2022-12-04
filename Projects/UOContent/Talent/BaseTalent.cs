@@ -14,6 +14,7 @@ namespace Server.Talent
     {
         public static string CriticalDamageDetail = "A critical strike will do double damage.";
         public static string PassiveDetail = "This is a passive talent and does not incur any costs.";
+        public static string FailedRequirements = "You do not meet the requirements to use this talent";
         public const int InvalidTalentIndex = 999;
         public static readonly Type[] TalentTypes =
         {
@@ -32,6 +33,7 @@ namespace Server.Talent
             typeof(LightAffinity),
             typeof(GuardianLight),
             typeof(HolyAvenger),
+            typeof(Reckoning),
             typeof(HolyBolt),
             typeof(SonicAffinity),
             typeof(Resonance),
@@ -658,6 +660,7 @@ namespace Server.Talent
             }
             return isLoreSkill;
         }
+        public static BaseTalent RandomTalent() => TalentConstructor.Construct(TalentTypes[Utility.Random(TalentTypes.Length)]) as BaseTalent;
 
         public static List<SkillName> GetPlayerSkillNames(PlayerMobile player, bool crafting, bool ranger)
         {

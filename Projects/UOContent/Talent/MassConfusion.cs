@@ -31,7 +31,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 if (from.Mana < ManaRequired)
                 {
@@ -132,6 +132,10 @@ namespace Server.Talent
                         from.SendMessage("You require an instrument to use this talent");
                     }
                 }
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
     }

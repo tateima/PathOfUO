@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Linq;
 using Server.Accounting;
 using Server.Collections;
 using Server.ContextMenus;
@@ -203,6 +204,7 @@ namespace Server.Mobiles
         private bool m_Blinded;
         private bool m_Feared;
         private DateTime m_NextPlanarTravel;
+        private Shrine m_Shrine;
 
         private DateTime m_LastYoungHeal = DateTime.MinValue;
 
@@ -302,6 +304,17 @@ namespace Server.Mobiles
         [CommandProperty(AccessLevel.Counselor)]
         public Skills StarterSkills { get; set; }
 
+        public Shrine Shrine
+        {
+            get => m_Shrine;
+            set
+            {
+                m_Shrine = value;
+                InvalidateProperties();
+            }
+
+        }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public bool HasDeityFavor
         {
@@ -393,7 +406,6 @@ namespace Server.Mobiles
             get => m_FailedDeityPrayers;
             set => m_FailedDeityPrayers = value;
         }
-
         public BaseTalent TalentEffect { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster)]
@@ -610,6 +622,13 @@ namespace Server.Mobiles
 
                 return 0;
             }
+        }
+
+        private ConcurrentDictionary<Type, BaseTalent> m_MergedTalents;
+        public ConcurrentDictionary<Type, BaseTalent> MergedTalents
+        {
+            get => m_MergedTalents ?? Talents;
+            set => m_MergedTalents = value;
         }
 
         private ConcurrentDictionary<Type, BaseTalent> m_Talents;
@@ -1812,7 +1831,7 @@ namespace Server.Mobiles
                     }
                     if (DeityPoints <= -1000)
                     {
-                        Deity.BestowCurse(this);
+                        Deity.BestowCurse(this, Alignment);
                         DeityPoints = -1000;
                     }
                 }
@@ -2619,6 +2638,7 @@ namespace Server.Mobiles
                 list.Add(new CharacterSheetMenuEntry(this));
                 if (!Neutral())
                 {
+                    list.Add(new ConvertPantheonItemEntry(this));
                     list.Add(new DeityRewardEntry(this));
                     list.Add(new DeityFavorEntry(this));
                 }
@@ -3127,10 +3147,19 @@ namespace Server.Mobiles
 
             base.OnBeneficialAction(target, isCriminal);
         }
-
         public override void OnDamage(int amount, Mobile from, bool willKill)
         {
             int disruptThreshold;
+
+            if (Deity.AlignmentCheck(from, Alignment, true))
+            {
+                amount = HasDeityFavor ? AOS.Scale(amount, 80) : AOS.Scale(amount, 120);
+            }
+
+            if (Shrine is not null && Shrine.ShrineAlignmentEnemyCheck(from, Shrine.GetShrineType()))
+            {
+                amount = AOS.Scale(amount, 90);
+            }
 
             if (!Core.AOS)
             {
@@ -3176,12 +3205,14 @@ namespace Server.Mobiles
             base.OnDamage(amount, from, willKill);
         }
 
-        public override void Resurrect()
+        public override void Resurrect(bool force = false)
         {
-            // roguelike, there is no ressurection;
-            SendMessage("You are dead, your deeds will not be forgotten.");
-            return;
-
+            if (!force)
+            {
+                // roguelike, there is no ressurection;
+                SendMessage("You are dead, your deeds will not be forgotten.");
+                return;
+            }
             var wasAlive = Alive;
 
             base.Resurrect();
@@ -4491,6 +4522,10 @@ namespace Server.Mobiles
 
             list.Add(1114057, $"Level: {Level.ToString()}");                // ~1_val~
             list.Add(1114057, $"Alignment: {CombatAlignment.ToString()}"); // ~1_val~
+            if (Shrine is not null)
+            {
+                list.Add(1114057, $"Shrine effect: {Shrine.GetShrineType().ToString()}"); // ~1_val~
+            }
             if (!Neutral())
             {
                 list.Add(1114057, $"Deity loyalty: {DeityPoints.ToString()}"); // ~1_val~

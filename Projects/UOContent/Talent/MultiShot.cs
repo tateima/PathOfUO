@@ -31,7 +31,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 if (from.Mana < ManaRequired)
                 {
@@ -41,6 +41,10 @@ namespace Server.Talent
                 {
                     from.Target = new InternalTarget(this, from);
                 }
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
 

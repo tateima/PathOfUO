@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Server.Factions;
+using Server.Items;
 using Server.Mobiles;
 using Server.Network;
 using Server.Spells;
@@ -409,7 +410,7 @@ namespace Server.SkillHandlers
 
                         minSkill += 24.9;
 
-                        if (CheckMastery(m_Tamer, m_Creature) || alreadyOwned ||
+                        if (CheckMastery(m_Tamer, m_Creature) || alreadyOwned || ((PlayerMobile)m_Tamer).Shrine?.GetShrineType() is ShrineType.Nature ||
                             m_Tamer.CheckTargetSkill(SkillName.AnimalTaming, m_Creature, minSkill - 25.0, minSkill + 25.0))
                         {
                             if (m_Creature.Owners.Count == 0) // First tame

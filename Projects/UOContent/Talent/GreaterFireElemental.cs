@@ -26,7 +26,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(from))
             {
                 var canCast = true;
                 if (from.Mana < ManaRequired && from.Hits >= 26)
@@ -76,6 +76,10 @@ namespace Server.Talent
                     Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                     OnCooldown = true;
                 }
+            }
+            else
+            {
+                from.SendMessage(FailedRequirements);
             }
         }
     }

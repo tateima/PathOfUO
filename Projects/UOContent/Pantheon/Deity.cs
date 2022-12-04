@@ -7,7 +7,6 @@ using Server.Engines.Craft;
 using Server.Items;
 using Server.Mobiles;
 using Server.Talent;
-using Server.Utilities;
 using Server.Network;
 
 namespace Server.Pantheon
@@ -15,6 +14,7 @@ namespace Server.Pantheon
     public static class Deity
     {
         public const string DeityCurseModName = "DeityCurse";
+        public const string DeityFavorModName = "DeityFavor";
         public enum Alignment
         {
             Charity,
@@ -194,21 +194,7 @@ namespace Server.Pantheon
                     }
                 default:
                     {
-                        return new[]
-                        {
-                            typeof(SummonChaosElemental),
-                            typeof(FlameWave),
-                            typeof(ChaoticGrip),
-                            typeof(Zealot),
-                            typeof(DivineProtection),
-                            typeof(SummonCelestial),
-                            typeof(Heroism),
-                            typeof(LayOnHands),
-                            typeof(GodlyStrike),
-                            typeof(SiphonLife),
-                            typeof(WellOfDeath),
-                            typeof(BloodLink)
-                        };
+                        return TalentTypes;
                     }
             }
         }
@@ -239,13 +225,13 @@ namespace Server.Pantheon
         {
             Alignment alignment = Alignment.None;
             foreach (var alignmentType in new[]
-                {
-                    Alignment.Light,
-                    Alignment.Darkness,
-                    Alignment.Chaos,
-                    Alignment.Order
-                }
-            )
+                     {
+                         Alignment.Light,
+                         Alignment.Darkness,
+                         Alignment.Chaos,
+                         Alignment.Order
+                     }
+                    )
             {
                 if (CreatureAlignmentCheck(type, alignmentType, false))
                 {
@@ -318,21 +304,18 @@ namespace Server.Pantheon
             RewardPoints(player, points, new[] { player.Alignment });
         }
 
-        public static void BeginChallenge(PlayerMobile player)
+        public static List<Mobile> FindChallengers(PlayerMobile player, int maximum = 5, int minimum = 2, bool allowNonAlignment = false)
         {
-            Effect(player, player.Alignment);
-            int amount = Utility.Random(100) < 50 ? 1 : Utility.RandomMinMax(2, 5);
-            var buffs = amount == 1 ? Utility.RandomMinMax(2, 4) : Utility.RandomMinMax(1, 2);
+            int amount = Utility.Random(100) < 50 ? 1 : Utility.RandomMinMax(minimum, maximum);
             var minimumExpValue = amount == 1 ? 350 + player.Level * 10 : 450 + player.Level * (8 - amount);
             var maximumExpValue = amount == 1 ? 450 + player.Level * 20 : 450 + player.Level * (18 - amount);
             var mobileTypes = Assembly.GetExecutingAssembly()
                 .GetTypes()
                 .Where(t => t.Namespace?.Contains("Mobiles") == true);
-
             List<Mobile> challengers = new List<Mobile>();
             foreach (var type in mobileTypes)
             {
-                if (CreatureAlignmentCheck(type, player.Alignment, true) || player.Alignment is Alignment.Charity or Alignment.Greed)
+                if (CreatureAlignmentCheck(type, player.Alignment, true) || player.Alignment is Alignment.Charity or Alignment.Greed || allowNonAlignment && player.Alignment is Alignment.None)
                 {
                     try
                     {
@@ -356,97 +339,47 @@ namespace Server.Pantheon
                 }
             }
 
+            return challengers;
+        }
+
+
+        public static void BeginChallenge(PlayerMobile player, int maximum = 5, int minimum = 2)
+        {
+            Effect(player, player.Alignment);
+            int amount = Utility.Random(100) < 50 ? 1 : Utility.RandomMinMax(minimum, maximum);
+            var buffs = amount == 1 ? Utility.RandomMinMax(2, 4) : Utility.RandomMinMax(1, 2);
+            List<Mobile> challengers = FindChallengers(player, maximum, minimum);
             if (challengers.Count > 0)
             {
                 for (int i = 0; i < amount; i++)
                 {
                     BaseCreature challenger = challengers[Utility.Random(challengers.Count)] as BaseCreature;
-                    if (Utility.Random(100) < 50)
+                    if (challenger is not null)
                     {
-                        challenger.IsVeteran = true;
-                    }
-                    else
-                    {
-                        challenger.IsHeroic = true;
-                    }
-                    if (amount == 1 || i == 0)
-                    {
-                        var challengerBuffs = 0;
-                        while (challengerBuffs < buffs)
+                        if (Utility.Random(100) < 50)
                         {
-                            if (Utility.Random(100) < 5 && !challenger.IsIllusionist)
-                            {
-                                challenger.IsIllusionist = true;
-                                challengerBuffs++;
-                            }
-                            if (Utility.Random(100) < 5 && !challenger.IsCorruptor)
-                            {
-                                challenger.IsCorruptor = true;
-                                challengerBuffs++;
-                            }
-                            if (Utility.Random(100) < 5 && !challenger.IsEthereal)
-                            {
-                                challenger.IsEthereal = true;
-                                challengerBuffs++;
-                            }
-                            if (Utility.Random(100) < 5 && !challenger.IsIllusionist)
-                            {
-                                challenger.IsIllusionist = true;
-                                challengerBuffs++;
-                            }
-                            if (Utility.Random(100) < 5 && !challenger.IsMagicResistant)
-                            {
-                                challenger.IsMagicResistant = true;
-                                challengerBuffs++;
-                            }
-                            if (Utility.Random(100) < 5 && !challenger.IsFrozen)
-                            {
-                                challenger.IsFrozen = true;
-                                challengerBuffs++;
-                            }
-                            if (Utility.Random(100) < 5 && !challenger.IsBurning)
-                            {
-                                challenger.IsBurning = true;
-                                challengerBuffs++;
-                            }
-                            if (Utility.Random(100) < 5 && !challenger.IsElectrified)
-                            {
-                                challenger.IsElectrified = true;
-                                challengerBuffs++;
-                            }
-                            if (Utility.Random(100) < 5 && !challenger.IsToxic)
-                            {
-                                challenger.IsToxic = true;
-                                challengerBuffs++;
-                            }
-                            if (Utility.Random(100) < 5 && !challenger.IsReflective)
-                            {
-                                challenger.IsReflective = true;
-                                challengerBuffs++;
-                            }
-                            if (Utility.Random(100) < 5 && !challenger.IsRegenerative)
-                            {
-                                challenger.IsRegenerative = true;
-                                challengerBuffs++;
-                            }
-                            if (Utility.Random(100) < 5 && !challenger.IsSoulFeeder)
-                            {
-                                challenger.IsSoulFeeder = true;
-                                challengerBuffs++;
-                            }
+                            challenger.IsVeteran = true;
                         }
+                        else
+                        {
+                            challenger.IsHeroic = true;
+                        }
+                        if (amount == 1 || i == 0)
+                        {
+                            MonsterBuff.RandomMonsterBuffs(challenger, buffs);
+                        }
+                        bool goodLocation = false;
+                        Point3D location = player.Location;
+                        while (!goodLocation && location == player.Location)
+                        {
+                            location = player.Location;
+                            location.X += Utility.RandomBool() ? Utility.RandomMinMax(5, 10) : Utility.RandomMinMax(-10, -5);
+                            location.Y += Utility.RandomBool() ? Utility.RandomMinMax(5, 10) : Utility.RandomMinMax(-10, -5);
+                            location.Y += Utility.RandomBool() ? Utility.RandomMinMax(5, 10) : Utility.RandomMinMax(-10, -5);
+                            goodLocation = player.InLOS(location);
+                        }
+                        challenger.MoveToWorld(location, player.Map);
                     }
-                    bool goodLocation = false;
-                    Point3D location = player.Location;
-                    while (!goodLocation && location == player.Location)
-                    {
-                        location = player.Location;
-                        location.X += Utility.RandomBool() ? Utility.RandomMinMax(5, 10) : Utility.RandomMinMax(-10, -5);
-                        location.Y += Utility.RandomBool() ? Utility.RandomMinMax(5, 10) : Utility.RandomMinMax(-10, -5);
-                        location.Y += Utility.RandomBool() ? Utility.RandomMinMax(5, 10) : Utility.RandomMinMax(-10, -5);
-                        goodLocation = player.InLOS(location);
-                    }
-                    challenger.MoveToWorld(location, player.Map);
                 }
                 player.SendMessage("A challenge awaits you from the pantheon.");
                 player.NextDeityChallenge = DateTime.Now.AddDays(1);
@@ -469,7 +402,7 @@ namespace Server.Pantheon
                     target.BoltEffect(0);
                     break;
                 case Alignment.Chaos:
-                    target.FixedParticles(0x3709, 10, 10, 5052, 0, 0, EffectLayer.LeftFoot, 0);
+                    target.FixedParticles(0x3709, 1, 15, 5052, 0, 0, EffectLayer.LeftFoot, 0);
                     sound = 0x208;
                     break;
                 case Alignment.Darkness:
@@ -488,8 +421,11 @@ namespace Server.Pantheon
                     sound = 0x201;
                     break;
                 case Alignment.Greed:
+                    target.FixedParticles(0x374A, 1, 15, 5021, EffectLayer.Waist);
+                    target.PlaySound(0x205);
+                    break;
                 case Alignment.Charity:
-                    target.FixedParticles(0x373A, 10, 15, 5018, EffectLayer.Waist);
+                    target.FixedParticles(0x373A, 1, 15, 5018, EffectLayer.Waist);
                     sound = 0x1EA;
                     break;
                 case Alignment.None:
@@ -505,7 +441,23 @@ namespace Server.Pantheon
         public static readonly Type[] TalentTypes =
         {
             typeof(SummonChaosElemental),
-            typeof(FlameWave)
+            typeof(FlameWave),
+            typeof(ChaoticGrip),
+            typeof(Zealot),
+            typeof(DivineProtection),
+            typeof(SummonCelestial),
+            typeof(Heroism),
+            typeof(LayOnHands),
+            typeof(GodlyStrike),
+            typeof(SiphonLife),
+            typeof(WellOfDeath),
+            typeof(BloodLink),
+            typeof(Bribery),
+            typeof(Gluttony),
+            typeof(Deception),
+            typeof(Wisdom),
+            typeof(KeyToTheCity),
+            typeof(Leadership)
         };
 
         public static bool HasDeityTalents(PlayerMobile player)
@@ -522,12 +474,15 @@ namespace Server.Pantheon
             return hasTalent;
         }
 
-        public static void BestowFavor(PlayerMobile player)
+        public static void BestowFavor(PlayerMobile player,  Alignment effectAlignment, double favorStrength = 1.0)
         {
-            if (player.DeityPoints > 500 && HasDeityTalents(player))
+            if (player.DeityPoints > 250 && !player.HasDeityFavor)
             {
+                Effect(player, effectAlignment);
                 player.HasDeityFavor = true;
-                Effect(player, player.Alignment);
+                Timer.StartTimer(TimeSpan.FromHours(1 * favorStrength),() => RemoveFavor(player));
+                player.SendMessage("The gods have rewarded a buff to hunt down your sworn enemies with increased damage you additional protection.");
+                player.DeityPoints -= 250;
             }
             else
             {
@@ -539,35 +494,42 @@ namespace Server.Pantheon
             player.HasDeityFavor = false;
         }
 
-        public static void DestroyItem(Item[] items, PlayerMobile player, string context)
+        public static void DestroyItem(PlayerMobile player, string contextOverride = "")
         {
-            Item item = items[Utility.Random(items.Length)];
-            player.SendMessage($"The gods have punished your disloyalty by destroying a {item.Name} from your {context}.");
-            items[Utility.Random(items.Length)].Delete();
+            Item[] items = player.Backpack?.FindItemsByType(typeof(Item));
+            Item[] bankItems = player.BankBox?.FindItemsByType(typeof(Item));
+            string context = "";
+            Item item = null;
+            if (items is { Length: > 0 })
+            {
+                context = "backpack";
+                item = items[Utility.Random(items.Length)];
+            } else if (bankItems is { Length: > 0})
+            {
+                context = "bank box";
+                item = bankItems[Utility.Random(bankItems.Length)];
+            }
+            if (item is not null)
+            {
+                if (contextOverride.Length > 0)
+                {
+                    context = contextOverride;
+                }
+                item.Delete();
+                player.SendMessage($"The gods have punished you by destroying a {item.Name} from your {context}.");
+            }
         }
 
-        public static void BestowCurse(PlayerMobile player)
+        public static void BestowCurse(PlayerMobile player, Alignment effectAlignment, double curseStrength = 1.0)
         {
-            Effect(player, player.Alignment);
+            Effect(player, effectAlignment);
             if (Utility.Random(100) < 15)
             {
-                int amount = Utility.RandomMinMax(3, 10);
-                player.AddStatMod(new StatMod(StatType.All, DeityCurseModName, -amount, TimeSpan.FromMinutes(9)));
-                player.SendMessage("The gods have punished your disloyalty with a curse.");
+                DecideBuff(player, DeityCurseModName, curseStrength, true);
+                player.SendMessage("The gods have punished you with a curse.");
             } else if (Utility.Random(100) < 15 && player.Backpack is not null)
             {
-                Item[] items = player.Backpack?.FindItemsByType(typeof(Item));
-                if (items.Length > 0)
-                {
-                    DestroyItem(items, player, "backpack");
-                } else if (player.BankBox is not null)
-                {
-                    items = player.BankBox?.FindItemsByType(typeof(Item));
-                    if (items.Length > 0)
-                    {
-                        DestroyItem(items, player, "bank box");
-                    }
-                }
+                DestroyItem(player);
             } else if (Utility.Random(100) < 15 && player.AllFollowers.Count > 0)
             {
                 Mobile follower = player.AllFollowers[Utility.Random(player.AllFollowers.Count)];
@@ -579,6 +541,14 @@ namespace Server.Pantheon
                 player.Hunger -= Utility.RandomMinMax(1, 4);
                 player.Thirst -= Utility.RandomMinMax(1, 4);
                 player.SendMessage($"The gods have punished your disloyalty making you more hungry and thirsty.");
+            }
+        }
+
+        private static void RemoveSkills(PlayerMobile player, List<DefaultSkillMod> skillMods)
+        {
+            foreach (var skillMod in skillMods)
+            {
+                player.RemoveSkillMod(skillMod);
             }
         }
 
@@ -841,6 +811,28 @@ namespace Server.Pantheon
                         }
                     }
                 }
+            }
+        }
+
+        public static void DecideBuff(PlayerMobile player, string deityModName, double strength, bool isDebuff)
+        {
+            double amount = Utility.RandomMinMax(3, 10) * strength;
+            if (Utility.Random(100) < 50)
+            {
+                amount *= isDebuff ? -1 : 1;
+                player.AddStatMod(new StatMod(StatType.All, deityModName, (int)amount, TimeSpan.FromMinutes(15 * strength)));
+            }
+            else
+            {
+                double modifier = isDebuff ? -10.0 : 10.0;
+                List<Skill> skills = new List<Skill>();
+                BaseTalent.GetTopSkills(player, ref skills, 3);
+                List<DefaultSkillMod> skillMods = BaseTalent.GetTopDefaultSkillMods(skills, modifier * strength, deityModName);
+                foreach (var skillMod in skillMods)
+                {
+                    player.AddSkillMod(skillMod);
+                }
+                Timer.StartTimer(TimeSpan.FromMinutes(15 * strength),() => RemoveSkills(player, skillMods));
             }
         }
     }

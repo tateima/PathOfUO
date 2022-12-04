@@ -85,7 +85,7 @@ namespace Server.Talent
 
         public override void OnUse(Mobile from)
         {
-            if (from.Backpack != null)
+            if (from.Backpack != null && HasSkillRequirement(from))
             {
                 from.SendMessage("What item do you wish to work with?");
                 from.Target = new InternalTarget(this);

@@ -10,7 +10,7 @@ namespace Server.Talent
         public GroundSlam()
         {
             TalentDependency = typeof(TwoHandedMaceSpecialist);
-            RequiredWeapon = new[] { typeof(WarHammer) };
+            RequiredWeapon = new[] { typeof(WarHammer) , typeof(BaseStaff) };
             DisplayName = "Ground slam";
             CanBeUsed = true;
             Description = "Push back surrounding mobiles by 1-5 yards and slows them down.";

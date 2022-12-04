@@ -125,7 +125,8 @@ namespace Server.Mobiles
                     MinionSpeedBuff,
                     MinionFameBuff,
                     MinionKarmaBuff,
-                    MinionDamageBuff
+                    MinionDamageBuff,
+                    50
                 );
                 bc.PublicOverheadMessage(MessageType.Regular, 0x0481, false, "* This creature grows in strength *");
             }
@@ -139,7 +140,7 @@ namespace Server.Mobiles
         {
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
-            Convert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff);
+            Convert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff, 250);
 
             if (bc.IsElectrified)
             {
@@ -166,7 +167,7 @@ namespace Server.Mobiles
         public static void RemoveElementalProperties(BaseCreature bc)
         {
             CheckHues(bc);
-            UnConvert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff);
+            UnConvert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff, 250);
             if (bc.IsElectrified)
             {
                 bc.SetResistance(ResistanceType.Energy, 0);
@@ -189,37 +190,37 @@ namespace Server.Mobiles
         {
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
-            Convert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff);
+            Convert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff, 250);
             AddLoot(bc);
         }
         public static void RemoveEthereal(BaseCreature bc)
         {
             CheckHues(bc);
-            UnConvert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff);
+            UnConvert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff, 250);
         }
         public static void AddCorrupted(BaseCreature bc)
         {
             CheckHues(bc);
-            Convert(bc, NoBuff, MinionHitsBuff, NoBuff, NoBuff, NoBuff, MinionSkillsBuff, NoBuff, NoBuff, NoBuff, 1);
+            Convert(bc, NoBuff, MinionHitsBuff, NoBuff, NoBuff, NoBuff, MinionSkillsBuff, NoBuff, NoBuff, NoBuff, 1, 100);
 
         }
         public static void RemoveCorrupted(BaseCreature bc)
         {
             CheckHues(bc);
-            UnConvert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, 1);
+            UnConvert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, 1, 100);
         }
         public static void AddCorruptor(BaseCreature bc)
         {
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
-            Convert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff);
+            Convert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff, 400);
             AddLoot(bc);
             new CorruptorTimer(bc).Start();
         }
         public static void RemoveCorruptor(BaseCreature bc)
         {
             CheckHues(bc);
-            UnConvert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff);
+            UnConvert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff, 400);
         }
 
         public static void AddIllusion(BaseCreature bc, Mobile from)
@@ -257,37 +258,37 @@ namespace Server.Mobiles
         {
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
-            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0);
+            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200);
             AddLoot(bc);
         }
         public static void RemoveIllusionist(BaseCreature bc)
         {
             CheckHues(bc);
-            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0);
+            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200);
         }
         public static void AddRegenerative(BaseCreature bc)
         {
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
-            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0);
+            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200);
             AddLoot(bc);
             new RegenerativeTimer(bc).Start();
         }
         public static void RemoveRegenerative(BaseCreature bc)
         {
             CheckHues(bc);
-            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0);
+            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200);
         }
         public static void AddReflective(BaseCreature bc)
         {
             bc.Name = MonsterName.Generate();
             AddLoot(bc);
-            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0);
+            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200);
             CheckHues(bc);
         }
         public static void RemoveReflective(BaseCreature bc)
         {
-            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0);
+            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200);
             CheckHues(bc);
         }
         public static void AddMagicResistant(BaseCreature bc) {
@@ -298,7 +299,7 @@ namespace Server.Mobiles
             bc.SetResistance(ResistanceType.Poison, 100);
             bc.SetResistance(ResistanceType.Energy, 100);
             bc.Skills.MagicResist.Base = 120.0;
-            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0);
+            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200);
             AddLoot(bc);
         }
         public static void RemoveMagicResistant(BaseCreature bc)
@@ -308,7 +309,7 @@ namespace Server.Mobiles
             bc.SetResistance(ResistanceType.Cold, 0);
             bc.SetResistance(ResistanceType.Poison, 0);
             bc.SetResistance(ResistanceType.Energy, 0);
-            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0);
+            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200);
             bc.Skills.MagicResist.Base = 0;
         }
 
@@ -376,7 +377,7 @@ namespace Server.Mobiles
             bc.SetResistance(ResistanceType.Energy, bc.BaseEnergyResistance + 15);
             bc.SetResistance(ResistanceType.Fire, bc.BaseFireResistance + 15);
             bc.SetResistance(ResistanceType.Physical, bc.BasePhysicalResistance + 25);
-            Convert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff);
+            Convert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff, 500);
             AddLoot(bc);
         }
         public static void AddLoot(BaseCreature bc)
@@ -433,10 +434,11 @@ namespace Server.Mobiles
             bc.SetResistance(ResistanceType.Energy, bc.BaseEnergyResistance - 15);
             bc.SetResistance(ResistanceType.Fire, bc.BaseFireResistance - 15);
             bc.SetResistance(ResistanceType.Physical, bc.BasePhysicalResistance - 25);
-            UnConvert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff);
+            UnConvert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff, 500);
         }
-        public static void Convert(BaseCreature bc, double goldBuff, double hitsBuff, double strBuff, double intBuff, double dexBuff, double skillsBuff, double speedBuff, double fameBuff, double karmaBuff, int damageBuff)
+        public static void Convert(BaseCreature bc, double goldBuff, double hitsBuff, double strBuff, double intBuff, double dexBuff, double skillsBuff, double speedBuff, double fameBuff, double karmaBuff, int damageBuff, int baseXpModiefier = 0)
         {
+            bc.ExperienceValue += baseXpModiefier;
             if (bc.Backpack != null)
             {
                 Item[] goldItems = bc.Backpack.FindItemsByType(typeof(Gold));
@@ -498,8 +500,9 @@ namespace Server.Mobiles
                 }
             }
         }
-        public static void UnConvert(BaseCreature bc, double goldBuff, double hitsBuff, double strBuff, double intBuff, double dexBuff, double skillsBuff, double speedBuff, double fameBuff, double karmaBuff, int damageBuff)
+        public static void UnConvert(BaseCreature bc, double goldBuff, double hitsBuff, double strBuff, double intBuff, double dexBuff, double skillsBuff, double speedBuff, double fameBuff, double karmaBuff, int damageBuff, int baseXpModifier = 0)
         {
+            bc.ExperienceValue -= baseXpModifier;
             bc.Hue = 0;
 
             if (bc.HitsMaxSeed >= 0)
@@ -543,6 +546,74 @@ namespace Server.Mobiles
             }
         }
 
+        public static void RandomMonsterBuffs(BaseCreature creature, int maxBuffs)
+        {
+            var challengerBuffs = 0;
+            while (challengerBuffs < maxBuffs)
+            {
+                if (Utility.Random(100) < 5 && !creature.IsIllusionist)
+                {
+                    creature.IsIllusionist = true;
+                    challengerBuffs++;
+                }
+                if (Utility.Random(100) < 5 && !creature.IsCorruptor)
+                {
+                    creature.IsCorruptor = true;
+                    challengerBuffs++;
+                }
+                if (Utility.Random(100) < 5 && !creature.IsEthereal)
+                {
+                    creature.IsEthereal = true;
+                    challengerBuffs++;
+                }
+                if (Utility.Random(100) < 5 && !creature.IsIllusionist)
+                {
+                    creature.IsIllusionist = true;
+                    challengerBuffs++;
+                }
+                if (Utility.Random(100) < 5 && !creature.IsMagicResistant)
+                {
+                    creature.IsMagicResistant = true;
+                    challengerBuffs++;
+                }
+                if (Utility.Random(100) < 5 && !creature.IsFrozen)
+                {
+                    creature.IsFrozen = true;
+                    challengerBuffs++;
+                }
+                if (Utility.Random(100) < 5 && !creature.IsBurning)
+                {
+                    creature.IsBurning = true;
+                    challengerBuffs++;
+                }
+                if (Utility.Random(100) < 5 && !creature.IsElectrified)
+                {
+                    creature.IsElectrified = true;
+                    challengerBuffs++;
+                }
+                if (Utility.Random(100) < 5 && !creature.IsToxic)
+                {
+                    creature.IsToxic = true;
+                    challengerBuffs++;
+                }
+                if (Utility.Random(100) < 5 && !creature.IsReflective)
+                {
+                    creature.IsReflective = true;
+                    challengerBuffs++;
+                }
+                if (Utility.Random(100) < 5 && !creature.IsRegenerative)
+                {
+                    creature.IsRegenerative = true;
+                    challengerBuffs++;
+                }
+                if (Utility.Random(100) < 5 && !creature.IsSoulFeeder)
+                {
+                    creature.IsSoulFeeder = true;
+                    challengerBuffs++;
+                }
+            }
+        }
+
         public static void CheckFreezeHue(Mobile defender, int originalHue)
         {
             if (defender.Frozen)
@@ -558,18 +629,12 @@ namespace Server.Mobiles
 
         public static Poison GetPoison()
         {
-            switch(Utility.Random(3))
+            return Utility.Random(3) switch
             {
-                case 1:
-                    return Poison.Regular;
-                    break;
-                case 2:
-                    return Poison.Greater;
-                    break;
-                default:
-                    return Poison.Lesser;
-                    break;
-            }
+                1 => Poison.Regular,
+                2 => Poison.Greater,
+                _ => Poison.Lesser
+            };
         }
         public static bool CheckElementalEffect(int chance = 10)
         {
@@ -590,16 +655,16 @@ namespace Server.Mobiles
                 energyDam = 100;
                 sound = 0x5C3;
                 Effects.SendLocationParticles(
-                   EffectItem.Create(mobile.Location, mobile.Map, EffectItem.DefaultDuration),
-                   0x37CC,
-                   1,
-                   40,
-                   97,
-                   3,
-                   9917,
-                   0
-               );
-               if (CheckElementalEffect())
+                    EffectItem.Create(mobile.Location, mobile.Map, EffectItem.DefaultDuration),
+                    0x37CC,
+                    1,
+                    40,
+                    97,
+                    3,
+                    9917,
+                    0
+                );
+                if (CheckElementalEffect())
                 {
                     Blindness.BlindTarget(mobile, Utility.RandomMinMax(5, 7), "* Blinded by electrical shock *");
                 }
@@ -644,20 +709,20 @@ namespace Server.Mobiles
                 {
                     mobile.Freeze(TimeSpan.FromSeconds(Utility.RandomMinMax(5, 7)));
                     mobile.PublicOverheadMessage(
-                    MessageType.Regular,
-                    0x3B2,
-                    false,
-                    "* Frozen by intense cold *"
+                        MessageType.Regular,
+                        0x3B2,
+                        false,
+                        "* Frozen by intense cold *"
                     );
                     CheckFreezeHue(mobile, mobile.HueMod);
                 } else if (player != null && frozenAvoidanceChance < 100)
                 {
                     player.Slow(6);
                     mobile.PublicOverheadMessage(
-                    MessageType.Regular,
-                    0x3B2,
-                    false,
-                    "* Slowed by intense cold *"
+                        MessageType.Regular,
+                        0x3B2,
+                        false,
+                        "* Slowed by intense cold *"
                     );
                 }
                 coldDam = 100;

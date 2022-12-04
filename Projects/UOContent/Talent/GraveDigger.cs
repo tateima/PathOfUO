@@ -25,21 +25,28 @@ namespace Server.Talent
 
         public void Dig(BaseHarvestTool tool, Mobile mobile, Point3D point)
         {
-            var expiryTime = DateTime.Now.AddMinutes(-30);
-            var expiredGraves = _lastGraves.Where(g => g.Value < expiryTime).ToList();
-            foreach (KeyValuePair<Point2D, DateTime> entry in expiredGraves)
+            if (HasSkillRequirement(mobile))
             {
-                _lastGraves.Remove(entry.Key);
-            }
+                var expiryTime = DateTime.Now.AddMinutes(-30);
+                var expiredGraves = _lastGraves.Where(g => g.Value < expiryTime).ToList();
+                foreach (KeyValuePair<Point2D, DateTime> entry in expiredGraves)
+                {
+                    _lastGraves.Remove(entry.Key);
+                }
 
-            bool canDig = _lastGraves.All(entry => !mobile.InRange(entry.Key, 3));
-            if (canDig && mobile.BeginAction(tool))
-            {
-                new DigTimer(mobile, tool, point, this).Start();
+                bool canDig = _lastGraves.All(entry => !mobile.InRange(entry.Key, 3));
+                if (canDig && mobile.BeginAction(tool))
+                {
+                    new DigTimer(mobile, tool, point, this).Start();
+                }
+                else
+                {
+                    mobile.SendMessage("You cannot dig here right now");
+                }
             }
             else
             {
-                mobile.SendMessage("You cannot dig here right now");
+                mobile.SendMessage("You cannot dig as you don't have the skill.");
             }
         }
 

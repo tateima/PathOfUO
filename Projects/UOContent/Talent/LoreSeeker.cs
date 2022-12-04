@@ -48,7 +48,7 @@ namespace Server.Talent
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
-            if (!OnCooldown)
+            if (!OnCooldown && HasSkillRequirement(attacker))
             {
                 OnCooldown = true;
                 int modifier = GetLoreModifier(attacker, Level);

@@ -2212,6 +2212,11 @@ namespace Server.Mobiles
                 midLevel = 76;
             }
             Level = Utility.RandomMinMax(minLevel, MaxLevel);
+            if (Utility.Random(1000) <= 1)
+            {
+                // experienced version of creature
+                Level += Utility.RandomMinMax(1, 5);
+            }
             double buff = 1.00;
             buff += Level <= midLevel ? 0 : ((Level - midLevel)*5)/100.00;
             SetHits(Hits + Utility.RandomMinMax(1, Level));
@@ -2227,8 +2232,28 @@ namespace Server.Mobiles
             {
                 IsParagon = true;
             }
-
             base.OnBeforeSpawn(location, m);
+            if (!Array.Exists(OppositionGroup.SeaCreatures, type => type == GetType()) && !Region.IsPartOf<GuardedRegion>())
+            {
+                int range = Region.IsPartOf<DungeonRegion>() ? 25 : 75;
+                var items = m.GetItemsInRange(location, range);
+                var nearbyShrine = false;
+                foreach (var item in items)
+                {
+                    if (item is Shrine)
+                    {
+                        nearbyShrine = true;
+                        break;
+                    }
+                }
+
+                if (!nearbyShrine)
+                {
+                    Shrine shrine = new Shrine();
+                    Point3D shrineLocation = new Point3D(location.X + 1, location.Y + 1, location.Z);
+                    shrine.MoveToWorld(shrineLocation, m);
+                }
+            }
         }
 
         public override ApplyPoisonResult ApplyPoison(Mobile from, Poison poison)
@@ -4451,7 +4476,7 @@ namespace Server.Mobiles
 
             xp += VirtualArmor * 2.5;
 
-            xp += Fame / 100.00;
+            xp += Fame / 50.00;
 
             if (BaseInstrument.IsMageryCreature(this))
             {
@@ -4463,12 +4488,16 @@ namespace Server.Mobiles
                 xp += Skills.Necromancy.Base;
             }
 
-            if (Skills.Tactics.Base >= 90.0)
+            if (Skills.Tactics.Base >= 70.0)
             {
                 xp += Skills.Tactics.Base;
             }
 
             if (BaseInstrument.IsFireBreathingCreature(this))
+            {
+                xp += AOS.Scale(HitsMax, 66);
+            }
+            else
             {
                 xp += AOS.Scale(HitsMax, 33);
             }
@@ -4485,9 +4514,9 @@ namespace Server.Mobiles
                 xp += PoisonImmune.Level * 33;
             }
 
-            if (xp > 5000)
+            if (xp > 10000)
             {
-                xp = 5000;
+                xp = 10000;
             }
 
             return xp;
@@ -4685,6 +4714,16 @@ namespace Server.Mobiles
                     if (titles[i] is PlayerMobile)
                     {
                         PlayerMobile player = (PlayerMobile)titles[i];
+
+                        if (player.Shrine?.GetShrineType() is ShrineType.Blessed)
+                        {
+                            contributedXp += AOS.Scale(contributedXp, 20);
+                        }
+                        else if (player.Shrine?.GetShrineType() is ShrineType.Cursed)
+                        {
+                            contributedXp -= AOS.Scale(contributedXp, 40);
+                        }
+
                         if (Level >= player.Level - 2)
                         {
                             if (Level > player.Level + 5)
@@ -4734,6 +4773,33 @@ namespace Server.Mobiles
 
             if (LastKiller is PlayerMobile playerThatKilled)
             {
+                if (playerThatKilled.Shrine?.GetShrineType() is ShrineType.Blessed)
+                {
+                    if (Utility.Random(250) < 1)
+                    {
+                        MonsterBuff.AddLoot(this);
+                    }
+                    else
+                    {
+                        if (Utility.Random(100) < 5)
+                        {
+                            Backpack.DropItem(new Gold(Utility.RandomMinMax(100,200)));
+                            Backpack.DropItem(Loot.RandomWeapon());
+                            Backpack.DropItem(Loot.RandomGem());
+                        }
+                    }
+                }
+                else if (playerThatKilled.Shrine?.GetShrineType() is ShrineType.Cursed)
+                {
+                    if (Utility.Random(100) < 15)
+                    {
+                        Item[] items = Backpack?.FindItemsByType(typeof(Item));
+                        if (items is { Length: > 0 })
+                        {
+                            Deity.DestroyItem(playerThatKilled, $"{Name}'s backpack");
+                        }
+                    }
+                }
                 foreach (KeyValuePair<Type, BaseTalent> entry in playerThatKilled.Talents)
                 {
                     if (entry.Value.HasKillEffect)
@@ -5498,13 +5564,16 @@ namespace Server.Mobiles
         public virtual void AlterDamageScalarFrom(Mobile caster, ref double scalar)
         {
             TriggerAbilityAlterDamageScalar(MonsterAbilityTrigger.TakeSpellDamage, caster, ref scalar);
+            AlterDamageFromPlayerBuffs(caster, ref scalar);
+            AlterDamageFromPlayerNatureBuff(ref scalar);
         }
 
         public virtual void AlterDamageScalarTo(Mobile target, ref double scalar)
         {
             TriggerAbilityAlterDamageScalar(MonsterAbilityTrigger.GiveSpellDamage, target, ref scalar);
             AlterDamageToByLevel(target, ref scalar);
-            AlterScalarFromBuffs(false, ref scalar);
+            AlterDamageFromBuffs(false, ref scalar);
+            AlterDamageToByPlayerNatureBuff(ref scalar);
         }
 
         public virtual void AlterSpellDamageFrom(Mobile from, ref int damage)
@@ -5512,11 +5581,14 @@ namespace Server.Mobiles
             TriggerAbilityAlterDamage(MonsterAbilityTrigger.TakeSpellDamage, from, ref damage);
             AlterDamageFromByLevel(from, ref damage);
             AlterDamageFromBuffs(true, ref damage);
+            AlterDamageFromPlayerBuffs(from, ref damage);
+            AlterDamageFromPlayerNatureBuff(ref damage);
         }
 
         public virtual void AlterSpellDamageTo(Mobile to, ref int damage)
         {
             TriggerAbilityAlterDamage(MonsterAbilityTrigger.GiveSpellDamage, to, ref damage);
+            // AlterDamageToByPlayerNatureBuff(ref damage);
             // AlterDamageToByLevel(to, ref damage);
         }
 
@@ -5525,6 +5597,8 @@ namespace Server.Mobiles
             TriggerAbilityAlterDamage(MonsterAbilityTrigger.TakeMeleeDamage, from, ref damage);
             AlterDamageFromByLevel(from, ref damage);
             AlterDamageFromBuffs(true, ref damage);
+            AlterDamageFromPlayerBuffs(from, ref damage);
+            AlterDamageFromPlayerNatureBuff(ref damage);
         }
 
         public virtual void AlterMeleeDamageTo(Mobile to, ref int damage)
@@ -5536,10 +5610,87 @@ namespace Server.Mobiles
             {
                 AlterDamageToByLevel(to, ref damage);
             }
+            if (MasterHasNatureBuff())
+            {
+                damage += AOS.Scale(damage, 20);
+            }
             AlterDamageFromBuffs(false, ref damage);
         }
 
-        public void AlterScalarFromBuffs(bool defending, ref double scalar)
+        private bool MasterHasNatureBuff()
+        {
+            Mobile master = GetMaster();
+            if (master is PlayerMobile playerMaster)
+            {
+                ShrineType? shrineEffectType = playerMaster.Shrine?.GetShrineType();
+                return playerMaster.Alive && shrineEffectType is ShrineType.Nature;
+            }
+            return false;
+        }
+
+        private void AlterDamageFromPlayerNatureBuff(ref int damage)
+        {
+            if (MasterHasNatureBuff())
+            {
+                damage -= AOS.Scale(damage, 20);
+            }
+        }
+
+        private void AlterDamageFromPlayerNatureBuff(ref double damage)
+        {
+            if (MasterHasNatureBuff())
+            {
+                damage -= 0.2;
+            }
+        }
+
+        private void AlterDamageToByPlayerNatureBuff(ref double damage)
+        {
+            if (MasterHasNatureBuff())
+            {
+                damage += 0.2;
+            }
+        }
+        private void AlterDamageToByPlayerNatureBuff(ref int damage)
+        {
+            if (MasterHasNatureBuff())
+            {
+                damage += AOS.Scale(damage, 20);
+            }
+        }
+
+        private bool PlayerHasDamagingBuffs(Mobile from)
+        {
+            if (from is PlayerMobile player)
+            {
+                bool shrineEnemyCheck = false;
+                if (player.Shrine is not null)
+                {
+                    ShrineType shrineType = player.Shrine.GetShrineType();
+                    shrineEnemyCheck = Shrine.ShrineAlignmentEnemyCheck(this, shrineType);
+                }
+                return Deity.AlignmentCheck(from, Deity.GetCreatureAlignment(GetType()), true) && player.HasDeityFavor || shrineEnemyCheck;
+            }
+            return false;
+        }
+
+        private void AlterDamageFromPlayerBuffs(Mobile from, ref int damage)
+        {
+            if (PlayerHasDamagingBuffs(from))
+            {
+                damage += AOS.Scale(damage, 20);
+            }
+        }
+
+        private void AlterDamageFromPlayerBuffs(Mobile caster, ref double scalar)
+        {
+            if (PlayerHasDamagingBuffs(caster))
+            {
+                scalar += 0.2;
+            }
+        }
+
+        public void AlterDamageFromBuffs(bool defending, ref double scalar)
         {
             if (IsHeroic || IsBoss)
             {
