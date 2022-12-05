@@ -13,11 +13,9 @@ Fork of ModernUO https://github.com/modernuo/ModernUO
 ## Tips
 When creating new versions of files using SerializerGenerator make sure you update the version number before exporting the schema. Otherwise it can result in ArgumentOutOfRangeException errors.
 
-## Collaborators
+## Thanks
 [![Kamron Batman](https://images.weserv.nl/?url=avatars.githubusercontent.com/u/3953314&h=64&w=64&fit=cover&mask=circle&maxage=1d)](https://github.com/kamronbatman)
 [![Mark1145](https://images.weserv.nl/?url=avatars.githubusercontent.com/u/15312181&h=64&w=64&fit=cover&mask=circle&maxage=1d)](https://github.com/mark1145)
-
-## Thanks
 - RunUO Team & Community
 - [Voxpire](https://github.com/Voxpire), the ServUO Team & Community
 - [Karasho](https://github.com/andreakarasho), [Jaedan](https://github.com/jaedan) and the ClassicUO Community
