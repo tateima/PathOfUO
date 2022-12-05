@@ -112,14 +112,6 @@
       "ruleArguments": [
         ""
       ]
-    },
-    {
-      "name": "Temporary",
-      "type": "bool",
-      "rule": "PrimitiveTypeMigrationRule",
-      "ruleArguments": [
-        ""
-      ]
     }
   ]
 }
