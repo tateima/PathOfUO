@@ -2140,42 +2140,11 @@ namespace Server.Mobiles
                 {
                     // 5% chance in Dungeons 1% chance everywhere else
                     int chance = Region.IsPartOf<DungeonRegion>() ? 200 : 50;
-                    IsHeroic = Utility.Random(10000) < chance;
-
-                    if (!IsHeroic)
+                    if (Utility.Random(10000) < chance)
                     {
-                        chance = Region.IsPartOf<DungeonRegion>() ? 2000 : 1000;
-                        IsVeteran = Utility.Random(10000) < chance;
+                        int buffs = chance > 50 ? Utility.RandomMinMax(1, 4) : Utility.RandomMinMax(1, 2);
+                        MonsterBuff.RandomMonsterBuffs(this, buffs);
                     }
-                    chance = 50;
-                    IsIllusionist = Utility.Random(10000) < chance;
-                    IsCorruptor = Utility.Random(10000) < chance;
-                    IsEthereal = Utility.Random(10000) < chance;
-
-                    if (DynamicExperienceValue() <= 1700)
-                    {
-                        IsBoss = Utility.Random(10000) < chance;
-                    }
-                    chance = 100;
-                    IsMagicResistant = Utility.Random(10000) < chance;
-                    switch (Utility.Random(4))
-                    {
-                        case 1:
-                            IsFrozen = Utility.Random(10000) < chance;
-                            break;
-                        case 2:
-                            IsBurning = Utility.Random(10000) < chance;
-                            break;
-                        case 3:
-                            IsElectrified = Utility.Random(10000) < chance;
-                            break;
-                        case 4:
-                            IsToxic = Utility.Random(10000) < chance;
-                            break;
-                    }
-                    IsReflective = Utility.Random(10000) < chance;
-                    IsRegenerative = Utility.Random(10000) < chance;
-                    IsSoulFeeder = Utility.Random(10000) < chance;
                 }
             }
         }
@@ -2188,7 +2157,7 @@ namespace Server.Mobiles
             }
         }
 
-        public void SetLevel()
+        public void SetLevel(int minLevelOverride = 0)
         {
             int baseXp = (int)DynamicExperienceValue() + ExperienceValue;
             // 38.4615384615
@@ -2197,6 +2166,10 @@ namespace Server.Mobiles
             double tier = baseXp / 500.00;
             int midLevel = (int)(tier * levelRangePerTier);
             int minLevel = midLevel - 5;
+            if (minLevelOverride > 0)
+            {
+                minLevel = minLevelOverride;
+            }
             if (minLevel <= 1)
             {
                 minLevel = 2;
@@ -2233,27 +2206,7 @@ namespace Server.Mobiles
                 IsParagon = true;
             }
             base.OnBeforeSpawn(location, m);
-            if (!Array.Exists(OppositionGroup.SeaCreatures, type => type == GetType()) && !Region.IsPartOf<GuardedRegion>())
-            {
-                int range = Region.IsPartOf<DungeonRegion>() ? 25 : 75;
-                var items = m.GetItemsInRange(location, range);
-                var nearbyShrine = false;
-                foreach (var item in items)
-                {
-                    if (item is Shrine)
-                    {
-                        nearbyShrine = true;
-                        break;
-                    }
-                }
-
-                if (!nearbyShrine)
-                {
-                    Shrine shrine = new Shrine();
-                    Point3D shrineLocation = new Point3D(location.X + 1, location.Y + 1, location.Z);
-                    shrine.MoveToWorld(shrineLocation, m);
-                }
-            }
+            Shrine.CreateShrine(Location, Region, GetType(), Map);
         }
 
         public override ApplyPoisonResult ApplyPoison(Mobile from, Poison poison)
@@ -4722,6 +4675,9 @@ namespace Server.Mobiles
                         else if (player.Shrine?.GetShrineType() is ShrineType.Cursed)
                         {
                             contributedXp -= AOS.Scale(contributedXp, 40);
+                        } else if (player.Shrine?.GetShrineType() is ShrineType.Adventure)
+                        {
+                            contributedXp += AOS.Scale(contributedXp, 100);
                         }
 
                         if (Level >= player.Level - 2)

@@ -305,10 +305,8 @@ namespace Server.Items
         public BaseArmor(int itemID) : base(itemID)
         {
             _crafter = null;
-
             _resource = DefaultResource;
             Hue = CraftResources.GetHue(_resource);
-
             _hitPoints = _maxHitPoints = Utility.RandomMinMax(InitMinHits, InitMaxHits);
             _alignmentRaw = "None";
             _talentLevel = 0;
@@ -1153,7 +1151,6 @@ namespace Server.Items
         private void AfterDeserialization()
         {
             var m = Parent as Mobile;
-
             Talent = _talentIndex < BaseTalent.InvalidTalentIndex ? TalentConstructor.ConstructFromIndex(_talentIndex) : null;
 
             if (Core.AOS && m != null)
@@ -1937,8 +1934,8 @@ namespace Server.Items
                     attrs.Add(new EquipInfoAttribute(1038005 + (int)_protectionLevel));
                 }
             }
-            else if (_durability != ArmorDurabilityLevel.Regular || _protectionLevel > ArmorProtectionLevel.Regular &&
-                _protectionLevel <= ArmorProtectionLevel.Invulnerability)
+            else if (_durability != ArmorDurabilityLevel.Regular || (_protectionLevel <= ArmorProtectionLevel.Regular ||
+                                                                     _protectionLevel > ArmorProtectionLevel.Invulnerability))
             {
                 attrs.Add(new EquipInfoAttribute(1038000)); // Unidentified
             }

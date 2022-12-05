@@ -579,97 +579,107 @@ namespace Server.Misc
             return runeWords;
         }
 
-        public static BaseClothing GetRuneWordClothing(BaseClothing clothing) {
+        public static BaseClothing GetRuneWordClothing(BaseClothing clothing, string runeWordOverride = "") {
             List<string> pockets = clothing.PocketArray.ToList();
             string runeWords = GetRuneWords(pockets);
+            if (!string.IsNullOrEmpty(runeWordOverride))
+            {
+                runeWords = runeWordOverride;
+            }
             if (!string.IsNullOrEmpty(runeWords)) {
                 switch(runeWords) {
                     case "ZetAmnMar":
-                        if (clothing is HalfApron) {
+                        if (clothing is HalfApron || runeWordOverride?.Length > 0) {
                             return new CrimsonCincture();
                         }
                         break;
                     case "LuxAmnMarAoe":
-                        if (clothing is Robe) {
+                        if (clothing is Robe || runeWordOverride?.Length > 0) {
                             return new RobeOfTheEclipse();
                         }
                         break;
                     case "CurOrtZetMar":
-                        if (clothing is Robe) {
+                        if (clothing is Robe || runeWordOverride?.Length > 0) {
                             return new RobeOfTheEquinox();
                         }
                         break;
                     case "MarNexLeqMar":
-                        if (clothing is BearMask) {
+                        if (clothing is BearMask || runeWordOverride?.Length > 0) {
                             return new SpiritOfTheTotem();
                         }
                         break;
                     case "NexMarUmDrux":
-                        if (clothing is DeerMask) {
+                        if (clothing is DeerMask || runeWordOverride?.Length > 0) {
                             return new HuntersHeaddress();
                         }
                         break;
                     case "DruxMarPaxZaq":
-                        if (clothing is WizardsHat) {
+                        if (clothing is WizardsHat || runeWordOverride?.Length > 0) {
                             return new HatOfTheMagi();
                         }
                         break;
                     case "PaxZaqOrtZet":
-                        if (clothing is HornedTribalMask) {
+                        if (clothing is HornedTribalMask || runeWordOverride?.Length > 0) {
                             return new DivineCountenance();
                         }
                         break;
                     case "AlozAeoLux":
-                        if (clothing is Kasa) {
+                        if (clothing is Kasa || runeWordOverride?.Length > 0) {
                             return new AncientFarmersKasa();
                         }
                         break;
                     case "LuxZetOrt":
-                        if (clothing is JesterHat) {
+                        if (clothing is JesterHat || runeWordOverride?.Length > 0) {
                             return new JesterHatofChuckles();
                         }
                         break;
                     case "AeoMeaAoe":
-                        if (clothing is ClothNinjaHood) {
+                        if (clothing is ClothNinjaHood || runeWordOverride?.Length > 0) {
                             return new BlackLotusHood();
                         }
                         break;
                     case "MeaAlozOrtKres":
-                        if (clothing is Kasa) {
+                        if (clothing is Kasa || runeWordOverride?.Length > 0) {
                             return new KasaOfTheRajin();
                         }
                         break;
                     case "ZaOrtZeAloz":
-                        if (clothing is Bandana) {
+                        if (clothing is Bandana || runeWordOverride?.Length > 0) {
                             return new BurglarsBandana();
                         }
                         break;
                     case "OrtVexMar":
-                        if (clothing is BearMask) {
+                        if (clothing is BearMask || runeWordOverride?.Length > 0) {
                             return new PolarBearMask();
                         }
                         break;
                     case "KresZeAlozOrt":
-                        if (clothing is TricorneHat) {
+                        if (clothing is TricorneHat || runeWordOverride?.Length > 0) {
                             return new DreadPirateHat();
                         }
                         break;
                     case "ChaZoAmnZoat":
-                        if (clothing is TricorneHat)
+                        if (clothing is TricorneHat || runeWordOverride?.Length > 0)
                         {
-                            return new CaptainJohnsHat();
+                            {
+                                return new CaptainJohnsHat();
+                            }
                         }
                         break;
                     case "ChaAmnOrtZet":
-                        if (clothing is Cloak)
+                        if (clothing is Cloak || runeWordOverride?.Length > 0)
                         {
-                            return new EmbroideredOakLeafCloak();
+                            {
+                                return new EmbroideredOakLeafCloak();
+                            }
                         }
                         break;
                     case "ChaOrtAlozMea":
-                        if (clothing is Bandana)
+                        if (clothing is Bandana || runeWordOverride?.Length > 0)
                         {
-                            return new CrownOfTalKeesh();
+                            {
+                                return new CrownOfTalKeesh();
+                            }
                         }
                         break;
                 }
@@ -677,419 +687,423 @@ namespace Server.Misc
             return null;
         }
 
-        public static BaseJewel GetRuneWordJewellery(BaseJewel jewellery) {
+        public static BaseJewel GetRuneWordJewellery(BaseJewel jewellery, string runeWordOverride = "") {
             List<string> sockets = jewellery.SocketArray.ToList();
             string runeWords = GetRuneWords(sockets);
+            if (!string.IsNullOrEmpty(runeWordOverride))
+            {
+                runeWords = runeWordOverride;
+            }
             if (!string.IsNullOrEmpty(runeWords)) {
                 switch(runeWords) {
                     case "AmnMarLeqDruxZaq":
-                        if (jewellery is GoldBracelet)
+                        if (jewellery is GoldBracelet || runeWordOverride?.Length > 0)
                         {
                             return new BraceletOfHealth();
                         }
-
                         break;
                     case "NexAmnVasUmZet":
-                        if (jewellery is GoldBracelet)
+                        if (jewellery is GoldBracelet || runeWordOverride?.Length > 0)
                         {
                             return new OrnamentOfTheMagician();
                         }
-
                         break;
                     case "VasZetUmZetOrt":
-                        if (jewellery is GoldRing)
+                        if (jewellery is GoldRing || runeWordOverride?.Length > 0)
                         {
                             return new RingOfTheElements();
                         }
-
                         break;
                     case "OrtMarLeqAmnOrt":
-                        if (jewellery is GoldRing)
+                        if (jewellery is GoldRing || runeWordOverride?.Length > 0)
                         {
                             return new RingOfTheVile();
                         }
-
                         break;
                     case "OrtVasDruxCurMox":
-                        if (jewellery is GoldBracelet)
+                        if (jewellery is GoldBracelet || runeWordOverride?.Length > 0)
                         {
                             return new AlchemistsBauble();
                         }
-
                         break;
                     case "EspCurAmnOrt":
-                        if (jewellery is SilverRing)
+                        if (jewellery is SilverRing || runeWordOverride?.Length > 0)
                         {
                             return new DjinnisRing();
                         }
-
                         break;
                 }
             }
             return null;
         }
-        public static BaseShield GetRuneWordShield(BaseShield shield) {
+        public static BaseShield GetRuneWordShield(BaseShield shield, string runeWordOverride = "") {
             List<string> sockets = shield.SocketArray.ToList();
             string runeWords = GetRuneWords(sockets);
+            if (!string.IsNullOrEmpty(runeWordOverride))
+            {
+                runeWords = runeWordOverride;
+            }
             if (!string.IsNullOrEmpty(runeWords)) {
                 switch(runeWords) {
                     case "ZetAmnMarLeq":
-                        if (shield is WoodenKiteShield)
+                        if (shield is WoodenKiteShield || runeWordOverride?.Length > 0)
                         {
                             return new ArcaneShield();
                         }
 
                         break;
                     case "PaxZaqMarOrtNex":
-                        if (shield is HeaterShield)
+                        if (shield is HeaterShield || runeWordOverride?.Length > 0)
                         {
                             return new Aegis();
                         }
-
                         break;
                     case "ZaqMarOrt":
                         return new DupresShield();
                     case "ZeZaKazMoxVex":
-                        if (shield is MetalShield)
+                        if (shield is MetalShield || runeWordOverride?.Length > 0)
                         {
                             return new ShieldOfInvulnerability();
                         }
-
                         break;
                 }
             }
             return null;
         }
 
-        public static BaseArmor GetRuneWordArmor(BaseArmor armor) {
+        public static BaseArmor GetRuneWordArmor(BaseArmor armor, string runeWordOverride = "") {
             List<string> sockets = armor.SocketArray.ToList();
             string runeWords = GetRuneWords(sockets);
+            if (!string.IsNullOrEmpty(runeWordOverride))
+            {
+                runeWords = runeWordOverride;
+            }
             if (!string.IsNullOrEmpty(runeWords)) {
                 switch(runeWords) {
                     case "DruxOrtHemZetVax":
-                        if (armor is StuddedChest)
+                        if (armor is StuddedChest || runeWordOverride?.Length > 0)
                         {
                             return new ArmorOfFortune();
                         }
 
                         break;
                     case "NexDruxVasHemZaq":
-                        if (armor is RingmailGloves)
+                        if (armor is RingmailGloves || runeWordOverride?.Length > 0)
                         {
                             return new GauntletsOfNobility();
                         }
 
                         break;
                     case "MarNexMarAmnVas":
-                        if (armor is PlateHelm)
+                        if (armor is PlateHelm || runeWordOverride?.Length > 0)
                         {
                             return new HelmOfInsight();
                         }
 
                         break;
                     case "DruxZaqUmOrtUm":
-                        if (armor is PlateChest)
+                        if (armor is PlateChest || runeWordOverride?.Length > 0)
                         {
                             return new HolyKnightsBreastplate();
                         }
 
                         break;
                     case "HemOrtMarVasNex":
-                        if (armor is PlateGloves)
+                        if (armor is PlateGloves || runeWordOverride?.Length > 0)
                         {
                             return new InquisitorsResolution();
                         }
 
                         break;
                     case "DothZetAmnLeqZaq":
-                        if (armor is PlateGorget)
+                        if (armor is PlateGorget || runeWordOverride?.Length > 0)
                         {
                             return new JackalsCollar();
                         }
 
                         break;
                     case "OrtZetMarDruxAmn":
-                        if (armor is ChainLegs)
+                        if (armor is ChainLegs || runeWordOverride?.Length > 0)
                         {
                             return new LeggingsOfBane();
                         }
 
                         break;
                     case "MarAmnNexAmnMar":
-                        if (armor is BoneArms)
+                        if (armor is BoneArms || runeWordOverride?.Length > 0)
                         {
                             return new MidnightBracers();
                         }
 
                         break;
                     case "ZetVaxLeqDruxOrt":
-                        if (armor is BoneHelm)
+                        if (armor is BoneHelm || runeWordOverride?.Length > 0)
                         {
                             return new OrnateCrownOfTheHarrower();
                         }
 
                         break;
                     case "PaxZetUmLeqDoth":
-                        if (armor is LeatherLegs)
+                        if (armor is LeatherLegs || runeWordOverride?.Length > 0)
                         {
                             return new ShadowDancerLeggings();
                         }
 
                         break;
                     case "DruxPaxNexOrtNex":
-                        if (armor is ChainChest)
+                        if (armor is ChainChest || runeWordOverride?.Length > 0)
                         {
                             return new TunicOfFire();
                         }
 
                         break;
                     case "UmDruxZaqHemZet":
-                        if (armor is LeatherGorget)
+                        if (armor is LeatherGorget || runeWordOverride?.Length > 0)
                         {
                             return new VoiceOfTheFallenKing();
                         }
 
                         break;
                     case "MeaZoatKres":
-                        if (armor is PlateDo)
+                        if (armor is PlateDo || runeWordOverride?.Length > 0)
                         {
                             return new AncientSamuraiDo();
                         }
 
                         break;
                     case "ZoatKresOrt":
-                        if (armor is LeatherHiroSode)
+                        if (armor is LeatherHiroSode || runeWordOverride?.Length > 0)
                         {
                             return new ArmsOfTacticalExcellence();
                         }
 
                         break;
                     case "HurLuxAloz":
-                        if (armor is PlateBattleKabuto)
+                        if (armor is PlateBattleKabuto || runeWordOverride?.Length > 0)
                         {
                             return new DaimyosHelm();
                         }
 
                         break;
                     case "MeaZoatKresAloz":
-                        if (armor is PlateDo)
+                        if (armor is PlateDo || runeWordOverride?.Length > 0)
                         {
                             return new AncientSamuraiDo();
                         }
 
                         break;
                     case "AmnDothHurAloz":
-                        if (armor is LeatherNinjaMitts)
+                        if (armor is LeatherNinjaMitts || runeWordOverride?.Length > 0)
                         {
                             return new GlovesOfTheSun();
                         }
 
                         break;
                     case "HurZaqMarAmn":
-                        if (armor is PlateSuneate)
+                        if (armor is PlateSuneate || runeWordOverride?.Length > 0)
                         {
                             return new LegsOfStability();
                         }
 
                         break;
                     case "ZaqAmnOrtKresLux":
-                        if (armor is LeatherMempo)
+                        if (armor is LeatherMempo || runeWordOverride?.Length > 0)
                         {
                             return new LeurociansMempoOfFortune();
                         }
 
                         break;
                     case "AmnZoatOrtDruxLux":
-                        if (armor is PlateDo)
+                        if (armor is PlateDo || runeWordOverride?.Length > 0)
                         {
                             return new RuneBeetleCarapace();
                         }
 
                         break;
                     case "HurAlozOrtVasMea":
-                        if (armor is LeatherNinjaMitts)
+                        if (armor is LeatherNinjaMitts || runeWordOverride?.Length > 0)
                         {
                             return new Stormgrip();
                         }
 
                         break;
                     case "EspMoxCur":
-                        if (armor is DragonHelm)
+                        if (armor is DragonHelm || runeWordOverride?.Length > 0)
                         {
                             return new AegisOfGrace();
                         }
 
                         break;
                     case "ZoatOrtCur":
-                        if (armor is ElvenGlasses)
+                        if (armor is ElvenGlasses || runeWordOverride?.Length > 0)
                         {
                             return new BrightsightLenses();
                         }
 
                         break;
                     case "ZoatZaOrtKazDem":
-                        if (armor is ElvenGlasses)
+                        if (armor is ElvenGlasses || runeWordOverride?.Length > 0)
                         {
                             return new MaritimeGlasses();
                         }
 
                         break;
                     case "VexAmnVaxKazDem":
-                        if (armor is ElvenGlasses)
+                        if (armor is ElvenGlasses || runeWordOverride?.Length > 0)
                         {
                             return new WizardsGlasses();
                         }
 
                         break;
                     case "KazVaxZaDem":
-                        if (armor is ElvenGlasses)
+                        if (armor is ElvenGlasses || runeWordOverride?.Length > 0)
                         {
                             return new TradeGlasses();
                         }
 
                         break;
                     case "KazOrtDemDum":
-                        if (armor is ElvenGlasses)
+                        if (armor is ElvenGlasses || runeWordOverride?.Length > 0)
                         {
                             return new LyricalGlasses();
                         }
 
                         break;
                     case "DumVoxAlozVexPax":
-                        if (armor is ElvenGlasses)
+                        if (armor is ElvenGlasses || runeWordOverride?.Length > 0)
                         {
                             return new NecromanticGlasses();
                         }
 
                         break;
                     case "MeaAeoKresHurDum":
-                        if (armor is ElvenGlasses)
+                        if (armor is ElvenGlasses || runeWordOverride?.Length > 0)
                         {
                             return new LightOfWayGlasses();
                         }
 
                         break;
                     case "EspDruxMirZaLux":
-                        if (armor is ElvenGlasses)
+                        if (armor is ElvenGlasses || runeWordOverride?.Length > 0)
                         {
                             return new FoldedSteelGlasses();
                         }
 
                         break;
                     case "ZoatDruxDem":
-                        if (armor is ElvenGlasses)
+                        if (armor is ElvenGlasses || runeWordOverride?.Length > 0)
                         {
                             return new PoisonedGlasses();
                         }
 
                         break;
                     case "DruxDemKazOrtDum":
-                        if (armor is ElvenGlasses)
+                        if (armor is ElvenGlasses || runeWordOverride?.Length > 0)
                         {
                             return new TreasureTrinketGlasses();
                         }
 
                         break;
                     case "KazOrtDumZaLi":
-                        if (armor is ElvenGlasses)
+                        if (armor is ElvenGlasses || runeWordOverride?.Length > 0)
                         {
                             return new MaceShieldGlasses();
                         }
 
                         break;
                     case "KazAmnVasLi":
-                        if (armor is ElvenGlasses)
+                        if (armor is ElvenGlasses || runeWordOverride?.Length > 0)
                         {
                             return new ArtsGlasses();
                         }
 
                         break;
                     case "DruxHurEspOrt":
-                        if (armor is ElvenGlasses)
+                        if (armor is ElvenGlasses || runeWordOverride?.Length > 0)
                         {
                             return new AnthropomorphistGlasses();
                         }
 
                         break;
                     case "AmnCurOrt":
-                        if (armor is ChainLegs)
+                        if (armor is ChainLegs || runeWordOverride?.Length > 0)
                         {
                             return new FeyLeggings();
                         }
 
                         break;
                     case "OrtVasMox":
-                        if (armor is WingedHelm)
+                        if (armor is WingedHelm || runeWordOverride?.Length > 0)
                         {
                             return new HelmOfSwiftness();
                         }
 
                         break;
                     case "NexZeDum":
-                        if (armor is OrcHelm)
+                        if (armor is OrcHelm || runeWordOverride?.Length > 0)
                         {
                             return new OrcishVisage();
                         }
 
                         break;
                     case "LuxDumKresVexHur":
-                        if (armor is FemalePlateChest)
+                        if (armor is FemalePlateChest || runeWordOverride?.Length > 0)
                         {
                             return new VioletCourage();
                         }
 
                         break;
                     case "KresEspCurAmnMar":
-                        if (armor is PlateChest)
+                        if (armor is PlateChest || runeWordOverride?.Length > 0)
                         {
                             return new HeartOfTheLion();
                         }
 
                         break;
                     case "OrtAmnZeKazMar":
-                        if (armor is LeatherGloves)
+                        if (armor is LeatherGloves || runeWordOverride?.Length > 0)
                         {
                             return new GlovesOfThePugilist();
                         }
 
                         break;
                     case "LiMirAmnOrt":
-                        if (armor is PlateGloves)
+                        if (armor is PlateGloves || runeWordOverride?.Length > 0)
                         {
                             return new GuantletsOfAnger();
                         }
 
                         break;
                     case "MirZoMarLar":
-                        if (armor is PlateGorget)
+                        if (armor is PlateGorget || runeWordOverride?.Length > 0)
                         {
                             return new GladiatorsCollar();
                         }
 
                         break;
                     case "VexKazZoAmn":
-                        if (armor is OrcHelm)
+                        if (armor is OrcHelm || runeWordOverride?.Length > 0)
                         {
                             return new OrcChieftainHelm();
                         }
 
                         break;
                     case "EspMoxCurZo":
-                        if (armor is BoneChest)
+                        if (armor is BoneChest || runeWordOverride?.Length > 0)
                         {
                             return new ShroudOfDeciet();
                         }
 
                         break;
                     case "LiChaKaxDumKres":
-                        if (armor is PlateBattleKabuto)
+                        if (armor is PlateBattleKabuto || runeWordOverride?.Length > 0)
                         {
                             return new SamuraiHelm();
                         }
 
                         break;
                     case "DemLiDumKazAmn":
-                        if (armor is PlateLegs)
+                        if (armor is PlateLegs || runeWordOverride?.Length > 0)
                         {
                             return new LeggingsOfEmbers();
                         }
@@ -1100,462 +1114,466 @@ namespace Server.Misc
             return null;
         }
 
-        public static BaseWeapon GetRuneWordWeapon(BaseWeapon weapon) {
+        public static BaseWeapon GetRuneWordWeapon(BaseWeapon weapon, string runeWordOverride = "") {
             List<string> sockets = weapon.SocketArray.ToList();
             string runeWords = GetRuneWords(sockets);
+            if (!string.IsNullOrEmpty(runeWordOverride))
+            {
+                runeWords = runeWordOverride;
+            }
             if (!string.IsNullOrEmpty(runeWords)) {
                 switch(runeWords) {
                     case "KresHurKazZetLuxNex":
-                        if (weapon is Frostbringer)
+                        if (weapon is Frostbringer || runeWordOverride?.Length > 0)
                         {
                             return new Forbidden();
                         }
                         break;
                     case "LiEspDemChaKaxVax":
-                        if (weapon is EnchantedTitanLegBone)
+                        if (weapon is EnchantedTitanLegBone || runeWordOverride?.Length > 0)
                         {
                             return new Gruumsh();
                         }
                         break;
                     case "ZoatDothPaxOrtEspMox":
-                        if (weapon is TheBeserkersMaul)
+                        if (weapon is TheBeserkersMaul || runeWordOverride?.Length > 0)
                         {
                             return new Exile();
                         }
                         break;
                     case "LiDemKresKazAmnVas":
-                        if (weapon is StaffOfPower)
+                        if (weapon is StaffOfPower || runeWordOverride?.Length > 0)
                         {
                             return new TwigOfCreation();
                         }
                         break;
                     case "NexOrtDemKazDumPax":
-                        if (weapon is BladeOfTheRighteous)
+                        if (weapon is BladeOfTheRighteous || runeWordOverride?.Length > 0)
                         {
                             return new Valkyrie();
                         }
                         break;
                     case "VasOrtLuxPaxVaxNex":
-                        if (weapon is Calm)
+                        if (weapon is Calm || runeWordOverride?.Length > 0)
                         {
                             return new DeathEater();
                         }
                         break;
                     case "NexZaqVasHemPax":
-                        if (weapon is MagicalShortbow)
+                        if (weapon is MagicalShortbow || runeWordOverride?.Length > 0)
                         {
                             return new Windsong();
                         }
 
                         break;
                     case "VasCurHurDrux":
-                        if (weapon is ElvenCompositeLongbow)
+                        if (weapon is ElvenCompositeLongbow || runeWordOverride?.Length > 0)
                         {
                             return new WildfireBow();
                         }
 
                         break;
                     case "MeaMoxVoxVexAmn":
-                        if (weapon is RadiantScimitar)
+                        if (weapon is RadiantScimitar || runeWordOverride?.Length > 0)
                         {
                             return new SoulSeeker();
                         }
 
                         break;
                     case "EspCurLuxKresOrt":
-                        if (weapon is OrnateAxe)
+                        if (weapon is OrnateAxe || runeWordOverride?.Length > 0)
                         {
                             return new TalonBite();
                         }
 
                         break;
                     case "AmnDruxDothOrtVax":
-                        if (weapon is DoubleAxe)
+                        if (weapon is DoubleAxe || runeWordOverride?.Length > 0)
                         {
                             return new AxeOfTheHeavens();
                         }
 
                         break;
                     case "OrtVasHemZaqNex":
-                        if (weapon is Katana)
+                        if (weapon is Katana || runeWordOverride?.Length > 0)
                         {
                             return new BladeOfInsanity();
                         }
 
                         break;
                     case "NexZaqAmnVasOrt":
-                        if (weapon is Longsword)
+                        if (weapon is Longsword || runeWordOverride?.Length > 0)
                         {
                             return new BladeOfTheRighteous();
                         }
 
                         break;
                     case "UmDruxZaqOrtHem":
-                        if (weapon is Longsword)
+                        if (weapon is Longsword || runeWordOverride?.Length > 0)
                         {
                             return new BoneCrusher();
                         }
 
                         break;
                     case "DruxHemOrtVasZet":
-                        if (weapon is BoneHarvester)
+                        if (weapon is BoneHarvester || runeWordOverride?.Length > 0)
                         {
                             return new BreathOfTheDead();
                         }
 
                         break;
                     case "VasDothZetOrtLeq":
-                        if (weapon is Bow)
+                        if (weapon is Bow || runeWordOverride?.Length > 0)
                         {
                             return new Frostbringer();
                         }
 
                         break;
                     case "HemOrtMarZetAmn":
-                        if (weapon is Bardiche)
+                        if (weapon is Bardiche || runeWordOverride?.Length > 0)
                         {
                             return new LegacyOfTheDreadLord();
                         }
 
                         break;
                     case "ZaqMarAmnNexDrux":
-                        if (weapon is Kryss)
+                        if (weapon is Kryss || runeWordOverride?.Length > 0)
                         {
                             return new SerpentsFang();
                         }
 
                         break;
                     case "VaxZetDothDruxVax":
-                        if (weapon is BlackStaff)
+                        if (weapon is BlackStaff || runeWordOverride?.Length > 0)
                         {
                             return new StaffOfTheMagi();
                         }
 
                         break;
                     case "DothZetPaxLeqDoth":
-                        if (weapon is Maul)
+                        if (weapon is Maul || runeWordOverride?.Length > 0)
                         {
                             return new TheBeserkersMaul();
                         }
 
                         break;
                     case "ZetDruxNexOrtHem":
-                        if (weapon is Lance)
+                        if (weapon is Lance || runeWordOverride?.Length > 0)
                         {
                             return new TheDragonSlayer();
                         }
 
                         break;
                     case "MarUmDruxZaqZet":
-                        if (weapon is Bow)
+                        if (weapon is Bow || runeWordOverride?.Length > 0)
                         {
                             return new TheDryadBow();
                         }
 
                         break;
                     case "LeqAmnVasNexPax":
-                        if (weapon is WarFork)
+                        if (weapon is WarFork || runeWordOverride?.Length > 0)
                         {
                             return new TheTaskmaster();
                         }
 
                         break;
                     case "PaxLeqUmAmnLeq":
-                        if (weapon is WarHammer)
+                        if (weapon is WarHammer || runeWordOverride?.Length > 0)
                         {
                             return new TitansHammer();
                         }
 
                         break;
                     case "VaxDothHemOrtVas":
-                        if (weapon is ExecutionersAxe)
+                        if (weapon is ExecutionersAxe || runeWordOverride?.Length > 0)
                         {
                             return new ZyronicClaw();
                         }
 
                         break;
                     case "AlozHemLeqOrt":
-                        if (weapon is Tessen)
+                        if (weapon is Tessen || runeWordOverride?.Length > 0)
                         {
                             return new PilferedDancerFans();
                         }
 
                         break;
                     case "VaxZoatLuxZet":
-                        if (weapon is Sai)
+                        if (weapon is Sai || runeWordOverride?.Length > 0)
                         {
                             return new DemonForks();
                         }
 
                         break;
                     case "KresMeaOrtDoth":
-                        if (weapon is Nunchaku)
+                        if (weapon is Nunchaku || runeWordOverride?.Length > 0)
                         {
                             return new DragonNunchaku();
                         }
 
                         break;
                     case "DothNexZoatUm":
-                        if (weapon is Tetsubo)
+                        if (weapon is Tetsubo || runeWordOverride?.Length > 0)
                         {
                             return new Exiler();
                         }
 
                         break;
                     case "AeoOrtZetDrux":
-                        if (weapon is Yumi)
+                        if (weapon is Yumi || runeWordOverride?.Length > 0)
                         {
                             return new HanzosBow();
                         }
 
                         break;
                     case "VasDruxAlozZoat":
-                        if (weapon is Bokuto)
+                        if (weapon is Bokuto || runeWordOverride?.Length > 0)
                         {
                             return new PeasantsBokuto();
                         }
 
                         break;
                     case "NexPaxZoatAloz":
-                        if (weapon is NoDachi)
+                        if (weapon is NoDachi || runeWordOverride?.Length > 0)
                         {
                             return new TheDestroyer();
                         }
 
                         break;
                     case "NexHurZoatHurAloz":
-                        if (weapon is Daisho)
+                        if (weapon is Daisho || runeWordOverride?.Length > 0)
                         {
                             return new SwordsOfProsperity();
                         }
 
                         break;
                     case "UmAlozHurAmnVas":
-                        if (weapon is NoDachi)
+                        if (weapon is NoDachi || runeWordOverride?.Length > 0)
                         {
                             return new SwordOfTheStampede();
                         }
 
                         break;
                     case "KresAeoLuzDothVas":
-                        if (weapon is Tessen)
+                        if (weapon is Tessen || runeWordOverride?.Length > 0)
                         {
                             return new WindsEdge();
                         }
 
                         break;
                     case "VasOrtDruxLuxMea":
-                        if (weapon is Kama)
+                        if (weapon is Kama || runeWordOverride?.Length > 0)
                         {
                             return new DarkenedSky();
                         }
 
                         break;
                     case "AeoVasKresHurOrt":
-                        if (weapon is Yumi)
+                        if (weapon is Yumi || runeWordOverride?.Length > 0)
                         {
                             return new TheHorselord();
                         }
 
                         break;
                     case "VoxVexAlozEsp":
-                        if (weapon is RuneBlade)
+                        if (weapon is RuneBlade || runeWordOverride?.Length > 0)
                         {
                             return new BladeDance();
                         }
 
                         break;
                     case "CurVexMeaMox":
-                        if (weapon is DiamondMace)
+                        if (weapon is DiamondMace || runeWordOverride?.Length > 0)
                         {
                             return new Bonesmasher();
                         }
 
                         break;
                     case "VexCurDruxHur":
-                        if (weapon is WildStaff)
+                        if (weapon is WildStaff || runeWordOverride?.Length > 0)
                         {
                             return new Boomstick();
                         }
 
                         break;
                     case "VexVasOrtAmnEsp":
-                        if (weapon is AssassinSpike)
+                        if (weapon is AssassinSpike || runeWordOverride?.Length > 0)
                         {
                             return new FleshRipper();
                         }
 
                         break;
                     case "AeoNexUmEspVex":
-                        if (weapon is WarCleaver)
+                        if (weapon is WarCleaver || runeWordOverride?.Length > 0)
                         {
                             return new RaedsGlory();
                         }
 
                         break;
                     case "KresVaxMoxMeaCur":
-                        if (weapon is ElvenMachete)
+                        if (weapon is ElvenMachete || runeWordOverride?.Length > 0)
                         {
                             return new RighteousAnger();
                         }
 
                         break;
                     case "VexHurLuxNexZaq":
-                        if (weapon is WarMace)
+                        if (weapon is WarMace || runeWordOverride?.Length > 0)
                         {
                             return new ArcticDeathDealer();
                         }
 
                         break;
                     case "KazDemEspZeZa":
-                        if (weapon is Halberd)
+                        if (weapon is Halberd || runeWordOverride?.Length > 0)
                         {
                             return new BlazeOfDeath();
                         }
 
                         break;
                     case "DumOrtMoxZaHur":
-                        if (weapon is Bow)
+                        if (weapon is Bow || runeWordOverride?.Length > 0)
                         {
                             return new BowOfTheJukaKing();
                         }
 
                         break;
                     case "MoxKazOrtDumZe":
-                        if (weapon is Club)
+                        if (weapon is Club || runeWordOverride?.Length > 0)
                         {
                             return new CavortingClub();
                         }
 
                         break;
                     case "KazAmnCurVexPax":
-                        if (weapon is ShortSpear)
+                        if (weapon is ShortSpear || runeWordOverride?.Length > 0)
                         {
                             return new EnchantedTitanLegBone();
                         }
 
                         break;
                     case "LuxMoxDruxVexVox":
-                        if (weapon is Lance)
+                        if (weapon is Lance || runeWordOverride?.Length > 0)
                         {
                             return new LunaLance();
                         }
 
                         break;
                     case "VexVoxZetVasOrt":
-                        if (weapon is Dagger)
+                        if (weapon is Dagger || runeWordOverride?.Length > 0)
                         {
                             return new NightsKiss();
                         }
 
                         break;
                     case "AmnOrtLeqAlozZoat":
-                        if (weapon is HeavyCrossbow)
+                        if (weapon is HeavyCrossbow || runeWordOverride?.Length > 0)
                         {
                             return new NoxRangersHeavyCrossbow();
                         }
 
                         break;
                     case "VexAlozLeqZe":
-                        if (weapon is BlackStaff)
+                        if (weapon is BlackStaff || runeWordOverride?.Length > 0)
                         {
                             return new StaffOfPower();
                         }
 
                         break;
                     case "VasZeKazAeoHem":
-                        if (weapon is GnarledStaff)
+                        if (weapon is GnarledStaff || runeWordOverride?.Length > 0)
                         {
                             return new WrathOfTheDryad();
                         }
 
                         break;
                     case "AloxVoxMarZetDoth":
-                        if (weapon is Scepter)
+                        if (weapon is Scepter || runeWordOverride?.Length > 0)
                         {
                             return new PixieSwatter();
                         }
 
                         break;
                     case "ZeCurHemDruxDoth":
-                        if (weapon is Cutlass)
+                        if (weapon is Cutlass || runeWordOverride?.Length > 0)
                         {
                             return new CaptainQuacklebushsCutlass();
                         }
 
                         break;
                     case "LuxOrtAmnDoth":
-                        if (weapon is Cleaver)
+                        if (weapon is Cleaver || runeWordOverride?.Length > 0)
                         {
                             return new ColdBlood();
                         }
 
                         break;
                     case "LarChaZoAmnOrt":
-                        if (weapon is Katana)
+                        if (weapon is Katana || runeWordOverride?.Length > 0)
                         {
                             return new BraveKnightOfTheBritannia();
                         }
 
                         break;
                     case "LarAmnChaZoPax":
-                        if (weapon is Dagger)
+                        if (weapon is Dagger || runeWordOverride?.Length > 0)
                         {
                             return new OblivionsNeedle();
                         }
 
                         break;
                     case "ChaZaAeoDruxZoat":
-                        if (weapon is SkinningKnife)
+                        if (weapon is SkinningKnife || runeWordOverride?.Length > 0)
                         {
                             return new RoyalGuardSurvivalKnife();
                         }
 
                         break;
                     case "ZeMirZoAmnVas":
-                        if (weapon is Halberd)
+                        if (weapon is Halberd || runeWordOverride?.Length > 0)
                         {
                             return new Calm();
                         }
 
                         break;
                     case "ZoDruxAmnDoth":
-                        if (weapon is Kryss)
+                        if (weapon is Kryss || runeWordOverride?.Length > 0)
                         {
                             return new FangOfRactus();
                         }
 
                         break;
                     case "LeqMarZothZeZa":
-                        if (weapon is Pike)
+                        if (weapon is Pike || runeWordOverride?.Length > 0)
                         {
                             return new Pacify();
                         }
 
                         break;
                     case "UmOrtChaLiAmn":
-                        if (weapon is Bardiche)
+                        if (weapon is Bardiche || runeWordOverride?.Length > 0)
                         {
                             return new Quell();
                         }
 
                         break;
                     case "KazDumChaPaxVax":
-                        if (weapon is Scythe)
+                        if (weapon is Scythe || runeWordOverride?.Length > 0)
                         {
                             return new Subdue();
                         }
 
                         break;
                     case "MoxCurDothLiLar":
-                        if (weapon is Longsword)
+                        if (weapon is Longsword || runeWordOverride?.Length > 0)
                         {
                             return new HolySword();
                         }
 
                         break;
                     case "KazDemDumVexZa":
-                        if (weapon is RepeatingCrossbow)
+                        if (weapon is RepeatingCrossbow || runeWordOverride?.Length > 0)
                         {
                             return new ShaminoCrossbow();
                         }

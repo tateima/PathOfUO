@@ -197,16 +197,13 @@ namespace Server.Items
         [SerializableFieldSaveFlag(15)]
         private bool ShouldSerializeTalentLevel() => _talentLevel > 0;
 
-
         private FactionItem _factionState;
 
         public BaseClothing(int itemID, Layer layer, int hue = 0) : base(itemID)
         {
             Layer = layer;
             Hue = hue;
-
             _resource = DefaultResource;
-
             _hitPoints = _maxHitPoints = Utility.RandomMinMax(InitMinHits, InitMaxHits);
             _talentLevel = 0;
             _talentIndex = BaseTalent.InvalidTalentIndex;

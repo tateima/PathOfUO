@@ -551,7 +551,6 @@ public abstract partial class BaseJewel : Item, ICraftable, IAosItem
     private void AfterDeserialization()
     {
         var m = Parent as Mobile;
-
         Talent = _talentIndex < BaseTalent.InvalidTalentIndex ? TalentConstructor.ConstructFromIndex(_talentIndex) : null;
 
         if (Core.AOS && m != null)

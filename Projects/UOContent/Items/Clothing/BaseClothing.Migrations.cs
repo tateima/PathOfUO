@@ -1,7 +1,34 @@
+using Server.Pantheon;
+using Server.Talent;
+
 namespace Server.Items;
 
 public partial class BaseClothing
 {
+    // private void MigrateFrom(V7Content content)
+    // {
+    //     _resource = content.Resource ?? DefaultResource;
+    //     _attributes = content.Attributes ?? AttributesDefaultValue();
+    //     _clothingAttributes = content.ClothingAttributes ?? ClothingAttributesDefaultValue();
+    //     _skillBonuses = content.SkillBonuses ?? SkillBonusesDefaultValue();
+    //     _resistances = content.Resistances ?? ResistancesDefaultValue();
+    //     _maxHitPoints = content.MaxHitPoints ?? 0;
+    //     _playerConstructed = content.PlayerConstructed;
+    //     _crafter = content.Crafter ?? "";
+    //     _quality = content.Quality ?? ClothingQuality.Regular;
+    //     _strReq = content.StrRequirement ?? -1;
+    //     // _pockets = content.Pockets ?? "";
+    //     // _alignmentRaw = content.AlignmentRaw ?? Deity.Alignment.None.ToString();
+    //     // _pocketAmount = content.PocketAmount ?? 0;
+    //     // _talentIndex = content.TalentIndex;
+    //     // _talentLevel = content.TalentLevel ?? 0;
+    //     // _talentLevel = 0;
+    //     // _talentIndex = BaseTalent.InvalidTalentIndex;
+    //     // _pocketAmount = 0;
+    //     // _pockets = "";
+    //     // _alignmentRaw = "None";
+    //     // _temporary = false;
+    // }
     private void MigrateFrom(V6Content content)
     {
         _resource = content.RawResource ?? DefaultResource;

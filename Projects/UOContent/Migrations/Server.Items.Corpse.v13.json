@@ -108,6 +108,14 @@
         "Server.Item",
         "SerializableInterfaceMigrationRule"
       ]
+    },
+    {
+      "name": "PreviousLife",
+      "type": "string",
+      "rule": "PrimitiveTypeMigrationRule",
+      "ruleArguments": [
+        ""
+      ]
     }
   ]
 }

@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using ModernUO.Serialization;
-using Org.BouncyCastle.Asn1.Cms;
 using Server.Factions;
+using Server.Misc;
 using Server.Mobiles;
 using Server.Pantheon;
+using Server.Regions;
 using Server.Spells;
 using Server.Talent;
 
@@ -43,7 +44,11 @@ namespace Server.Items
         Famine,
         Harvest,
         Sanguine,
-        Mythic
+        Mythic,
+        Vengeance,
+        Silence,
+        Weakness,
+        Adventure
     }
 
     [SerializationGenerator(0, false)]
@@ -79,6 +84,7 @@ namespace Server.Items
         public List<Moongate> Gates { get; set; }
 
         public List<Mobile> Invaders { get; set; }
+        public Region Region => Map == null ? Map.Internal.DefaultRegion : Map.DefaultRegion;
 
         [Constructible]
         public Shrine() : base(Utility.RandomBool())
@@ -109,6 +115,39 @@ namespace Server.Items
                 else
                 {
                     Player.SendMessage("You have an active shrine effect already in place.");
+                }
+            }
+        }
+
+        public static bool ValidShrineAnchor(Region region, Type anchorType) => !Array.Exists(OppositionGroup.SeaCreatures, type => type == anchorType) && !region.IsPartOf<GuardedRegion>();
+
+        public static int GetShrineRange(Region region) => region.IsPartOf<DungeonRegion>() ? 25 : 75;
+
+        public static void CreateShrine(Point3D location, Region region, Type anchorType, Map map, bool ignoreValidationCheck = false)
+        {
+            var valid = ignoreValidationCheck || ValidShrineAnchor(region, anchorType);
+            if (valid)
+            {
+                int range = GetShrineRange(region);
+                var items = map.GetItemsInRange(location, range);
+                if (items is not null)
+                {
+                    var nearbyShrine = false;
+                    foreach (var item in items)
+                    {
+                        if (item is Shrine)
+                        {
+                            nearbyShrine = true;
+                            break;
+                        }
+                    }
+
+                    if (!nearbyShrine)
+                    {
+                        Shrine shrine = new Shrine();
+                        Point3D shrineLocation = map.GetRandomNearbyLocation(location, 8, 1, 100, 16, false, true);
+                        shrine.MoveToWorld(shrineLocation, map);
+                    }
                 }
             }
         }
@@ -145,6 +184,34 @@ namespace Server.Items
             _shrineEffectOverTimeToken.Cancel();
             _item?.Delete();
             Delete();
+            RespawnShrine();
+        }
+
+        public void RespawnShrine()
+        {
+            var mobiles = Map.GetMobilesInRange(Location, GetShrineRange(Region)).ToArray();
+            if (mobiles.Length > 0)
+            {
+                var mobile = mobiles[Utility.Random(mobiles.Length)];
+                int attempts = 0;
+                bool validAnchor = ValidShrineAnchor(mobile.Region, mobile.GetType());
+                bool attemptCreation = false;
+                while (!validAnchor)
+                {
+                    mobile = mobiles[Utility.Random(mobiles.Length)];
+                    attemptCreation = ValidShrineAnchor(mobile.Region, mobile.GetType());
+                    validAnchor = attemptCreation;
+                    attempts++;
+                    if (attempts >= 100)
+                    {
+                        validAnchor = true;
+                    }
+                }
+                if (attemptCreation)
+                {
+                    CreateShrine(mobile.Location, mobile.Region, mobile.GetType(), mobile.Map, true);
+                }
+            }
         }
 
         private void CheckSetMessage(ref string message, string alternativeMessage)
@@ -275,6 +342,10 @@ namespace Server.Items
             {
                 if (Invaders[Utility.Random(Invaders.Count)] is BaseCreature invader)
                 {
+                    if (invader.Level < Player.Level - 3)
+                    {
+                        invader.SetLevel(Player.Level + Utility.RandomMinMax(-3, 3));
+                    }
                     if (Utility.Random(100) < 10)
                     {
                         if (InvastionTicks > 7)
@@ -317,6 +388,32 @@ namespace Server.Items
             }
             InvastionTicks++;
             Timer.StartTimer(TimeSpan.FromSeconds(Utility.RandomMinMax(30, 50)), SpawnInvaders, out _shrineEffectOverTimeToken);
+        }
+
+        public void InvasionEffect()
+        {
+            if (!Deleted)
+            {
+                Point3D randomLocation = Map.GetRandomNearbyLocation(Location, 8);
+                var nearbyMobiles = Map.GetMobilesInRange(randomLocation, 1).ToArray();
+                if (nearbyMobiles.Length > 0)
+                {
+                    Mobile entity = nearbyMobiles[Utility.Random(nearbyMobiles.Length)];
+                    Effects.SendBoltEffect(entity);
+                    entity.Damage(Utility.RandomMinMax(2, 10));
+                }
+                else
+                {
+                    Entity entity = new Entity(
+                        Serial.Zero,
+                        new Point3D(randomLocation.X, randomLocation.Y, randomLocation.Z),
+                        Map
+                    );
+                    Effects.SendBoltEffect(new Entity(Serial.Zero, new Point3D(randomLocation.X, randomLocation.Y, randomLocation.Z), Map));
+                    entity.Delete();
+                }
+                Timer.StartTimer(TimeSpan.FromSeconds(Utility.RandomMinMax(5, 20)), InvasionEffect);
+            }
         }
 
         public void StartInvasionEvent()
@@ -365,6 +462,7 @@ namespace Server.Items
             }
             InvastionTicks = 0;
             Timer.StartTimer(TimeSpan.FromSeconds(Utility.RandomMinMax(30, 50)), SpawnInvaders, out _shrineEffectOverTimeToken);
+            Timer.StartTimer(TimeSpan.FromSeconds(Utility.RandomMinMax(5, 20)), InvasionEffect);
         }
 
         public ShrineType GetShrineType() => (ShrineType)Enum.Parse(typeof(ShrineType), _typeString, true);
@@ -383,6 +481,67 @@ namespace Server.Items
             }
             switch (GetShrineType())
             {
+                case ShrineType.Adventure:
+                    CheckSetMessage(ref message, "Adventure awaits.");
+                    Deity.Effect(Player, Deity.Alignment.Light);
+                    break;
+                case ShrineType.Weakness:
+                    CheckSetMessage(ref message, "A weakness overcomes your hands.");
+                    var oneHandedItem = Player.FindItemOnLayer(Layer.OneHanded);
+                    if (oneHandedItem is not null)
+                    {
+                        Player.Backpack?.DropItem(oneHandedItem);
+                    }
+                    var twoHandedItem = Player.FindItemOnLayer(Layer.TwoHanded);
+                    if (twoHandedItem is not null)
+                    {
+                        Player.Backpack?.DropItem(twoHandedItem);
+                    }
+                    Deity.Effect(Player, Deity.Alignment.Darkness);
+                    break;
+                case ShrineType.Silence:
+                    CheckSetMessage(ref message, "A dominating silence bites your tongue.");
+                    Deity.Effect(Player, Deity.Alignment.Darkness);
+                    break;
+                case ShrineType.Vengeance:
+                    CheckSetMessage(ref message, "An item of pure vengeance lay before you.");
+                    switch (Utility.RandomMinMax(1, 4))
+                    {
+                        case 1:
+                            string clothingRuneWord = SocketBonus.RandomClothingRuneWord();
+                            BaseClothing baseClothing = SocketBonus.GetRuneWordClothing(new Robe(), clothingRuneWord);
+                            // baseClothing.Temporary = true;
+                            _item = baseClothing;
+                            break;
+                        case 2:
+                            string jewelleryRuneWord = SocketBonus.RandomJewelleryRuneWord();
+                            BaseJewel baseJewellery = SocketBonus.GetRuneWordJewellery(new GoldRing(), jewelleryRuneWord);
+                            _item = baseJewellery;
+                            break;
+                        case 3:
+                            string armorRuneWord = SocketBonus.RandomArmorRuneWord();
+                            BaseArmor baseArmor = SocketBonus.GetRuneWordArmor(new LeatherArms(), armorRuneWord);
+                            _item = baseArmor;
+                            break;
+                        case 4:
+                            string shieldRuneWord = SocketBonus.RandomShieldRuneWord();
+                            BaseShield baseShield = SocketBonus.GetRuneWordShield(new WoodenShield(), shieldRuneWord);
+                            _item = baseShield;
+                            break;
+                        default:
+                            string weaponRuneWord = SocketBonus.RandomWeaponRuneWord();
+                            BaseWeapon baseWeapon = SocketBonus.GetRuneWordWeapon(new Longsword(), weaponRuneWord);
+                            _item = baseWeapon;
+                            break;
+                    }
+
+                    if (_item is not null)
+                    {
+                        Point3D itemLocation = Map.GetRandomNearbyLocation(Location, 1);
+                        _item.MoveToWorld(itemLocation);
+                        Effects.SendBoltEffect(_item);
+                    }
+                    break;
                 case ShrineType.Mythic:
                     CheckSetMessage(ref message, "The air around you grows energised and ominous.");
                     minutes = 30;
@@ -644,6 +803,7 @@ namespace Server.Items
             if (_activated)
             {
                 Timer.StartTimer(TimeSpan.FromMinutes(ShrineEffectTimeInMinutes), Delete);
+                _item?.Delete();
             }
         }
     }

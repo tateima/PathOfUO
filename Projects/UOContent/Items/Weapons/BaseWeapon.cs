@@ -316,7 +316,6 @@ namespace Server.Items
                 InvalidateProperties();
             }
         }
-
         [CommandProperty(AccessLevel.GameMaster)]
         public int ShardPower
         {

@@ -561,6 +561,11 @@ namespace Server.Spells
                 Caster.SendMessage("You cannot cast while feared.");
                 return false;
             }
+            if ((Caster as PlayerMobile)?.Shrine.GetShrineType() is ShrineType.Silence)
+            {
+                Caster.SendMessage("You cannot cast while silenced.");
+                return false;
+            }
 
             var isWand = Scroll is BaseWand || Scroll is BaseDevice;
             if (isWand)

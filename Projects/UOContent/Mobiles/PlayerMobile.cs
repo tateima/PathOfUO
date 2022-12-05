@@ -2854,6 +2854,11 @@ namespace Server.Mobiles
 
         public override bool CheckEquip(Item item)
         {
+            if (Shrine.GetShrineType() is ShrineType.Weakness)
+            {
+                SendMessage("You cannot equip this item, your hands are too frail.");
+                return false;
+            }
             if (!base.CheckEquip(item))
             {
                 return false;

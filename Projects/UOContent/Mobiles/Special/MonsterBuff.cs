@@ -551,65 +551,77 @@ namespace Server.Mobiles
             var challengerBuffs = 0;
             while (challengerBuffs < maxBuffs)
             {
-                if (Utility.Random(100) < 5 && !creature.IsIllusionist)
+                if (Utility.Random(100) < 3 && !creature.IsIllusionist)
                 {
                     creature.IsIllusionist = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 5 && !creature.IsCorruptor)
+                if (Utility.Random(100) < 3 && !creature.IsCorruptor)
                 {
                     creature.IsCorruptor = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 5 && !creature.IsEthereal)
+                if (Utility.Random(100) < 3 && !creature.IsEthereal)
                 {
                     creature.IsEthereal = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 5 && !creature.IsIllusionist)
+                if (Utility.Random(100) < 3 && !creature.IsIllusionist)
                 {
                     creature.IsIllusionist = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 5 && !creature.IsMagicResistant)
+                if (Utility.Random(100) < 3 && !creature.IsMagicResistant)
                 {
                     creature.IsMagicResistant = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 5 && !creature.IsFrozen)
+                if (Utility.Random(100) < 3 && !creature.IsFrozen)
                 {
                     creature.IsFrozen = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 5 && !creature.IsBurning)
+                if (Utility.Random(100) < 3 && !creature.IsBurning)
                 {
                     creature.IsBurning = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 5 && !creature.IsElectrified)
+                if (Utility.Random(100) < 3 && !creature.IsElectrified)
                 {
                     creature.IsElectrified = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 5 && !creature.IsToxic)
+                if (Utility.Random(100) < 3 && !creature.IsToxic)
                 {
                     creature.IsToxic = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 5 && !creature.IsReflective)
+                if (Utility.Random(100) < 3 && !creature.IsReflective)
                 {
                     creature.IsReflective = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 5 && !creature.IsRegenerative)
+                if (Utility.Random(100) < 3 && !creature.IsRegenerative)
                 {
                     creature.IsRegenerative = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 5 && !creature.IsSoulFeeder)
+                if (Utility.Random(100) < 3 && !creature.IsSoulFeeder)
                 {
                     creature.IsSoulFeeder = true;
                     challengerBuffs++;
+                }
+                if (Utility.Random(100) < 1 && !creature.IsBoss)
+                {
+                    creature.IsBoss = true;
+                    challengerBuffs++;
+                }
+                if (Utility.Random(100) < 20 && !creature.IsVeteran)
+                {
+                    creature.IsVeteran = true;
+                } else if (Utility.Random(100) < 7 && !creature.IsVeteran && !creature.IsHeroic)
+                {
+                    creature.IsHeroic = true;
                 }
             }
         }
