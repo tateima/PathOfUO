@@ -1481,10 +1481,7 @@ namespace Server.Items
                  */
                 var bonus = AosAttributes.GetValue(m, AosAttribute.WeaponSpeed);
 
-                if (DivineFurySpell.UnderEffect(m))
-                {
-                    bonus += 10;
-                }
+                bonus += DivineFurySpell.GetWeaponSpeed(m);
 
                 // Bonus granted by successful use of Honorable Execution.
                 bonus += HonorableExecution.GetSwingBonus(m);
@@ -2920,10 +2917,7 @@ namespace Server.Items
             }
 
             // Divine Fury gives a +10% bonus to damage.
-            if (DivineFurySpell.UnderEffect(attacker))
-            {
-                damageBonus += 10;
-            }
+            damageBonus += DivineFurySpell.GetDamageBonus(attacker);
 
             var defenseMasteryMalus = 0;
 
