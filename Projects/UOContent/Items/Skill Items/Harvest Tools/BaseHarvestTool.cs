@@ -51,30 +51,16 @@ public abstract partial class BaseHarvestTool : Item, IUsesRemaining, ICraftable
 
     public abstract HarvestSystem HarvestSystem { get; }
 
-    public int OnCraft(
-        int quality, bool makersMark, Mobile from, CraftSystem craftSystem, Type typeRes, BaseTool tool,
-        CraftItem craftItem, int resHue
-    )
-    {
-        Quality = (ToolQuality)quality;
-
-        if (makersMark)
-        {
-            Crafter = from?.RawName;
-        }
-
-        return quality;
-    }
-
-<<<<<<< HEAD
         public int OnCraft(
             int quality, bool makersMark, Mobile from, CraftSystem craftSystem, Type typeRes, BaseTool tool,
             CraftItem craftItem, int resHue
         )
         {
             Quality = (ToolQuality)quality;
-            Crafter = from;
-=======
+            Crafter = from?.RawName;;
+            return quality;
+    }
+
     bool IUsesRemaining.ShowUsesRemaining
     {
         get => true;
@@ -86,7 +72,6 @@ public abstract partial class BaseHarvestTool : Item, IUsesRemaining, ICraftable
         _usesRemaining = _usesRemaining * GetUsesScalar() / 100;
         InvalidateProperties();
     }
->>>>>>> upstream/main
 
     public void UnscaleUses()
     {
