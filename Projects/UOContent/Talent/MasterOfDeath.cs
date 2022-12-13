@@ -12,7 +12,7 @@ namespace Server.Talent
         public MasterOfDeath()
         {
             BlockedBy = new[] { typeof(GreaterFireElemental) };
-            TalentDependency = typeof(SummonerCommand);
+            TalentDependencies = new[] { typeof(SummonerCommand) };
             HasDeathEffect = true;
             HasKillEffect = true;
             DisplayName = "Master of death";

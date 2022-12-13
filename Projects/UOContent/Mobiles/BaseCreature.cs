@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Server.Collections;
 using Server.ContextMenus;
+using Server.Dungeon;
 using Server.Engines.ConPVP;
 using Server.Engines.MLQuests;
 using Server.Engines.Quests.Doom;
@@ -193,6 +194,9 @@ namespace Server.Mobiles
 
         public const int ShoutRange = 8;
 
+        public const int MaximumCreatureLevel = 80;
+        public const int MinMaxCreatureLevel = 72;
+
         private static readonly Type[] m_AnimateDeadTypes =
         {
             typeof(MoundOfMaggots), typeof(HellSteed), typeof(SkeletalMount),
@@ -208,12 +212,15 @@ namespace Server.Mobiles
         public static readonly TimeSpan ShoutDelay = TimeSpan.FromMinutes(1);
 
         private DateTime m_NextGambleTime;
+
         public DateTime NextGambleTime
         {
             get => m_NextGambleTime;
             set => m_NextGambleTime = value;
         }
+
         private int m_GambleLosses;
+
         public int GambleLosses
         {
             get => m_GambleLosses;
@@ -224,14 +231,8 @@ namespace Server.Mobiles
 
         public int CannibalPoints
         {
-            get
-            {
-                return m_CannibalPoints;
-            }
-            set
-            {
-                m_CannibalPoints = value;
-            }
+            get { return m_CannibalPoints; }
+            set { m_CannibalPoints = value; }
         }
 
         private static readonly Type[] m_Eggs =
@@ -356,8 +357,10 @@ namespace Server.Mobiles
         private bool m_SoulFeeder;
 
         private int m_Level;
+        private double m_Tier;
         private int m_PhysicalResistance;
         private int m_PoisonResistance;
+        private bool m_InDungeon;
 
         /* until we are sure about who should be getting deleted, move them instead */
         /* On OSI, they despawn */
@@ -383,8 +386,9 @@ namespace Server.Mobiles
             {
                 iRangePerception = DefaultRangePerception;
             }
-
+            m_Tier = 1.0;
             m_Level = 1;
+            m_InDungeon = false;
             m_Loyalty = MaxLoyalty; // Wonderfully Happy
             m_NextGambleTime = DateTime.Now;
             m_GambleLosses = 0;
@@ -465,15 +469,13 @@ namespace Server.Mobiles
         [CommandProperty(AccessLevel.GameMaster)]
         public bool Feared
         {
-            get
-            {
-                return m_Feared;
-            }
+            get { return m_Feared; }
             set
             {
                 m_Feared = value;
-                if (value) {
-                    SpeedMod = CurrentSpeed*2;
+                if (value)
+                {
+                    SpeedMod = CurrentSpeed * 2;
                 }
             }
         }
@@ -481,14 +483,8 @@ namespace Server.Mobiles
         [CommandProperty(AccessLevel.GameMaster)]
         public bool Blinded
         {
-            get
-            {
-                return m_Blinded;
-            }
-            set
-            {
-                m_Blinded = value;
-            }
+            get { return m_Blinded; }
+            set { m_Blinded = value; }
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
@@ -530,6 +526,9 @@ namespace Server.Mobiles
         public int MaxLevel { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster)]
+        public int MinLevel { get; set; }
+
+        [CommandProperty(AccessLevel.GameMaster)]
         public bool IsParagon
         {
             get => m_Paragon;
@@ -565,6 +564,7 @@ namespace Server.Mobiles
                 {
                     return;
                 }
+
                 m_Veteran = value;
                 if (value)
                 {
@@ -574,9 +574,11 @@ namespace Server.Mobiles
                 {
                     Veteran.UnConvert(this);
                 }
+
                 InvalidateProperties();
             }
         }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public bool IsCorrupted
         {
@@ -587,6 +589,7 @@ namespace Server.Mobiles
                 {
                     return;
                 }
+
                 m_Corrupted = value;
                 if (value)
                 {
@@ -596,15 +599,37 @@ namespace Server.Mobiles
                 {
                     MonsterBuff.RemoveCorrupted(this);
                 }
+
                 InvalidateProperties();
             }
         }
+
+        public double Tier
+        {
+            get => m_Tier;
+            set
+            {
+                m_Tier = value;
+                InvalidateProperties();
+            }
+        }
+
         public int Level
         {
             get => m_Level;
             set
             {
                 m_Level = value;
+                InvalidateProperties();
+            }
+        }
+
+        public bool InDungeon
+        {
+            get => m_InDungeon;
+            set
+            {
+                m_InDungeon = value;
                 InvalidateProperties();
             }
         }
@@ -622,6 +647,7 @@ namespace Server.Mobiles
                 {
                     return;
                 }
+
                 m_SoulFeeder = value;
                 if (value)
                 {
@@ -631,9 +657,11 @@ namespace Server.Mobiles
                 {
                     MonsterBuff.RemoveCorrupted(this);
                 }
+
                 InvalidateProperties();
             }
         }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public bool IsFrozen
         {
@@ -644,6 +672,7 @@ namespace Server.Mobiles
                 {
                     return;
                 }
+
                 m_Frozen = value;
                 if (value)
                 {
@@ -653,9 +682,11 @@ namespace Server.Mobiles
                 {
                     MonsterBuff.RemoveElementalProperties(this);
                 }
+
                 InvalidateProperties();
             }
         }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public bool IsBurning
         {
@@ -666,6 +697,7 @@ namespace Server.Mobiles
                 {
                     return;
                 }
+
                 m_Burning = value;
                 if (value)
                 {
@@ -675,9 +707,11 @@ namespace Server.Mobiles
                 {
                     MonsterBuff.RemoveElementalProperties(this);
                 }
+
                 InvalidateProperties();
             }
         }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public bool IsElectrified
         {
@@ -688,6 +722,7 @@ namespace Server.Mobiles
                 {
                     return;
                 }
+
                 m_Electrified = value;
                 if (value)
                 {
@@ -697,9 +732,11 @@ namespace Server.Mobiles
                 {
                     MonsterBuff.RemoveElementalProperties(this);
                 }
+
                 InvalidateProperties();
             }
         }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public bool IsToxic
         {
@@ -710,6 +747,7 @@ namespace Server.Mobiles
                 {
                     return;
                 }
+
                 m_Toxic = value;
                 if (value)
                 {
@@ -719,6 +757,7 @@ namespace Server.Mobiles
                 {
                     MonsterBuff.RemoveElementalProperties(this);
                 }
+
                 InvalidateProperties();
             }
         }
@@ -734,6 +773,7 @@ namespace Server.Mobiles
                 {
                     return;
                 }
+
                 m_Corruptor = value;
                 if (value)
                 {
@@ -743,9 +783,11 @@ namespace Server.Mobiles
                 {
                     MonsterBuff.RemoveCorruptor(this);
                 }
+
                 InvalidateProperties();
             }
         }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public bool IsEthereal
         {
@@ -756,6 +798,7 @@ namespace Server.Mobiles
                 {
                     return;
                 }
+
                 m_Ethereal = value;
                 if (value)
                 {
@@ -765,9 +808,11 @@ namespace Server.Mobiles
                 {
                     MonsterBuff.RemoveEthereal(this);
                 }
+
                 InvalidateProperties();
             }
         }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public bool IsIllusionist
         {
@@ -778,6 +823,7 @@ namespace Server.Mobiles
                 {
                     return;
                 }
+
                 m_Illusionist = value;
                 if (value)
                 {
@@ -787,9 +833,11 @@ namespace Server.Mobiles
                 {
                     MonsterBuff.RemoveIllusionist(this);
                 }
+
                 InvalidateProperties();
             }
         }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public bool IsRegenerative
         {
@@ -800,6 +848,7 @@ namespace Server.Mobiles
                 {
                     return;
                 }
+
                 m_Regenerative = value;
                 if (value)
                 {
@@ -809,9 +858,11 @@ namespace Server.Mobiles
                 {
                     MonsterBuff.RemoveRegenerative(this);
                 }
+
                 InvalidateProperties();
             }
         }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public bool IsReflective
         {
@@ -822,6 +873,7 @@ namespace Server.Mobiles
                 {
                     return;
                 }
+
                 m_Reflective = value;
                 if (value)
                 {
@@ -831,9 +883,11 @@ namespace Server.Mobiles
                 {
                     MonsterBuff.RemoveReflective(this);
                 }
+
                 InvalidateProperties();
             }
         }
+
         [CommandProperty(AccessLevel.GameMaster)]
         public bool IsMagicResistant
         {
@@ -844,6 +898,7 @@ namespace Server.Mobiles
                 {
                     return;
                 }
+
                 m_MagicResistant = value;
                 if (value)
                 {
@@ -853,6 +908,7 @@ namespace Server.Mobiles
                 {
                     MonsterBuff.RemoveMagicResistant(this);
                 }
+
                 InvalidateProperties();
             }
         }
@@ -878,14 +934,17 @@ namespace Server.Mobiles
                 {
                     return;
                 }
+
                 m_Boss = value;
                 if (value)
                 {
                     var constructor = GetType().GetConstructor(Type.EmptyTypes);
-                    if (constructor != null) // dont try and spawn boss types that have optional parameters (i.e mounts or monsters spawned by other monsters)
+                    if (constructor !=
+                        null) // dont try and spawn boss types that have optional parameters (i.e mounts or monsters spawned by other monsters)
                     {
                         MonsterBuff.Bossify(this);
-                    } else
+                    }
+                    else
                     {
                         m_Boss = false;
                     }
@@ -894,11 +953,12 @@ namespace Server.Mobiles
                 {
                     MonsterBuff.UnBossify(this);
                 }
+
                 InvalidateProperties();
             }
         }
 
-        public void Fear(int duration , string message = "* Feared *")
+        public void Fear(int duration, string message = "* Feared *")
         {
             Feared = true;
             PublicOverheadMessage(
@@ -906,7 +966,7 @@ namespace Server.Mobiles
                 0x3B2,
                 false,
                 message
-                );
+            );
             Timer.StartTimer(TimeSpan.FromSeconds(duration), UnFear);
         }
 
@@ -924,9 +984,10 @@ namespace Server.Mobiles
                 0x3B2,
                 false,
                 message
-                );
+            );
             Timer.StartTimer(TimeSpan.FromSeconds(duration), UnBlind);
         }
+
         public void UnBlind()
         {
             Blinded = false;
@@ -934,7 +995,7 @@ namespace Server.Mobiles
 
         public void InitBossTimer()
         {
-            Timer.StartTimer(TimeSpan.FromSeconds(3), CheckMinions, out _minionTimer);
+            Timer.StartTimer(TimeSpan.FromSeconds(15), CheckMinions, out _minionTimer);
         }
 
 
@@ -942,7 +1003,7 @@ namespace Server.Mobiles
         {
             if (Alive && !Deleted)
             {
-                if (Minions != null && Minions.Count > 0)
+                if (Minions is { Count: > 0 })
                 {
                     if (Combatant != null)
                     {
@@ -954,23 +1015,18 @@ namespace Server.Mobiles
                                 Minions.Remove(minion);
                                 continue;
                             }
+
                             Mobile nearby = mobilesInRange.Find(m => m.Serial == minion.Serial);
-                            if (nearby != null)
-                            {
-                                if (nearby.Combatant != Combatant)
-                                {
-                                    nearby.Attack(Combatant);
-                                    nearby.Combatant = Combatant;
-                                }
-                            }
-                            else
+                            if (nearby is null)
                             {
                                 Point3D point = new Point3D(Location.X, Location.Y, Location.Z);
                                 minion.MoveToWorld(point, Map);
                             }
                         }
+
                         InitBossTimer();
-                    } else
+                    }
+                    else
                     {
                         MonsterBuff.DespawnMinions(this);
                     }
@@ -988,13 +1044,17 @@ namespace Server.Mobiles
                 {
                     return;
                 }
+
                 m_Heroic = value;
-                if (value) {
+                if (value)
+                {
                     Heroic.Convert(this);
-                } else
+                }
+                else
                 {
                     Heroic.UnConvert(this);
                 }
+
                 InvalidateProperties();
             }
         }
@@ -1016,6 +1076,8 @@ namespace Server.Mobiles
         public virtual bool Commandable => true;
 
         public virtual Poison HitPoison => null;
+
+        public Poison HitPoisonOverride { get; set; }
         public virtual double HitPoisonChance => 0.5;
         public virtual Poison PoisonImmune => null;
 
@@ -1214,7 +1276,8 @@ namespace Server.Mobiles
         [CommandProperty(AccessLevel.GameMaster)]
         public double CurrentSpeed
         {
-            get => TargetLocation != null ? 0.3 : SpeedMod <= 0 ? m_CurrentSpeed : SpeedMod;
+            get => TargetLocation != null ? 0.3 :
+                SpeedMod <= 0 ? m_CurrentSpeed : SpeedMod;
             set
             {
                 if (m_CurrentSpeed != value)
@@ -1635,22 +1698,18 @@ namespace Server.Mobiles
 
         public HonorContext ReceivedHonorContext { get; set; }
 
-       public int NumberOfMinions
+        public int NumberOfMinions
         {
             get => m_NumberOfMinions;
-            set
-            {
-                m_NumberOfMinions = value;
-            }
+            set { m_NumberOfMinions = value; }
         }
+
         public List<Mobile> Minions
         {
             get => m_Minions;
-            set
-            {
-                m_Minions = value;
-            }
+            set { m_Minions = value; }
         }
+
         public List<MLQuest> MLQuests
         {
             get
@@ -1852,7 +1911,6 @@ namespace Server.Mobiles
             {
                 foreach (var oppositionGroup in OppositionGroups)
                 {
-
                     opposingGroup = oppositionGroup.IsEnemy(this, m);
                     if (opposingGroup)
                     {
@@ -1860,6 +1918,7 @@ namespace Server.Mobiles
                     }
                 }
             }
+
             return opposingGroup;
         }
 
@@ -1888,7 +1947,8 @@ namespace Server.Mobiles
                 return false;
             }
 
-            if (m is PlayerMobile mobile && (mobile.HonorActive || Deity.AlignmentCheck(this, mobile.CombatAlignment, false)))
+            if (m is PlayerMobile mobile &&
+                (mobile.HonorActive || Deity.AlignmentCheck(this, mobile.CombatAlignment, false)))
             {
                 return false;
             }
@@ -1896,6 +1956,12 @@ namespace Server.Mobiles
             if (m is not BaseCreature c || m is MilitiaFighter)
             {
                 return true;
+            }
+
+            // truce exists in dungeon monsters to make them more dangerous for players
+            if (InDungeon && c.InDungeon)
+            {
+                return false;
             }
 
             if (TransformationSpellHelper.UnderTransformation(m, typeof(EtherealVoyageSpell)))
@@ -1917,10 +1983,12 @@ namespace Server.Mobiles
             {
                 suffix = suffix.Length == 0 ? "(Paragon)" : $"{suffix} (Paragon)";
             }
+
             if (IsHeroic)
             {
                 suffix = suffix.Length == 0 ? "(Heroic)" : $"{suffix} (Heroic)";
-            } else if (IsVeteran)
+            }
+            else if (IsVeteran)
             {
                 suffix = suffix.Length == 0 ? "(Veteran)" : $"{suffix} (Veteran)";
             }
@@ -1930,7 +1998,8 @@ namespace Server.Mobiles
 
         public virtual bool CheckControlChance(Mobile m)
         {
-            if (GetControlChance(m) > Utility.RandomDouble() || ((PlayerMobile)ControlMaster).GetTalent(typeof(Leadership)) is not null)
+            if (GetControlChance(m) > Utility.RandomDouble() ||
+                ((PlayerMobile)ControlMaster).GetTalent(typeof(Leadership)) is not null)
             {
                 Loyalty += 1;
                 return true;
@@ -2035,6 +2104,7 @@ namespace Server.Mobiles
                     "* The creature absorbs your attack *"
                 );
             }
+
             bool corruptionOffset = false;
             if (IsCorruptor && amount > 0)
             {
@@ -2049,6 +2119,7 @@ namespace Server.Mobiles
                         break;
                     }
                 }
+
                 if (corruptionOffset)
                 {
                     PublicOverheadMessage(
@@ -2077,6 +2148,7 @@ namespace Server.Mobiles
                         modifier += darkAffinity.Level / 100.00;
                     }
                 }
+
                 amount = (int)(amount * modifier);
             }
 
@@ -2118,13 +2190,15 @@ namespace Server.Mobiles
             }
         }
 
-        public void CheckBuffs()
+        public void CheckBuffs(Point3D location, Map m)
         {
             Type type = GetType();
-            if (type != typeof(BaseVendor) && type != typeof(BaseGuard) && type != typeof(BaseFamiliar) && !Region.IsPartOf<TownRegion>())
+            if (type != typeof(BaseVendor) && type != typeof(BaseGuard) && type != typeof(BaseFamiliar) &&
+                !Region.IsPartOf<TownRegion>())
             {
                 // everything gets a base minion buff
-                MonsterBuff.Convert(this,
+                MonsterBuff.Convert(
+                    this,
                     MonsterBuff.NoBuff,
                     MonsterBuff.MinionHitsBuff,
                     MonsterBuff.MinionStrBuff,
@@ -2134,20 +2208,56 @@ namespace Server.Mobiles
                     MonsterBuff.MinionSpeedBuff,
                     MonsterBuff.MinionFameBuff,
                     MonsterBuff.MinionKarmaBuff,
-                    MonsterBuff.MinionDamageBuff);
-
-                if (DynamicExperienceValue() >= 475) // skeleton strength and up
+                    MonsterBuff.MinionDamageBuff
+                );
+                double dynamicExperienceValue = DynamicExperienceValue();
+                if (dynamicExperienceValue >= 475) // skeleton strength and up
                 {
-                    // 5% chance in Dungeons 1% chance everywhere else
-                    int chance = Region.IsPartOf<DungeonRegion>() ? 200 : 50;
-                    if (Utility.Random(10000) < chance)
+                    int dungeonChance = 20;
+                    bool eligibleHard =
+                        DungeonLevelModHandler.IsInDungeonDifficulty(location, m, DungeonLevelMod.DungeonDifficulty.Hard, 5);
+                    bool eligibleEpic = DungeonLevelModHandler.IsInDungeonDifficulty(
+                        location,
+                        m,
+                        DungeonLevelMod.DungeonDifficulty.Epic,
+                        4,
+                        5
+                    );
+                    if (eligibleHard || eligibleEpic)
                     {
-                        int buffs = chance > 50 ? Utility.RandomMinMax(1, 4) : Utility.RandomMinMax(1, 2);
+                        dungeonChance += 10;
+                        if (eligibleHard)
+                        {
+                            ExperienceValue += AOS.Scale((int)dynamicExperienceValue, 15);
+                            IsVeteran = true;
+                        }
+
+                        if (eligibleEpic)
+                        {
+                            ExperienceValue += AOS.Scale((int)dynamicExperienceValue, 30);
+                            IsHeroic = true;
+                        }
+                    }
+                    // 5% chance in Dungeons 1% chance everywhere else
+                    int chance = Region.IsPartOf<DungeonRegion>() ? dungeonChance : 5;
+                    if (Utility.Random(100) < chance)
+                    {
+                        int buffs = chance > 5 ? Utility.RandomMinMax(2, 4) : Utility.RandomMinMax(1, 2);
                         MonsterBuff.RandomMonsterBuffs(this, buffs);
+                    }
+
+                    if (Utility.Random(100) < 15)
+                    {
+                        IsVeteran = true;
+                    }
+                    else if (Utility.Random(100) < 25 && !IsVeteran)
+                    {
+                        IsHeroic = true;
                     }
                 }
             }
         }
+
         public override void OnRawDexChange(int oldValue)
         {
             // This only really happens for pets or when a GM modifies a mob.
@@ -2157,56 +2267,271 @@ namespace Server.Mobiles
             }
         }
 
-        public void SetLevel(int minLevelOverride = 0)
+        public void AlterLevels(int number, bool remove, int minLevel, int maxLevel)
         {
-            int baseXp = (int)DynamicExperienceValue() + ExperienceValue;
-            // 38.4615384615
-            // level range caps at 65 levels, and there are 7 tiers divided into groups of 500
-            double levelRangePerTier = Math.Floor(65.00 / 7.00);
-            double tier = baseXp / 500.00;
-            int midLevel = (int)(tier * levelRangePerTier);
-            int minLevel = midLevel - 5;
-            if (minLevelOverride > 0)
+            if (number > 0)
             {
-                minLevel = minLevelOverride;
-            }
-            if (minLevel <= 1)
-            {
-                minLevel = 2;
-            }
+                int newLevel = Level + number;
+                if (newLevel > MaximumCreatureLevel)
+                {
+                    newLevel = MaximumCreatureLevel;
+                    MaxLevel = newLevel;
+                    MinLevel = MinMaxCreatureLevel;
 
-            int maxLevelModifier = (int)Math.Ceiling(tier);
-            MaxLevel = midLevel + maxLevelModifier;
-            if (MaxLevel > 80)
-            {
-                ExperienceValue += (MaxLevel - 80) * 250;
-                MaxLevel = 80;
-                minLevel = 72;
-                midLevel = 76;
+                    number = MaximumCreatureLevel - Level;
+                }
+                else
+                {
+                    MaxLevel = maxLevel;
+                    MinLevel = minLevel;
+                }
+
+                double scale = 1.00 + number * 0.05;
+                if (remove)
+                {
+                    scale = 1.00 - number * 0.05;
+                    newLevel = Level - number;
+                }
+
+                Level = newLevel;
+                MonsterBuff.Convert(this, scale, scale, scale, scale, scale, scale, 1.00, scale, scale, 0);
             }
-            Level = Utility.RandomMinMax(minLevel, MaxLevel);
+            else
+            {
+                MaxLevel = maxLevel;
+                MinLevel = minLevel;
+            }
+        }
+        public void SetLevel()
+        {
+            // 5608 = balron tier 11.??
+            // 4385 = poison elemental tier 8.76
+            // 1171 = harpy tier 2.34
+            int baseXp = (int)DynamicExperienceValue() + ExperienceValue;
+            Tier = baseXp / 500.00;
+            // level range caps at 80 levels, and there are 12 tiers divided into groups of 500
+            double levelRangePerTier = Math.Floor(80.00 / 11.00);
+            int midLevel = (int)(Tier * levelRangePerTier);
+            MinLevel = midLevel - 5;
+            if (MinLevel <= 1)
+            {
+                MinLevel = 2;
+            }
+            MaxLevel = midLevel + 5;
+            if (MaxLevel > MaximumCreatureLevel)
+            {
+                ExperienceValue += (MaxLevel - MaximumCreatureLevel) * 250;
+                MaxLevel = MaximumCreatureLevel;
+                MinLevel = MinMaxCreatureLevel;
+                midLevel = MinMaxCreatureLevel + 4;
+            }
+            Level = Utility.RandomMinMax(MinLevel, MaxLevel);
             if (Utility.Random(1000) <= 1)
             {
                 // experienced version of creature
-                Level += Utility.RandomMinMax(1, 5);
+                Level += Utility.RandomMinMax(1, 3);
             }
-            double buff = 1.00;
-            buff += Level <= midLevel ? 0 : ((Level - midLevel)*5)/100.00;
-            SetHits(Hits + Utility.RandomMinMax(1, Level));
+            double scale = 1.00;
+            scale += Level <= midLevel ? 0 : (Level - midLevel) * 5 / 100.00;
+            SetHits(Hits + Utility.RandomMinMax(MinLevel, Level));
             VirtualArmorMod += Level <= midLevel ? 0 : Level - midLevel;
-            MonsterBuff.Convert(this, buff, buff, buff, buff, buff, buff, 1.00, buff, buff, 0);
+            MonsterBuff.Convert(this, scale, scale, scale, scale, scale, scale, 1.00, scale, scale, 0);
         }
 
+        public void AlterCreatureDungeonLevel(int minLevel, int minMaxLevel, int maxLevel)
+        {
+            InDungeon = true;
+            if (Tier < 8.0)
+            {
+                if (Level > maxLevel)
+                {
+                    AlterLevels(Level - minMaxLevel + Utility.RandomMinMax(0,6), true, minMaxLevel, maxLevel);
+                }
+                else if (Level < minLevel)
+                {
+                    AlterLevels(minLevel + Utility.RandomMinMax(0, 4) - Level, false, minLevel, minMaxLevel);
+                }
+                else if (Level < minMaxLevel)
+                {
+                    AlterLevels(0, false, minLevel, minMaxLevel);
+                }
+                else if (maxLevel < MaximumCreatureLevel)
+                {
+                    AlterLevels(0, false, minMaxLevel, maxLevel);
+                }
+            }
+        }
+
+        public void AddGoldInPack(int amount)
+        {
+            if (Backpack is not null)
+            {
+                Item item = Backpack.FindItemByType(typeof(Gold));
+                if (item is not null)
+                {
+                    item.Amount += amount;
+                }
+                else
+                {
+                    Backpack.DropItem(new Gold(amount));
+                }
+            }
+        }
+
+        public void CheckSetDungeonDifficultyModifier(Point3D location, Map m, DungeonLevelMod.DungeonDifficulty[] dungeonDifficulties,
+            int level, int originalDungeonMin, int originalDungeonMinMax, int originalDungeonMax, ref int newDungeonMin, ref int newDungeonMinMax, ref int newDungeonMax)
+        {
+            foreach (var difficulty in dungeonDifficulties)
+            {
+                if (DungeonLevelModHandler.IsInDungeonDifficulty(
+                        location,
+                        m,
+                        difficulty,
+                        level
+                    ))
+                {
+                    newDungeonMin = originalDungeonMin;
+                    newDungeonMinMax = originalDungeonMinMax;
+                    newDungeonMax = originalDungeonMax;
+
+                    int modifier = 0;
+                    if (difficulty == DungeonLevelMod.DungeonDifficulty.Hard)
+                    {
+                        modifier = 10;
+                    } else if (difficulty == DungeonLevelMod.DungeonDifficulty.Epic)
+                    {
+                        modifier = 20;
+                    } else if (difficulty == DungeonLevelMod.DungeonDifficulty.Beginner && level == 1)
+                    {
+                        modifier = -10;
+                    }
+
+                    newDungeonMin += modifier;
+                    newDungeonMinMax += modifier;
+                    newDungeonMax += modifier;
+
+                    if (newDungeonMin > MaximumCreatureLevel)
+                    {
+                        newDungeonMin = MinMaxCreatureLevel;
+                    }
+
+                    if (newDungeonMinMax > MaximumCreatureLevel)
+                    {
+                        newDungeonMin = MinMaxCreatureLevel + 4;
+                    }
+
+                    if (newDungeonMax > MaximumCreatureLevel)
+                    {
+                        newDungeonMin = MaximumCreatureLevel;
+                    }
+
+                    return;
+                }
+            }
+        }
+
+        public void CheckSetDungeonLevel(Point3D location, Map m)
+        {
+            int dungeonLevel = 0;
+            int newDungeonMin = 0;
+            int newDungeonMinMx = 0;
+            int newDungeonMax = 0;
+
+            int originalDungeonMin = 0;
+            int originalDungeonMinMx = 0;
+            int originalDungeonMax = 0;
+
+            if (DungeonLevelModHandler.IsInLevelOneDungeon(location, m))
+            {
+                dungeonLevel = 1;
+                originalDungeonMin = 26;
+                originalDungeonMinMx = 30;
+                originalDungeonMax = 36;
+
+                // can only nerf level one
+                if (!DungeonLevelModHandler.IsInDungeonDifficulty(location, m, DungeonLevelMod.DungeonDifficulty.Beginner, 1))
+                {
+                    AddLoot(LootPack.LowScrolls);
+                    AddGoldInPack(Utility.RandomMinMax(50, 100));
+                }
+            } else if (DungeonLevelModHandler.IsInLevelTwoDungeon(location, m))
+            {
+                dungeonLevel = 2;
+                originalDungeonMin = 36;
+                originalDungeonMinMx = 40;
+                originalDungeonMax = 46;
+                AddLoot(LootPack.LowScrolls);
+                Backpack?.DropItem(Loot.RandomArmorOrShieldOrWeaponOrJewelry());
+                AddGoldInPack(Utility.RandomMinMax(100, 150));
+            } else if (DungeonLevelModHandler.IsInLevelThreeDungeon(location, m))
+            {
+                dungeonLevel = 3;
+                originalDungeonMin = 46;
+                originalDungeonMinMx = 50;
+                originalDungeonMax = 56;
+                AddLoot(LootPack.MedScrolls);
+                AddLoot(LootPack.Gems);
+                Backpack?.DropItem(Loot.RandomArmorOrShieldOrWeaponOrJewelry());
+                AddGoldInPack(Utility.RandomMinMax(150, 200));
+            } else if (DungeonLevelModHandler.IsInLevelFourDungeon(location, m))
+            {
+                dungeonLevel = 4;
+                originalDungeonMin = 56;
+                originalDungeonMinMx = 60;
+                originalDungeonMax = 66;
+                AddLoot(LootPack.HighScrolls);
+                AddLoot(LootPack.Gems);
+                Backpack?.DropItem(Loot.RandomArmorOrShieldOrWeaponOrJewelry());
+                AddGoldInPack(Utility.RandomMinMax(200, 250));
+            }  else if (DungeonLevelModHandler.IsInLevelFiveDungeon(location, m))
+            {
+                AlterCreatureDungeonLevel(MinMaxCreatureLevel, MinMaxCreatureLevel + 4, MaximumCreatureLevel);
+                AddLoot(LootPack.HighScrolls);
+                AddLoot(LootPack.Gems);
+                Backpack?.DropItem(Loot.RandomArmorOrShieldOrWeaponOrJewelry());
+                AddLoot(LootPack.Rich);
+                AddGoldInPack(Utility.RandomMinMax(250, 300));
+            }
+
+            if (dungeonLevel > 0)
+            {
+                CheckSetDungeonDifficultyModifier(
+                    location,
+                    m,
+                    new [] { DungeonLevelMod.DungeonDifficulty.Beginner, DungeonLevelMod.DungeonDifficulty.Hard, DungeonLevelMod.DungeonDifficulty.Epic },
+                    dungeonLevel,
+                    originalDungeonMin,
+                    originalDungeonMinMx,
+                    originalDungeonMax,
+                    ref newDungeonMin,
+                    ref newDungeonMinMx,
+                    ref newDungeonMax
+                );
+                AlterCreatureDungeonLevel(newDungeonMin, newDungeonMinMx, newDungeonMax);
+            }
+        }
         public override void OnBeforeSpawn(Point3D location, Map m)
         {
             SetLevel();
-            CheckBuffs();
+            CheckSetDungeonLevel(location, m);
+            CheckBuffs(location, m);
             if (Paragon.CheckConvert(this, location, m))
             {
+                if (Level < MaximumCreatureLevel)
+                {
+                    if (Level + 5 > MaximumCreatureLevel)
+                    {
+                        AlterLevels(Utility.Random(MaximumCreatureLevel - Level), false, MinMaxCreatureLevel, MaximumCreatureLevel);
+                    }
+                    else
+                    {
+                        AlterLevels(Utility.Random(MaxLevel - Level + 5), false, MinLevel, MaxLevel + 5);
+                    }
+                }
                 IsParagon = true;
             }
             base.OnBeforeSpawn(location, m);
-            Shrine.CreateShrine(Location, Region, GetType(), Map);
+            Shrine.CreateShrine(location, Region, GetType(), m);
         }
 
         public override ApplyPoisonResult ApplyPoison(Mobile from, Poison poison)
@@ -2328,7 +2653,7 @@ namespace Server.Mobiles
                 Timer.StartTimer(TimeSpan.FromSeconds(10), mobile.RecoverAmmo);
             }
 
-            if (IsIllusionist && Utility.Random(100) < Utility.RandomMinMax(25, 45))
+            if (IsIllusionist && Utility.Random(100) < Utility.RandomMinMax(5, 20) && from is not null)
             {
                 MonsterBuff.AddIllusion(this, from);
             }
@@ -2569,7 +2894,10 @@ namespace Server.Mobiles
         {
             base.Serialize(writer);
 
-            writer.Write(30); // version
+            writer.Write(31); // version
+            // version 31
+            writer.Write(m_InDungeon);
+            writer.Write(m_Tier);
             // version 30
             writer.Write(m_Level);
             // version 29
@@ -2733,6 +3061,11 @@ namespace Server.Mobiles
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+            if (version >= 31)
+            {
+                m_InDungeon = reader.ReadBool();
+                m_Tier = reader.ReadDouble();
+            }
             if (version >= 30)
             {
                 m_Level = reader.ReadInt();
@@ -3264,9 +3597,10 @@ namespace Server.Mobiles
 
         public virtual void OnGaveMeleeAttack(Mobile defender, int damage)
         {
-            var p = m_Paragon ? PoisonImpl.IncreaseLevel(HitPoison) : HitPoison;
-
-            if (p != null && HitPoisonChance >= Utility.RandomDouble())
+            Poison hitPoison = HitPoisonOverride ?? HitPoison;
+            var p = m_Paragon ? PoisonImpl.IncreaseLevel(hitPoison) : hitPoison;
+            double poisonChance = IsToxic ? 0.90 : HitPoisonChance;
+            if (p != null && poisonChance >= Utility.RandomDouble())
             {
                 defender.ApplyPoison(this, p);
 
@@ -3855,7 +4189,7 @@ namespace Server.Mobiles
             base.AddNameProperties(list);
             list.Add(1114057, $"Level: {Level.ToString()}");          // ~1_val~
             list.Add(1114057, $"Alignment: {Deity.GetCreatureAlignment(GetType()).ToString()}");   // ~1_val~
-            list.Add(1114057, $"Level range: {(Level - 5 < 1 ? 1 : Level - 5).ToString()} - {MaxLevel.ToString()}");   // ~1_val~
+            list.Add(1114057, $"Level range: {(MinLevel - 1 < 1 ? 1 : MinLevel).ToString()} - {MaxLevel.ToString()}");   // ~1_val~
             list.Add(1114057, $"XP: {FinalExperience().ToString()}"); // ~1_val~
             list.Add(1114057, $"Mana: {Mana.ToString()}/{ManaMax.ToString()}"); // ~1_val~
             list.Add(1114057, $"Hits: {Hits.ToString()}/{HitsMax.ToString()}"); // ~1_val~
@@ -4660,28 +4994,45 @@ namespace Server.Mobiles
                     {
                         percentKill = 100;
                     }
-                    int contributedXp = AOS.Scale(scaleXp, percentKill);
-                    int deityXp = contributedXp;
                     Titles.AwardFame(titles[i], fame[i], true);
                     Titles.AwardKarma(titles[i], karma[i], true);
                     if (titles[i] is PlayerMobile)
                     {
                         PlayerMobile player = (PlayerMobile)titles[i];
+                        int contributedXp = AOS.Scale(scaleXp, percentKill);
+                        if (player.DeityChallengers?.Find(mobile => mobile.Serial == Serial) != null)
+                        {
+                            // 100% XP granted
+                            contributedXp = scaleXp;
+                        }
+                        int deityXp = contributedXp;
 
-                        if (player.Shrine?.GetShrineType() is ShrineType.Blessed)
+                        if (player.mShrineType is ShrineType.Blessed)
                         {
                             contributedXp += AOS.Scale(contributedXp, 20);
                         }
-                        else if (player.Shrine?.GetShrineType() is ShrineType.Cursed)
+                        else if (player.mShrineType is ShrineType.Cursed)
                         {
                             contributedXp -= AOS.Scale(contributedXp, 40);
-                        } else if (player.Shrine?.GetShrineType() is ShrineType.Adventure)
+                        } else if (player.mShrineType is ShrineType.Adventure)
                         {
                             contributedXp += AOS.Scale(contributedXp, 100);
                         }
 
                         if (Level >= player.Level - 2)
                         {
+                            int totalTypeKills = 1;
+                            if (player.KillBag.TryGetValue(GetType(), out int previousKills))
+                            {
+                                totalTypeKills += previousKills;
+                                // 2% less experience per previous kill
+                                contributedXp -= AOS.Scale(contributedXp, previousKills * 2);
+                                if (contributedXp < 0)
+                                {
+                                    contributedXp = 0;
+                                }
+                            }
+                            player.KillBag.AddOrUpdate(GetType(), totalTypeKills, (type, kills) => totalTypeKills);
                             if (Level > player.Level + 5)
                             {
                                 contributedXp += (Level - player.Level) * Level;
@@ -4729,7 +5080,7 @@ namespace Server.Mobiles
 
             if (LastKiller is PlayerMobile playerThatKilled)
             {
-                if (playerThatKilled.Shrine?.GetShrineType() is ShrineType.Blessed)
+                if (playerThatKilled.mShrineType is ShrineType.Blessed)
                 {
                     if (Utility.Random(250) < 1)
                     {
@@ -4745,12 +5096,12 @@ namespace Server.Mobiles
                         }
                     }
                 }
-                else if (playerThatKilled.Shrine?.GetShrineType() is ShrineType.Cursed)
+                else if (playerThatKilled.mShrineType is ShrineType.Cursed)
                 {
                     if (Utility.Random(100) < 15)
                     {
                         Item[] items = Backpack?.FindItemsByType(typeof(Item));
-                        if (items is { Length: > 0 })
+                        if (items is not null && items.Length > 0)
                         {
                             Deity.DestroyItem(playerThatKilled, $"{Name}'s backpack");
                         }
@@ -4771,6 +5122,18 @@ namespace Server.Mobiles
                 } else if (!creatureThatKilled.Controlled && IsEnemy(creatureThatKilled) && creatureThatKilled.DynamicExperienceValue() < DynamicExperienceValue() && creatureThatKilled.Level <= Level)
                 {
                     MonsterBuff.LevelUp(creatureThatKilled);
+                }
+                if (!creatureThatKilled.Controlled || creatureThatKilled.ControlMaster is null && !creatureThatKilled._provocationTimer.Running && Backpack is not null)
+                {
+                    // it was an alignment kill, remove all items
+                    Item[] items = Backpack?.FindItemsByType(typeof(Item));
+                    if (items is not null && items.Length > 0)
+                    {
+                        foreach (var item in items)
+                        {
+                            item.Delete();
+                        }
+                    }
                 }
             }
             MonsterBuff.CheckElementalAoe(this);
@@ -5478,9 +5841,9 @@ namespace Server.Mobiles
 
         public virtual void RemovePetFriend(Mobile m) => Friends?.Remove(m);
 
-        public virtual bool IsFriend(Mobile m) => (m is PlayerMobile player && Deity.AlignmentCheck(this, player.CombatAlignment, false))
-                                                  || (!IsOpposing(m) && m is BaseCreature c && m_Team == c.m_Team
-                                                      && (_summoned || m_Controlled) == (c._summoned || c.m_Controlled));
+        public virtual bool IsFriend(Mobile m) => m is PlayerMobile player && Deity.AlignmentCheck(this, player.CombatAlignment, false)
+                                                  || !IsOpposing(m) && m is BaseCreature c && m_Team == c.m_Team
+                                                      && (_summoned || m_Controlled) == (c._summoned || c.m_Controlled);
 
 
         public virtual Allegiance GetFactionAllegiance(Mobile mob)
@@ -5560,12 +5923,7 @@ namespace Server.Mobiles
         public virtual void AlterMeleeDamageTo(Mobile to, ref int damage)
         {
             TriggerAbilityAlterDamage(MonsterAbilityTrigger.GiveMeleeDamage, to, ref damage);
-            if (
-                !((BaseInstrument.IsMageryCreature(this) || Skills.Necromancy.Base > 5.0) && to.Skills.MagicResist.Base < 70 || Mana <= 10)
-                || Skills.Tactics.Base >= 90)
-            {
-                AlterDamageToByLevel(to, ref damage);
-            }
+            AlterDamageToByLevel(to, ref damage);
             if (MasterHasNatureBuff())
             {
                 damage += AOS.Scale(damage, 20);
@@ -5578,7 +5936,7 @@ namespace Server.Mobiles
             Mobile master = GetMaster();
             if (master is PlayerMobile playerMaster)
             {
-                ShrineType? shrineEffectType = playerMaster.Shrine?.GetShrineType();
+                ShrineType? shrineEffectType = playerMaster.mShrineType;
                 return playerMaster.Alive && shrineEffectType is ShrineType.Nature;
             }
             return false;
@@ -5619,13 +5977,7 @@ namespace Server.Mobiles
         {
             if (from is PlayerMobile player)
             {
-                bool shrineEnemyCheck = false;
-                if (player.Shrine is not null)
-                {
-                    ShrineType shrineType = player.Shrine.GetShrineType();
-                    shrineEnemyCheck = Shrine.ShrineAlignmentEnemyCheck(this, shrineType);
-                }
-                return Deity.AlignmentCheck(from, Deity.GetCreatureAlignment(GetType()), true) && player.HasDeityFavor || shrineEnemyCheck;
+                return Deity.AlignmentCheck(from, Deity.GetCreatureAlignment(GetType()), true) && player.HasDeityFavor || Shrine.ShrineAlignmentEnemyCheck(this, player.mShrineType);
             }
             return false;
         }
@@ -5688,43 +6040,55 @@ namespace Server.Mobiles
                 _                     => damage
             };
         }
+
         public void AlterDamageFromByLevel(Mobile from, ref int damage)
         {
-            damage = from switch
+            if (from is PlayerMobile player)
             {
-                PlayerMobile player   => CalculateDamageFromLevels(Level, player.Level , damage, true),
-                BaseCreature creature => CalculateDamageFromLevels(Level, creature.Level, damage, false),
-                _                     => damage
-            };
+                damage = player.LevelTooLow(this) ? 0 : CalculateDamageFromLevels(Level, player.Level, damage, true);
+            }
+            else
+            {
+                damage = from switch
+                {
+                    BaseCreature creature => CalculateDamageFromLevels(Level, creature.Level, damage, false),
+                    _                     => damage
+                };
+            }
         }
+
         public void AlterDamageFromByLevel(Mobile from, ref double damage)
         {
-            damage = from switch
+            if (from is PlayerMobile player)
             {
-                PlayerMobile player   => CalculateDamageFromLevels(Level, player.Level, damage, true),
-                BaseCreature creature => CalculateDamageFromLevels(Level, creature.Level, damage, false),
-                _                     => damage
-            };
+                damage = player.LevelTooLow(this) ? 0.0 : CalculateDamageFromLevels(Level, player.Level, damage, true);
+            }
+            else
+            {
+                damage = from switch
+                {
+                    BaseCreature creature => CalculateDamageFromLevels(Level, creature.Level, damage, false),
+                    _                     => damage
+                };
+            }
         }
 
         public bool CheckCriticalStrike(int defenderLevel, int attackerLevel) => attackerLevel > defenderLevel + 5 && Utility.Random(135) < attackerLevel - defenderLevel;
 
         public int CalculateDamageFromLevels(int defenderLevel, int attackerLevel, int damage, bool attackingPlayer)
         {
-
             if (attackerLevel > defenderLevel + 2 && !attackingPlayer)
             {
-                damage += attackerLevel - defenderLevel + 1;
+                damage += AOS.Scale(damage, (attackerLevel - defenderLevel) * 12);
                 if (CheckCriticalStrike(defenderLevel, attackerLevel))
                 {
                     BaseTalent.CriticalStrike(ref damage);
                 }
-            } else if (attackerLevel < defenderLevel - 2)
+            }
+            if (defenderLevel > attackerLevel && attackingPlayer)
             {
-                if (damage > 5)
-                {
-                    damage -= defenderLevel - attackerLevel - 1;
-                }
+                // 7 levels differential, so at 7 levels its 82% less damage
+                damage -= AOS.Scale(damage, (defenderLevel - attackerLevel) * 12);
             }
 
             if (!attackingPlayer)
@@ -5751,14 +6115,15 @@ namespace Server.Mobiles
         {
             if (attackerLevel > defenderLevel + 2 && !attackingPlayer)
             {
-                damage += (attackerLevel - defenderLevel) / 50.00;
+                damage += 1.0 - ((attackerLevel - (double)defenderLevel) / 8.0);
                 if (CheckCriticalStrike(defenderLevel, attackerLevel))
                 {
                     BaseTalent.CriticalStrike(ref damage);
                 }
-            } else if (attackerLevel < defenderLevel - 2)
+            } else if (defenderLevel > attackerLevel && attackingPlayer)
             {
-                damage -= (defenderLevel - attackerLevel) / 100.00;
+                // 7 levels differential, so at 7 levels its 87% less damage
+                damage -= 1.0 - ((defenderLevel - (double)attackerLevel) / 8.0);
             }
 
             if (!attackingPlayer)
@@ -6836,6 +7201,29 @@ namespace Server.Mobiles
             }
 
             return true;
+        }
+
+        public void SetHumanoidStrength(int maxStrength = 3)
+        {
+            bool stronger = Utility.RandomBool();
+            bool weaker = Utility.RandomBool();
+            if (weaker)
+            {
+                SetHits(100, 200);
+                SetDamage(4, 10);
+                InitStats(Utility.RandomMinMax(50, 100), Utility.RandomMinMax(50, 100), Utility.RandomMinMax(50, 100));
+            } else if (stronger && maxStrength == 3)
+            {
+                SetHits(300, 600);
+                SetDamage(12, 21);
+                InitStats(Utility.RandomMinMax(250, 350), Utility.RandomMinMax(250, 350), Utility.RandomMinMax(250, 350));
+            }
+            else
+            {
+                SetHits(200, 400);
+                SetDamage(9, 16);
+                InitStats(Utility.RandomMinMax(100, 250), Utility.RandomMinMax(100, 250), Utility.RandomMinMax(100, 250));
+            }
         }
 
         public void PackGold(int amount)

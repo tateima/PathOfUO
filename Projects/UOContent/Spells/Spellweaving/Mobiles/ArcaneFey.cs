@@ -3,7 +3,7 @@ namespace Server.Mobiles
     public class ArcaneFey : BaseCreature
     {
         [Constructible]
-        public ArcaneFey() : base(AIType.AI_Mage, FightMode.Evil)
+        public ArcaneFey() : base(AIType.AI_Mage, FightMode.Aggressor)
         {
             Name = NameList.RandomName("pixie");
             Body = 128;

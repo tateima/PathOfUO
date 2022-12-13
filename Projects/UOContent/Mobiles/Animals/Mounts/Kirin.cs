@@ -9,7 +9,7 @@ namespace Server.Mobiles
         public override string DefaultName => "a ki-rin";
 
         [Constructible]
-        public Kirin() : base(132, 0x3EAD, AIType.AI_Mage, FightMode.Evil)
+        public Kirin() : base(132, 0x3EAD, AIType.AI_Mage, FightMode.Aggressor)
         {
             BaseSoundID = 0x3C5;
 
@@ -55,7 +55,7 @@ namespace Server.Mobiles
         public override bool AllowFemaleRider => false;
         public override bool AllowFemaleTamer => false;
 
-        public override bool InitialInnocent => true;
+        public override bool InitialInnocent => false;
 
         public override TimeSpan MountAbilityDelay => TimeSpan.FromHours(1.0);
 

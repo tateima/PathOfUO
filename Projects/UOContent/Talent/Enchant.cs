@@ -9,7 +9,7 @@ namespace Server.Talent
         public Enchant()
         {
             UpgradeCost = true;
-            TalentDependency = typeof(Disenchant);
+            TalentDependencies = new[] { typeof(Disenchant) };
             DisplayName = "Enchant";
             Description =
                 "Enchant crafted weaponry with random magical properties. Each level enables more affixes. Requires at least one magic and one crafting skill above 70+.";
@@ -17,7 +17,7 @@ namespace Server.Talent
             CanBeUsed = true;
             MaxLevel = 8;
             GumpHeight = 90;
-            AddEndY = 130;
+            AddEndY = 105;
         }
 
         public override bool HasSkillRequirement(Mobile mobile) => Disenchant.CanDisenchant(mobile, 70 + Level * 3);

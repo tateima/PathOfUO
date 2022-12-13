@@ -504,5 +504,38 @@
     "homeRange": 10,
     "walkingRange": 20,
     "entries": [{ "name": "BloodElemental", "maxCount": 1, "probability": 100 }]
+  },
+  {
+    "type": "Spawner",
+    "guid": "492af6a5-b034-4a8b-aa7b-923b906321e5",
+    "name": "Spawner (309)",
+    "location": [234, 130, -28],
+    "map": "Ilshenar",
+    "count": 1,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 10,
+    "walkingRange": 20,
+    "entries": [
+      { "name": "AncientLich", "maxCount": 1, "probability": 100 }
+    ]
+  },
+  {
+    "type": "Spawner",
+    "guid": "37598c17-946c-4a0a-8e86-20d1329e4bca",
+    "name": "Spawner (309)",
+    "location": [235, 119, -28],
+    "map": "Ilshenar",
+    "count": 2,
+    "minDelay": "00:05:00",
+    "maxDelay": "00:10:00",
+    "team": 0,
+    "homeRange": 20,
+    "walkingRange": 25,
+    "entries": [
+      { "name": "BoneKnight", "maxCount": 1, "probability": 100 },
+      { "name": "SkeletalKnight", "maxCount": 1, "probability": 100 }
+    ]
   }
 ]

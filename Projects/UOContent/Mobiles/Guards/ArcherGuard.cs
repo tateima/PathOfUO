@@ -7,10 +7,10 @@ namespace Server.Mobiles
     {
 
         [Constructible]
-        public ArcherGuard()
+        public ArcherGuard(int maxStrength = 3)
         {
             AiType = AIType.AI_Archer;
-            InitStats(Utility.RandomMinMax(75, 250), Utility.RandomMinMax(75, 250), Utility.RandomMinMax(75, 250));
+            SetHumanoidStrength(maxStrength);
             Title = "the guard";
 
             SpeechHue = Utility.RandomDyedHue();
@@ -59,11 +59,11 @@ namespace Server.Mobiles
 
             AddItem(pack);
 
-            Skills.Anatomy.Base = Utility.RandomMinMax(50.0, 100.0);
-            Skills.Tactics.Base = Utility.RandomMinMax(50.0, 100.0);
-            Skills.Archery.Base = Utility.RandomMinMax(50.0, 100.0);
-            Skills.MagicResist.Base = Utility.RandomMinMax(50.0, 100.0);
-            Skills.DetectHidden.Base = Utility.RandomMinMax(50.0, 100.0);
+            Skills.Anatomy.Base = Utility.RandomMinMax(75.0, 100.0);
+            Skills.Tactics.Base = Utility.RandomMinMax(75.0, 100.0);
+            Skills.Archery.Base = Utility.RandomMinMax(75.0, 100.0);
+            Skills.MagicResist.Base = Utility.RandomMinMax(75.0, 100.0);
+            Skills.DetectHidden.Base = Utility.RandomMinMax(75.0, 100.0);
 
             NextCombatTime = Core.TickCount + 500;
         }

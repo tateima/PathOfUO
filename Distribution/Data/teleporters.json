@@ -5875,6 +5875,11 @@
     "back": true
   },
   {
+    "src": { "map": "Ilshenar", "loc": [259, 90, -28] },
+    "dst": { "map": "Ilshenar", "loc": [235, 116, -28] },
+    "back": true
+  },
+  {
     "src": { "map": "Malas", "loc": [3, 128, -1] },
     "dst": { "map": "Tokuno", "loc": [259, 785, 64] },
     "back": false

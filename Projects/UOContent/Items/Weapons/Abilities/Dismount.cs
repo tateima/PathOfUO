@@ -65,49 +65,45 @@ public class Dismount : WeaponAbility
 
     public static void DoDismount(Mobile attacker, Mobile defender, TimeSpan delay, BlockMountType type = BlockMountType.Dazed)
     {
-        attacker.SendLocalizedMessage(1060082); // The force of your attack has dislodged them from their mount!
-
-        if (attacker.Mounted)
+        if (attacker is not null)
         {
-            defender.SendLocalizedMessage(1062315); // You fall off your mount!
-        }
-        else
-        {
-            defender.SendLocalizedMessage(1060083); // You fall off of your mount and take damage!
-        }
+            attacker.SendLocalizedMessage(1060082); // The force of your attack has dislodged them from their mount!
 
-        defender.PlaySound(0x140);
-        defender.FixedParticles(0x3728, 10, 15, 9955, EffectLayer.Waist);
+            defender.SendLocalizedMessage(attacker.Mounted ? 1062315 : 1060083); // You fall off of your mount and take damage!
+            // You fall off your mount!
+            defender.PlaySound(0x140);
+            defender.FixedParticles(0x3728, 10, 15, 9955, EffectLayer.Waist);
 
-        if (defender is PlayerMobile mobile)
-        {
-            if (AnimalForm.UnderTransformation(mobile))
+            if (defender is PlayerMobile mobile)
             {
-                mobile.SendLocalizedMessage(1114066, attacker.Name); // ~1_NAME~ knocked you out of animal form!
+                if (AnimalForm.UnderTransformation(mobile))
+                {
+                    mobile.SendLocalizedMessage(1114066, attacker.Name); // ~1_NAME~ knocked you out of animal form!
+                }
+                else if (defender.Flying)
+                {
+                    defender.SendLocalizedMessage(1113590, attacker.Name); // You have been grounded by ~1_NAME~!
+                }
+                else if (mobile.Mounted)
+                {
+                    mobile.SendLocalizedMessage(1040023); // You have been knocked off of your mount!
+                }
+
+                mobile.SetMountBlock(type, delay, true);
             }
-            else if (defender.Flying)
+            else
             {
-                defender.SendLocalizedMessage(1113590, attacker.Name); // You have been grounded by ~1_NAME~!
-            }
-            else if (mobile.Mounted)
-            {
-                mobile.SendLocalizedMessage(1040023); // You have been knocked off of your mount!
+                defender.Mount.Rider = null;
             }
 
-            mobile.SetMountBlock(type, delay, true);
-        }
-        else
-        {
-            defender.Mount.Rider = null;
-        }
-
-        if (attacker is PlayerMobile playerMobile)
-        {
-            playerMobile.SetMountBlock(BlockMountType.DismountRecovery, RemountDelay, true);
-        }
-        else if (Core.ML && attacker is BaseCreature { ControlMaster: PlayerMobile pm })
-        {
-            pm.SetMountBlock(BlockMountType.DismountRecovery, RemountDelay, false);
+            if (attacker is PlayerMobile playerMobile)
+            {
+                playerMobile.SetMountBlock(BlockMountType.DismountRecovery, RemountDelay, true);
+            }
+            else if (Core.ML && attacker is BaseCreature { ControlMaster: PlayerMobile pm })
+            {
+                pm.SetMountBlock(BlockMountType.DismountRecovery, RemountDelay, false);
+            }
         }
     }
 }

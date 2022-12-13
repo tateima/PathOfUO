@@ -9,7 +9,7 @@ namespace Server.Talent
     {
         public ChemicalWarfare()
         {
-            TalentDependency = typeof(ArcherFocus);
+            TalentDependencies = new[] { typeof(ArcherFocus) };
             RequiredWeapon = new[] { typeof(BaseRanged) };
             RequiredWeaponSkill = SkillName.Archery;
             DisplayName = "Chemical war";

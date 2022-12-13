@@ -12,7 +12,7 @@ namespace Server.Talent
     {
         public DominateCreature()
         {
-            TalentDependency = typeof(Resonance);
+            TalentDependencies = new[] { typeof(Resonance) };
             CanBeUsed = true;
             DisplayName = "Dominate creature";
             CooldownSeconds = 300;
@@ -71,7 +71,7 @@ namespace Server.Talent
                 if (instrument != null)
                 {
                     from.SendMessage("Whom do you wish to control");
-                    from.Target = new InternalFirstTarget(from, instrument, this);
+                    from.Target = new InternalTarget(from, instrument, this);
                 }
                 else
                 {
@@ -84,13 +84,13 @@ namespace Server.Talent
             }
         }
 
-        private class InternalFirstTarget : Target
+        private class InternalTarget : Target
         {
             private readonly BaseInstrument _instrument;
             private readonly DominateCreature _dominateCreature;
             private BaseCreature _creature;
 
-            public InternalFirstTarget(Mobile from, BaseInstrument instrument, DominateCreature dominateCreature) : base(
+            public InternalTarget(Mobile from, BaseInstrument instrument, DominateCreature dominateCreature) : base(
                 BaseInstrument.GetBardRange(from, SkillName.Provocation),
                 false,
                 TargetFlags.None

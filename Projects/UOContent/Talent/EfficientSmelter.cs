@@ -4,7 +4,7 @@ namespace Server.Talent
     {
         public EfficientSmelter()
         {
-            TalentDependency = typeof(ResourcefulHarvester);
+            TalentDependencies = new[] { typeof(ResourcefulHarvester) };
             DisplayName = "Metal worker";
             Description = "Chance to receive extra resources when smelting.";
             AdditionalDetail = $"The chance for this increases by 3% per level. {PassiveDetail}";

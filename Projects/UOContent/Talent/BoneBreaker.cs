@@ -8,7 +8,7 @@ namespace Server.Talent
         public BoneBreaker()
         {
             RequiredWeapon = new[] { typeof(BaseWeapon) };
-            TalentDependency = typeof(IronSkin);
+            TalentDependencies = new[] { typeof(IronSkin) };
             DisplayName = "Bone breaker";
             CanBeUsed = true;
             Description = "Next hit paralyzes target for 3s per level. Level also reduces cooldown by 10s.";

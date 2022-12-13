@@ -10,7 +10,7 @@ namespace Server.Mobiles
         private DateTime m_NextUndress;
 
         [Constructible]
-        public MLDryad() : base(AIType.AI_Mage, FightMode.Evil)
+        public MLDryad() : base(AIType.AI_Mage, FightMode.Aggressor)
         {
             Body = 266;
             BaseSoundID = 0x57B;

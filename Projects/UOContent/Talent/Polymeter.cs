@@ -7,14 +7,14 @@ namespace Server.Talent
     {
         public Polymeter()
         {
-            TalentDependency = typeof(MerchantPorter);
+            TalentDependencies = new[] { typeof(MerchantPorter) };
             DisplayName = "Poly gadget";
             CanBeUsed = true;
             Description = "Create device that polymorphs creatures into rabbits. Can glitch and make them stronger.";
             CooldownSeconds = 3600;
             ImageID = 156;
             GumpHeight = 230;
-            AddEndY = 105;
+            AddEndY = 95;
             MaxLevel = 1;
         }
 

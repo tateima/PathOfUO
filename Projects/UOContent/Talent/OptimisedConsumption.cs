@@ -8,7 +8,7 @@ namespace Server.Talent
     {
         public OptimisedConsumption()
         {
-            TalentDependency = typeof(WarCraftFocus);
+            TalentDependencies = new[] { typeof(WarCraftFocus) };
             DisplayName = "Consumable focus";
             Description = "Increases effectiveness of consumed goods. Consuming alcohol also improves your fighting skills.";
             AdditionalDetail = $"Non-alcoholic beverages increase your mana. Food will increase your stats as well, but only if you are incredibly hungry. Potions are also enhanced by this talent.  All increases are calculated by 2 points per level. {PassiveDetail}";

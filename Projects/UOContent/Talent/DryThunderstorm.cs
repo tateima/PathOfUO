@@ -11,7 +11,7 @@ namespace Server.Talent
 
         public DryThunderstorm()
         {
-            TalentDependency = typeof(SpellMind);
+            TalentDependencies = new[] { typeof(SpellMind) };
             DisplayName = "Thunderstorm";
             CanBeUsed = true;
             CooldownSeconds = 120;

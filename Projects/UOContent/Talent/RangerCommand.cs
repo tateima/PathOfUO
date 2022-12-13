@@ -4,7 +4,7 @@ namespace Server.Talent
     {
         public RangerCommand()
         {
-            TalentDependency = typeof(NatureAffinity);
+            TalentDependencies = new[] { typeof(NatureAffinity) };
             DisplayName = "Ranger command";
             Description = "Decreases stat and skill loss of tamed creatures by 1% per level.";
             AdditionalDetail = "This talent requires at least 30 animal taming and animal lore.";

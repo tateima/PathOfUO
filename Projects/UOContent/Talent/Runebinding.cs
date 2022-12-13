@@ -10,7 +10,7 @@ namespace Server.Talent
         public Runebinding()
         {
             DisplayName = "Runebinding";
-            TalentDependency = typeof(OrnateCrafter);
+            TalentDependencies = new[] { typeof(OrnateCrafter) };
             Description =
                 "Enables placing rare runes into sockets to unlock powerful runewords. Requires 40+ smithing/tailoring and tinkering.";
             ImageID = 410;

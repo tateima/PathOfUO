@@ -6,7 +6,7 @@ namespace Server.Talent
     {
         public EscapeDeath()
         {
-            TalentDependency = typeof(KeenSenses);
+            TalentDependencies = new[] { typeof(KeenSenses) };
             HasBeforeDeathSave = true;
             DisplayName = "Escape death";
             CooldownSeconds = 300;

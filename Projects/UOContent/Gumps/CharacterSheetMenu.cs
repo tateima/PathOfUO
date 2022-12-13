@@ -67,10 +67,6 @@ namespace Server.Gumps
         public CharacterSheetGump(Mobile from, int page, SkillsGumpGroup skillGroup = null, bool playSound = false) : base(0, 0)
         {
             m_Groups = SkillsGumpGroup.Groups;
-            if (from == null)
-            {
-                from.CloseGump<CharacterSheetGump>();
-            }
             if (from is PlayerMobile player)
             {
                 if (skillGroup != null)
@@ -100,7 +96,7 @@ namespace Server.Gumps
                 if (page == 2 && m_SkillGroup != null)
                 {
                     AddLabel(110, 60, 0, m_SkillGroup.Name);
-                    AddLabel(90, 80, 0, "Skill Pts: " + player.CraftSkillPoints.ToString() + "C/" + player.NonCraftSkillPoints.ToString() + "NC/" + player.RangerSkillPoints.ToString() + "R");
+                    AddLabel(90, 80, 0, $"Skill Pts: {player.CraftSkillPoints}C/{player.NonCraftSkillPoints}NC/{player.RangerSkillPoints}R");
                     y = 100;
                     double maxSkill = player.Level switch
                     {
@@ -140,7 +136,7 @@ namespace Server.Gumps
                                     (BaseTalent.IsRangerSkill(m_SkillGroup.Skills[i]) && player.RangerSkillPoints > 0)
                                 )
                                 {
-                                    AddButton(buttonX, y + 2, 2223, 2223, 200 + i, GumpButtonType.Reply, 0);
+                                    AddButton(buttonX, y + 2, 2223, 2223, 200 + i);
                                 }
                             }
                             else
@@ -153,43 +149,36 @@ namespace Server.Gumps
                 }
                 else
                 {
-                    if (player.HardCore)
-                    {
-                        AddLabel(80, 60, 0, "Character Sheet (Hardcore)");
-                    }
-                    else
-                    {
-                        AddLabel(80, 60, 0, "Character Sheet");
-                    }
-                    AddLabel(90, 80, 0, "Level: " + player.Level.ToString());
+                    AddLabel(80, 60, 0, player.HardCore ? "Character Sheet (Hardcore)" : "Character Sheet");
+                    AddLabel(90, 80, 0, "Level: " + player.Level);
                     AddLabel(90, 100, 0, "Experience Points:");
                     int totalExperience = player.LevelExperience + player.CraftExperience + player.NonCraftExperience + player.RangerExperience;
                     AddLabel(90, 120, 0, totalExperience.ToString());
                     AddLabel(90, 140, 0, "Talents");
-                    AddButton(190, 144, 2223, 2223, 300, GumpButtonType.Reply, 0);
-                    AddLabel(90, 160, 0, "Stat Points: " + player.StatPoints.ToString());
-                    AddLabel(90, 180, 0, "Strength: " + from.RawStr.ToString());
+                    AddButton(190, 144, 2223, 2223, 300);
+                    AddLabel(90, 160, 0, "Stat Points: " + player.StatPoints);
+                    AddLabel(90, 180, 0, "Strength: " + from.RawStr);
                     if (player.StatPoints > 0)
                     {
-                        AddButton(190, 182, 2223, 2223, 1, GumpButtonType.Reply, 0);
+                        AddButton(190, 182, 2223, 2223, 1);
                     }
-                    AddLabel(90, 200, 0, "Dexterity: " + from.RawDex.ToString());
+                    AddLabel(90, 200, 0, "Dexterity: " + from.RawDex);
                     if (player.StatPoints > 0)
                     {
-                        AddButton(190, 200, 2223, 2223, 2, GumpButtonType.Reply, 0);
+                        AddButton(190, 200, 2223, 2223, 2);
                     }
-                    AddLabel(90, 220, 0, "Intelligence: " + from.RawInt.ToString());
+                    AddLabel(90, 220, 0, "Intelligence: " + from.RawInt);
                     if (player.StatPoints > 0)
                     {
-                        AddButton(190, 222, 2223, 2223, 3, GumpButtonType.Reply, 0);
+                        AddButton(190, 222, 2223, 2223, 3);
                     }
 
-                    AddLabel(270, 60, 0, "Skill Points: " + player.CraftSkillPoints.ToString() + "C/" + player.NonCraftSkillPoints.ToString() + "NC/" + player.RangerSkillPoints.ToString() + "R");
+                    AddLabel(270, 60, 0, $"Skill Points: {player.CraftSkillPoints}C/{player.NonCraftSkillPoints}NC/{player.RangerSkillPoints}R");
                     AddLabel(270, 80, 0, "Skill Groups");
                     for (int i = 0; i < m_Groups.Length; ++i)
                     {
                         AddLabel(270, y, 0, m_Groups[i].Name);
-                        AddButton(390, y + 2, 2223, 2223, 100 + i, GumpButtonType.Reply, 0);
+                        AddButton(390, y + 2, 2223, 2223, 100 + i);
                         y += 20;
                     }
                 }

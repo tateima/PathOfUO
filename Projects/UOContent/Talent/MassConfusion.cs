@@ -8,7 +8,7 @@ namespace Server.Talent
     {
         public MassConfusion()
         {
-            TalentDependency = typeof(Resonance);
+            TalentDependencies = new[] { typeof(Resonance) };
             DisplayName = "Mass Confusion";
             Description =
                 "Your music confuses nearby monsters. Each level increases AOE and decreases cooldown by 10s. Requires 60 peace, provocation and 70 music.";

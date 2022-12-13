@@ -7,11 +7,11 @@ namespace Server.Talent
     {
         public Cannibalism()
         {
-            TalentDependency = typeof(BondingMaster);
+            TalentDependencies = new[] { typeof(BondingMaster) };
             DisplayName = "Cannibalise pet";
             CanBeUsed = true;
             Description = "Sacrifice another tamed animal, transferring their stats to a target creature.";
-            AdditionalDetail = "You may only sacrifice a maximum of 3 tamed creatures to your chosen target. The transfer increases by 2% per level.";
+            AdditionalDetail = "You may only sacrifice a maximum of 3 tamed creatures to your chosen target. The transfer increases by 5% per level.";
             ImageID = 376;
             AddEndAdditionalDetailsY = 70;
         }

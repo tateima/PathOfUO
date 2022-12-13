@@ -4,7 +4,7 @@ namespace Server.Talent
     {
         public EfficientSpinner()
         {
-            TalentDependency = typeof(ResourcefulHarvester);
+            TalentDependencies = new[] { typeof(ResourcefulHarvester) };
             DisplayName = "Thread master";
             Description = "Chance to receive extra tailoring materials when spinning.";
             AdditionalDetail = $"The chance for this increases by 3% per level. {PassiveDetail}";

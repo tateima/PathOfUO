@@ -8,7 +8,7 @@ namespace Server.Talent
     {
         public Cleave()
         {
-            TalentDependency = typeof(SwordsmanshipFocus);
+            TalentDependencies = new[] { typeof(SwordsmanshipFocus) };
             RequiredWeapon = new[] { typeof(BasePoleArm) };
             RequiredWeaponSkill = SkillName.Swords;
             DisplayName = "Cleave";

@@ -10,7 +10,7 @@ namespace Server.Talent
         public GreaterFireElemental()
         {
             BlockedBy = new[] { typeof(MasterOfDeath), typeof(HolyAvenger) };
-            TalentDependency = typeof(DragonAspect);
+            TalentDependencies = new[] { typeof(DragonAspect) };
             DisplayName = "Greater fire lord";
             MobilePercentagePerPoint = 15;
             CanBeUsed = true;

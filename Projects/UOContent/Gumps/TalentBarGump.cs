@@ -15,7 +15,6 @@ namespace Server.Gumps
         private readonly int m_LastPage = 1;
         private readonly List<BaseTalent> m_UseableTalents;
         private readonly List<TalentGump.TalentGumpPage> m_TalentGumpPages;
-        public TimerExecutionToken _talentBarExecutionToken;
         private readonly Mobile m_Mobile;
 
         public TalentBarGump(Mobile from, int page, int lastTalentIndex, List<TalentGump.TalentGumpPage> talentGumpPages) : base(0, 0)
@@ -92,46 +91,40 @@ namespace Server.Gumps
                     hue = 0x26;
                     cooldownLeft = $"{WaitTeleporter.FormatTime(talent._talentTimerToken.Next - Core.Now)}";
                 }
-                AddImage(x, y, talent.ImageID, hue);
+                if (talent.HasSkillRequirement(from) || talent.IgnoreRequirements)
+                {
+                    if (!talent.OnCooldown)
+                    {
+                        AddButton(x, y, talent.ImageID, talent.ImageID, 0 + i);
+                    }
+                    else
+                    {
+                        AddImage(x, y, talent.ImageID, hue);
+                    }
+                }
                 string display = talent.DisplayName;
                 if (cooldownLeft.Length > 0)
                 {
                     display = $"{display}: {cooldownLeft}";
                 }
                 AddHtml(x, y + 40, 100, 100, $"<BASEFONT COLOR=#FFFFE5>{display}</FONT>");
-
-                if (talent.HasSkillRequirement(from) && !talent.OnCooldown)
-                {
-                    AddButton(x + 30, y + 10, 2223, 2223, 0 + i);
-                }
                 y += 100;
             }
-            Timer.StartTimer(TimeSpan.FromSeconds(7), UpdateGump, out _talentBarExecutionToken);
         }
 
         public bool IsUseableTalent(PlayerMobile player, BaseTalent value)
         {
             if (value is not null)
             {
-                BaseTalent[] dependencyMatrix = BaseTalent.GetTalentDependency(player, value);
-                BaseTalent dependsOn = dependencyMatrix.Length > 0 ? dependencyMatrix[0] : null;
-                BaseTalent hasDependency = dependencyMatrix.Length > 1 ? dependencyMatrix[1] : null;
-                return value.CanBeUsed &&
-                       ((dependsOn is not null && hasDependency is not null &&
-                         hasDependency.Level >= value.TalentDependencyPoints) || (dependsOn is null)) &&
-                       (
-                           !value.RequiresDeityFavor || (value.RequiresDeityFavor && player.HasDeityFavor &&
-                                                         value.DeityAlignment != Deity.Alignment.None &&
-                                                         value.DeityAlignment == player.CombatAlignment)
-                       );
+                List<BaseTalent[]> dependencyMatrices = BaseTalent.GetTalentDependencies(player, value);
+                return value.CanBeUsed && ( value.IgnoreRequirements || value.HasAllDependencies(dependencyMatrices) &&
+                    (
+                        !value.RequiresDeityFavor || (value.RequiresDeityFavor && player.HasDeityFavor &&
+                                                      value.DeityAlignment != Deity.Alignment.None &&
+                                                      value.DeityAlignment == player.CombatAlignment)
+                    ));
             }
             return false;
-        }
-
-        public void UpdateGump()
-        {
-            m_Mobile.CloseGump<TalentBarGump>();
-            m_Mobile.SendGump(new TalentBarGump(m_Mobile, m_LastPage, m_LastTalentIndex, m_TalentGumpPages));
         }
         public override void OnResponse(NetState state, RelayInfo info)
         {
@@ -156,7 +149,6 @@ namespace Server.Gumps
                 else if (info.ButtonID == 1002)
                 {
                     player.CloseGump<TalentBarGump>();
-                    _talentBarExecutionToken.Cancel();
                     return;
                 }
                 else if (info.ButtonID >= 0)

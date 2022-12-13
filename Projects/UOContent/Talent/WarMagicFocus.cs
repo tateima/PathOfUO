@@ -4,12 +4,13 @@ namespace Server.Talent
     {
         public WarMagicFocus()
         {
-            TalentDependency = typeof(PlanarShift);
+            TalentDependencies = new[] { typeof(PlanarShift) };
             DisplayName = "War Magic";
             Description = "Decrease chance for spell fizzle on hit by 8% per level. Requires 20-100 magery.";
             AdditionalDetail = $"{PassiveDetail}";
             ImageID = 373;
-            AddEndY = 100;
+            AddEndY = 120;
+
         }
 
         public override int ModifySpellMultiplier() => Level * 8;

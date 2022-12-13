@@ -62,6 +62,20 @@ namespace Server.Mobiles
         public override HideType HideType => HideType.Horned;
         public override bool CanFly => true;
 
+        public override void OnBeforeSpawn(Point3D location, Map m)
+        {
+            if (Utility.Random(1000) < 3 && this is not NecroticWyvern)
+            {
+                NecroticWyvern necroticWyvern = new NecroticWyvern();
+                necroticWyvern.MoveToWorld(location, m);
+                Delete();
+            }
+            else
+            {
+                base.OnBeforeSpawn(location, m);
+            }
+        }
+
         public override void GenerateLoot()
         {
             AddLoot(LootPack.Average);

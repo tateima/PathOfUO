@@ -5,7 +5,7 @@ namespace Server.Talent
         public AbyssalHunter()
         {
             BlockedBy = new[] { typeof(UndeadHunter) };
-            TalentDependency = typeof(ExperiencedHunter);
+            TalentDependencies = new[] { typeof(ExperiencedHunter) };
             HasDamageAbsorptionEffect = true;
             DisplayName = "Abyssal hunter";
             Description = "Increases damage to abyssal and absorbs damage from them.";

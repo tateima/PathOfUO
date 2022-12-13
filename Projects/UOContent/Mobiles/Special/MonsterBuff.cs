@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using Server.Engines.Spawners;
 using Server.Items;
 using Server.Talent;
-using Server.Utilities;
 using Server.Network;
-using Server.Pantheon;
 
 namespace Server.Mobiles
 {
@@ -29,7 +29,7 @@ namespace Server.Mobiles
         public static int BossDamageBuff = 4;
 
         public static double MinionGoldBuff = 1.07;
-        public static double MinionHitsBuff = 2.5;
+        public static double MinionHitsBuff = 1.2;
         public static double MinionStrBuff = 1.07;
         public static double MinionIntBuff = 1.07;
         public static double MinionDexBuff = 1.07;
@@ -153,6 +153,13 @@ namespace Server.Mobiles
             else if (bc.IsToxic)
             {
                 bc.SetResistance(ResistanceType.Poison, 100);
+                bc.HitPoisonOverride = Utility.RandomMinMax(1, 3) switch
+                {
+                    1 => Poison.Deadly,
+                    2 => Poison.Lethal,
+                    _ => Poison.Greater
+                };
+                bc.Skills.Poisoning.Base = Utility.RandomMinMax(70, 100);
             }
             else if (bc.IsFrozen)
             {
@@ -179,10 +186,19 @@ namespace Server.Mobiles
             else if (bc.IsToxic)
             {
                 bc.SetResistance(ResistanceType.Poison, 0);
+                bc.Skills.Poisoning.Base = 0;
             }
             else if (bc.IsFrozen)
             {
                 bc.SetResistance(ResistanceType.Cold, 0);
+                Item[] hearts = bc.Backpack?.FindItemsByType(typeof(IcyHeart));
+                if (hearts is not null)
+                {
+                    foreach (var heart in hearts)
+                    {
+                        heart.Delete();
+                    }
+                }
             }
         }
 
@@ -229,7 +245,7 @@ namespace Server.Mobiles
             if (illusion != null)
             {
                 illusion.MoveToWorld(bc.Location, bc.Map);
-                illusion.Attack(@from);
+                illusion.Attack(from);
                 illusion.SetHits(Utility.RandomMinMax(25, 45));
                 illusion.ExperienceValue = 0;
                 illusion.Hue = IllusionistHue;
@@ -243,6 +259,10 @@ namespace Server.Mobiles
                     illusion.Name = bc.Name;
                 }
                 illusion.SetLevel();
+                if (illusion.Level < bc.Level)
+                {
+                    illusion.AlterLevels(bc.Level - 2, false, bc.Level - 2, bc.Level - 2);
+                }
                 illusion.Combatant = from;
             }
 
@@ -326,23 +346,9 @@ namespace Server.Mobiles
             for (int i = 0; i < bc.NumberOfMinions; ++i)
             {
                 BaseCreature minion = Activator.CreateInstance(monsterType) as BaseCreature;
-                Point3D point = new Point3D(bc.Location.X + Utility.RandomMinMax(2, 3), bc.Location.Y + Utility.RandomMinMax(2, 3), bc.Y);
-                int attempts = 10;
-                while (!bc.InLOS(point))
-                {
-                    if (attempts <= 0)
-                    {
-                        point = new Point3D(bc.Location.X, bc.Location.Y, bc.Y);
-                    }
-                    else
-                    {
-                        point = new Point3D(bc.Location.X + Utility.RandomMinMax(2, 3), bc.Location.Y + Utility.RandomMinMax(2, 3), bc.Y);
-                    }
-                    attempts--;
-                }
-
                 if (minion != null)
                 {
+                    Point3D point = bc.Map.GetRandomNearbyLocation(bc.Location, 2, 1);
                     minion.SetLevel();
                     minion.MoveToWorld(point, bc.Map);
                     minion.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
@@ -391,13 +397,13 @@ namespace Server.Mobiles
             switch (lootRating)
             {
                 default:
-                    bc.ForceRandomLoot(LootPack.Meager, 1);
+                    bc.ForceRandomLoot(LootPack.Average, 1);
                     break;
                 case 2:
                     bc.ForceRandomLoot(LootPack.Average, Utility.RandomMinMax(1, 2));
                     break;
                 case 3:
-                    bc.ForceRandomLoot(LootPack.Average, Utility.RandomMinMax(2, 4));
+                    bc.ForceRandomLoot(LootPack.Rich, Utility.RandomMinMax(2, 4));
                     break;
                 case 4:
                     bc.ForceRandomLoot(LootPack.Rich, Utility.RandomMinMax(1, 2));
@@ -436,9 +442,14 @@ namespace Server.Mobiles
             bc.SetResistance(ResistanceType.Physical, bc.BasePhysicalResistance - 25);
             UnConvert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff, 500);
         }
+
         public static void Convert(BaseCreature bc, double goldBuff, double hitsBuff, double strBuff, double intBuff, double dexBuff, double skillsBuff, double speedBuff, double fameBuff, double karmaBuff, int damageBuff, int baseXpModiefier = 0)
         {
             bc.ExperienceValue += baseXpModiefier;
+            if (baseXpModiefier > 0)
+            {
+                bc.Backpack?.DropItem(new Gold(baseXpModiefier));
+            }
             if (bc.Backpack != null)
             {
                 Item[] goldItems = bc.Backpack.FindItemsByType(typeof(Gold));
@@ -549,105 +560,79 @@ namespace Server.Mobiles
         public static void RandomMonsterBuffs(BaseCreature creature, int maxBuffs)
         {
             var challengerBuffs = 0;
+            int cycles = 0;
             while (challengerBuffs < maxBuffs)
             {
-                if (Utility.Random(100) < 3 && !creature.IsIllusionist)
+                int chance = 3 + cycles;
+                if (Utility.Random(100) < chance && !creature.IsIllusionist)
                 {
                     creature.IsIllusionist = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 3 && !creature.IsCorruptor)
+                if (Utility.Random(100) < chance && !creature.IsCorruptor)
                 {
                     creature.IsCorruptor = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 3 && !creature.IsEthereal)
+                if (Utility.Random(100) < chance && !creature.IsEthereal)
                 {
                     creature.IsEthereal = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 3 && !creature.IsIllusionist)
+                if (Utility.Random(100) < chance && !creature.IsIllusionist)
                 {
                     creature.IsIllusionist = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 3 && !creature.IsMagicResistant)
+                if (Utility.Random(100) < chance && !creature.IsMagicResistant)
                 {
                     creature.IsMagicResistant = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 3 && !creature.IsFrozen)
+                if (Utility.Random(100) < chance && !creature.IsFrozen)
                 {
                     creature.IsFrozen = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 3 && !creature.IsBurning)
+                if (Utility.Random(100) < chance && !creature.IsBurning)
                 {
                     creature.IsBurning = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 3 && !creature.IsElectrified)
+                if (Utility.Random(100) < chance && !creature.IsElectrified)
                 {
                     creature.IsElectrified = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 3 && !creature.IsToxic)
+                if (Utility.Random(100) < chance && !creature.IsToxic)
                 {
                     creature.IsToxic = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 3 && !creature.IsReflective)
+                if (Utility.Random(100) < chance && !creature.IsReflective)
                 {
                     creature.IsReflective = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 3 && !creature.IsRegenerative)
+                if (Utility.Random(100) < chance && !creature.IsRegenerative)
                 {
                     creature.IsRegenerative = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 3 && !creature.IsSoulFeeder)
+                if (Utility.Random(100) < chance && !creature.IsSoulFeeder)
                 {
                     creature.IsSoulFeeder = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 1 && !creature.IsBoss)
+                if (Utility.Random(100) < chance - 2 && !creature.IsBoss)
                 {
                     creature.IsBoss = true;
                     challengerBuffs++;
                 }
-                if (Utility.Random(100) < 20 && !creature.IsVeteran)
-                {
-                    creature.IsVeteran = true;
-                } else if (Utility.Random(100) < 7 && !creature.IsVeteran && !creature.IsHeroic)
-                {
-                    creature.IsHeroic = true;
-                }
+                cycles += 3;
             }
         }
 
-        public static void CheckFreezeHue(Mobile defender, int originalHue)
-        {
-            if (defender.Frozen)
-            {
-                defender.HueMod = 0xC1;
-                Timer.StartTimer(TimeSpan.FromSeconds(2), () => CheckFreezeHue(defender, originalHue));
-            }
-            else
-            {
-                defender.HueMod = originalHue;
-            }
-        }
-
-        public static Poison GetPoison()
-        {
-            return Utility.Random(3) switch
-            {
-                1 => Poison.Regular,
-                2 => Poison.Greater,
-                _ => Poison.Lesser
-            };
-        }
         public static bool CheckElementalEffect(int chance = 10)
         {
             return Utility.Random(100) < chance;
@@ -690,12 +675,7 @@ namespace Server.Mobiles
             }
             else if (owner.IsToxic)
             {
-                damage = Utility.RandomMinMax(3, 5);
-                if (CheckElementalEffect())
-                {
-                    Poison poison = GetPoison();
-                    mobile.ApplyPoison(owner, poison);
-                }
+                damage = mobile.Poisoned ? Utility.RandomMinMax(5, 7) : Utility.RandomMinMax(3, 5);
                 poisonDam = 100;
                 Effects.SendLocationEffect(mobile, 0x3924, 16, 10, 0);
                 sound = 0x205;
@@ -717,7 +697,7 @@ namespace Server.Mobiles
                     }
                 }
 
-                if (CheckElementalEffect() && !(Utility.Random(100) < frozenAvoidanceChance))
+                if (CheckElementalEffect() && !(Utility.Random(100) < frozenAvoidanceChance) && player?.Frozen == false)
                 {
                     mobile.Freeze(TimeSpan.FromSeconds(Utility.RandomMinMax(5, 7)));
                     mobile.PublicOverheadMessage(
@@ -726,8 +706,7 @@ namespace Server.Mobiles
                         false,
                         "* Frozen by intense cold *"
                     );
-                    CheckFreezeHue(mobile, mobile.HueMod);
-                } else if (player != null && frozenAvoidanceChance < 100)
+                } else if (player != null && frozenAvoidanceChance < 100 && !player.Slowed)
                 {
                     player.Slow(6);
                     mobile.PublicOverheadMessage(
@@ -755,7 +734,7 @@ namespace Server.Mobiles
                 mobile.PlaySound(sound);
             }
         }
-
+        public static bool CannotBeAltered(BaseCreature baseCreature) => baseCreature.Tamable;
         public static bool DoubleElementalDamage(BaseCreature bc, BaseWeapon weapon)
         {
             return (bc.IsFrozen && weapon.Burning) || (bc.IsBurning && weapon.Frozen);
@@ -860,6 +839,34 @@ namespace Server.Mobiles
             }
         }
 
+        public static void BalanceLevels(BaseCreature baseCreature, int comparerLevel)
+        {
+            // if they're over 10 levels, dont intervene
+            if (!(baseCreature.Level > comparerLevel + 10))
+            {
+                // add levels to be closer to comparer give or take 3
+                if (baseCreature.Level < comparerLevel - 3)
+                {
+                    baseCreature.AlterLevels(comparerLevel - baseCreature.Level + Utility.RandomMinMax(-3, 3), false, comparerLevel - baseCreature.Level - 3, comparerLevel - baseCreature.Level + 3);
+                } else if (baseCreature.Level > comparerLevel + 5)
+                {
+                    baseCreature.AlterLevels(baseCreature.Level - comparerLevel + Utility.RandomMinMax(-3, 3), false, baseCreature.Level - comparerLevel - 3, baseCreature.Level - comparerLevel + 3);
+                }
+            }
+        }
+
+        public static void BalanceCreatureAgainstMobile(BaseCreature target, Mobile mobile)
+        {
+            if (mobile is PlayerMobile playerMobile)
+            {
+                BalanceLevels(target, playerMobile.Level);
+            } else if (mobile is BaseCreature baseCreature)
+            {
+                BalanceLevels(target, baseCreature.Level);
+            }
+
+        }
+
         public static void CheckTimers(BaseCreature bc)
         {
             if (bc.IsFrozen || bc.IsBurning || bc.IsToxic || bc.IsElectrified) {
@@ -907,7 +914,6 @@ namespace Server.Mobiles
             public ElementalDamageTimer(Mobile m)
                 : base(ElementalDamageRate, ElementalDamageRate)
             {
-
                 m_Owner = m as BaseCreature;
             }
 

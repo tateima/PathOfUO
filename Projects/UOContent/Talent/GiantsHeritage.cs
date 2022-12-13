@@ -11,7 +11,7 @@ namespace Server.Talent
         {
             RequiredWeapon = new[] { typeof(BaseWeapon) };
             StatModNames = new[] { "GiantsHeritage" };
-            TalentDependency = typeof(DivineStrength);
+            TalentDependencies = new[] { typeof(DivineStrength) };
             DisplayName = "Giant's Heritage";
             CooldownSeconds = 180;
             CanBeUsed = true;

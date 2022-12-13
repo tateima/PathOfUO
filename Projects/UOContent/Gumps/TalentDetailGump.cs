@@ -62,13 +62,32 @@ namespace Server.Gumps
                 y += 55;
                 AddHtml(x + 80, y, 300, 200, $"<BASEFONT COLOR=#FFFFE5>Stamina cost: {talent.StamRequired.ToString()}</FONT>");
             }
-            BaseTalent dependsOn = TalentConstructor.Construct(talent.TalentDependency) as BaseTalent;
-            if (dependsOn != null)
-            {
-                y += 55;
-                AddHtml(x + 80, y, 300, 200, $"<BASEFONT COLOR=#FFFFE5>Requires:<BR>{dependsOn.DisplayName}</FONT>");
-            }
 
+            if (talent.TalentDependencies is not null)
+            {
+                string dependencies = "";
+                int innerY = 0;
+                foreach (var dependencyType in talent.TalentDependencies)
+                {
+                    BaseTalent dependsOn = TalentConstructor.Construct(dependencyType) as BaseTalent;
+                    if (dependsOn is not null)
+                    {
+                        dependencies = $"{dependencies}{dependsOn.DisplayName}<BR>";
+                        innerY += 17;
+                    }
+                }
+
+                if (dependencies.Length > 0)
+                {
+                    if (talent.TalentDependencyMinimum > 1)
+                    {
+                        dependencies = $"A minimum of {talent.TalentDependencyMinimum} talents including:<BR>{dependencies}";
+                    }
+                    y += 55;
+                    AddHtml(x + 80, y, 300, 200, $"<BASEFONT COLOR=#FFFFE5>Requires:<BR>{dependencies}</FONT>");
+                    y += innerY;
+                }
+            }
 
             if (talent.BlockedBy.Length > 0)
             {

@@ -61,6 +61,20 @@ namespace Server.Mobiles
         private static MonsterAbility[] _abilities = { MonsterAbilities.FireBreath };
         public override MonsterAbility[] GetMonsterAbilities() => _abilities;
 
+        public override void OnBeforeSpawn(Point3D location, Map m)
+        {
+            if (Utility.Random(1000) < 3 && this is not ManaDrake or PrismaticDrake)
+            {
+                BaseCreature creature = Utility.RandomBool() ? new ManaDrake() : new PrismaticDrake();
+                creature.MoveToWorld(location, m);
+                Delete();
+            }
+            else
+            {
+                base.OnBeforeSpawn(location, m);
+            }
+        }
+
         public override void GenerateLoot()
         {
             AddLoot(LootPack.Rich);

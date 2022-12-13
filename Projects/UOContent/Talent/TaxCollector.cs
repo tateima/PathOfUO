@@ -7,10 +7,10 @@ namespace Server.Talent
         public TaxCollector()
         {
             CanBeUsed = true;
-            TalentDependency = typeof(SmoothTalker);
+            TalentDependencies = new[] { typeof(SmoothTalker) };
             DisplayName = "Land Lord";
             Description = "Receive tax payments from a maximum of 10 vendors every 3h, can result in gold loss.";
-            AdditionalDetail = $"The chance of loss decreases by 1% per level. The tax received increases by 2% per level. {PassiveDetail}";
+            AdditionalDetail = $"The chance of loss decreases by 1% per level. The tax received increases by 5% per level. {PassiveDetail}";
             ImageID = 364;
             GumpHeight = 85;
             AddEndY = 100;

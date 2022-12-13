@@ -11,14 +11,14 @@ namespace Server.Talent
     {
         public LoreDisciples()
         {
-            TalentDependency = typeof(LoreSeeker);
+            TalentDependencies = new[] { typeof(LoreSeeker) };
             CanBeUsed = true;
             DisplayName = "Lore disciples";
             Description = "Summon random humanoids to fight alongside you for 2 minutes.";
             AdditionalDetail = "These disciples will be either a Brigand, a Mage or a Healer. The raw stats of these disciples grows by 3% per level. Additionally, their skills will be improved by 2% for every point in the Lore Teacher talent.";
             CooldownSeconds = 300;
             ManaRequired = 40;
-            MaxLevel = 4;
+            MaxLevel = 5;
             ImageID = 158;
             GumpHeight = 75;
             AddEndY = 90;
@@ -50,6 +50,7 @@ namespace Server.Talent
                     from.Animate(269, 7, 1, true, false, 0);
                     var disciples = new List<Mobile>();
                     var loreTeacher = ((PlayerMobile)from).GetTalent(typeof(LoreTeacher));
+                    var loreMaster = ((PlayerMobile)from).GetTalent(typeof(LoreMaster));
                     int level = loreTeacher?.Level > Level ? loreTeacher.Level : 0;
                     int modifier = LoreSeeker.GetLoreModifier(from, level);
                     for (var i = 0; i < Level; i++)
@@ -57,39 +58,53 @@ namespace Server.Talent
                         BaseCreature disciple = null;
                         MobilePercentagePerPoint += modifier;
                         var skillIncrease = modifier * 2;
-                        switch (Utility.RandomMinMax(1, 6))
+                        // lore master logic
+                        if (loreMaster is not null && Utility.Random(100) < loreMaster.Level)
                         {
-                            case 1:
-                            case 2:
-                            case 3:
-                                disciple = new Brigand();
-                                disciple.Skills.Fencing.Base += skillIncrease;
-                                disciple.Skills.Archery.Base += skillIncrease;
-                                disciple.Skills.Macing.Base += skillIncrease;
+                            disciple = Utility.Random(3) switch
+                            {
+                                1 => new WarriorGuard(2),
+                                2 => new ArcherGuard(2),
+                                3 => new MageGuard(2),
+                                _ => new NobleLord(2)
+                            };
+                        }
+                        else
+                        {
+                            switch (Utility.RandomMinMax(1, 6))
+                            {
+                                case 1:
+                                case 2:
+                                case 3:
+                                    disciple = new Brigand();
+                                    disciple.Skills.Fencing.Base += skillIncrease;
+                                    disciple.Skills.Archery.Base += skillIncrease;
+                                    disciple.Skills.Macing.Base += skillIncrease;
+                                    disciple.Skills.MagicResist.Base += skillIncrease;
+                                    disciple.Skills.Swords.Base += skillIncrease;
+                                    disciple.Skills.Tactics.Base += skillIncrease;
+                                    disciple.Skills.Wrestling.Base += skillIncrease;
+                                    break;
+                                case 4:
+                                case 5:
+                                    disciple = new EvilMage();
+                                    break;
+                                case 6:
+                                    disciple = new EvilHealer();
+                                    disciple.Skills.Forensics.Base += skillIncrease;
+                                    disciple.Skills.SpiritSpeak.Base += skillIncrease;
+                                    disciple.Skills.Swords.Base += skillIncrease;
+                                    break;
+                            }
+
+                            if (disciple is EvilMage)
+                            {
+                                disciple.Skills.EvalInt.Base += skillIncrease;
+                                disciple.Skills.Magery.Base += skillIncrease;
                                 disciple.Skills.MagicResist.Base += skillIncrease;
-                                disciple.Skills.Swords.Base += skillIncrease;
                                 disciple.Skills.Tactics.Base += skillIncrease;
                                 disciple.Skills.Wrestling.Base += skillIncrease;
-                                break;
-                            case 4:
-                            case 5:
-                                disciple = new EvilMage();
-                                break;
-                            case 6:
-                                disciple = new EvilHealer();
-                                disciple.Skills.Forensics.Base += skillIncrease;
-                                disciple.Skills.SpiritSpeak.Base += skillIncrease;
-                                disciple.Skills.Swords.Base += skillIncrease;
-                                break;
-                        }
-
-                        if (disciple is EvilMage)
-                        {
-                            disciple.Skills.EvalInt.Base += skillIncrease;
-                            disciple.Skills.Magery.Base += skillIncrease;
-                            disciple.Skills.MagicResist.Base += skillIncrease;
-                            disciple.Skills.Tactics.Base += skillIncrease;
-                            disciple.Skills.Wrestling.Base += skillIncrease;
+                            }
                         }
 
                         if (disciple != null)

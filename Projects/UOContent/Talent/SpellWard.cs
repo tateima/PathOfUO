@@ -10,7 +10,7 @@ namespace Server.Talent
         {
             RequiredWeapon = new[] { typeof(BaseShield) };
             CanBeUsed = true;
-            TalentDependency = typeof(ShieldFocus);
+            TalentDependencies = new[] { typeof(ShieldFocus) };
             CooldownSeconds = 120;
             ManaRequired = 15;
             DisplayName = "Spell ward";

@@ -7,15 +7,15 @@ namespace Server.Mobiles
     public static class Heroic
     {
         // Buffs
-        public static double GoldBuff = 1.30;
+        public static double GoldBuff = 2.30;
         public static double HitsBuff = 3;
-        public static double StrBuff = 2.5;
-        public static double IntBuff = 1.75;
-        public static double DexBuff = 1.75;
-        public static double SkillsBuff = 1.20;
+        public static double StrBuff = 3.5;
+        public static double IntBuff = 2.75;
+        public static double DexBuff = 2.75;
+        public static double SkillsBuff = 2.20;
         public static double SpeedBuff = 1.20;
-        public static double FameBuff = 1.20;
-        public static double KarmaBuff = 1.20;
+        public static double FameBuff = 2.20;
+        public static double KarmaBuff = 2.20;
         public static int DamageBuff = 6;
         public static void Convert(BaseCreature bc)
         {

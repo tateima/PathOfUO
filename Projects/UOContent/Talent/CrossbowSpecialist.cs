@@ -1,3 +1,4 @@
+using System;
 using Server.Items;
 
 namespace Server.Talent
@@ -6,13 +7,14 @@ namespace Server.Talent
     {
         public CrossbowSpecialist()
         {
-            TalentDependency = typeof(ArcherFocus);
+            TalentDependencies = new[] { typeof(ArcherFocus) };
             RequiredWeapon = new[] { typeof(Crossbow), typeof(HeavyCrossbow), typeof(RepeatingCrossbow) };
             RequiredWeaponSkill = SkillName.Archery;
             IncreaseHitChance = true;
+            MaxLevel = 5;
             DisplayName = "Crossbow specialist";
             Description = "Increases damage and hit chance of crossbow weapons.";
-            AdditionalDetail = $"{PassiveDetail} The chance to hit increases 1% per level. This talent causes 1-X damage where X is the talent level.";
+            AdditionalDetail = $"{PassiveDetail} The chance to hit and damage increases 5% per level for crossbow weapons.";
             ImageID = 152;
             GumpHeight = 85;
             AddEndY = 80;
@@ -20,7 +22,8 @@ namespace Server.Talent
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
-            damage += Utility.RandomMinMax(1, Level);
+            damage += AOS.Scale(damage, Level * 5);
+            damage += AOS.Scale(damage, WeaponMasterModifier(attacker));
         }
     }
 }

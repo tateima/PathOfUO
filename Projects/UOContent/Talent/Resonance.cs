@@ -8,7 +8,7 @@ namespace Server.Talent
     {
         public Resonance()
         {
-            TalentDependency = typeof(SonicAffinity);
+            TalentDependencies = new[] { typeof(SonicAffinity) };
             DisplayName = "Resonance";
             CanBeUsed = true;
             CooldownSeconds = 30;
@@ -16,6 +16,7 @@ namespace Server.Talent
             Description =
                 "Chance on barding success that target is damaged by sonic energy. AOE damage effect on use. Requires 60+ music.";
             AdditionalDetail = "Each level increases area of effect and damage by 1";
+            MaxLevel = 5;
             ImageID = 180;
             AddEndY = 125;
         }

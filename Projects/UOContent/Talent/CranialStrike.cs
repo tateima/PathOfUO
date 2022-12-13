@@ -7,7 +7,7 @@ namespace Server.Talent
     {
         public CranialStrike()
         {
-            TalentDependency = typeof(MaceSpecialist);
+            TalentDependencies = new[] { typeof(MaceSpecialist) };
             RequiredWeaponSkill = SkillName.Macing;
             RequiredWeapon = new[]
             {

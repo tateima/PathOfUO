@@ -10,7 +10,7 @@ namespace Server.Mobiles
         private DateTime m_NextResurrect;
 
         [Constructible]
-        public EtherealWarrior() : base(AIType.AI_Mage, FightMode.Evil)
+        public EtherealWarrior() : base(AIType.AI_Mage, FightMode.Aggressor)
         {
             Name = NameList.RandomName("ethereal warrior");
             Body = 123;
@@ -50,7 +50,7 @@ namespace Server.Mobiles
         }
 
         public override string CorpseName => "an ethereal warrior corpse";
-        public override bool InitialInnocent => true;
+        public override bool InitialInnocent => false;
 
         public override int TreasureMapLevel => Core.AOS ? 5 : 0;
 

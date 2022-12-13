@@ -10,7 +10,7 @@ namespace Server.Talent
         public Gambler()
         {
             CanBeUsed = true;
-            TalentDependency = typeof(SmoothTalker);
+            TalentDependencies = new[] { typeof(SmoothTalker) };
             DisplayName = "Gambler";
             Description = "Gamble gold with target npc, high chance of gold loss.";
             AdditionalDetail = $"The gold received increases by 50 per level. Wins can also result in some rarer items. {PassiveDetail}";

@@ -26,6 +26,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Server.Buffers;
+using Server.Dungeon;
 using Server.Json;
 using Server.Logging;
 using Server.Network;
@@ -172,7 +173,6 @@ public static class Core
     public static bool MultiProcessor { get; private set; }
 
     public static int ProcessorCount { get; private set; }
-
     public static string BaseDirectory
     {
         get
@@ -401,7 +401,6 @@ public static class Core
             EventSink.InvokeShutdown();
         }
     }
-
     public static void Main(string[] args)
     {
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
@@ -510,6 +509,7 @@ public static class Core
 
         RegionJsonSerializer.LoadRegions();
         World.Load();
+        DungeonLevelModHandler.Load();
 
         AssemblyHandler.Invoke("Initialize");
 

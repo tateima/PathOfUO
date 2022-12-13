@@ -29,7 +29,7 @@ namespace Server.Talent
         }
 
         public override int ModifySpellMultiplier() =>
-            // 2% per level
+            // 5% per level
             Level * 2;
 
         public override double ModifySpellScalar() => Level / 100.0 * 2;

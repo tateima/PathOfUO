@@ -7,7 +7,7 @@ namespace Server.Talent
     {
         public WhizzyGig()
         {
-            TalentDependency = typeof(MerchantPorter);
+            TalentDependencies = new[] { typeof(MerchantPorter) };
             DisplayName = "Whizzy-gig";
             CanBeUsed = true;
             Description = "Create device that heals targets. Can glitch and damage instead.";

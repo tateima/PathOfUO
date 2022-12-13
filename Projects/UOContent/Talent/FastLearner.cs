@@ -4,7 +4,7 @@ namespace Server.Talent
     {
         public FastLearner()
         {
-            TalentDependency = typeof(DivineIntellect);
+            TalentDependencies = new[] { typeof(DivineIntellect) };
             DisplayName = "Fast learner";
             Description = "Increases your experience gain from sources by 10% per level.";
             AdditionalDetail = $"{PassiveDetail}";

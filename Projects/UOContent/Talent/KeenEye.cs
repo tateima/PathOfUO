@@ -4,7 +4,7 @@ namespace Server.Talent
     {
         public KeenEye()
         {
-            TalentDependency = typeof(DivineDexterity);
+            TalentDependencies = new[] { typeof(DivineDexterity) };
             DisplayName = "Keen eyes";
             Description = "Increased chance of finding special loot on corpses.";
             AdditionalDetail = $"Each level increases this chance by 1%.  There is a rare chance rich items will drop. {PassiveDetail}";

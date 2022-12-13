@@ -4,7 +4,7 @@ namespace Server.Talent
     {
         public PainManagement()
         {
-            TalentDependency = typeof(BoneBreaker);
+            TalentDependencies = new[] { typeof(BoneBreaker) };
             DisplayName = "Pain management";
             Description = "Decrease bleeding effects and poison damage.";
             AdditionalDetail = $"Each level improves the effect by 2%. {PassiveDetail}";

@@ -9,7 +9,7 @@ namespace Server.Talent
         public SpectralScream()
         {
             BlockedBy = new[] { typeof(GreaterFireElemental) };
-            TalentDependency = typeof(SummonerCommand);
+            TalentDependencies = new[] { typeof(SummonerCommand) };
             DisplayName = "Spectral scream";
             Description = "Fears surrounding enemies. Level decreases cooldown by 24s.";
             AdditionalDetail = "The fear effect lasts 10 seconds.";
@@ -41,29 +41,6 @@ namespace Server.Talent
                         {
                             continue;
                         }
-
-                        var location = other.Location;
-                        var newLocation = new Point3D(
-                            location.X + Utility.RandomMinMax(-15, 15),
-                            location.Y + Utility.RandomMinMax(-15, 15),
-                            location.Z
-                        );
-                        var attempts = 0;
-                        while (!other.InLOS(newLocation))
-                        {
-                            if (attempts > 10)
-                            {
-                                break;
-                            }
-
-                            newLocation = new Point3D(
-                                location.X + Utility.RandomMinMax(-15, 15),
-                                location.Y + Utility.RandomMinMax(-15, 15),
-                                location.Z
-                            );
-                            attempts++;
-                        }
-
                         if (other is BaseCreature creature)
                         {
                             creature.Fear(10);

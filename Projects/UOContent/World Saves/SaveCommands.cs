@@ -1,3 +1,4 @@
+using Server.Dungeon;
 using Server.Saves;
 
 namespace Server.Commands
@@ -23,6 +24,7 @@ namespace Server.Commands
         private static void Save_OnCommand(CommandEventArgs e)
         {
             AutoSave.Save();
+            DungeonLevelModHandler.Save();
         }
 
         [Usage("AutoSave <on | off>"), Description("Enables or disables automatic shard saving.")]

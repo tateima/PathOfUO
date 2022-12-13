@@ -7,7 +7,7 @@ namespace Server.Talent
     {
         public PlanarShift()
         {
-            TalentDependency = typeof(MageCombatant);
+            TalentDependencies = new[] { typeof(MageCombatant) };
             DisplayName = "Planar shift";
             CanBeUsed = true;
             CooldownSeconds = 120;

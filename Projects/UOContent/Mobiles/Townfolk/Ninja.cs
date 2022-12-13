@@ -8,7 +8,7 @@ namespace Server.Mobiles
         public Ninja() : base(AIType.AI_Melee, FightMode.Aggressor)
         {
             Title = "the ninja";
-            InitStats(100, 100, 25);
+            SetHumanoidStrength();
 
             SetSkill(SkillName.Fencing, 64.0, 80.0);
             SetSkill(SkillName.Macing, 64.0, 80.0);
@@ -57,8 +57,12 @@ namespace Server.Mobiles
         public Ninja(Serial serial) : base(serial)
         {
         }
+        public override bool InitialInnocent => false;
+
+        public override bool AlwaysAttackable => true;
 
         public override bool CanTeach => true;
+
         public override bool ClickTitle => false;
 
         public override void Serialize(IGenericWriter writer)

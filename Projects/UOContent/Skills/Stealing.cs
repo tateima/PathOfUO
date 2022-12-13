@@ -429,6 +429,11 @@ namespace Server.SkillHandlers
                     pm.PermaFlags.Add(mobRoot);
                     pm.Delta(MobileDelta.Noto);
                 }
+
+                if (mobRoot is BaseCreature && caught)
+                {
+                    mobRoot.Combatant = from;
+                }
             }
         }
     }

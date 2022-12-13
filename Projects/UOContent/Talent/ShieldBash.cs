@@ -11,7 +11,7 @@ namespace Server.Talent
             RequiredWeapon = new[] { typeof(BaseShield) };
             CanBeUsed = true;
             HasDefenseEffect = true;
-            TalentDependency = typeof(ShieldFocus);
+            TalentDependencies = new[] { typeof(ShieldFocus) };
             DisplayName = "Shield bash";
             CooldownSeconds = 15;
             Description = "Stun target for 2 second per level. 15 second cooldown.";

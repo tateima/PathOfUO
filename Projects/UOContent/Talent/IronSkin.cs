@@ -8,7 +8,7 @@ namespace Server.Talent
 
         public IronSkin()
         {
-            TalentDependency = typeof(GiantsHeritage);
+            TalentDependencies = new[] { typeof(GiantsHeritage) };
             DisplayName = "Iron skin";
             CanBeUsed = true;
             Description = "Increases physical resistance on use.";

@@ -5,7 +5,7 @@ namespace Server.Talent
         public ReptilianHunter()
         {
             BlockedBy = new[] { typeof(ArachnidHunter) };
-            TalentDependency = typeof(ExperiencedHunter);
+            TalentDependencies = new[] { typeof(ExperiencedHunter) };
             HasDamageAbsorptionEffect = true;
             DisplayName = "Reptilian hunter";
             Description = "Increases damage to reptiles and heals damage from them.";

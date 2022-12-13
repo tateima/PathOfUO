@@ -5,7 +5,7 @@ namespace Server.Talent
         public SpellMind()
         {
             BlockedBy = new[] { typeof(PlanarShift) };
-            TalentDependency = typeof(ManaShield);
+            TalentDependencies = new[] { typeof(ManaShield) };
             DisplayName = "Spell mind";
             Description = "Reduces damage loss from spells cast without reagents. Increases damage by spells with reagents.";
             AdditionalDetail = $"{PassiveDetail}";

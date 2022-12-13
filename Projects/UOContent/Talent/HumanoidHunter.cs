@@ -7,7 +7,7 @@ namespace Server.Talent
         public HumanoidHunter()
         {
             BlockedBy = new[] { typeof(ElementalHunter) };
-            TalentDependency = typeof(ExperiencedHunter);
+            TalentDependencies = new[] { typeof(ExperiencedHunter) };
             HasDamageAbsorptionEffect = true;
             DisplayName = "Humanoid hunter";
             Description = "Increases damage to humanoids and lowers damage from them.";

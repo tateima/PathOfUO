@@ -348,7 +348,7 @@
     "team": 0,
     "homeRange": 5,
     "walkingRange": 10,
-    "entries": [{ "name": "GreaterPoisonElemental", "maxCount": 1, "probability": 100 }]
+    "entries": [{ "name": "PoisonElemental", "maxCount": 1, "probability": 100 }]
   },
   {
     "type": "Spawner",

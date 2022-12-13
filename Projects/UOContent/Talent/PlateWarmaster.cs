@@ -13,7 +13,7 @@ namespace Server.Talent
             AdditionalDetail = $"{PassiveDetail}";
             ImageID = 393;
             GumpHeight = 85;
-            AddEndY = 80;
+            AddEndY = 75;
             UpdateOnEquip = true;
         }
 

@@ -128,6 +128,12 @@ namespace Server.SkillHandlers
                     mobile.PrivateOverheadMessage(MessageType.Regular, 0x3B2, 502469, from.NetState);
                     return;
                 }
+                if (((PlayerMobile)from).GetTalent(typeof(ExoticTamer)) is null && creature is ManaDrake or NecroticWyvern or PrismaticDrake or SilverSerpent or DiamondSerpent)
+                {
+                    // You have no chance of taming this creature.
+                    creature.PrivateOverheadMessage(MessageType.Regular, 0x3B2, false, "This creature is exotic and requires special talents", from.NetState);
+                    return;
+                }
 
                 if (!creature.Tamable)
                 {
@@ -410,7 +416,7 @@ namespace Server.SkillHandlers
 
                         minSkill += 24.9;
 
-                        if (CheckMastery(m_Tamer, m_Creature) || alreadyOwned || ((PlayerMobile)m_Tamer).Shrine?.GetShrineType() is ShrineType.Nature ||
+                        if (CheckMastery(m_Tamer, m_Creature) || alreadyOwned || ((PlayerMobile)m_Tamer).mShrineType is ShrineType.Nature ||
                             m_Tamer.CheckTargetSkill(SkillName.AnimalTaming, m_Creature, minSkill - 25.0, minSkill + 25.0))
                         {
                             if (m_Creature.Owners.Count == 0) // First tame

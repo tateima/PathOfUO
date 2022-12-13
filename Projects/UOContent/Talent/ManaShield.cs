@@ -9,16 +9,16 @@ namespace Server.Talent
         public ManaShield()
         {
             BlockedBy = new[] { typeof(MageCombatant) };
-            TalentDependency = typeof(FastLearner);
+            TalentDependencies = new[] { typeof(FastLearner) };
             CanBeUsed = true;
             HasDefenseEffect = true;
             DisplayName = "Mana shield";
             CooldownSeconds = 180;
             MaxLevel = 1;
-            Description = "Absorbs damage with mana. Does not work in Wraith Form. Requires 75+ magery.";
-            AdditionalDetail = "Each level decreases cooldown by 5 seconds.";
+            Description = "Absorbs damage with mana. Does not work in Wraith Form.";
+            AdditionalDetail = "Each level decreases cooldown by 5 seconds. Requires 75+ magery.";
             ImageID = 155;
-            AddEndY = 95;
+            AddEndY = 105;
         }
 
         public override bool HasSkillRequirement(Mobile mobile) => mobile.Skills[SkillName.Magery].Base >= 75;

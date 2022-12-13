@@ -4,7 +4,7 @@ namespace Server.Talent
     {
         public EfficientSkinner()
         {
-            TalentDependency = typeof(ResourcefulHarvester);
+            TalentDependencies = new[] { typeof(ResourcefulHarvester) };
             DisplayName = "Skinner";
             Description = "Chance to receive extra hide material when skinning creatures.";
             AdditionalDetail = $"The chance for this increases by 3% per level. {PassiveDetail}";

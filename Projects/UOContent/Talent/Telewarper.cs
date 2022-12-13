@@ -7,7 +7,7 @@ namespace Server.Talent
     {
         public Telewarper()
         {
-            TalentDependency = typeof(MerchantPorter);
+            TalentDependencies = new[] { typeof(MerchantPorter) };
             DisplayName = "Telewarper disc";
             CanBeUsed = true;
             Description = "Create device that teleports user. Can glitch and summon creatures.";

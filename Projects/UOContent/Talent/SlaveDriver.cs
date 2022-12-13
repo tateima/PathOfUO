@@ -7,7 +7,7 @@ namespace Server.Talent
     {
         public SlaveDriver()
         {
-            TalentDependency = typeof(ResourcefulHarvester);
+            TalentDependencies = new[] { typeof(ResourcefulHarvester) };
             DisplayName = "Slave driver";
             Description = "Summon a slave to harvest resources for you.";
             AdditionalDetail =

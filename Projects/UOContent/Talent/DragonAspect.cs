@@ -11,7 +11,7 @@ namespace Server.Talent
         {
             RequiredWeapon = new[] { typeof(BaseWeapon) };
             BlockedBy = new[] { typeof(ViperAspect) };
-            TalentDependency = typeof(FireAffinity);
+            TalentDependencies = new[] { typeof(FireAffinity) };
             DisplayName = "Dragon aspect";
             Description = "Has a chance on spell cast or hit to conjure a fire breath.";
             AdditionalDetail = $"Each level increases the chance by 2%. Damage is scaled by your hit points and your fire affinity level. This talent also increases your fire resistance by 5 points per level. {PassiveDetail}";

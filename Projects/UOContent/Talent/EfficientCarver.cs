@@ -4,7 +4,7 @@ namespace Server.Talent
     {
         public EfficientCarver()
         {
-            TalentDependency = typeof(ResourcefulHarvester);
+            TalentDependencies = new[] { typeof(ResourcefulHarvester) };
             DisplayName = "Carver";
             Description = "Chance to receive extra plank materials when carving.";
             AdditionalDetail = $"The chance for this increases by 3% per level. {PassiveDetail}";

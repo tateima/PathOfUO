@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Server.Factions;
 using Server.Gumps;
 using Server.Items;
 using Server.Mobiles;
@@ -22,14 +21,17 @@ namespace Server.Talent
             typeof(VenomBlood),
             typeof(WyvernAspect),
             typeof(GreaterPoisonElemental),
+            typeof(PoisonNova),
             typeof(FireAffinity),
             typeof(DragonAspect),
             typeof(Warmth),
             typeof(GreaterFireElemental),
+            typeof(Firewalker),
             typeof(DarkAffinity),
             typeof(SummonerCommand),
             typeof(SpectralScream),
             typeof(MasterOfDeath),
+            typeof(DeathKnightForm),
             typeof(LightAffinity),
             typeof(GuardianLight),
             typeof(HolyAvenger),
@@ -39,11 +41,13 @@ namespace Server.Talent
             typeof(Resonance),
             typeof(MassConfusion),
             typeof(DominateCreature),
+            typeof(EternalChord),
             typeof(NatureAffinity),
             typeof(RangerCommand),
             typeof(BondingMaster),
             typeof(PackLeader),
             typeof(Cannibalism),
+            typeof(ExoticTamer),
             typeof(DivineStrength),
             typeof(GiantsHeritage),
             typeof(IronSkin),
@@ -92,6 +96,7 @@ namespace Server.Talent
             typeof(ChainWarmaster),
             typeof(PlateWarmaster),
             typeof(DragonWarmaster),
+            typeof(WeaponMaster),
             typeof(SpellWard),
             typeof(ArcherFocus),
             typeof(BlindingShot),
@@ -105,6 +110,7 @@ namespace Server.Talent
             typeof(LoreSeeker),
             typeof(LoreDisciples),
             typeof(LoreTeacher),
+            typeof(LoreMaster),
             typeof(ExperiencedHunter),
             typeof(AbyssalHunter),
             typeof(ArachnidHunter),
@@ -171,9 +177,9 @@ namespace Server.Talent
 
         public TimerExecutionToken _talentTimerToken;
 
-
         public BaseTalent()
         {
+            IgnoreRequirements = false;
             DeityAlignment = Deity.Alignment.None;
             RequiresDeityFavor = false;
             StatModNames = Array.Empty<string>();
@@ -188,6 +194,7 @@ namespace Server.Talent
             Activated = false;
             OnCooldown = false;
             CanBeUsed = false;
+            HasMovementEffect = false;
             HasDamageAbsorptionEffect = false;
             HasDefenseEffect = false;
             HasDeathEffect = false;
@@ -202,6 +209,7 @@ namespace Server.Talent
             IncreaseHitChance = false;
             IncreaseParryChance = false;
             TalentDependencyPoints = 1;
+            TalentDependencyMinimum = 1;
             Level = 0;
             MaxLevel = 5;
             DisplayName = "Basic Talent";
@@ -225,6 +233,8 @@ namespace Server.Talent
 
         public bool UpdateOnEquip { get; set; }
 
+        public bool IgnoreRequirements { get; set; }
+
         public bool HasBeforeDeathSave { get; set; }
 
         public bool HasKillEffect { get; set; }
@@ -232,6 +242,8 @@ namespace Server.Talent
         public bool HasDefenseEffect { get; set; }
 
         public bool CanAbsorbSpells { get; set; }
+
+        public bool HasMovementEffect { get; set; }
 
         public bool HasDamageAbsorptionEffect { get; set; }
 
@@ -243,7 +255,22 @@ namespace Server.Talent
 
         public bool UpgradeCost { get; set; }
 
-        public bool OnCooldown { get; set; }
+        private bool _onCooldown;
+
+        public PlayerMobile User { get; set; }
+
+        public bool OnCooldown {
+            get => _onCooldown;
+            set
+            {
+                _onCooldown = value;
+                if (!_onCooldown && User is not null)
+                {
+                    User.CloseGump<TalentBarGump>();
+                    User.SendGump(new TalentBarGump(User, 1, 0, new List<TalentGump.TalentGumpPage>()));
+                }
+            }
+        }
 
         public int ManaRequired { get; set; }
 
@@ -252,6 +279,8 @@ namespace Server.Talent
         public Deity.Alignment DeityAlignment { get; set; }
 
         public int TalentDependencyPoints { get; set; }
+
+        public int TalentDependencyMinimum { get; set; }
 
         public int GumpHeight { get; set; }
 
@@ -285,9 +314,13 @@ namespace Server.Talent
 
         public int MaxLevel { get; set; }
 
-        public Type TalentDependency { get; set; }
+        public Type[] TalentDependencies { get; set; }
 
         public int ImageID { get; set; }
+
+        public virtual void CheckMovementEffect(Mobile from)
+        {
+        }
 
         public virtual void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
@@ -302,22 +335,56 @@ namespace Server.Talent
         public virtual bool HasSkillRequirement(Mobile mobile) => true;
         public virtual bool HasUpgradeRequirement(Mobile mobile) => true;
 
-        public static BaseTalent[] GetTalentDependency(PlayerMobile player, BaseTalent talent)
+        public bool HasAllDependencies(List<BaseTalent[]> dependencyMatrices)
         {
-            if (talent.TalentDependency != null)
+            if (dependencyMatrices is not null)
             {
-                BaseTalent dependsOn = TalentConstructor.Construct(talent.TalentDependency) as BaseTalent;
-                if (dependsOn != null)
+                bool hasEnoughDependencies = false;
+                int numberOfDependenciesSatisfied = 0;
+                foreach (var dependencyMatrix in dependencyMatrices)
                 {
-                    BaseTalent hasDependency = player.GetTalent(dependsOn.GetType());
-                    return new[]
+                    bool dependencyMet = false;
+                    BaseTalent dependsOn = dependencyMatrix.Length > 0 ? dependencyMatrix[0] : null;
+                    BaseTalent hasDependency = dependencyMatrix.Length > 1 ? dependencyMatrix[1] : null;
+                    dependencyMet = dependsOn is not null && hasDependency is not null &&
+                                    (hasDependency.Level >= TalentDependencyPoints || hasDependency.Level == hasDependency.MaxLevel);
+                    if (dependencyMet)
                     {
-                        dependsOn,
-                        hasDependency
-                    };
+                        numberOfDependenciesSatisfied++;
+                        hasEnoughDependencies = numberOfDependenciesSatisfied >= TalentDependencyMinimum;
+                        if (hasEnoughDependencies)
+                        {
+                            break;
+                        }
+                    }
+                }
+                return hasEnoughDependencies;
+            }
+            return false;
+        }
+
+        public static List<BaseTalent[]> GetTalentDependencies(PlayerMobile player, BaseTalent talent)
+        {
+            List<BaseTalent[]> dependencies = new List<BaseTalent[]>();
+            if (talent.TalentDependencies is not null)
+            {
+                foreach (var dependencyType in talent.TalentDependencies)
+                {
+                    BaseTalent dependsOn = TalentConstructor.Construct(dependencyType) as BaseTalent;
+                    if (dependsOn is not null)
+                    {
+                        BaseTalent hasDependency = player.GetTalent(dependsOn.GetType());
+                        dependencies.Add(
+                            new[]
+                            {
+                                dependsOn,
+                                hasDependency
+                            }
+                        );
+                    }
                 }
             }
-            return Array.Empty<BaseTalent>();
+            return dependencies;
         }
 
         public virtual bool CanApplyHitEffect(Item i)
@@ -770,5 +837,24 @@ namespace Server.Talent
                 creature.AlterDamageFromByLevel(player, ref amount);
             }
         }
+
+        public static bool IsWeaponMaster(Mobile attacker) => attacker is PlayerMobile playerMobile && playerMobile.GetTalent(typeof(WeaponMaster)) is not null;
+        public static int WeaponMasterModifier(Mobile attacker)
+        {
+            if (attacker is PlayerMobile playerMobile)
+            {
+                if (playerMobile.GetTalent(typeof(WeaponMaster)) is WeaponMaster weaponMaster)
+                {
+                    return weaponMaster.Level * 10;
+                }
+            }
+            return 0;
+        }
+
+        public static Type[] ExoticTames =
+        {
+            typeof(ManaDrake)
+        };
+
     }
 }

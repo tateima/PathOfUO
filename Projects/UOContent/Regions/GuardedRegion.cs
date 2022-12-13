@@ -43,7 +43,7 @@ public class GuardedRegion : BaseRegion
                 return typeof(ArcherGuard);
             }
 
-            return typeof(WarriorGuard);
+            return Utility.RandomBool() ? typeof(MageGuard) : typeof(WarriorGuard);
         }
     }
 

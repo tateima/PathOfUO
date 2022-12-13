@@ -67,6 +67,10 @@ namespace Server.Mobiles
         public Guardian(Serial serial) : base(serial)
         {
         }
+        public override bool InitialInnocent => false;
+
+        public override bool AlwaysAttackable => true;
+
         public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override void Serialize(IGenericWriter writer)
         {

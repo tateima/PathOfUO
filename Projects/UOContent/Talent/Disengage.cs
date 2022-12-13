@@ -6,7 +6,7 @@ namespace Server.Talent
     {
         public Disengage()
         {
-            TalentDependency = typeof(ArcherFocus);
+            TalentDependencies = new[] { typeof(ArcherFocus) };
             CanBeUsed = true;
             DisplayName = "Disengage";
             StamRequired = 15;

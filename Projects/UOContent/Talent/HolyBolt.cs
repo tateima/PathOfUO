@@ -10,7 +10,7 @@ namespace Server.Talent
     {
         public HolyBolt()
         {
-            TalentDependency = typeof(HolyAvenger);
+            TalentDependencies = new[] { typeof(HolyAvenger) };
             CanBeUsed = true;
             DisplayName = "Holy bolt";
             Description = "Fires a bolt of pure holy damage towards a target. Requires 85+ chivalry.";

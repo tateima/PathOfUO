@@ -10,7 +10,7 @@ namespace Server.Talent
         public PackLeader()
         {
             StatModNames = new[] { "PackLeader" };
-            TalentDependency = typeof(BondingMaster);
+            TalentDependencies = new[] { typeof(BondingMaster) };
             DisplayName = "Pack leader";
             Description = "Increases your stats by your total followers while out of stables.";
             AdditionalDetail = "This talent modification will refresh every 60 seconds.";

@@ -14,7 +14,7 @@ namespace Server.Talent
             AdditionalDetail = $"{CriticalDamageDetail} The chance increases 1% per level and applies to any weapon that requires archery.";
             ImageID = 114;
             GumpHeight = 75;
-            AddEndY = 100;
+            AddEndY = 95;
         }
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)

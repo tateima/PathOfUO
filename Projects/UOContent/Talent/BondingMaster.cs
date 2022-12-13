@@ -4,7 +4,7 @@ namespace Server.Talent
     {
         public BondingMaster()
         {
-            TalentDependency = typeof(RangerCommand);
+            TalentDependencies = new[] { typeof(RangerCommand) };
             DisplayName = "Bonding master";
             Description = "Increase bond slot by one per level.";
             ImageID = 153;

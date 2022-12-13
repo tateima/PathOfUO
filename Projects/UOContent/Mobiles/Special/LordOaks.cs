@@ -10,7 +10,7 @@ public class LordOaks : BaseChampion
     private bool m_SpawnedQueen;
 
     [Constructible]
-    public LordOaks() : base(AIType.AI_Mage, FightMode.Evil)
+    public LordOaks() : base(AIType.AI_Mage, FightMode.Aggressor)
     {
         Body = 175;
         SetStr(403, 850);

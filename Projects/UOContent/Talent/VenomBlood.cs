@@ -4,7 +4,7 @@ namespace Server.Talent
     {
         public VenomBlood()
         {
-            TalentDependency = typeof(ViperAspect);
+            TalentDependencies = new[] { typeof(ViperAspect) };
             BlockedBy = new[] { typeof(DragonAspect) };
             DisplayName = "Venom Blood";
             Description = "Poison damage can no longer kill you and you can heal while poisoned.";
@@ -13,5 +13,7 @@ namespace Server.Talent
             AddEndY = 100;
             MaxLevel = 1;
         }
+
+        public override bool HasSkillRequirement(Mobile mobile) => mobile.Skills.Poisoning.Base >= 60;
     }
 }

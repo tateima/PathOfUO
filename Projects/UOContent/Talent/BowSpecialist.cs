@@ -1,3 +1,4 @@
+using System;
 using Server.Items;
 
 namespace Server.Talent
@@ -6,7 +7,7 @@ namespace Server.Talent
     {
         public BowSpecialist()
         {
-            TalentDependency = typeof(ArcherFocus);
+            TalentDependencies = new[] { typeof(ArcherFocus) };
             RequiredWeapon = new[]
             {
                 typeof(Bow), typeof(CompositeBow), typeof(LongbowOfMight), typeof(JukaBow), typeof(SlayerLongbow),
@@ -15,9 +16,10 @@ namespace Server.Talent
             };
             RequiredWeaponSkill = SkillName.Archery;
             IncreaseHitChance = true;
+            MaxLevel = 5;
             DisplayName = "Bow specialist";
             Description = "Increases damage and hit chance of bow weapons.";
-            AdditionalDetail = $"{PassiveDetail} The chance to hit increases 1% per level. This talent causes 1-X damage where X is the talent level.";
+            AdditionalDetail = $"{PassiveDetail} The chance to hit and damage increases 5% per level for bow weapons.";
             ImageID = 131;
             GumpHeight = 85;
             AddEndY = 75;
@@ -25,7 +27,8 @@ namespace Server.Talent
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
-            damage += Utility.RandomMinMax(1, Level);
+            damage += AOS.Scale(damage, Level * 5);
+            damage += AOS.Scale(damage, WeaponMasterModifier(attacker));
         }
     }
 }

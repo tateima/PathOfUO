@@ -4,7 +4,9 @@ using System.Linq;
 using System.Reflection;
 using Server.Engines.BulkOrders;
 using Server.Engines.Craft;
+using Server.Ethics;
 using Server.Items;
+using Server.Misc;
 using Server.Mobiles;
 using Server.Talent;
 using Server.Network;
@@ -304,18 +306,18 @@ namespace Server.Pantheon
             RewardPoints(player, points, new[] { player.Alignment });
         }
 
-        public static List<Mobile> FindChallengers(PlayerMobile player, int maximum = 5, int minimum = 2, bool allowNonAlignment = false)
+        public static List<Mobile> FindGuardians(PlayerMobile player, int maximum = 5, int minimum = 2, bool allowNonAlignment = false, bool enemy = true)
         {
             int amount = Utility.Random(100) < 50 ? 1 : Utility.RandomMinMax(minimum, maximum);
-            var minimumExpValue = amount == 1 ? 350 + player.Level * 10 : 450 + player.Level * (8 - amount);
-            var maximumExpValue = amount == 1 ? 450 + player.Level * 20 : 450 + player.Level * (18 - amount);
+            var minimumExpValue = amount == 1 ? 150 + player.Level * 10 : 450 + player.Level * (8 - amount);
+            var maximumExpValue = amount == 1 ? 550 + player.Level * 20 : 450 + player.Level * (18 - amount);
             var mobileTypes = Assembly.GetExecutingAssembly()
                 .GetTypes()
                 .Where(t => t.Namespace?.Contains("Mobiles") == true);
             List<Mobile> challengers = new List<Mobile>();
             foreach (var type in mobileTypes)
             {
-                if (CreatureAlignmentCheck(type, player.Alignment, true) || player.Alignment is Alignment.Charity or Alignment.Greed || allowNonAlignment && player.Alignment is Alignment.None)
+                if (CreatureAlignmentCheck(type, player.Alignment, enemy) || player.Alignment is Alignment.Charity or Alignment.Greed || allowNonAlignment && player.Alignment is Alignment.None)
                 {
                     try
                     {
@@ -323,7 +325,7 @@ namespace Server.Pantheon
                         {
                             var dynamicExp = creature.DynamicExperienceValue();
                             if (
-                                creature.IsInvulnerable == false
+                                !creature.IsInvulnerable
                                 && dynamicExp >= minimumExpValue
                                 && dynamicExp <= maximumExpValue
                             )
@@ -338,7 +340,6 @@ namespace Server.Pantheon
                     }
                 }
             }
-
             return challengers;
         }
 
@@ -347,8 +348,8 @@ namespace Server.Pantheon
         {
             Effect(player, player.Alignment);
             int amount = Utility.Random(100) < 50 ? 1 : Utility.RandomMinMax(minimum, maximum);
-            var buffs = amount == 1 ? Utility.RandomMinMax(2, 4) : Utility.RandomMinMax(1, 2);
-            List<Mobile> challengers = FindChallengers(player, maximum, minimum);
+            var buffs = amount == 1 ? Utility.RandomMinMax(1, 3) : Utility.RandomMinMax(1, 1);
+            List<Mobile> challengers = FindGuardians(player, maximum, minimum);
             if (challengers.Count > 0)
             {
                 for (int i = 0; i < amount; i++)
@@ -356,6 +357,11 @@ namespace Server.Pantheon
                     BaseCreature challenger = challengers[Utility.Random(challengers.Count)] as BaseCreature;
                     if (challenger is not null)
                     {
+                        challenger.SetLevel();
+                        if (!MonsterBuff.CannotBeAltered(challenger))
+                        {
+                            MonsterBuff.BalanceCreatureAgainstMobile(challenger, player);
+                        }
                         if (Utility.Random(100) < 50)
                         {
                             challenger.IsVeteran = true;
@@ -384,7 +390,7 @@ namespace Server.Pantheon
                 player.SendMessage("A challenge awaits you from the pantheon.");
                 player.NextDeityChallenge = DateTime.Now.AddDays(1);
                 player.DeityChallengers = challengers;
-                Timer.StartTimer(TimeSpan.FromSeconds(1), player.ChallengeCheck);
+                Timer.StartTimer(TimeSpan.FromSeconds(10), player.ChallengeCheck, out player.ChallengeTimer);
             }
             else
             {
@@ -516,7 +522,7 @@ namespace Server.Pantheon
                     context = contextOverride;
                 }
                 item.Delete();
-                player.SendMessage($"The gods have punished you by destroying a {item.Name} from your {context}.");
+                player.SendMessage($"The gods have punished you by destroying a {SocketBonus.GetItemName(item)} from your {context}.");
             }
         }
 

@@ -8,11 +8,11 @@ namespace Server.Talent
         public Riposte()
         {
             RequiredWeaponSkill = SkillName.Fencing;
-            TalentDependency = typeof(FencingFocus);
+            TalentDependencies = new[] { typeof(FencingFocus) };
             DisplayName = "Riposte";
             StamRequired = 3;
             Description = "Chance to deal damage to them if enemy misses.";
-            AdditionalDetail = $"This chance increases by 2% per level and will damage the enemy for level * 2 damage. {PassiveDetail}";
+            AdditionalDetail = $"This chance increases by 5% per level and will damage the enemy for level * 2 damage. {PassiveDetail}";
             ImageID = 339;
             GumpHeight = 85;
             AddEndY = 80;

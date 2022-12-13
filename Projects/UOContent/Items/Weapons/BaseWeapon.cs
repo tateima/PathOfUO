@@ -365,6 +365,18 @@ namespace Server.Items
             get => m_Toxic;
             set
             {
+                if (m_Toxic)
+                {
+                    Poison = Poison.Deadly;
+                    if (PoisonCharges > 0)
+                    {
+                        PoisonCharges += 200;
+                    }
+                    else
+                    {
+                        PoisonCharges = 200;
+                    }
+                }
                 m_Toxic = value;
                 InvalidateProperties();
             }
@@ -1959,7 +1971,7 @@ namespace Server.Items
                         value.CheckHitEffect(attacker, defender, ref damage);
                     }
                 }
-                combatShrine = attackingPlayer.Shrine?.GetShrineType() is ShrineType.Combat;
+                combatShrine = attackingPlayer.mShrineType is ShrineType.Combat;
             }
 
             /*
@@ -2506,21 +2518,10 @@ namespace Server.Items
                     }
                     else if (Frozen)
                     {
-                        if (MonsterBuff.CheckElementalEffect(ShardPower))
-                        {
-                            MonsterBuff.CheckFreezeHue(defender, defender.Hue);
-                        }
-
                         coldDam = 100;
                     }
                     else if (Toxic)
                     {
-                        if (MonsterBuff.CheckElementalEffect(ShardPower))
-                        {
-                            Poison poison = MonsterBuff.GetPoison();
-                            defender.ApplyPoison(attacker, poison);
-                        }
-
                         poisonDam = 100;
                     }
                     else if (Electrified)
@@ -2541,7 +2542,7 @@ namespace Server.Items
             }
             if (defender is PlayerMobile playerMobile)
             {
-                if (playerMobile.Shrine?.GetShrineType() is ShrineType.Protection)
+                if (playerMobile.mShrineType is ShrineType.Protection)
                 {
                     damageGiven = AOS.Scale(damageGiven, 80);
                 }

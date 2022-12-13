@@ -4,7 +4,7 @@ namespace Server.Talent
     {
         public ResourcefulCrafter()
         {
-            TalentDependency = typeof(WarCraftFocus);
+            TalentDependencies = new[] { typeof(WarCraftFocus) };
             DisplayName = "Efficient crafting";
             Description = "Reduce material costs for crafting.";
             AdditionalDetail = $"The cost of crafted items decreases by 1 point per level. {PassiveDetail}";

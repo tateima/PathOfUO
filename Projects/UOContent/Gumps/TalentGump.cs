@@ -83,19 +83,24 @@ namespace Server.Gumps
                             }
                         }
                     }
-                    BaseTalent[] dependencyMatrix = BaseTalent.GetTalentDependency(player, talent);
-                    BaseTalent dependsOn = dependencyMatrix.Length > 0 ? dependencyMatrix[0] : null;
-                    BaseTalent hasDependency = dependencyMatrix.Length > 1 ? dependencyMatrix[1] : null;
+                    List<BaseTalent[]> dependencyMatrices = BaseTalent.GetTalentDependencies(player, talent);
+                    bool hasAllDependencies = talent.HasAllDependencies(dependencyMatrices);
                     BaseTalent used = player.GetTalent(talent.GetType());
                     int talentLevel = (used != null && used.Level > 0) ? used.Level : 0;
                     AddHtml(x, y, 200, 45, $"<BASEFONT COLOR=#FFFFE5>{talent.DisplayName}: ({talentLevel}/{talent.MaxLevel})</FONT>");
                     int hue = 0;
                     if (
-                        talent.DeityAlignment != Deity.Alignment.None && talent.DeityAlignment != player.Alignment
-                        ||
-                        (talentLevel == 0 && (dependsOn is not null && hasDependency is null) || (blockedBy != null && hasBlocker != null) || !talent.HasSkillRequirement(@from)
-                         || (hasDependency is not null && hasDependency.Level < talent.TalentDependencyPoints)
-                        ))
+                        !talent.IgnoreRequirements
+                        &&
+                        (!hasAllDependencies
+                         ||
+                         talent.DeityAlignment != Deity.Alignment.None && talent.DeityAlignment != player.Alignment
+                         ||
+                         blockedBy != null && hasBlocker != null
+                         ||
+                         !talent.HasSkillRequirement(from)
+                        )
+                    )
                     {
                         hue = 0x3E8;
                     }
@@ -108,16 +113,14 @@ namespace Server.Gumps
                     if (talent.HasSkillRequirement(@from)
                         && !talent.RequiresDeityFavor
                         && (talentLevel < talent.MaxLevel && ((PlayerMobile)@from).TalentPoints > 0)
-                        && ((dependsOn != null && hasDependency != null
-                                               && (hasDependency.Level >= talent.TalentDependencyPoints || hasDependency.Level == hasDependency.MaxLevel))
-                            || (dependsOn == null))
+                        && (hasAllDependencies || dependencyMatrices.Count == 0)
                         && (blockedBy != null && hasBlocker == null))
                     {
                         AddButton(x + 190, y, 2223, 2223, 0 + i, GumpButtonType.Reply, 0);
                     }
                     AddButton(x, y + 20, 1531, 1532, 2000 + i, GumpButtonType.Reply, 0);
                     y += 40;
-                    string requirements = (dependsOn is not null) ? $"<BR>Requires {dependsOn.DisplayName}" : "";
+                    string requirements = (dependencyMatrices.Count > 0) ? $"<BR>Requires other talents" : "";
                     blockedByStr = (blockedByStr.Length > 1) ? $"<BR>Blocks: {blockedByStr}" : "";
                     AddHtml(x, y, 200, talent.GumpHeight, $"<BASEFONT COLOR=#FFFFE5>{talent.Description}{requirements}{blockedByStr}</FONT>");
                 }
@@ -164,6 +167,7 @@ namespace Server.Gumps
                     {
                         if (talent.UpgradeCost && talent.HasUpgradeRequirement(player) || !talent.UpgradeCost)
                         {
+                            talent.User = player;
                             talent.Level++;
                             playerTalents.AddOrUpdate(BaseTalent.TalentTypes[info.ButtonID], talent, (t, bt) => talent);
                             player.TalentPoints--;

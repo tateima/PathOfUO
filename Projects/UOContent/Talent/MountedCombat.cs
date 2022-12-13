@@ -5,7 +5,7 @@ namespace Server.Talent
         public MountedCombat()
         {
             DisplayName = "Mounted combat";
-            Description = "Reduces chance of being dismounted by normal attacks by 2% per level.";
+            Description = "Reduces chance of being dismounted by normal attacks by 5% per level.";
             ImageID = 382;
             MaxLevel = 7;
             GumpHeight = 230;

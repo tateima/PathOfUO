@@ -9,10 +9,11 @@ namespace Server.Talent
     {
         public GuardianLight()
         {
-            TalentDependency = typeof(LightAffinity);
+            TalentDependencies = new[] { typeof(LightAffinity) };
             HasDefenseEffect = true;
             DisplayName = "Guardian of light";
             Description = "Chance to be healed or cured when damaged, increases holy avenger AOE.";
+            MaxLevel = 5;
             AdditionalDetail = "Each level from light affinity will increase the heal amount by 2-5 points. Each level in Guardian of light will decrease the cooldown by 10 seconds.";
             ImageID = 34;
             CooldownSeconds = 50;
@@ -69,6 +70,11 @@ namespace Server.Talent
                 if (healAmount < 1)
                 {
                     healAmount = 1;
+                }
+
+                if (healAmount + player.Hits > player.HitsMax)
+                {
+                    healAmount = player.HitsMax - player.Hits;
                 }
 
                 player.Heal(healAmount);

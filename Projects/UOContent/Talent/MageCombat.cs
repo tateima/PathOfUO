@@ -5,7 +5,7 @@ namespace Server.Talent
         public MageCombatant()
         {
             BlockedBy = new[] { typeof(ManaShield) };
-            TalentDependency = typeof(FastLearner);
+            TalentDependencies = new[] { typeof(FastLearner) };
             DisplayName = "Mage combatant";
             Description = "Uses mage based skills to calculate combat damage and allows weapon casting.";
             AdditionalDetail = $"Instead of using traditional tactics, evaluating intelligence is used. {PassiveDetail}";

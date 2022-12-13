@@ -13,22 +13,22 @@ namespace Server.Talent
         public int StoredDamage { get; set; }
         public Reckoning()
         {
-            TalentDependency = typeof(HolyAvenger);
+            TalentDependencies = new[] { typeof(HolyAvenger) };
             RequiredWeapon = new[]
             {
                 typeof(BaseWeapon)
             };
             CanBeUsed = true;
             DisplayName = "Reckoning";
-            Description = "Stacks all damage taken to be returned on next successful hit . Requires 85+ chivalry.";
-            AdditionalDetail = "Each level increases the maximum stacks by 3.";
+            Description = "Stacks all damage taken to be returned on next successful hit.";
+            AdditionalDetail = "Each level increases the maximum stacks by 3. This skill requires 85+ chivalry.";
             CooldownSeconds = 60;
             ManaRequired = 30;
             MaxLevel = 3;
             HasDamageAbsorptionEffect = true;
             CanAbsorbSpells = true;
             ImageID = 427;
-            AddEndY = 115;
+            AddEndY = 100;
         }
 
         public override bool HasSkillRequirement(Mobile mobile) =>

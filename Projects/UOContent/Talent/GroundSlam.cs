@@ -9,7 +9,7 @@ namespace Server.Talent
     {
         public GroundSlam()
         {
-            TalentDependency = typeof(TwoHandedMaceSpecialist);
+            TalentDependencies = new[] { typeof(TwoHandedMaceSpecialist) };
             RequiredWeapon = new[] { typeof(WarHammer) , typeof(BaseStaff) };
             DisplayName = "Ground slam";
             CanBeUsed = true;

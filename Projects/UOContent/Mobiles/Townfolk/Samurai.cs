@@ -9,7 +9,7 @@ namespace Server.Mobiles
         {
             Title = "the samurai";
 
-            InitStats(100, 100, 25);
+            SetHumanoidStrength();
 
             SetSkill(SkillName.ArmsLore, 64.0, 80.0);
             SetSkill(SkillName.Bushido, 64.0, 85.0);
@@ -93,7 +93,12 @@ namespace Server.Mobiles
         {
         }
 
+        public override bool InitialInnocent => false;
+
+        public override bool AlwaysAttackable => true;
+
         public override bool CanTeach => true;
+
         public override bool ClickTitle => false;
 
         public override void Serialize(IGenericWriter writer)

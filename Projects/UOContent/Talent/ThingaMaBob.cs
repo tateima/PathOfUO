@@ -7,7 +7,7 @@ namespace Server.Talent
     {
         public ThingAMaBob()
         {
-            TalentDependency = typeof(MerchantPorter);
+            TalentDependencies = new[] { typeof(MerchantPorter) };
             DisplayName = "Thing-a-ma-bob";
             CanBeUsed = true;
             Description = "Create device that casts random spells at targets. Can glitch and heal them instead.";

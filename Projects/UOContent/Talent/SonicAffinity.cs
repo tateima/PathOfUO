@@ -9,6 +9,7 @@ namespace Server.Talent
             ImageID = 163;
             GumpHeight = 85;
             AddEndY = 70;
+            MaxLevel = 5;
         }
 
         public override int ModifySpellMultiplier() => Level * 2; // 2 per point

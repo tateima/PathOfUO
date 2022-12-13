@@ -29,13 +29,7 @@ namespace Server
 
         public static string RandomHook(string type) => GetHauntedHook(type)?.GetRandomHauntedHook() ?? "";
 
-        public static MatchCollection Matches(string value, bool location = true) {
-            if (location)
-            {
-                return Regex.Matches(value, @"\@(town|dungeon|place)");
-            }
-            return Regex.Matches(value, @"\@(\w+)");
-        }
+        public static MatchCollection Matches(string value, bool location = true) => Regex.Matches(value, location ? @"\@(town|dungeon|place)" : @"\@(\w+)");
 
         public static Match RandomMatch(string value) {
             MatchCollection matches = Matches(value);
@@ -43,7 +37,7 @@ namespace Server
         }
 
         public static void ReplaceHookValue(ref string hook, string key, string value) {
-             hook = hook.Replace(@"@" + key, value);
+            hook = hook.Replace(@"@" + key, value);
         }
 
         public static Point2D DecideLocation(ref string hook, string mapKey) {
@@ -62,8 +56,8 @@ namespace Server
                     location = string.Equals(group.Value, "place") ? HauntedLocation.RandomLocation(mapKey + hookValue) : HauntedLocation.RandomLocation(hookValue);
                     break;
                 }
-            }            
-            return location;            
+            }
+            return location;
         }
         public static string Parse(string hook) {
             foreach(Match match in Matches(hook, false)) {
@@ -72,7 +66,7 @@ namespace Server
                     if (!string.IsNullOrEmpty(replace)) {
                         ReplaceHookValue(ref hook, group.Value, replace);
                     }
-                }                
+                }
             }
             return hook + "...";
         }

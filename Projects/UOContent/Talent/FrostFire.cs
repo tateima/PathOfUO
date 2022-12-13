@@ -19,7 +19,7 @@ namespace Server.Talent
                 typeof(FireballSpell), typeof(FireFieldSpell), typeof(FlameStrikeSpell), typeof(MeteorSwarmSpell),
                 typeof(MagicArrowSpell), typeof(ExplosionSpell), typeof(ImmolatingWeaponSpell)
             };
-            TalentDependency = typeof(SpellMind);
+            TalentDependencies = new[] { typeof(SpellMind) };
             DisplayName = "Frost fire";
             Description =
                 "Converts Level * 10% of fire spell damage to cold. Slows target. Levels increase potency. Requires either 70+ magery or spell weaving.";

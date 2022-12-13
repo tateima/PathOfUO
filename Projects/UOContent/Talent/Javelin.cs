@@ -11,7 +11,7 @@ namespace Server.Talent
         {
             RequiredWeaponSkill = SkillName.Fencing;
             RequiredWeapon = new[] { typeof(BaseSpear) };
-            TalentDependency = typeof(SpearSpecialist);
+            TalentDependencies = new[] { typeof(SpearSpecialist) };
             DisplayName = "Javelin";
             CanBeUsed = true;
             Description = "Throw copy of equipped spear at target.";

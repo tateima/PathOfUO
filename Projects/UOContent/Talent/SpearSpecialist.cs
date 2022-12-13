@@ -1,3 +1,4 @@
+using System;
 using Server.Items;
 
 namespace Server.Talent
@@ -9,10 +10,11 @@ namespace Server.Talent
             RequiredWeaponSkill = SkillName.Fencing;
             RequiredWeapon = new[] { typeof(Lance), typeof(Kama), typeof(Lajatang), typeof(Sai), typeof(Tekagi), typeof(BaseSpear) };
             IncreaseHitChance = true;
-            TalentDependency = typeof(FencingFocus);
+            TalentDependencies = new[] { typeof(FencingFocus) };
+            MaxLevel = 5;
             DisplayName = "Spear specialist";
             Description = "Increases damage and hit chance of spear weapons.";
-            AdditionalDetail = $"{PassiveDetail} The chance to hit increases 1% per level. This talent causes (1-X) * 2 damage where X is the talent level.";
+            AdditionalDetail = $"{PassiveDetail} The chance to hit and damage increases 5% per level for spear weapons.";
             ImageID = 197;
             GumpHeight = 85;
             AddEndY = 80;
@@ -20,8 +22,8 @@ namespace Server.Talent
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
-            // 2 damage per point because 2H
-            damage += Utility.RandomMinMax(1, Level) * 2;
+            damage += AOS.Scale(damage, Level * 5);
+            damage += AOS.Scale(damage, WeaponMasterModifier(attacker));
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Server.Talent
     {
         public GreaterPoisonElemental()
         {
-            TalentDependency = typeof(WyvernAspect);
+            TalentDependencies = new[] { typeof(WyvernAspect) };
             DisplayName = "Poison Elemental";
             MobilePercentagePerPoint = 15;
             CanBeUsed = true;
@@ -21,6 +21,8 @@ namespace Server.Talent
             GumpHeight = 230;
             AddEndY = 125;
         }
+
+        public override bool HasSkillRequirement(Mobile mobile) => mobile.Skills.Poisoning.Base >= 85;
 
         public override void OnUse(Mobile from)
         {

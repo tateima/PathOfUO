@@ -6,7 +6,7 @@ namespace Server.Talent
     {
         public WyvernAspect()
         {
-            TalentDependency = typeof(VenomBlood);
+            TalentDependencies = new[] { typeof(VenomBlood) };
             DisplayName = "Wyvern Aspect";
             CanBeUsed = true;
             Description =
@@ -19,6 +19,8 @@ namespace Server.Talent
             GumpHeight = 75;
             AddEndY = 105;
         }
+
+        public override bool HasSkillRequirement(Mobile mobile) => mobile.Skills.Poisoning.Base >= 70;
 
         public override void OnUse(Mobile from)
         {

@@ -213,6 +213,6 @@ public class FireBreath : MonsterAbility
             damage = (int)(damage / Paragon.HitsBuff);
         }
 
-        return Math.Min(damage, 200);
+        return Math.Min(damage, source.Combatant is PlayerMobile ? 80 : 200);
     }
 }

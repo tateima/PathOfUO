@@ -5,7 +5,7 @@ namespace Server.Talent
         public ElementalHunter()
         {
             BlockedBy = new[] { typeof(HumanoidHunter) };
-            TalentDependency = typeof(ExperiencedHunter);
+            TalentDependencies = new[] { typeof(ExperiencedHunter) };
             HasDamageAbsorptionEffect = true;
             DisplayName = "Elemental hunter";
             Description = "Increases damage to elemental and heals damage from them.";

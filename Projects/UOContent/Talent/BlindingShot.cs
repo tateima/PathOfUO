@@ -8,7 +8,7 @@ namespace Server.Talent
     {
         public BlindingShot()
         {
-            TalentDependency = typeof(ArcherFocus);
+            TalentDependencies = new[] { typeof(ArcherFocus) };
             RequiredWeapon = new[] { typeof(BaseRanged) };
             RequiredWeaponSkill = SkillName.Archery;
             DisplayName = "Blinding shot";
@@ -18,7 +18,7 @@ namespace Server.Talent
             Description = "Next hit blinds target for 3s per level. Level also reduces cooldown by 10s. 2m cooldown";
             ImageID = 383;
             GumpHeight = 75;
-            AddEndY = 100;
+            AddEndY = 95;
         }
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)

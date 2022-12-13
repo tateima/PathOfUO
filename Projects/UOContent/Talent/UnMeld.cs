@@ -8,7 +8,7 @@ namespace Server.Talent
     {
         public UnMeld()
         {
-            TalentDependency = typeof(Enchant);
+            TalentDependencies = new[] { typeof(Enchant) };
             DisplayName = "Unmeld";
             Description =
                 "Attempt to remove elemental shards from item. Can fail and destroy item completely. Each level decreases chance of failure.";

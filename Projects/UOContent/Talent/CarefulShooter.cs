@@ -6,7 +6,7 @@ namespace Server.Talent
     {
         public CarefulShooter()
         {
-            TalentDependency = typeof(ArcherFocus);
+            TalentDependencies = new[] { typeof(ArcherFocus) };
             RequiredWeaponSkill = SkillName.Archery;
             RequiredWeapon = new[] { typeof(BaseRanged) };
             DisplayName = "Careful shooter";

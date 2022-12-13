@@ -13,14 +13,14 @@ namespace Server.Talent
         {
             UpgradeCost = true;
             BlockedBy = new[] { typeof(SmoothTalker) };
-            TalentDependency = typeof(Inventive);
+            TalentDependencies = new[] { typeof(Inventive) };
             DisplayName = "Automaton";
             MobilePercentagePerPoint = 10;
             CooldownSeconds = 480;
             CanBeUsed = true;
             Description =
-                "Construct an automaton to assist you for up to 8+ minutes. Requires 95 tinkering skill points.";
-            AdditionalDetail = "As your level increases, the upgrade costs also increase substantially. A manual exists that specifies the exact requirements. The more engineering skills you have (Carpentry, Tailoring, Blacksmithing and Tinkering) the more powerful the automaton will become.";
+                "Construct an automaton to assist you.";
+            AdditionalDetail = "As your level increases, the upgrade costs also increase substantially. A manual exists that specifies the exact requirements. Requires 95 tinkering skill points. The more engineering skills you have (Carpentry, Tailoring, Blacksmithing and Tinkering) the more powerful the automaton will become.";
             ImageID = 352;
             GumpHeight = 230;
             AddEndY = 135;

@@ -9,7 +9,7 @@ namespace Server.Talent
         {
             RequiredWeapon = new[] { typeof(BaseShield) };
             CanBeUsed = true;
-            TalentDependency = typeof(ShieldFocus);
+            TalentDependencies = new[] { typeof(ShieldFocus) };
             DisplayName = "Phalanx";
             CooldownSeconds = 120;
             Description = "Blocks 2-8 projectiles from hitting target.";

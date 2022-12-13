@@ -38,6 +38,8 @@ namespace Server.Mobiles
             Karma = -7000;
 
             VirtualArmor = 40;
+            Tamable = true;
+            MinTameSkill = 84.3;
         }
 
         public SilverSerpent(Serial serial) : base(serial)
@@ -56,10 +58,25 @@ namespace Server.Mobiles
         public override Poison PoisonImmune => Poison.Lethal;
         public override Poison HitPoison => Poison.Lethal;
 
+        public override void OnBeforeSpawn(Point3D location, Map m)
+        {
+            if (Utility.Random(1000) < 3 && this is not DiamondSerpent)
+            {
+                DiamondSerpent creature = new DiamondSerpent();
+                creature.MoveToWorld(location, m);
+                Delete();
+            }
+            else
+            {
+                base.OnBeforeSpawn(location, m);
+            }
+        }
+
         public override void GenerateLoot()
         {
             AddLoot(LootPack.Average);
             AddLoot(LootPack.Gems, 2);
+            Backpack?.DropItem(new Silver(Utility.RandomMinMax(1, 5)));
         }
 
         public override void Serialize(IGenericWriter writer)

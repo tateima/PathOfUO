@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using ModernUO.Serialization;
+using Org.BouncyCastle.Asn1.Cms;
 using Server.Factions;
 using Server.Misc;
 using Server.Mobiles;
@@ -55,11 +56,9 @@ namespace Server.Items
     public partial class Shrine : StoneAnkh
     {
         public const string ShrineEffectModName = "ShrineEffect";
-        public const string ShrineEmpty = "This shrine appears empty.";
+        public const string ShrineEmpty = "This shrine appears devoid of any pantheon magic.";
 
-        public const int ShrineEffectTimeInMinutes = 15;
-
-        [SerializableField(0, getter: "private")]
+        [SerializableField(0)]
         private static string _typeString;
 
         [SerializableField(1, getter: "private")]
@@ -67,6 +66,9 @@ namespace Server.Items
 
         [SerializableField(2, getter: "private")]
         private Item _item;
+
+        [SerializableField(3)]
+        private int _timeLeft;
 
         public TimerExecutionToken _shrineEffectOverTimeToken;
         public override TimeSpan DecayTime => Timeout.InfiniteTimeSpan;
@@ -95,22 +97,40 @@ namespace Server.Items
             var randomShrineType = ShrineType.None;
             while (randomShrineType is ShrineType.None)
             {
-                randomShrineType = (ShrineType)shrineTypes.GetValue(shrineTypes.Length)!;
+                randomShrineType = (ShrineType)shrineTypes.GetValue(Utility.Random(shrineTypes.Length))!;
             }
             _typeString = randomShrineType.ToString();
         }
 
         public override int LabelNumber => 1116797; // Pantheon Shrine
 
+        public void CheckTimeLeft()
+        {
+            TimeLeft--;
+            Player.ShrineTimeLeft = TimeLeft;
+            if (TimeLeft <= 0)
+            {
+                RemoveShrineEffect();
+            }
+            else
+            {
+                Timer.StartTimer(TimeSpan.FromMinutes(1), CheckTimeLeft);
+            }
+        }
+
         public override void OnComponentUsed(AddonComponent c, Mobile from)
         {
-            if (!_activated)
+            if (!_activated && InRange(from.Location, 2))
             {
+                TimeLeft = TimeLeft > 0 ? TimeLeft : 15;
                 Player = (PlayerMobile)from;
-                if (Player.Shrine is null)
+                if (Player.mShrineType is ShrineType.None || Player.ShrineTimeLeft == 0)
                 {
+                    if (GetShrineType() is ShrineType.Mythic)
+                    {
+                        TimeLeft = 30;
+                    }
                     Activate();
-                    Timer.StartTimer(TimeSpan.FromMinutes(ShrineEffectTimeInMinutes), RemoveShrineEffect, out _);
                 }
                 else
                 {
@@ -135,7 +155,7 @@ namespace Server.Items
                     var nearbyShrine = false;
                     foreach (var item in items)
                     {
-                        if (item is Shrine)
+                        if (item is Shrine { Activated: false })
                         {
                             nearbyShrine = true;
                             break;
@@ -145,7 +165,7 @@ namespace Server.Items
                     if (!nearbyShrine)
                     {
                         Shrine shrine = new Shrine();
-                        Point3D shrineLocation = map.GetRandomNearbyLocation(location, 8, 1, 100, 16, false, true);
+                        Point3D shrineLocation = map.GetRandomNearbyLocation(location, 3, 2, 4, 1);
                         shrine.MoveToWorld(shrineLocation, map);
                     }
                 }
@@ -154,18 +174,26 @@ namespace Server.Items
 
         private void RemoveShrineEffect()
         {
-            Player.Shrine = null;
-            if (ResMod is not null)
+            if (Player is not null)
             {
-                Player.RemoveResistanceMod(ResMod);
-            }
-            foreach (var skillMod in SkillMods)
-            {
-                Player.RemoveSkillMod(skillMod);
-            }
-            if (Player.MergedTalents is not null)
-            {
-                Player.MergedTalents = null;
+                Player.ShrineTimeLeft = 0;
+                Player.mShrineType = ShrineType.None;
+                if (ResMod is not null)
+                {
+                    Player.RemoveResistanceMod(ResMod);
+                }
+
+                if (SkillMods is not null)
+                {
+                    foreach (var skillMod in SkillMods)
+                    {
+                        Player.RemoveSkillMod(skillMod);
+                    }
+                }
+                if (Player.MergedTalents is not null)
+                {
+                    Player.MergedTalents = null;
+                }
             }
             if (Gates is not null)
             {
@@ -181,10 +209,10 @@ namespace Server.Items
                     invader.Delete();
                 }
             }
+            RespawnShrine();
             _shrineEffectOverTimeToken.Cancel();
             _item?.Delete();
             Delete();
-            RespawnShrine();
         }
 
         public void RespawnShrine()
@@ -195,7 +223,7 @@ namespace Server.Items
                 var mobile = mobiles[Utility.Random(mobiles.Length)];
                 int attempts = 0;
                 bool validAnchor = ValidShrineAnchor(mobile.Region, mobile.GetType());
-                bool attemptCreation = false;
+                bool attemptCreation = validAnchor;
                 while (!validAnchor)
                 {
                     mobile = mobiles[Utility.Random(mobiles.Length)];
@@ -222,9 +250,10 @@ namespace Server.Items
             }
         }
 
-        public void AlterMana(bool drain)
+        public void AlterMana(bool drain, int sound)
         {
-            int alteration = (drain) ? -10 : 10;
+            int percentage = AOS.Scale(Player.Mana, 5);
+            int alteration = (drain) ? percentage * -1 : percentage;
             if (Player.Mana - alteration < 0 && drain)
             {
                 Player.Mana = 1;
@@ -238,12 +267,16 @@ namespace Server.Items
                 // if its negative number it will decrease
                 Player.Mana += alteration;
             }
-            Timer.StartTimer(TimeSpan.FromSeconds(7), () => AlterMana(drain), out _shrineEffectOverTimeToken);
+            Player.FixedParticles(0x3779, 10, 15, 5004, EffectLayer.Head);
+            Player.SendSound(sound);
+            Timer.StartTimer(TimeSpan.FromSeconds(7), () => AlterMana(drain, sound), out _shrineEffectOverTimeToken);
         }
+        public static ShrineType ShrineTypeFromString(string typeString) => (ShrineType)Enum.Parse(typeof(ShrineType), typeString, true);
 
-        public void AlterStamina(bool drain)
+        public void AlterStamina(bool drain, int sound)
         {
-            int alteration = (drain) ? -10 : 10;
+            int percentage = AOS.Scale(Player.Stam, 5);
+            int alteration = (drain) ? percentage * -1 : percentage;
             if (Player.Stam - alteration < 0 && drain)
             {
                 Player.Stam = 1;
@@ -257,7 +290,9 @@ namespace Server.Items
                 // if its negative number it will decrease
                 Player.Stam += alteration;
             }
-            Timer.StartTimer(TimeSpan.FromSeconds(7), () => AlterStamina(drain), out _shrineEffectOverTimeToken);
+            Player.FixedParticles(0x3779, 10, 15, 5002, EffectLayer.Head);
+            Player.SendSound(sound);
+            Timer.StartTimer(TimeSpan.FromSeconds(7), () => AlterStamina(drain, sound), out _shrineEffectOverTimeToken);
         }
 
         public void AlterWearables(bool repair)
@@ -323,10 +358,20 @@ namespace Server.Items
 
         public void AlterHealth()
         {
-            int amount = Utility.Random(100) < 50 ? -10 : 10;
-            Player.Hits += amount;
+            int percentage = AOS.Scale(Player.Hits, 5);
+            if (Utility.Random(100) < 65)
+            {
+                Player.Damage(percentage);
+            }
+            else
+            {
+                Player.Heal(percentage);
+            }
             var blood = new Blood { ItemID = Utility.Random(0x122A, 5) };
             blood.MoveToWorld(Player.Location, Player.Map);
+            Player.FixedParticles(0x374A, 10, 15, 5054, EffectLayer.Head);
+            Player.SendSound(0x1F9);
+            Timer.StartTimer(TimeSpan.FromSeconds(10), AlterHealth, out _shrineEffectOverTimeToken);
         }
 
         public void SpawnGate(Moongate gate, Point3D potentialPoint)
@@ -337,56 +382,63 @@ namespace Server.Items
 
         public void SpawnInvaders()
         {
-            Invaders = Deity.FindChallengers(Player, 3, 1, true);
-            foreach (var gate in Gates)
+            if (Invaders?.Count == 0 || Invaders is null)
             {
-                if (Invaders[Utility.Random(Invaders.Count)] is BaseCreature invader)
-                {
-                    if (invader.Level < Player.Level - 3)
-                    {
-                        invader.SetLevel(Player.Level + Utility.RandomMinMax(-3, 3));
-                    }
-                    if (Utility.Random(100) < 10)
-                    {
-                        if (InvastionTicks > 7)
-                        {
-                            invader.IsHeroic = true;
-                        }
-                        else
-                        {
-                            invader.IsVeteran = true;
-                        }
-                    }
-                    Point3D invasionPoint = new Point3D(
-                        gate.Location.X + Utility.RandomMinMax(-1, 1), gate.Y + Utility.RandomMinMax(-1, 1), gate.Z
-                    );
-                    invader.MoveToWorld(invasionPoint, gate.Map);
-                    Effects.PlaySound(invasionPoint, gate.Map, 0x20E);
-                }
+                Invaders = Deity.FindGuardians(Player, 3, 1, true);
             }
+            if (Invaders.Count > 0)
+            {
+                foreach (var gate in Gates)
+                {
+                    if (Invaders[Utility.Random(Invaders.Count)] is BaseCreature invader)
+                    {
+                        invader.SetLevel();
+                        if (!MonsterBuff.CannotBeAltered(invader))
+                        {
+                            MonsterBuff.BalanceCreatureAgainstMobile(invader, Player);
+                        }
+                        if (Utility.Random(100) < 10)
+                        {
+                            if (InvastionTicks > 4)
+                            {
+                                invader.IsHeroic = true;
+                            }
+                            else
+                            {
+                                invader.IsVeteran = true;
+                            }
+                        }
+                        Point3D invasionPoint = new Point3D(
+                            gate.Location.X + Utility.RandomMinMax(-1, 1), gate.Y + Utility.RandomMinMax(-1, 1), gate.Z
+                        );
+                        invader.MoveToWorld(invasionPoint, gate.Map);
+                        Effects.PlaySound(invasionPoint, gate.Map, 0x20E);
+                    }
+                }
 
-            if (InvastionTicks >= 10 && Invaders[Utility.Random(Invaders.Count)] is BaseCreature boss)
-            {
-                int buffs = Player.Level / 10;
-                if (buffs <= 0)
+                if (InvastionTicks >= 10 && Invaders[Utility.Random(Invaders.Count)] is BaseCreature boss)
                 {
-                    buffs = 1;
-                } else if (buffs > 4)
-                {
-                    buffs = 4;
+                    int buffs = Player.Level / 10;
+                    if (buffs <= 0)
+                    {
+                        buffs = 1;
+                    } else if (buffs > 4)
+                    {
+                        buffs = 4;
+                    }
+                    MonsterBuff.RandomMonsterBuffs(boss, buffs);
+                    Moongate bossGate = Gates[Utility.Random(Gates.Count)];
+                    if (bossGate is not null)
+                    {
+                        boss.MoveToWorld(bossGate.Location, bossGate.Map);
+                    }
+                    else
+                    {
+                        boss.Delete();
+                    }
                 }
-                MonsterBuff.RandomMonsterBuffs(boss, buffs);
-                Moongate bossGate = Gates[Utility.Random(Gates.Count)];
-                if (bossGate is not null)
-                {
-                    boss.MoveToWorld(bossGate.Location, bossGate.Map);
-                }
-                else
-                {
-                    boss.Delete();
-                }
+                InvastionTicks++;
             }
-            InvastionTicks++;
             Timer.StartTimer(TimeSpan.FromSeconds(Utility.RandomMinMax(30, 50)), SpawnInvaders, out _shrineEffectOverTimeToken);
         }
 
@@ -419,49 +471,15 @@ namespace Server.Items
         public void StartInvasionEvent()
         {
             Gates = new List<Moongate>();
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 4; i++)
             {
-                Moongate gate = new Moongate();
-                Point3D potentialPoint = new Point3D(
-                    Location.X + Utility.RandomMinMax(1, 2),
-                    Location.Y + Utility.RandomMinMax(1, 2),
-                    Location.Y
-                );
-                bool valid = false;
-                int attempts = 0;
-                while (!valid)
-                {
-                    var surface = Map.GetTopSurface(potentialPoint);
-                    if (surface is LandTile)
-                    {
-                        if (Core.AOS && Player.InLOS(potentialPoint))
-                        {
-                            valid = true;
-                        }
-                        else
-                        {
-                            attempts++;
-                            if (attempts > 10)
-                            {
-                                potentialPoint = Player.Location;
-                            }
-                            else
-                            {
-                                potentialPoint = new Point3D(
-                                    Location.X + Utility.RandomMinMax(1, 2),
-                                    Location.Y + Utility.RandomMinMax(1, 2),
-                                    Location.Y
-                                );
-                            }
-                        }
-                    }
-                    var point = potentialPoint;
-                    Timer.StartTimer(TimeSpan.FromSeconds(Utility.RandomMinMax(3, 10)), () => SpawnGate(gate, point));
-                    Gates.Add(gate);
-                }
+                Moongate gate = new Moongate(false);
+                Point3D potentialPoint = Map.GetRandomNearbyLocation(Location, 6, 3);
+                Timer.StartTimer(TimeSpan.FromSeconds(Utility.RandomMinMax(3, 10)), () => SpawnGate(gate, potentialPoint));
+                Gates.Add(gate);
             }
             InvastionTicks = 0;
-            Timer.StartTimer(TimeSpan.FromSeconds(Utility.RandomMinMax(30, 50)), SpawnInvaders, out _shrineEffectOverTimeToken);
+            Timer.StartTimer(TimeSpan.FromSeconds(Utility.RandomMinMax(5, 10)), SpawnInvaders, out _shrineEffectOverTimeToken);
             Timer.StartTimer(TimeSpan.FromSeconds(Utility.RandomMinMax(5, 20)), InvasionEffect);
         }
 
@@ -470,321 +488,331 @@ namespace Server.Items
         public void Activate()
         {
             _activated = true;
-            int minutes = ShrineEffectTimeInMinutes;
-            Player.Shrine = this;
             string message = "";
-            bool opposingAlignmentCheck = ShrineAlignmentEnemyCheck(Player, GetShrineType());
-            if (opposingAlignmentCheck)
+            // int minutes = ShrineEffectTimeInMinutes;
+            if (Utility.Random(100) < 1)
             {
-                message = "You are overcome with harmful energies from your enemy pantheon.";
-                Player.Damage(Utility.RandomMinMax(3, 15));
+                CheckSetMessage(ref message, ShrineEmpty);
             }
-            switch (GetShrineType())
+            else
             {
-                case ShrineType.Adventure:
-                    CheckSetMessage(ref message, "Adventure awaits.");
-                    Deity.Effect(Player, Deity.Alignment.Light);
-                    break;
-                case ShrineType.Weakness:
-                    CheckSetMessage(ref message, "A weakness overcomes your hands.");
-                    var oneHandedItem = Player.FindItemOnLayer(Layer.OneHanded);
-                    if (oneHandedItem is not null)
-                    {
-                        Player.Backpack?.DropItem(oneHandedItem);
-                    }
-                    var twoHandedItem = Player.FindItemOnLayer(Layer.TwoHanded);
-                    if (twoHandedItem is not null)
-                    {
-                        Player.Backpack?.DropItem(twoHandedItem);
-                    }
-                    Deity.Effect(Player, Deity.Alignment.Darkness);
-                    break;
-                case ShrineType.Silence:
-                    CheckSetMessage(ref message, "A dominating silence bites your tongue.");
-                    Deity.Effect(Player, Deity.Alignment.Darkness);
-                    break;
-                case ShrineType.Vengeance:
-                    CheckSetMessage(ref message, "An item of pure vengeance lay before you.");
-                    switch (Utility.RandomMinMax(1, 4))
-                    {
-                        case 1:
-                            string clothingRuneWord = SocketBonus.RandomClothingRuneWord();
-                            BaseClothing baseClothing = SocketBonus.GetRuneWordClothing(new Robe(), clothingRuneWord);
-                            // baseClothing.Temporary = true;
-                            _item = baseClothing;
-                            break;
-                        case 2:
-                            string jewelleryRuneWord = SocketBonus.RandomJewelleryRuneWord();
-                            BaseJewel baseJewellery = SocketBonus.GetRuneWordJewellery(new GoldRing(), jewelleryRuneWord);
-                            _item = baseJewellery;
-                            break;
-                        case 3:
-                            string armorRuneWord = SocketBonus.RandomArmorRuneWord();
-                            BaseArmor baseArmor = SocketBonus.GetRuneWordArmor(new LeatherArms(), armorRuneWord);
-                            _item = baseArmor;
-                            break;
-                        case 4:
-                            string shieldRuneWord = SocketBonus.RandomShieldRuneWord();
-                            BaseShield baseShield = SocketBonus.GetRuneWordShield(new WoodenShield(), shieldRuneWord);
-                            _item = baseShield;
-                            break;
-                        default:
-                            string weaponRuneWord = SocketBonus.RandomWeaponRuneWord();
-                            BaseWeapon baseWeapon = SocketBonus.GetRuneWordWeapon(new Longsword(), weaponRuneWord);
-                            _item = baseWeapon;
-                            break;
-                    }
+                Player.mShrineType = GetShrineType();
+                Player.ShrineTimeLeft = TimeLeft;
+                bool opposingAlignmentCheck = ShrineAlignmentEnemyCheck(Player, GetShrineType());
+                if (opposingAlignmentCheck)
+                {
+                    message = "You are overcome with harmful energies from your enemy pantheon.";
+                    Player.Damage(AOS.Scale(Player.HitsMax, 20));
+                }
 
-                    if (_item is not null)
-                    {
-                        Point3D itemLocation = Map.GetRandomNearbyLocation(Location, 1);
-                        _item.MoveToWorld(itemLocation);
-                        Effects.SendBoltEffect(_item);
-                    }
-                    break;
-                case ShrineType.Mythic:
-                    CheckSetMessage(ref message, "The air around you grows energised and ominous.");
-                    minutes = 30;
-                    StartInvasionEvent();
-                    break;
-                case ShrineType.Sanguine:
-                    CheckSetMessage(ref message, "You have a sudden vampiric haunt around you.");
-                    Timer.StartTimer(TimeSpan.FromSeconds(10), AlterHealth, out _shrineEffectOverTimeToken);
-                    Player.FixedParticles(0x374A, 10, 15, 5054, EffectLayer.Head);
-                    Player.SendSound(0x1F9);
-                    break;
-                case ShrineType.Harvest:
-                    CheckSetMessage(ref message, "As spring rains fall, so does cheer and merriment.");
-                    var food = Food.RandomFood(Utility.RandomMinMax(1, 10));
-                    if (food is not null)
-                    {
-                        Player.Backpack?.DropItem(food);
-                    }
-                    var beverage = BaseBeverage.RandomBeverage(Utility.RandomMinMax(1, 10));
-                    if (beverage is not null)
-                    {
-                        Player.Backpack?.DropItem(beverage);
-                    }
-                    Player.FixedParticles(0, 10, 5, 2003, EffectLayer.RightHand);
-                    Player.SendSound(0x1E2);
-                    break;
-                case ShrineType.Famine:
-                    CheckSetMessage(ref message, "Famine and pestilence clouds your judgement.");
-                    if (Player.Backpack is not null)
-                    {
-                        Item[] consumables = Player.Backpack.FindItemsByType(typeof(Food));
-                        Item[] drinks = Player.Backpack.FindItemsByType(typeof(BaseBeverage));
-                        Array.Resize(ref consumables, consumables.Length + drinks.Length);
-                        Array.Copy(drinks, 0, consumables, consumables.Length, drinks.Length);
-                        foreach (var consumable in consumables)
+                switch (GetShrineType())
+                {
+                    case ShrineType.Adventure:
+                        CheckSetMessage(ref message, "Adventure awaits.");
+                        Deity.Effect(Player, Deity.Alignment.Light);
+                        break;
+                    case ShrineType.Weakness:
+                        CheckSetMessage(ref message, "A weakness overcomes your body.");
+                        StatsMod = new StatMod(
+                            StatType.Str,
+                            $"{ShrineEffectModName}",
+                            AOS.Scale(Player.Str, 40) * -1,
+                            TimeSpan.FromMinutes(TimeLeft)
+                        );
+                        Deity.Effect(Player, Deity.Alignment.Darkness);
+                        break;
+                    case ShrineType.Silence:
+                        CheckSetMessage(ref message, "A dominating silence bites your tongue.");
+                        Deity.Effect(Player, Deity.Alignment.Darkness);
+                        break;
+                    case ShrineType.Vengeance:
+                        CheckSetMessage(ref message, "An item of pure vengeance lay before you.");
+                        switch (Utility.RandomMinMax(1, 4))
                         {
-                            if (consumable.Amount > 1)
+                            case 1:
+                                string clothingRuneWord = SocketBonus.RandomClothingRuneWord();
+                                BaseClothing baseClothing = SocketBonus.GetRuneWordClothing(new Robe(), clothingRuneWord);
+                                // baseClothing.Temporary = true;
+                                _item = baseClothing;
+                                break;
+                            case 2:
+                                string jewelleryRuneWord = SocketBonus.RandomJewelleryRuneWord();
+                                BaseJewel baseJewellery = SocketBonus.GetRuneWordJewellery(new GoldRing(), jewelleryRuneWord);
+                                _item = baseJewellery;
+                                break;
+                            case 3:
+                                string armorRuneWord = SocketBonus.RandomArmorRuneWord();
+                                BaseArmor baseArmor = SocketBonus.GetRuneWordArmor(new LeatherArms(), armorRuneWord);
+                                _item = baseArmor;
+                                break;
+                            case 4:
+                                string shieldRuneWord = SocketBonus.RandomShieldRuneWord();
+                                BaseShield baseShield = SocketBonus.GetRuneWordShield(new WoodenShield(), shieldRuneWord);
+                                _item = baseShield;
+                                break;
+                            default:
+                                string weaponRuneWord = SocketBonus.RandomWeaponRuneWord();
+                                BaseWeapon baseWeapon = SocketBonus.GetRuneWordWeapon(new Longsword(), weaponRuneWord);
+                                _item = baseWeapon;
+                                break;
+                        }
+
+                        if (_item is not null)
+                        {
+                            Point3D itemLocation = Map.GetRandomNearbyLocation(Location, 1);
+                            _item.MoveToWorld(itemLocation);
+                            Effects.SendBoltEffect(_item);
+                        }
+                        break;
+                    case ShrineType.Mythic:
+                        CheckSetMessage(ref message, "The air around you grows energised and ominous.");
+                        StartInvasionEvent();
+                        break;
+                    case ShrineType.Sanguine:
+                        CheckSetMessage(ref message, "You have a sudden vampiric haunt around you.");
+                        Timer.StartTimer(TimeSpan.FromSeconds(10), AlterHealth, out _shrineEffectOverTimeToken);
+                        break;
+                    case ShrineType.Harvest:
+                        CheckSetMessage(ref message, "As spring rains fall, so does cheer and merriment.");
+                        var food = Food.RandomFood(Utility.RandomMinMax(1, 10));
+                        if (food is not null)
+                        {
+                            Player.Backpack?.DropItem(food);
+                        }
+                        var beverage = BaseBeverage.RandomBeverage(Utility.RandomMinMax(1, 10));
+                        if (beverage is not null)
+                        {
+                            Player.Backpack?.DropItem(beverage);
+                        }
+                        Player.FixedParticles(0, 10, 5, 2003, EffectLayer.RightHand);
+                        Player.SendSound(0x1E2);
+                        break;
+                    case ShrineType.Famine:
+                        CheckSetMessage(ref message, "Famine and pestilence clouds your judgement.");
+                        if (Player.Backpack is not null)
+                        {
+                            Item[] consumables = Player.Backpack.FindItemsByType(typeof(Food));
+                            Item[] drinks = Player.Backpack.FindItemsByType(typeof(BaseBeverage));
+                            if (consumables is not null)
                             {
-                                consumable.Amount /= 2;
+                                foreach (var consumable in consumables)
+                                {
+                                    if (consumable.Amount > 1)
+                                    {
+                                        consumable.Amount /= 2;
+                                    }
+                                }
+                            }
+                            if (drinks is not null)
+                            {
+                                int count = 0;
+                                foreach (var drink in drinks)
+                                {
+                                    drink.Delete();
+                                    count++;
+                                    if (count > drinks.Length / 2)
+                                    {
+                                        break;
+                                    }
+                                }
                             }
                         }
-                    }
-                    Player.Hunger = 20;
-                    Player.Thirst = 20;
-                    Player.SendSound(Player.Female ? 0x32D : 0x43F);
-                    break;
-                case ShrineType.Guardian:
-                    List<Mobile> guardians = Deity.FindChallengers(Player, 1, 1);
-                    BaseCreature guardian = guardians[Utility.Random(guardians.Count)] as BaseCreature;
-                    if (guardian is not null)
-                    {
-                        CheckSetMessage(ref message, "A champion from the pantheon has come to serve you for a brief time.");
-                        SpellHelper.Summon(guardian, Player, 0x215, TimeSpan.FromMinutes(ShrineEffectTimeInMinutes), false, false);
-                        guardian.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
-                    }
-                    else
-                    {
-                        CheckSetMessage(ref message, ShrineEmpty);
-                    }
-                    break;
-                case ShrineType.Acid:
-                    CheckSetMessage(ref message, "The wheel of time corrodes your adornments.");
-                    AlterWearables(false);
-                    PlaySlimeSound();
-                    break;
-                case ShrineType.Hammer:
-                    CheckSetMessage(ref message, "The smith of the pantheon lends you his hand.");
-                    AlterWearables(true);
-                    Player.SendSound(0x2A);
-                    break;
-                case ShrineType.Lion:
-                    CheckSetMessage(ref message, "A roaring vigor has filled your body and soul.");
-                    Timer.StartTimer(TimeSpan.FromSeconds(7), () => AlterStamina(false), out _shrineEffectOverTimeToken);
-                    switch (Utility.RandomMinMax(1, 4))
-                    {
-                        case 1:
-                            Player.SendSound(0x0B2);
-                            break;
-                        case 2:
-                            Player.SendSound(0x0B3);
-                            break;
-                        case 3:
-                            Player.SendSound(0x0B4);
-                            break;
-                        case 4:
-                            Player.SendSound(0x0B5);
-                            break;
-                        default:
-                            Player.SendSound(0x0B6);
-                            break;
-                    }
-                    Player.FixedParticles(0x373A, 10, 15, 5036, EffectLayer.Head);
-                    break;
-                case ShrineType.Fountain:
-                    CheckSetMessage(ref message, "A flowing refreshment fills your entire being.");
-                    Timer.StartTimer(TimeSpan.FromSeconds(7), () => AlterMana(false), out _shrineEffectOverTimeToken);
-                    Player.SendSound(0x011);
-                    Effects.SendMovingParticles(
-                        this,
-                        Player,
-                        0x2255,
-                        1,
-                        0,
-                        false,
-                        false,
-                        13,
-                        3,
-                        9501,
-                        1,
-                        0,
-                        EffectLayer.Head,
-                        0x100
-                    );
-                    break;
-                case ShrineType.Leech:
-                    CheckSetMessage(ref message, "A feast upon the endurance of your body and soul.");
-                    Timer.StartTimer(TimeSpan.FromSeconds(7), () => AlterStamina(true), out _shrineEffectOverTimeToken);
-                    Player.FixedParticles(0x3779, 10, 15, 5002, EffectLayer.Head);
-                    Player.SendSound(Player.Female ? 0x319f : 0x429);
-                    break;
-                case ShrineType.Wasp:
-                    CheckSetMessage(ref message, "A sting upon the focus of your mind.");
-                    Timer.StartTimer(TimeSpan.FromSeconds(7), () => AlterMana(true), out _shrineEffectOverTimeToken);
-                    Player.FixedParticles(0x3779, 10, 15, 5004, EffectLayer.Head);
-                    Player.SendSound(0x1E4);
-                    break;
-                case ShrineType.Sacrifice:
-                    CheckSetMessage(ref message, "Victory comes with sacrifice.");
-                    Deity.DestroyItem(Player);
-                    Player.FixedParticles(0x3779, 10, 15, 5009, EffectLayer.Waist);
-                    Player.SendSound(0x040);
-                    break;
-                case ShrineType.Throne:
-                    CheckSetMessage(ref message, "The gods have granted you a temporary power.");
-                    BaseTalent randomTalent = BaseTalent.RandomTalent();
-                    randomTalent.Level = Utility.RandomMinMax(1, 2);
-                    ConcurrentDictionary<Type, BaseTalent> mergedTalents = new ConcurrentDictionary<Type, BaseTalent>(Player.Talents);
-                    if (mergedTalents.TryGetValue(randomTalent.GetType(), out var existingTalent))
-                    {
-                        existingTalent.Level++;
-                        mergedTalents.AddOrUpdate(randomTalent.GetType(), existingTalent, (t, bt) => existingTalent);
-                    }
-                    else
-                    {
-                        mergedTalents.TryAdd(randomTalent.GetType(), randomTalent);
-                    }
-                    Player.MergedTalents = mergedTalents;
-                    Player.SendSound(0x5C1);
-                    break;
-                case ShrineType.Neophyte:
-                    CheckSetMessage(ref message, "The experienced made during your path deceives you. A silver coin of remembrance is all you have.");
-                    Player.CraftExperience = AOS.Scale(Player.CraftExperience, 90);
-                    Player.NonCraftExperience = AOS.Scale(Player.CraftExperience, 90);
-                    Player.RangerExperience = AOS.Scale(Player.CraftExperience, 90);
-                    Player.Backpack?.DropItem(new Silver());
-                    Deity.Effect(Player, Deity.Alignment.Darkness);
-                    break;
-                case ShrineType.Blessed:
-                    CheckSetMessage(ref message, "Your path is looked upon with favour from your pantheon.");
-                    Deity.Effect(Player, Deity.Alignment.Charity);
-                    break;
-                case ShrineType.Combat:
-                    CheckSetMessage(ref message, "Your path echoes a brave war cry cutting fear into your enemies.");
-                    Deity.Effect(Player, Deity.Alignment.Light);
-                    break;
-                case ShrineType.Protection:
-                    CheckSetMessage(ref message,"Your path stands firm with a mountainous resolve.");
-                    Deity.Effect(Player, Deity.Alignment.Charity);
-                    break;
-                case ShrineType.Poison:
-                    ResMod = new ResistanceMod(ResistanceType.Poison, ShrineEffectModName, 100);
-                    CheckSetMessage(ref message,"Your path bubbles with a toxic putrefaction.");
-                    Deity.Effect(Player, Deity.Alignment.Greed);
-                    break;
-                case ShrineType.Fire:
-                    ResMod = new ResistanceMod(ResistanceType.Fire, ShrineEffectModName, 100);
-                    CheckSetMessage(ref message,"Your path flickers brightly with blazing vengeance.");
-                    Deity.Effect(Player, Deity.Alignment.Chaos);
-                    break;
-                case ShrineType.Cold:
-                    ResMod = new ResistanceMod(ResistanceType.Cold, ShrineEffectModName, 100);
-                    CheckSetMessage(ref message,"Your path chills with a hardened resolve.");
-                    Deity.Effect(Player, Deity.Alignment.Light);
-                    break;
-                case ShrineType.Energy:
-                    ResMod = new ResistanceMod(ResistanceType.Energy, ShrineEffectModName, 100);
-                    CheckSetMessage(ref message,"Your path sparks with a lighting like tenacity.");
-                    Deity.Effect(Player, Deity.Alignment.Order);
-                    break;
-                case ShrineType.Cursed:
-                    List<Skill> skills = new List<Skill>();
-                    BaseTalent.GetTopSkills(Player, ref skills, Utility.RandomMinMax(1, 3));
-                    SkillMods = BaseTalent.GetTopDefaultSkillMods(skills, -10.0, ShrineEffectModName);
-                    foreach (var skillMod in SkillMods)
-                    {
-                        Player.AddSkillMod(skillMod);
-                    }
-                    StatsMod = new StatMod(
-                        StatType.All,
-                        ShrineEffectModName,
-                        Utility.RandomMinMax(1, 5),
-                        TimeSpan.FromMinutes(ShrineEffectTimeInMinutes)
-                    );
-                    Player.AddStatMod(StatsMod);
-                    CheckSetMessage(ref message,"Your path is looked upon with disdain from your pantheon.");
-                    Deity.Effect(Player, Deity.Alignment.Greed);
-                    break;
-                case ShrineType.Lunar:
-                    CheckSetMessage(ref message,"Your path sees a doomed and demonic red moon.");
-                    Deity.Effect(Player, Deity.Alignment.Chaos);
-                    break;
-                case ShrineType.Solar:
-                    CheckSetMessage(ref message,"Your path is illuminated by the power of the sun.");
-                    Deity.Effect(Player, Deity.Alignment.Light);
-                    break;
-                case ShrineType.Void:
-                    Deity.BeginChallenge(Player, 1, 1);
-                    CheckSetMessage(ref message,"Your path is met with a nearby challenger seeking your demise.");
-                    Deity.Effect(Player, Deity.Alignment.Darkness);
-                    break;
-                case ShrineType.Nature:
-                    CheckSetMessage(ref message,"Your path blossoms with the peace of the wilderness.");
-                    Deity.Effect(Player, Deity.Alignment.Charity);
-                    break;
-                case ShrineType.Death:
-                    CheckSetMessage(ref message,"Your path is urging you to destroy that which life holds dear.");
-                    Deity.Effect(Player, Deity.Alignment.Darkness);
-                    break;
-                case ShrineType.Life:
-                    CheckSetMessage(ref message,"Your path is urging you to protect and serve.");
-                    Deity.Effect(Player, Deity.Alignment.Light);
-                    break;
-                case ShrineType.None:
-                    CheckSetMessage(ref message, "Your soul feels lonely");
-                    break;
+                        Player.Hunger = Utility.RandomMinMax(-4, -2);
+                        Player.Thirst = Utility.RandomMinMax(-4, -2);
+                        Player.SendSound(Player.Female ? 0x32D : 0x43F);
+                        break;
+                    case ShrineType.Guardian:
+                        List<Mobile> guardians = Deity.FindGuardians(Player, 1, 1, true, false);
+                        if (guardians.Count > 0)
+                        {
+                            BaseCreature guardian = guardians[Utility.Random(guardians.Count)] as BaseCreature;
+                            if (guardian is not null)
+                            {
+                                CheckSetMessage(ref message, "A champion from the pantheon has come to serve you for a brief time.");
+                                SpellHelper.Summon(guardian, Player, 0x215, TimeSpan.FromMinutes(TimeLeft), false, false);
+                                guardian.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
+                            }
+                        }
+                        else
+                        {
+                            CheckSetMessage(ref message, ShrineEmpty);
+                        }
+                        break;
+                    case ShrineType.Acid:
+                        CheckSetMessage(ref message, "The wheel of time corrodes your adornments.");
+                        AlterWearables(false);
+                        PlaySlimeSound();
+                        break;
+                    case ShrineType.Hammer:
+                        CheckSetMessage(ref message, "The smith of the pantheon lends you his hand.");
+                        AlterWearables(true);
+                        Player.SendSound(0x2A);
+                        break;
+                    case ShrineType.Lion:
+                        CheckSetMessage(ref message, "A roaring vigor has filled your body and soul.");
+                        int sound = Utility.RandomMinMax(1, 4) switch
+                        {
+                            1 => 0x0B2,
+                            2 => 0x0B3,
+                            3 => 0x0B4,
+                            4 => 0x0B5,
+                            _ => 0x0B6
+                        };
+                        Timer.StartTimer(TimeSpan.FromSeconds(7), () => AlterStamina(false, sound), out _shrineEffectOverTimeToken);
+                        break;
+                    case ShrineType.Fountain:
+                        CheckSetMessage(ref message, "A flowing refreshment fills your entire being.");
+                        Timer.StartTimer(TimeSpan.FromSeconds(7), () => AlterMana(false, 0x011), out _shrineEffectOverTimeToken);
+                        Effects.SendMovingParticles(
+                            this,
+                            Player,
+                            0x2255,
+                            1,
+                            0,
+                            false,
+                            false,
+                            13,
+                            3,
+                            9501,
+                            1,
+                            0,
+                            EffectLayer.Head,
+                            0x100
+                        );
+                        break;
+                    case ShrineType.Leech:
+                        CheckSetMessage(ref message, "A feast upon the endurance of your body and soul.");
+                        Timer.StartTimer(TimeSpan.FromSeconds(7), () => AlterStamina(true, 0x1FB), out _shrineEffectOverTimeToken);
+                        break;
+                    case ShrineType.Wasp:
+                        CheckSetMessage(ref message, "A sting upon the focus of your mind.");
+                        Timer.StartTimer(TimeSpan.FromSeconds(7), () => AlterMana(true, 0x1E4), out _shrineEffectOverTimeToken);
+                        break;
+                    case ShrineType.Sacrifice:
+                        CheckSetMessage(ref message, "Victory comes with sacrifice.");
+                        Deity.DestroyItem(Player);
+                        Player.FixedParticles(0x3779, 10, 15, 5009, EffectLayer.Waist);
+                        Player.SendSound(0x040);
+                        break;
+                    case ShrineType.Throne:
+                        CheckSetMessage(ref message, "The gods have granted you a temporary power.");
+                        BaseTalent randomTalent = BaseTalent.RandomTalent();
+                        randomTalent.Level = Utility.RandomMinMax(1, 2);
+                        randomTalent.IgnoreRequirements = true;
+                        ConcurrentDictionary<Type, BaseTalent> mergedTalents = new ConcurrentDictionary<Type, BaseTalent>(Player.Talents);
+                        if (mergedTalents.TryGetValue(randomTalent.GetType(), out var existingTalent))
+                        {
+                            existingTalent.Level++;
+                            mergedTalents.AddOrUpdate(randomTalent.GetType(), existingTalent, (t, bt) => existingTalent);
+                        }
+                        else
+                        {
+                            mergedTalents.TryAdd(randomTalent.GetType(), randomTalent);
+                        }
+                        Player.MergedTalents = mergedTalents;
+                        Player.SendSound(0x5C1);
+                        break;
+                    case ShrineType.Neophyte:
+                        if (Player.NonCraftExperience + Player.CraftExperience + Player.RangerExperience > 1000)
+                        {
+                            CheckSetMessage(ref message, "The experienced made during your path deceives you. A silver coin of remembrance is all you have.");
+                            Player.CraftExperience = AOS.Scale(Player.CraftExperience, 90);
+                            Player.NonCraftExperience = AOS.Scale(Player.NonCraftExperience, 90);
+                            Player.RangerExperience = AOS.Scale(Player.RangerExperience, 90);
+                            Player.Backpack?.DropItem(new Silver());
+                            Deity.Effect(Player, Deity.Alignment.Darkness);
+                        }
+                        else
+                        {
+                            CheckSetMessage(ref message, ShrineEmpty);
+                        }
+                        break;
+                    case ShrineType.Blessed:
+                        CheckSetMessage(ref message, "Your path is looked upon with favour from your pantheon.");
+                        Deity.Effect(Player, Deity.Alignment.Charity);
+                        break;
+                    case ShrineType.Combat:
+                        CheckSetMessage(ref message, "Your path echoes a brave war cry cutting fear into your enemies.");
+                        Deity.Effect(Player, Deity.Alignment.Light);
+                        break;
+                    case ShrineType.Protection:
+                        CheckSetMessage(ref message,"Your path stands firm with a mountainous resolve.");
+                        Deity.Effect(Player, Deity.Alignment.Charity);
+                        break;
+                    case ShrineType.Poison:
+                        ResMod = new ResistanceMod(ResistanceType.Poison, ShrineEffectModName, 100);
+                        CheckSetMessage(ref message,"Your path bubbles with a toxic putrefaction.");
+                        Deity.Effect(Player, Deity.Alignment.Greed);
+                        break;
+                    case ShrineType.Fire:
+                        ResMod = new ResistanceMod(ResistanceType.Fire, ShrineEffectModName, 100);
+                        CheckSetMessage(ref message,"Your path flickers brightly with blazing vengeance.");
+                        Deity.Effect(Player, Deity.Alignment.Chaos);
+                        break;
+                    case ShrineType.Cold:
+                        ResMod = new ResistanceMod(ResistanceType.Cold, ShrineEffectModName, 100);
+                        CheckSetMessage(ref message,"Your path chills with a hardened resolve.");
+                        Deity.Effect(Player, Deity.Alignment.Light);
+                        break;
+                    case ShrineType.Energy:
+                        ResMod = new ResistanceMod(ResistanceType.Energy, ShrineEffectModName, 100);
+                        CheckSetMessage(ref message,"Your path sparks with a lighting like tenacity.");
+                        Deity.Effect(Player, Deity.Alignment.Order);
+                        break;
+                    case ShrineType.Cursed:
+                        List<Skill> skills = new List<Skill>();
+                        BaseTalent.GetTopSkills(Player, ref skills, Utility.RandomMinMax(1, 3));
+                        SkillMods = BaseTalent.GetTopDefaultSkillMods(skills, -10.0, ShrineEffectModName);
+                        foreach (var skillMod in SkillMods)
+                        {
+                            Player.AddSkillMod(skillMod);
+                        }
+                        StatsMod = new StatMod(
+                            StatType.All,
+                            ShrineEffectModName,
+                            Utility.RandomMinMax(1, 5),
+                            TimeSpan.FromMinutes(TimeLeft)
+                        );
+                        Player.AddStatMod(StatsMod);
+                        CheckSetMessage(ref message,"Your path is looked upon with disdain from your pantheon.");
+                        Deity.Effect(Player, Deity.Alignment.Greed);
+                        break;
+                    case ShrineType.Lunar:
+                        CheckSetMessage(ref message,"Your path sees a doomed and demonic red moon.");
+                        Deity.Effect(Player, Deity.Alignment.Chaos);
+                        break;
+                    case ShrineType.Solar:
+                        CheckSetMessage(ref message,"Your path is illuminated by the power of the sun.");
+                        Deity.Effect(Player, Deity.Alignment.Light);
+                        break;
+                    case ShrineType.Void:
+                        Deity.BeginChallenge(Player, 1, 1);
+                        CheckSetMessage(ref message,"Your path is met with a nearby challenger seeking your demise.");
+                        Deity.Effect(Player, Deity.Alignment.Darkness);
+                        break;
+                    case ShrineType.Nature:
+                        CheckSetMessage(ref message,"Your path blossoms with the peace of the wilderness.");
+                        Deity.Effect(Player, Deity.Alignment.Charity);
+                        break;
+                    case ShrineType.Death:
+                        CheckSetMessage(ref message,"Your path is urging you to destroy that which life holds dear.");
+                        Deity.Effect(Player, Deity.Alignment.Darkness);
+                        break;
+                    case ShrineType.Life:
+                        CheckSetMessage(ref message,"Your path is urging you to protect and serve.");
+                        Deity.Effect(Player, Deity.Alignment.Light);
+                        break;
+                    case ShrineType.None:
+                        CheckSetMessage(ref message, "Your soul feels lonely");
+                        break;
+                }
+                if (ResMod is not null && !opposingAlignmentCheck)
+                {
+                    Player.AddResistanceMod(ResMod);
+                }
             }
-            if (ResMod is not null && !opposingAlignmentCheck)
-            {
-                Player.AddResistanceMod(ResMod);
-            }
-            Timer.StartTimer(TimeSpan.FromMinutes(minutes), RemoveShrineEffect);
-            Player.InvalidateProperties();
             Player.Say(message);
+            Timer.StartTimer(TimeSpan.FromMinutes(1), CheckTimeLeft);
         }
 
         public static bool ShrineAlignmentEnemyCheck(Mobile from, ShrineType shrineType) =>
@@ -802,8 +830,7 @@ namespace Server.Items
         {
             if (_activated)
             {
-                Timer.StartTimer(TimeSpan.FromMinutes(ShrineEffectTimeInMinutes), Delete);
-                _item?.Delete();
+                Timer.StartTimer(TimeSpan.FromMinutes(TimeLeft), RemoveShrineEffect);
             }
         }
     }

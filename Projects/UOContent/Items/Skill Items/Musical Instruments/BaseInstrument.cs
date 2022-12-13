@@ -614,7 +614,7 @@ namespace Server.Items
 
         public static bool CheckMusicianship(Mobile m)
         {
-            if ((m as PlayerMobile)?.Shrine.GetShrineType() is ShrineType.Silence)
+            if ((m as PlayerMobile)?.mShrineType is ShrineType.Silence)
             {
                 m.SendMessage("You cannot play while silenced.");
                 return false;

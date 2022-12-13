@@ -9,7 +9,7 @@ namespace Server.Talent
 
         public IceBolt()
         {
-            TalentDependency = typeof(CrossbowSpecialist);
+            TalentDependencies = new[] { typeof(CrossbowSpecialist) };
             RequiredWeapon = new[] { typeof(Crossbow), typeof(HeavyCrossbow), typeof(RepeatingCrossbow) };
             RequiredWeaponSkill = SkillName.Archery;
             CanBeUsed = true;

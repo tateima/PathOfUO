@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Server.Items;
+using Server.Mobiles;
 using Server.Utilities;
 
 namespace Server.Engines.Doom
@@ -344,9 +345,11 @@ namespace Server.Engines.Doom
 
                 var mob = type.CreateEntityInstance<Mobile>();
 
-                if (mob != null)
+                if (mob is BaseCreature creature)
                 {
-                    mob.MoveToWorld(GetWorldLocation(), Map);
+                    creature.SetLevel();
+                    creature.CheckSetDungeonLevel(GetWorldLocation(), Map);
+                    creature.MoveToWorld(GetWorldLocation(), Map);
                     Creatures.Add(mob);
                 }
             }

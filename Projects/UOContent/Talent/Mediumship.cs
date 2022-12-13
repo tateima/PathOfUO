@@ -97,7 +97,7 @@ namespace Server.Talent
             {
                 // its a trap!
                 enemy = MasterOfDeath.RandomUndead();
-                enemy.CheckBuffs();
+                enemy.SetLevel();
             }
 
             if (Utility.Random(100) < dustChance)

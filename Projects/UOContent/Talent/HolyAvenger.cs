@@ -1,4 +1,5 @@
 using System;
+using Server.Ethics;
 using Server.Items;
 using Server.Mobiles;
 
@@ -9,7 +10,7 @@ namespace Server.Talent
         public HolyAvenger()
         {
             BlockedBy = new[] { typeof(GreaterFireElemental) };
-            TalentDependency = typeof(GuardianLight);
+            TalentDependencies = new[] { typeof(GuardianLight) };
             HasDefenseEffect = true;
             DisplayName = "Holy avenger";
             CooldownSeconds = 7;

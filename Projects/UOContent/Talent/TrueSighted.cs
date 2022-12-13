@@ -4,7 +4,7 @@ namespace Server.Talent
     {
         public TrueSighted()
         {
-            TalentDependency = typeof(KeenEye);
+            TalentDependencies = new[] { typeof(KeenEye) };
             DisplayName = "True sighted";
             Description = "Reduces penalty from blindness by 15% per level.";
             AdditionalDetail = $"{PassiveDetail}";

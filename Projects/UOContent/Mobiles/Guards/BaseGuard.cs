@@ -5,7 +5,8 @@ namespace Server.Mobiles
 {
     public abstract class BaseGuard : BaseCreature
     {
-        public  AIType AiType;
+        public AIType AiType;
+
         public BaseGuard() : base(AIType.AI_Melee, FightMode.None)
         {
         }
@@ -18,6 +19,11 @@ namespace Server.Mobiles
 
         public override bool HandlesOnSpeech(Mobile from) => true;
 
+        public override bool CanRummageCorpses => true;
+
+        public override bool InitialInnocent => false;
+
+        public override bool AlwaysAttackable => true;
 
         public override void OnSpeech(SpeechEventArgs e)
         {

@@ -8,7 +8,7 @@ namespace Server.Talent
     {
         public BackStab()
         {
-            TalentDependency = typeof(FencingSpecialist);
+            TalentDependencies = new[] { typeof(FencingSpecialist) };
             RequiredWeaponSkill = SkillName.Fencing;
             DisplayName = "Back stab";
             StamRequired = 10;

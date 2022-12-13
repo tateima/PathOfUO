@@ -121,9 +121,9 @@ namespace Server.SkillHandlers
                         from.SendLocalizedMessage(1049446); // You have no chance of provoking those creatures.
                     }
                     else if (m_Creature.Map != creature.Map || !m_Creature.InRange(
-                        creature,
-                        BaseInstrument.GetBardRange(from, SkillName.Provocation)
-                    ))
+                                 creature,
+                                 BaseInstrument.GetBardRange(from, SkillName.Provocation)
+                             ))
                     {
                         from.SendLocalizedMessage(
                             1049450

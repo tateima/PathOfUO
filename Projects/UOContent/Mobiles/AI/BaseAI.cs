@@ -2715,7 +2715,7 @@ public abstract class BaseAI
                 continue;
             }
 
-            if (acqType is FightMode.Aggressor or FightMode.Evil)
+            if (acqType is FightMode.Aggressor or FightMode.Aggressor)
             {
                 var bValid = IsHostile(m);
 

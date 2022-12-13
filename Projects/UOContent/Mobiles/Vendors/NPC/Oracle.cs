@@ -132,7 +132,7 @@ namespace Server.Mobiles
         {
             if (player.NextDeityChallenge > Core.Now
                 // || player.Level < 35
-                )
+               )
             {
                 SayTo(player, "You cannot face a new challenge from your deity yet.");
             }

@@ -41,7 +41,7 @@ public class DamageEntry
 
     public List<DamageEntry> Responsible { get; set; }
 
-    public static TimeSpan ExpireDelay { get; set; } = TimeSpan.FromMinutes(2.0);
+    public static TimeSpan ExpireDelay { get; set; } = TimeSpan.FromHours(1);
 }
 
 [Flags]

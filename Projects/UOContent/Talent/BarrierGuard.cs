@@ -9,7 +9,7 @@ namespace Server.Talent
         {
             RequiredWeaponSkill = SkillName.Swords;
             RequiredWeapon = new[] { typeof(BaseSword) };
-            TalentDependency = typeof(SwordSpecialist);
+            TalentDependencies = new[] { typeof(SwordSpecialist) };
             DisplayName = "Barrier guard";
             CanBeUsed = true;
             CooldownSeconds = 45;

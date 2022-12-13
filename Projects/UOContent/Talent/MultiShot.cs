@@ -10,7 +10,7 @@ namespace Server.Talent
     {
         public MultiShot()
         {
-            TalentDependency = typeof(BowSpecialist);
+            TalentDependencies = new[] { typeof(BowSpecialist) };
             RequiredWeapon = new[]
             {
                 typeof(Bow), typeof(CompositeBow), typeof(LongbowOfMight), typeof(JukaBow), typeof(SlayerLongbow),

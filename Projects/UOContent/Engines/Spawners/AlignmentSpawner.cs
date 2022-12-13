@@ -80,7 +80,7 @@ namespace Server.Engines.Spawners
                 double test = GetDistanceToSqrt(location, Location);
                 if (Map == alignmentMap &&
                     test <= distance
-                )
+                   )
                 {
                     Type[] team = alignment switch
                     {

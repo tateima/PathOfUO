@@ -5,7 +5,7 @@ namespace Server.Mobiles
     public class Pixie : BaseCreature
     {
         [Constructible]
-        public Pixie() : base(AIType.AI_Mage, FightMode.Evil)
+        public Pixie() : base(AIType.AI_Mage, FightMode.Aggressor)
         {
             Name = NameList.RandomName("pixie");
             Body = 128;
@@ -49,8 +49,8 @@ namespace Server.Mobiles
         }
 
         public override string CorpseName => "a pixie corpse";
-        public override bool InitialInnocent => true;
-
+        public override bool InitialInnocent => false;
+        public override bool AlwaysAttackable => true;
         public override HideType HideType => HideType.Spined;
         public override int Hides => 5;
         public override int Meat => 1;

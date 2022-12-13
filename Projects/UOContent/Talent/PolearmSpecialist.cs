@@ -1,3 +1,4 @@
+using System;
 using Server.Items;
 
 namespace Server.Talent
@@ -6,13 +7,14 @@ namespace Server.Talent
     {
         public PolearmSpecialist()
         {
-            TalentDependency = typeof(SwordsmanshipFocus);
+            TalentDependencies = new[] { typeof(SwordsmanshipFocus) };
             RequiredWeapon = new[] { typeof(BasePoleArm) };
             RequiredWeaponSkill = SkillName.Swords;
             IncreaseHitChance = true;
+            MaxLevel = 5;
             DisplayName = "Polearm specialist";
             Description = "Increases damage and hit chance of pole arm weapons.";
-            AdditionalDetail = $"{PassiveDetail} The chance to hit increases 1% per level. This talent causes (1-X) * 2 damage where X is the talent level.";
+            AdditionalDetail = $"{PassiveDetail} The chance to hit and damage increases 5% per level for pole arm weapons.";
             AddEndAdditionalDetailsY = 80;
             ImageID = 350;
             GumpHeight = 85;
@@ -21,7 +23,8 @@ namespace Server.Talent
 
         public override void CheckHitEffect(Mobile attacker, Mobile target, ref int damage)
         {
-            damage += Utility.RandomMinMax(1, Level) * 2;
+            damage += AOS.Scale(damage, Level * 5);
+            damage += AOS.Scale(damage, WeaponMasterModifier(attacker));
         }
     }
 }

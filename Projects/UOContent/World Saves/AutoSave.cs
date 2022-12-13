@@ -1,4 +1,5 @@
 using System;
+using Server.Dungeon;
 using Server.Misc;
 
 namespace Server.Saves
@@ -122,6 +123,7 @@ namespace Server.Saves
             if (!AutoRestart.Restarting && World.Running)
             {
                 World.Save();
+                DungeonLevelModHandler.Save();
             }
         }
     }

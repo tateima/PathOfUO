@@ -4,7 +4,7 @@ namespace Server.Talent
     {
         public KeenSenses()
         {
-            TalentDependency = typeof(KeenEye);
+            TalentDependencies = new[] { typeof(KeenEye) };
             DisplayName = "Keen senses";
             Description = "Chance of dodging incoming attacks.";
             AdditionalDetail = $"Each level increases dodge chance by 2% {PassiveDetail}";

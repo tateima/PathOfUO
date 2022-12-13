@@ -5,6 +5,7 @@ using System.Linq;
 using Server.Accounting;
 using Server.Collections;
 using Server.ContextMenus;
+using Server.Dungeon;
 using Server.Engines.BulkOrders;
 using Server.Engines.ConPVP;
 using Server.Engines.Craft;
@@ -186,7 +187,7 @@ namespace Server.Mobiles
         private TimerExecutionToken _restTimerToken;
         private TimerExecutionToken _hungerTimerToken;
         private TimerExecutionToken _deityDecayTimer;
-        private TimerExecutionToken _challengeTimer;
+        public TimerExecutionToken ChallengeTimer;
 
         private Deity.Alignment m_Alignment;
         private Deity.Alignment m_CombatAlignment;
@@ -204,7 +205,9 @@ namespace Server.Mobiles
         private bool m_Blinded;
         private bool m_Feared;
         private DateTime m_NextPlanarTravel;
-        private Shrine m_Shrine;
+        private ShrineType m_mShrineType;
+        private int m_ShrineTimeLeft;
+        private int m_CompleteTalentCount;
 
         private DateTime m_LastYoungHeal = DateTime.MinValue;
 
@@ -235,6 +238,8 @@ namespace Server.Mobiles
 
         public PlayerMobile()
         {
+            m_CompleteTalentCount = BaseTalent.TalentTypes.Length;
+            m_KillBag = new ConcurrentDictionary<Type, int>();
             StarterSkills = new Skills(this);
             m_Alignment = Deity.Alignment.None;
             m_CombatAlignment = Deity.Alignment.None;
@@ -304,15 +309,31 @@ namespace Server.Mobiles
         [CommandProperty(AccessLevel.Counselor)]
         public Skills StarterSkills { get; set; }
 
-        public Shrine Shrine
+        public int CompleteTalentCount
         {
-            get => m_Shrine;
+            get => m_CompleteTalentCount;
+            set => m_CompleteTalentCount = value;
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public ShrineType mShrineType
+        {
+            get => m_mShrineType;
             set
             {
-                m_Shrine = value;
+                m_mShrineType = value;
                 InvalidateProperties();
             }
-
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int ShrineTimeLeft
+        {
+            get => m_ShrineTimeLeft;
+            set
+            {
+                m_ShrineTimeLeft = value;
+                InvalidateProperties();
+            }
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
@@ -488,11 +509,15 @@ namespace Server.Mobiles
                     remainingExp = 0;
                 }
 
-                int numberOfSkills = Level > 10 ? 12 : 14;
+                int numberOfSkills = 0;
+                if (Level < 70)
+                {
+                    numberOfSkills = Level > 10 ? 12 : 14;
+                }
                 NonCraftSkillPoints += (int)Math.Round(nonCraftingContr*numberOfSkills, MidpointRounding.AwayFromZero);
                 CraftSkillPoints += (int)Math.Round(craftingContr*numberOfSkills, MidpointRounding.AwayFromZero);
                 RangerSkillPoints += (int)Math.Round(rangerContr*numberOfSkills, MidpointRounding.AwayFromZero);
-                if (Level < 5 || Level % 5 == 0)
+                if (Level < 5 || Level % 5 == 0 && Level <= 70)
                 {
                     StatPoints += 5;
                 }
@@ -501,11 +526,11 @@ namespace Server.Mobiles
                     StatPoints += 2;
                 }
 
-                if (Level % 5 == 0 && Alignment is Deity.Alignment.None)
+                if (Level % 5 == 0 && Alignment is Deity.Alignment.None && Level <= 70)
                 {
                     TalentPoints += 2;
                 }
-                else
+                else if (Level <= 75)
                 {
                     TalentPoints += 1;
                 }
@@ -524,6 +549,9 @@ namespace Server.Mobiles
         }
         [CommandProperty(AccessLevel.GameMaster)]
         public int TalentResets { get; set; }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool NotifyOfTalentResets { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster)]
         public bool Blinded
@@ -622,6 +650,14 @@ namespace Server.Mobiles
 
                 return 0;
             }
+        }
+
+        private ConcurrentDictionary<Type, int> m_KillBag;
+
+        public ConcurrentDictionary<Type, int> KillBag
+        {
+            get => m_KillBag;
+            set => m_KillBag = value;
         }
 
         private ConcurrentDictionary<Type, BaseTalent> m_MergedTalents;
@@ -1156,7 +1192,7 @@ namespace Server.Mobiles
 
         public bool Neutral() => Alignment is Deity.Alignment.None;
 
-        public bool MaxLevel() => Level >= 70;
+        public bool MaxLevel() => Level >= BaseCreature.MaximumCreatureLevel;
         public bool Heroism()
         {
             Heroism heroism = GetTalent(typeof(Heroism)) as Heroism;
@@ -1752,6 +1788,16 @@ namespace Server.Mobiles
 
             if (from is PlayerMobile mobile)
             {
+                if (mobile.NotifyOfTalentResets)
+                {
+                    mobile.PrivateOverheadMessage(MessageType.Regular, 0x3B2, false, "Your talents have been automatically reset due to recent changes.", from.NetState);
+                }
+                if (mobile.CompleteTalentCount == 0)
+                {
+                    mobile.CompleteTalentCount = BaseTalent.TalentTypes.Length;
+                }
+                mobile.KillBag ??= new ConcurrentDictionary<Type, int>();
+                Timer.StartTimer(TimeSpan.FromMinutes(10), mobile.CheckKillBagDecay);
                 mobile.CheckAtrophies();
                 mobile.CombatAlignment = mobile.Alignment;
                 if (!mobile.Neutral())
@@ -1782,30 +1828,47 @@ namespace Server.Mobiles
             }
         }
 
+        private void CheckKillBagDecay()
+        {
+            if (!KillBag.IsEmpty)
+            {
+                foreach (var (type, kills) in KillBag)
+                {
+                    if (kills - 1 > 0)
+                    {
+                        KillBag.TryUpdate(type, kills - 1, kills);
+                    }
+                    else
+                    {
+                        KillBag.TryRemove(type, out _);
+                    }
+                }
+            }
+            Timer.StartTimer(TimeSpan.FromMinutes(10), CheckKillBagDecay);
+        }
+
         public void ChallengeCheck()
         {
             if (DeityChallengers is not null)
             {
+                Mobile[] challengers = DeityChallengers.ToArray();
+                foreach (var challenger in challengers)
+                {
+                    if (!challenger.Alive)
+                    {
+                        DeityChallengers.Remove(challenger);
+                    }
+                }
                 if (DeityChallengers.Count == 0)
                 {
                     Deity.RewardPoints(this, new [] { 100 + Level * 10 }, new [] { Alignment });
-                    _challengeTimer.Cancel();
+                    ChallengeTimer.Cancel();
                     Deity.Effect(this, Alignment);
                     SendMessage("Your display in battle has granted favor with the pantheon.");
                 }
-                else if (NextDeityChallenge.AddDays(-1) < Core.Now.AddMinutes(-15))
-                {
-                    foreach (var challenger in DeityChallengers)
-                    {
-                        challenger.Delete();
-                    }
-                    Deity.RewardPoints(this, new [] { -100 - Level * 10 }, new [] { Alignment });
-                    SendMessage("You have failed in your challenge to impress the pantheon.");
-                    _challengeTimer.Cancel();
-                }
                 else
                 {
-                    Timer.StartTimer(TimeSpan.FromSeconds(30), ChallengeCheck, out _challengeTimer);
+                    Timer.StartTimer(TimeSpan.FromSeconds(30), ChallengeCheck, out ChallengeTimer);
                 }
             }
         }
@@ -1853,6 +1916,17 @@ namespace Server.Mobiles
         {
             if (!startTimerOnly)
             {
+                if (DungeonLevelModHandler.IsInDungeonDifficulty(
+                        Location,
+                        Map,
+                        DungeonLevelMod.DungeonDifficulty.Epic,
+                        1,
+                        5
+                    ))
+                {
+                    Hunger -= 1;
+                    Thirst -= 1;
+                }
                 int damage = Utility.RandomMinMax(11, 30 - (int)(Skills.Cooking.Value / 10)); // cooking helps save hunger death!
                 Gluttony gluttony = GetTalent(typeof(Gluttony)) as Gluttony;
                 if (Hunger < 20)
@@ -1863,7 +1937,6 @@ namespace Server.Mobiles
                 {
                     gluttony?._internalTimer?.Start();
                 }
-
                 if (Hunger < 10)
                 {
                     string message = "Thou need food or else thy will die!";
@@ -2420,7 +2493,7 @@ namespace Server.Mobiles
                 }
             }
 
-            var speed = (Slowed) ? CalcMoves.RunFootDelay : ComputeMovementSpeed(d);
+            var speed = (Slowed) ? CalcMoves.WalkFootDelay : ComputeMovementSpeed(d);
 
             if (!Alive)
             {
@@ -2636,6 +2709,10 @@ namespace Server.Mobiles
             {
                 Quest?.GetContextMenuEntries(list);
                 list.Add(new CharacterSheetMenuEntry(this));
+                if (KillBag.Count > 0)
+                {
+                    list.Add(new KillBagMenuEntry(this));
+                }
                 if (!Neutral())
                 {
                     list.Add(new ConvertPantheonItemEntry(this));
@@ -2644,6 +2721,10 @@ namespace Server.Mobiles
                 }
                 if (Alive)
                 {
+                    if (DungeonLevelModHandler.IsInLevelOneDungeon(Location, Map))
+                    {
+                        list.Add(new SetBeginnerDungeonEntry(this));
+                    }
                     if (InsuranceEnabled)
                     {
                         if (Core.SA)
@@ -2854,11 +2935,6 @@ namespace Server.Mobiles
 
         public override bool CheckEquip(Item item)
         {
-            if (Shrine.GetShrineType() is ShrineType.Weakness)
-            {
-                SendMessage("You cannot equip this item, your hands are too frail.");
-                return false;
-            }
             if (!base.CheckEquip(item))
             {
                 return false;
@@ -3106,6 +3182,29 @@ namespace Server.Mobiles
             m_NoRecursion = false;
         }
 
+        public bool LevelTooLow(Mobile defender)
+        {
+            int defendLevel = 1;
+            if (defender is BaseCreature defendingCreature)
+            {
+                defendLevel = defendingCreature.Level;
+            } else if (defender is PlayerMobile defendingPlayer)
+            {
+                defendLevel = defendingPlayer.Level;
+            }
+
+            if (Level > 1 || defendLevel > 1)
+            {
+                if (defendLevel - Level >= 7)
+                {
+                    Say("You have no chance of damaging this opponent.");
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public override bool OnMoveOver(Mobile m) =>
             m is BaseCreature creature && !creature.Controlled
                 ? !Alive || !creature.Alive || IsDeadBondedPet || creature.IsDeadBondedPet ||
@@ -3161,7 +3260,7 @@ namespace Server.Mobiles
                 amount = HasDeityFavor ? AOS.Scale(amount, 80) : AOS.Scale(amount, 120);
             }
 
-            if (Shrine is not null && Shrine.ShrineAlignmentEnemyCheck(from, Shrine.GetShrineType()))
+            if (Shrine.ShrineAlignmentEnemyCheck(from, m_mShrineType))
             {
                 amount = AOS.Scale(amount, 90);
             }
@@ -3822,6 +3921,35 @@ namespace Server.Mobiles
             var version = reader.ReadInt();
             switch (version)
             {
+                case 43:
+                    m_CompleteTalentCount = reader.ReadInt();
+                    goto case 42;
+                case 42:
+                    m_KillBag = new ConcurrentDictionary<Type, int>();
+                    int killBagCount = reader.ReadInt();
+                    for (var i = 0; i < killBagCount; ++i)
+                    {
+                        Type killType = reader.ReadType();
+                        int kills = reader.ReadInt();
+                        m_KillBag.TryAdd(killType, kills);
+                    }
+                    goto case 41;
+                case 41:
+                    string typeString = reader.ReadString();
+                    m_mShrineType = Shrine.ShrineTypeFromString(typeString);
+                    m_ShrineTimeLeft = reader.ReadInt();
+                    if (m_mShrineType is not ShrineType.Mythic or ShrineType.Vengeance or ShrineType.Guardian or ShrineType.Hammer or ShrineType.Sacrifice
+                        or ShrineType.Harvest or ShrineType.Throne or ShrineType.Neophyte)
+                    {
+                        Shrine shrine = new Shrine
+                        {
+                            Player = this,
+                            TypeString = typeString,
+                            TimeLeft = m_ShrineTimeLeft
+                        };
+                        shrine.Activate();
+                    }
+                    goto case 40;
                 case 40:
                     m_FailedDeityPrayers = reader.ReadInt();
                     goto case 39;
@@ -3877,6 +4005,7 @@ namespace Server.Mobiles
                         var baseTalent = TalentConstructor.Construct(type) as BaseTalent;
                         if (baseTalent != null)
                         {
+                            baseTalent.User = this;
                             baseTalent.Level = reader.ReadInt();
                             if (baseTalent.Level > baseTalent.MaxLevel)
                             {
@@ -3902,6 +4031,14 @@ namespace Server.Mobiles
                     HardCore = reader.ReadBool();
                     HardCore = true; // new default, all players are roguelike
                     Level = reader.ReadInt();
+
+                    if (!Equals(m_CompleteTalentCount, BaseTalent.TalentTypes.Length))
+                    {
+                        // talent change has occured, reset all talents for player
+                        ResetTalents();
+                        TalentResets = 0;
+                        NotifyOfTalentResets = true;
+                    }
                     goto case 29;
                 case 30:
                     goto case 29;
@@ -4233,7 +4370,17 @@ namespace Server.Mobiles
 
             base.Serialize(writer);
 
-            writer.Write(40); // version
+            writer.Write(43); // version
+            writer.Write(m_CompleteTalentCount);
+            KillBag ??= new ConcurrentDictionary<Type, int>();
+            writer.Write(m_KillBag.Count);
+            foreach (var (type, kills) in KillBag)
+            {
+                writer.Write(type);
+                writer.Write(kills);
+            }
+            writer.Write(m_mShrineType.ToString());
+            writer.Write(m_ShrineTimeLeft);
             writer.Write(m_FailedDeityPrayers);
             writer.Write(m_DeityChallengers);
             writer.Write(m_NextDeityChallenge);
@@ -4527,9 +4674,11 @@ namespace Server.Mobiles
 
             list.Add(1114057, $"Level: {Level.ToString()}");                // ~1_val~
             list.Add(1114057, $"Alignment: {CombatAlignment.ToString()}"); // ~1_val~
-            if (Shrine is not null)
+            if (m_mShrineType is not ShrineType.None)
             {
-                list.Add(1114057, $"Shrine effect: {Shrine.GetShrineType().ToString()}"); // ~1_val~
+                list.Add(1114057, $"Shrine effect: {m_mShrineType.ToString()}");                              // ~1_val~
+                var plural = m_ShrineTimeLeft > 1 ? "s" : "";
+                list.Add(1114057, $"Time remaining: {m_ShrineTimeLeft.ToString()} minute{plural}"); // ~1_val~
             }
             if (!Neutral())
             {
@@ -4650,6 +4799,13 @@ namespace Server.Mobiles
             {
                 return true;
             }
+
+            Firewalker firewalker = GetTalent(typeof(Firewalker)) as Firewalker;
+            if (firewalker?.Activated == true)
+            {
+                firewalker.CheckMovementEffect(this);
+            }
+
             if (!Core.SE)
             {
                 return base.OnMove(d);

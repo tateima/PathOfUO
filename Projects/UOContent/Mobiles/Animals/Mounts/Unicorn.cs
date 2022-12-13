@@ -9,7 +9,7 @@ namespace Server.Mobiles
         public override string DefaultName => "a unicorn";
 
         [Constructible]
-        public Unicorn() : base(0x7A, 0x3EB4, AIType.AI_Mage, FightMode.Evil)
+        public Unicorn() : base(0x7A, 0x3EB4, AIType.AI_Mage, FightMode.Aggressor)
         {
             BaseSoundID = 0x4BC;
 
@@ -53,7 +53,7 @@ namespace Server.Mobiles
         public override bool AllowMaleRider => false;
         public override bool AllowMaleTamer => false;
 
-        public override bool InitialInnocent => true;
+        public override bool InitialInnocent => false;
 
         public override TimeSpan MountAbilityDelay => TimeSpan.FromHours(1.0);
 

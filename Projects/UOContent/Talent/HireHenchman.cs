@@ -9,7 +9,7 @@ namespace Server.Talent
         public HireHenchman()
         {
             BlockedBy = new[] { typeof(Merchant) };
-            TalentDependency = typeof(SmoothTalker);
+            TalentDependencies = new[] { typeof(SmoothTalker) };
             DisplayName = "Henchman";
             MaxLevel = 3;
             CanBeUsed = true;
@@ -18,7 +18,7 @@ namespace Server.Talent
             AdditionalDetail = $"A maximum of 100,000 gold is accepted, which would provide a maximum power scale of 20%. The number of henchmen you can have increases by 1 per level. {PassiveDetail}";
             ImageID = 365;
             GumpHeight = 230;
-            AddEndY = 125;
+            AddEndY = 115;
         }
 
         public override void OnUse(Mobile from)

@@ -5,7 +5,7 @@ namespace Server.Talent
         public UndeadHunter()
         {
             BlockedBy = new[] { typeof(AbyssalHunter) };
-            TalentDependency = typeof(ExperiencedHunter);
+            TalentDependencies = new[] { typeof(ExperiencedHunter) };
             HasDamageAbsorptionEffect = true;
             DisplayName = "Undead hunter";
             Description = "Increases damage to undead and heals damage from them.";
