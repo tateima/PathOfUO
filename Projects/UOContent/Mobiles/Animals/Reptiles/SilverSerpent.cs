@@ -1,10 +1,12 @@
+using ModernUO.Serialization;
 using Server.Ethics;
 using Server.Factions;
 
 namespace Server.Mobiles
 {
     [TypeAlias("Server.Mobiles.Silverserpant")]
-    public class SilverSerpent : BaseCreature
+    [SerializationGenerator(0, false)]
+    public partial class SilverSerpent : BaseCreature
     {
         [Constructible]
         public SilverSerpent() : base(AIType.AI_Melee)
@@ -42,9 +44,6 @@ namespace Server.Mobiles
             MinTameSkill = 84.3;
         }
 
-        public SilverSerpent(Serial serial) : base(serial)
-        {
-        }
         public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a silver serpent corpse";
         public override Faction FactionAllegiance => TrueBritannians.Instance;
@@ -77,25 +76,6 @@ namespace Server.Mobiles
             AddLoot(LootPack.Average);
             AddLoot(LootPack.Gems, 2);
             Backpack?.DropItem(new Silver(Utility.RandomMinMax(1, 5)));
-        }
-
-        public override void Serialize(IGenericWriter writer)
-        {
-            base.Serialize(writer);
-
-            writer.Write(0);
-        }
-
-        public override void Deserialize(IGenericReader reader)
-        {
-            base.Deserialize(reader);
-
-            var version = reader.ReadInt();
-
-            if (BaseSoundID == -1)
-            {
-                BaseSoundID = 219;
-            }
         }
     }
 }

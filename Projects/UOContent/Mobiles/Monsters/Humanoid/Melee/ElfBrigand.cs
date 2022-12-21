@@ -1,9 +1,11 @@
+using ModernUO.Serialization;
 using Server.Items;
 
 namespace Server.Mobiles
 {
+    [SerializationGenerator(0, false)]
     // TODO: Needs some Spellweaving abilities
-    public class ElfBrigand : BaseCreature
+    public partial class ElfBrigand : BaseCreature
     {
         [Constructible]
         public ElfBrigand() : base(AIType.AI_Melee)
@@ -79,9 +81,6 @@ namespace Server.Mobiles
             Utility.AssignRandomHair(this);
         }
 
-        public ElfBrigand(Serial serial) : base(serial)
-        {
-        }
         public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override bool ClickTitle => false;
 
@@ -100,20 +99,6 @@ namespace Server.Mobiles
         public override void GenerateLoot()
         {
             AddLoot(LootPack.Average);
-        }
-
-        public override void Serialize(IGenericWriter writer)
-        {
-            base.Serialize(writer);
-
-            writer.Write(0); // version
-        }
-
-        public override void Deserialize(IGenericReader reader)
-        {
-            base.Deserialize(reader);
-
-            var version = reader.ReadInt();
         }
     }
 }

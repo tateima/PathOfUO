@@ -668,6 +668,7 @@ namespace Server.Spells
 
                 if (destination?.CheckTravel(caster, loc, type, out message) == false || current?.CheckTravel(caster, loc, type, out message) == false)
                 {
+                    message ??= InvalidTravelMessage(type);
                     return false;
                 }
             }

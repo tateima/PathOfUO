@@ -1,8 +1,10 @@
+using ModernUO.Serialization;
 using Server.Items;
 
 namespace Server.Mobiles
 {
-    public class Executioner : BaseCreature
+    [SerializationGenerator(0, false)]
+    public partial class Executioner : BaseCreature
     {
         [Constructible]
         public Executioner() : base(AIType.AI_Melee)
@@ -59,9 +61,6 @@ namespace Server.Mobiles
             Utility.AssignRandomHair(this);
         }
 
-        public Executioner(Serial serial) : base(serial)
-        {
-        }
         public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
         public override bool AlwaysMurderer => true;
 
@@ -69,20 +68,6 @@ namespace Server.Mobiles
         {
             AddLoot(LootPack.FilthyRich);
             AddLoot(LootPack.Meager);
-        }
-
-        public override void Serialize(IGenericWriter writer)
-        {
-            base.Serialize(writer);
-
-            writer.Write(0); // version
-        }
-
-        public override void Deserialize(IGenericReader reader)
-        {
-            base.Deserialize(reader);
-
-            var version = reader.ReadInt();
         }
     }
 }

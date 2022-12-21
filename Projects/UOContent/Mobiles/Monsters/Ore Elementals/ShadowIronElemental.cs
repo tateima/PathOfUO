@@ -1,8 +1,10 @@
+using ModernUO.Serialization;
 using Server.Items;
 
 namespace Server.Mobiles
 {
-    public class ShadowIronElemental : BaseCreature
+    [SerializationGenerator(0, false)]
+    public partial class ShadowIronElemental : BaseCreature
     {
         public ShadowIronElemental() : this(2)
         {
@@ -44,10 +46,6 @@ namespace Server.Mobiles
             PackItem(ore);
         }
 
-        public ShadowIronElemental(Serial serial) : base(serial)
-        {
-        }
-
         public override string CorpseName => "an ore elemental corpse";
         public override string DefaultName => "a shadow iron elemental";
 
@@ -79,18 +77,6 @@ namespace Server.Mobiles
         public override void AlterSpellDamageFrom(Mobile from, ref int damage)
         {
             damage = 0;
-        }
-
-        public override void Serialize(IGenericWriter writer)
-        {
-            base.Serialize(writer);
-            writer.Write(0);
-        }
-
-        public override void Deserialize(IGenericReader reader)
-        {
-            base.Deserialize(reader);
-            var version = reader.ReadInt();
         }
     }
 }

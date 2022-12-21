@@ -1,8 +1,10 @@
+using ModernUO.Serialization;
 using Server.Items;
 
 namespace Server.Mobiles
 {
-    public class Wyvern : BaseCreature
+    [SerializationGenerator(0, false)]
+    public partial class Wyvern : BaseCreature
     {
         [Constructible]
         public Wyvern() : base(AIType.AI_Melee)
@@ -44,9 +46,6 @@ namespace Server.Mobiles
             PackItem(new LesserPoisonPotion());
         }
 
-        public Wyvern(Serial serial) : base(serial)
-        {
-        }
         public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a wyvern corpse";
         public override string DefaultName => "a wyvern";
@@ -92,17 +91,5 @@ namespace Server.Mobiles
         public override int GetHurtSound() => 721;
 
         public override int GetIdleSound() => 725;
-
-        public override void Serialize(IGenericWriter writer)
-        {
-            base.Serialize(writer);
-            writer.Write(0);
-        }
-
-        public override void Deserialize(IGenericReader reader)
-        {
-            base.Deserialize(reader);
-            var version = reader.ReadInt();
-        }
     }
 }
