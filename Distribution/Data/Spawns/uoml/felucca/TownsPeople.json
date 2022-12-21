@@ -765,5 +765,21 @@
       { "name": "Aluniol", "maxCount": 1, "probability": 100 },
       { "name": "Rebinil", "maxCount": 1, "probability": 100 }
     ]
+  },
+  {
+    "type": "Spawner",
+    "guid": "46dc4d43-91c1-4d09-a0e0-9d2e8980497e",
+    "name": "Spawner (123)",
+    "location": [2477, 416, 15],
+    "map": "Trammel",
+    "count":1,
+    "minDelay": "00:01:00",
+    "maxDelay": "00:30:00",
+    "team": 0,
+    "homeRange": 8,
+    "walkingRange": 8,
+    "entries": [
+      { "name": "MerryBonjoan", "maxCount": 1, "probability": 100 }
+    ]
   }
 ]

@@ -5,6 +5,7 @@ using Server.ContextMenus;
 using Server.Engines.MLQuests;
 using Server.Engines.MLQuests.Definitions;
 using Server.Engines.MLQuests.Objectives;
+using Server.Engines.PathQuests.Definitions;
 using Server.Items;
 using Server.Misc;
 using Server.Regions;
@@ -130,6 +131,25 @@ namespace Server.Mobiles
         }
 
         public static Dictionary<Mobile, BaseEscortable> EscortTable { get; } = new();
+
+        public virtual void EndEscortSequence(PlayerMobile pm)
+        {
+            // We have arrived! I thank thee, ~1_PLAYER_NAME~! I have no further need of thy services. Here is thy pay.
+            Say(1042809, pm.Name);
+
+            if (pm.Young ||Region.IsPartOf("Haven Island"))
+            {
+                Titles.AwardFame(pm, 10, true);
+            }
+            else
+            {
+                VirtueHelper.AwardVirtue(
+                    pm,
+                    VirtueName.Compassion,
+                    IsPrisoner ? 400 : 200
+                );
+            }
+        }
 
         protected override List<MLQuest> ConstructQuestList()
         {

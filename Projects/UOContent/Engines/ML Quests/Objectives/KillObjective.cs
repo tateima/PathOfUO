@@ -95,24 +95,27 @@ namespace Server.Engines.MLQuests.Objectives
             {
                 if (acceptedType.IsAssignableFrom(type))
                 {
-                    if (Objective.Area?.Contains(mob) == false)
+                    if (Objective.Area?.Contains(mob) == false && Objective.Area?.ContainsPoint(mob) == false && Objective.Area?.Contains(mob.Location, mob.Map) == false)
                     {
                         return false;
                     }
-
-                    var pm = Instance.Player;
-
-                    if (++Slain >= desired)
+                    if (Objective.Area?.Contains(mob) == true || Objective.Area?.ContainsPoint(mob) == true || Objective.Area?.Contains(mob.Location, mob.Map) == true)
                     {
-                        pm.SendLocalizedMessage(1075050); // You have killed all the required quest creatures of this type.
-                    }
-                    else
-                    {
-                        // You have killed a quest creature. ~1_val~ more left.
-                        pm.SendLocalizedMessage(1075051, (desired - Slain).ToString());
+                        var pm = Instance.Player;
+
+                        if (++Slain >= desired)
+                        {
+                            pm.SendLocalizedMessage(1075050); // You have killed all the required quest creatures of this type.
+                        }
+                        else
+                        {
+                            // You have killed a quest creature. ~1_val~ more left.
+                            pm.SendLocalizedMessage(1075051, (desired - Slain).ToString());
+                        }
+                        return true;
                     }
 
-                    return true;
+                    return false;
                 }
             }
 

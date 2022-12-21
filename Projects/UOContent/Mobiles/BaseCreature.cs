@@ -2210,8 +2210,7 @@ namespace Server.Mobiles
                     MonsterBuff.MinionKarmaBuff,
                     MonsterBuff.MinionDamageBuff
                 );
-                double dynamicExperienceValue = DynamicExperienceValue();
-                if (dynamicExperienceValue >= 475) // skeleton strength and up
+                if (DynamicExperienceValue() >= 475) // skeleton strength and up
                 {
                     int dungeonChance = 20;
                     bool eligibleHard =
@@ -2226,17 +2225,6 @@ namespace Server.Mobiles
                     if (eligibleHard || eligibleEpic)
                     {
                         dungeonChance += 10;
-                        if (eligibleHard)
-                        {
-                            ExperienceValue += AOS.Scale((int)dynamicExperienceValue, 15);
-                            IsVeteran = true;
-                        }
-
-                        if (eligibleEpic)
-                        {
-                            ExperienceValue += AOS.Scale((int)dynamicExperienceValue, 30);
-                            IsHeroic = true;
-                        }
                     }
                     // 5% chance in Dungeons 1% chance everywhere else
                     int chance = Region.IsPartOf<DungeonRegion>() ? dungeonChance : 5;
@@ -2246,7 +2234,15 @@ namespace Server.Mobiles
                         MonsterBuff.RandomMonsterBuffs(this, buffs);
                     }
 
-                    if (Utility.Random(100) < 15)
+                    if (eligibleHard)
+                    {
+                        IsVeteran = true;
+                        ExperienceValue += AOS.Scale((int)DynamicExperienceValue(), 3);
+                    } else if (eligibleEpic)
+                    {
+                        IsHeroic = true;
+                        ExperienceValue += AOS.Scale((int)DynamicExperienceValue(), 7);
+                    } else  if (Utility.Random(100) < 15)
                     {
                         IsVeteran = true;
                     }

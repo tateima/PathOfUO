@@ -135,24 +135,12 @@ namespace Server.Engines.MLQuests.Objectives
             {
                 Abandon();
             }
-            else if (m_Objective.Destination.Contains(m_Escort))
+            else if (m_Objective.Destination.Contains(m_Escort) || m_Objective.Destination.Contains(m_Escort.Location, m_Escort.Map))
             {
-                // We have arrived! I thank thee, ~1_PLAYER_NAME~! I have no further need of thy services. Here is thy pay.
-                m_Escort.Say(1042809, pm.Name);
-
-                if (pm.Young || m_Escort.Region.IsPartOf("Haven Island"))
+                if (m_Escort is BaseEscortable escort)
                 {
-                    Titles.AwardFame(pm, 10, true);
+                    escort.EndEscortSequence(pm);
                 }
-                else
-                {
-                    VirtueHelper.AwardVirtue(
-                        pm,
-                        VirtueName.Compassion,
-                        m_Escort is BaseEscortable escortable && escortable.IsPrisoner ? 400 : 200
-                    );
-                }
-
                 EndFollow(m_Escort);
                 StopTimer();
 

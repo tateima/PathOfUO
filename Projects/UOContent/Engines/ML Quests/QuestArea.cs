@@ -16,13 +16,30 @@ namespace Server.Engines.MLQuests
             }
         }
 
+        public QuestArea(TextDefinition name, Rectangle2D boundary, Map[] forceMaps)
+        {
+            Name = name;
+            Boundary = boundary;
+            ForceMaps = forceMaps;
+
+            if (MLQuestSystem.Debug)
+            {
+                ValidationQueue<QuestArea>.Add(this);
+            }
+        }
+
         public TextDefinition Name { get; set; }
 
         public string RegionName { get; set; }
 
+        public Rectangle2D Boundary { get; set; }
+
         public Map ForceMap { get; set; }
 
+        public Map[] ForceMaps { get; set; }
+
         public bool Contains(Mobile mob) => Contains(mob.Region);
+        public bool ContainsPoint(Mobile mob) => Contains(mob.Location, mob.Map);
 
         public bool Contains(Region reg)
         {
@@ -32,6 +49,15 @@ namespace Server.Engines.MLQuests
             }
 
             return reg.IsPartOf(RegionName);
+        }
+
+        public bool Contains(Point3D point, Map map)
+        {
+            if (ForceMaps is null || map is null)
+            {
+                return false;
+            }
+            return Array.Exists(ForceMaps, forceMap => forceMap == map) && Boundary.Contains(point);
         }
 
         // Debug method

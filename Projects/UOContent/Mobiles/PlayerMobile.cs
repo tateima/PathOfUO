@@ -2721,10 +2721,7 @@ namespace Server.Mobiles
                 }
                 if (Alive)
                 {
-                    if (DungeonLevelModHandler.IsInLevelOneDungeon(Location, Map))
-                    {
-                        list.Add(new SetBeginnerDungeonEntry(this));
-                    }
+                    list.Add(new DungeonDifficultyGump.DungeonDifficultyEntry(this));
                     if (InsuranceEnabled)
                     {
                         if (Core.SA)

@@ -49,7 +49,7 @@ public class DungeonLevelModHandler
 
     public static DungeonLevelMod? GetMod(string modName)
     {
-        if (modName.Length > 0)
+        if (modName.Length > 0 && DungeonLevelMods is not null)
         {
             DungeonLevelMod dungeonLevelMod;
             if (DungeonLevelMods.TryGetValue(
@@ -66,39 +66,50 @@ public class DungeonLevelModHandler
 
     public static void Load()
     {
-        var options = JsonConfig.GetOptions(new TextDefinitionConverterFactory());
-
-        var modRecords = JsonConfig.Deserialize<List<DungeonLevelMod>>(DataPath, options);
-
-        if (modRecords == null)
+        try
         {
-            throw new JsonException($"Failed to deserialize {DataPath}.");
+            var options = JsonConfig.GetOptions(new TextDefinitionConverterFactory());
+
+            var modRecords = JsonConfig.Deserialize<List<DungeonLevelMod>>(DataPath, options);
+
+            if (modRecords == null)
+            {
+                throw new JsonException($"Failed to deserialize {DataPath}.");
+            }
+            foreach (var modRecord in modRecords)
+            {
+                modRecord.Duration += 1;
+                AddMod(modRecord.Name, modRecord);
+                modRecord.Tick();
+            }
         }
-        foreach (var modRecord in modRecords)
+        catch (Exception e)
         {
-            modRecord.Duration += 1;
-            AddMod(modRecord.Name, modRecord);
-            modRecord.Tick();
+            // ignore
         }
+
     }
 
     public static void Save()
     {
-        NetState.FlushAll();
-        var options = JsonConfig.GetOptions(new TextDefinitionConverterFactory());
+        if (DungeonLevelMods is not null)
+        {
+            NetState.FlushAll();
+            var options = JsonConfig.GetOptions(new TextDefinitionConverterFactory());
 
-        var modRecords = new List<DynamicJson>(DungeonLevelMods.Count);
-        foreach (var (_, value) in DungeonLevelMods)
-        {
-            var dynamicJson = DynamicJson.Create(value.GetType());
-            value.ToJson(dynamicJson, options);
-            modRecords.Add(dynamicJson);
+            var modRecords = new List<DynamicJson>(DungeonLevelMods.Count);
+            foreach (var (_, value) in DungeonLevelMods)
+            {
+                var dynamicJson = DynamicJson.Create(value.GetType());
+                value.ToJson(dynamicJson, options);
+                modRecords.Add(dynamicJson);
+            }
+            if (modRecords.Count == 0)
+            {
+                return;
+            }
+            JsonConfig.Serialize(DataPath, modRecords, options);
         }
-        if (modRecords.Count == 0)
-        {
-            return;
-        }
-        JsonConfig.Serialize(DataPath, modRecords, options);
     }
 
     public static void SetDungeonDifficultyParameters(Point3D location, Map map, int level, DungeonLevelMod.DungeonDifficulty dungeonDifficulty, out string modName, out int x1, out int x2, out int y1, out int y2)
