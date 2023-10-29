@@ -511,7 +511,7 @@ namespace Server.Engines.MLQuests
             }
         }
 
-        public static void HandleKill(PlayerMobile pm, Mobile mob)
+        public static void HandleKill(PlayerMobile pm, Mobile mob, Container c)
         {
             var context = GetContext(pm);
 
@@ -543,7 +543,7 @@ namespace Server.Engines.MLQuests
                     {
                         type ??= mob.GetType();
 
-                        if (kill.AddKill(mob, type))
+                        if (kill.AddKill(mob, type, c))
                         {
                             kill.CheckComplete();
                             break;

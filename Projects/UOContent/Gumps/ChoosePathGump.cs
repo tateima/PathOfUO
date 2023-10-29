@@ -18,10 +18,6 @@ namespace Server.Gumps
             _createStaterSkills = createStaterSkills;
             _currentAlignment = currentAlignment;
             _alignmentChange = alignmentChange;
-            if (from == null)
-            {
-                from.CloseGump<ChoosePathGump>();
-            }
             Closable = false;
             Disposable = true;
             Draggable = true;

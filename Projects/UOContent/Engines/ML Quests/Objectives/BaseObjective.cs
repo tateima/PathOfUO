@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Server.Gumps;
 using Server.Mobiles;
 
@@ -161,12 +162,10 @@ namespace Server.Engines.MLQuests.Objectives
                 case DataType.KillObjective:
                     {
                         var slain = reader.ReadInt();
-
                         if (objInstance is KillObjectiveInstance instance)
                         {
                             instance.Slain = slain;
                         }
-
                         break;
                     }
                 case DataType.DeliverObjective:

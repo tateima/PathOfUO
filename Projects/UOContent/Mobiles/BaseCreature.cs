@@ -4964,7 +4964,7 @@ namespace Server.Mobiles
                     {
                         if (MLQuestSystem.Enabled)
                         {
-                            MLQuestSystem.HandleKill(pm, this);
+                            MLQuestSystem.HandleKill(pm, this, c);
                         }
 
                         if (givenQuestKill)

@@ -1,18 +1,28 @@
 using System;
+using System.Collections.Generic;
 using Server.Gumps;
+using Server.Items;
+using Server.Utilities;
 
 namespace Server.Engines.MLQuests.Objectives
 {
     public class KillObjective : BaseObjective
     {
         public KillObjective(
-            int amount = 0, Type[] types = null, TextDefinition name = null, QuestArea area = null
+            int amount = 0, Type[] types = null, TextDefinition name = null, QuestArea area = null,
+            bool dropQuest = false, List<Type> dropTypes = null, int dropChance = 0,
+            int dropQuantity = 0, int dropQuantityMax = 0
         )
         {
             DesiredAmount = amount;
             AcceptedTypes = types;
             Name = name;
             Area = area;
+            DropTypes = dropTypes;
+            DropQuest = dropQuest;
+            DropChance = dropChance;
+            DropQuantity = dropQuantity;
+            DropQuantityMax = dropQuantityMax;
         }
 
         public int DesiredAmount { get; set; }
@@ -22,6 +32,44 @@ namespace Server.Engines.MLQuests.Objectives
         public TextDefinition Name { get; set; }
 
         public QuestArea Area { get; set; }
+
+        public int DropChance { get; set; }
+
+        public int DropQuantityMax { get; set; }
+
+        public int DropQuantity { get; set; }
+
+        public List<Type> DropTypes { get; set; }
+
+        public bool DropQuest { get; set; }
+
+        public bool CheckQuestDrop(Container c)
+        {
+            if (DropQuest && Utility.Random(100) < DropChance && DropQuantity < DropQuantityMax)
+            {
+                DropQuantity++;
+                foreach (var dropType in DropTypes)
+                {
+                    try
+                    {
+                        var dropped = dropType.CreateInstance<object>();
+                        if (dropped is Item droppedItem)
+                        {
+                            droppedItem.Amount = 1;
+                            c.DropItem(droppedItem);
+                        }
+                    }
+                    catch
+                    {
+                        // ignored
+                    }
+                }
+
+                return true;
+            }
+
+            return false;
+        }
 
         public override void WriteToGump(Gump g, ref int y)
         {
@@ -87,7 +135,7 @@ namespace Server.Engines.MLQuests.Objectives
 
         public override DataType ExtraDataType => DataType.KillObjective;
 
-        public bool AddKill(Mobile mob, Type type)
+        public bool AddKill(Mobile mob, Type type, Container c)
         {
             var desired = Objective.DesiredAmount;
 
@@ -102,7 +150,10 @@ namespace Server.Engines.MLQuests.Objectives
                     if (Objective.Area?.Contains(mob) == true || Objective.Area?.ContainsPoint(mob) == true || Objective.Area?.Contains(mob.Location, mob.Map) == true)
                     {
                         var pm = Instance.Player;
-
+                        if (Objective.DropQuest && !Objective.CheckQuestDrop(c))
+                        {
+                            Slain--;
+                        }
                         if (++Slain >= desired)
                         {
                             pm.SendLocalizedMessage(1075050); // You have killed all the required quest creatures of this type.
