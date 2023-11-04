@@ -17,9 +17,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Server.Collections;
 using Server.Items;
-using Server.Network;
 
 namespace Server;
 
@@ -33,67 +31,12 @@ public static class PooledEnumeration
 
     static PooledEnumeration()
     {
-        ClientSelector = SelectClients;
-        EntitySelector = SelectEntities;
-        MobileSelector = SelectMobiles<Mobile>;
         MultiSelector = SelectMultis;
         MultiTileSelector = SelectMultiTiles;
     }
 
-    public static Selector<NetState> ClientSelector { get; set; }
-    public static Selector<IEntity> EntitySelector { get; set; }
-    public static Selector<Mobile> MobileSelector { get; set; }
     public static Selector<BaseMulti> MultiSelector { get; set; }
     public static Selector<StaticTile[]> MultiTileSelector { get; set; }
-
-    public static IEnumerable<NetState> SelectClients(Map.Sector s, Rectangle2D bounds)
-    {
-        var clients = new List<NetState>(s.Clients.Count);
-        foreach (var client in s.Clients)
-        {
-            var m = client.Mobile;
-
-            if (m?.Deleted == false && bounds.Contains(m.Location))
-            {
-                clients.Add(client);
-            }
-        }
-
-        return clients;
-    }
-
-    public static IEnumerable<IEntity> SelectEntities(Map.Sector s, Rectangle2D bounds)
-    {
-        var entities = new List<IEntity>(s.Mobiles.Count + s.Items.Count);
-        for (int i = s.Mobiles.Count - 1; i >= 0; --i)
-        {
-            Mobile mob = s.Mobiles[i];
-            if (mob is { Deleted: false } && bounds.Contains(mob.Location))
-            {
-                entities.Add(mob);
-            }
-        }
-
-        foreach (var item in s.Items)
-        {
-            entities.Add(item);
-        }
-
-        return entities;
-    }
-
-    public static IEnumerable<T> SelectMobiles<T>(Map.Sector s, Rectangle2D bounds) where T : Mobile
-    {
-        var entities = new List<T>(s.Mobiles.Count);
-        for (int i = s.Mobiles.Count - 1; i >= 0; --i)
-        {
-            if (s.Mobiles[i] is T { Deleted: false } mob && bounds.Contains(mob.Location))
-            {
-                entities.Add(mob);
-            }
-        }
-        return entities;
-    }
 
     public static IEnumerable<BaseMulti> SelectMultis(Map.Sector s, Rectangle2D bounds)
     {
@@ -162,18 +105,6 @@ public static class PooledEnumeration
             }
         }
     }
-
-    public static PooledEnumerable<NetState> GetClients(Map map, Rectangle2D bounds) =>
-        PooledEnumerable<NetState>.Instantiate(map, bounds, ClientSelector ?? SelectClients);
-
-    public static PooledEnumerable<IEntity> GetEntities(Map map, Rectangle2D bounds) =>
-        PooledEnumerable<IEntity>.Instantiate(map, bounds, EntitySelector ?? SelectEntities);
-
-    public static PooledEnumerable<Mobile> GetMobiles(Map map, Rectangle2D bounds) =>
-        GetMobiles<Mobile>(map, bounds);
-
-    public static PooledEnumerable<T> GetMobiles<T>(Map map, Rectangle2D bounds) where T : Mobile =>
-        PooledEnumerable<T>.Instantiate(map, bounds, SelectMobiles<T>);
 
     public static PooledEnumerable<BaseMulti> GetMultis(Map map, Rectangle2D bounds) =>
         PooledEnumerable<BaseMulti>.Instantiate(map, bounds, MultiSelector ?? SelectMultis);

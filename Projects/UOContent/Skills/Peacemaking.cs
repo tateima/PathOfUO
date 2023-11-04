@@ -119,9 +119,8 @@ namespace Server.SkillHandlers
 
                                     calmed = true;
 
-                                    m.SendLocalizedMessage(
-                                        500616
-                                    ); // You hear lovely music, and forget to continue battling!
+                                    // You hear lovely music, and forget to continue battling!
+                                    m.SendLocalizedMessage(500616);
                                     m.Combatant = null;
                                     m.Warmode = false;
 
@@ -133,9 +132,8 @@ namespace Server.SkillHandlers
 
                                 if (!calmed)
                                 {
-                                    from.SendLocalizedMessage(
-                                        1049648
-                                    ); // You play hypnotic music, but there is nothing in range for you to calm.
+                                    // You play hypnotic music, but there is nothing in range for you to calm.
+                                    from.SendLocalizedMessage(1049648);
                                 }
                                 else
                                 {
@@ -228,9 +226,8 @@ namespace Server.SkillHandlers
                                 {
                                     from.SendLocalizedMessage(1049532); // You play hypnotic music, calming your target.
 
-                                    targ.SendLocalizedMessage(
-                                        500616
-                                    ); // You hear lovely music, and forget to continue battling!
+                                    // You hear lovely music, and forget to continue battling!
+                                    targ.SendLocalizedMessage(500616);
                                 }
                             }
                         }

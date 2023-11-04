@@ -2616,9 +2616,7 @@ public abstract class BaseAI
         Mobile enemySummonMob = null;
         var enemySummonVal = double.MinValue;
 
-        var eable = map.GetMobilesInRange(m_Mobile.Location, iRange);
-
-        foreach (var m in eable)
+        foreach (var m in map.GetMobilesInRange(m_Mobile.Location, iRange))
         {
             if (m.Deleted || m.Blessed)
             {
@@ -2820,9 +2818,7 @@ public abstract class BaseAI
             return;
         }
 
-        var eable = m_Mobile.GetMobilesInRange(m_Mobile.RangePerception);
-
-        foreach (var trg in eable)
+        foreach (var trg in m_Mobile.GetMobilesInRange(m_Mobile.RangePerception))
         {
             if (trg != m_Mobile && trg.Player && trg.Alive && trg.Hidden && trg.AccessLevel == AccessLevel.Player &&
                 m_Mobile.InLOS(trg))
