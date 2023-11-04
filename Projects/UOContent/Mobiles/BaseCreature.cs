@@ -11,6 +11,7 @@ using Server.Engines.MLQuests;
 using Server.Engines.Quests.Doom;
 using Server.Engines.Quests.Haven;
 using Server.Engines.Spawners;
+using Server.Engines.Virtues;
 using Server.Ethics;
 using Server.Factions;
 using Server.Items;
@@ -361,6 +362,7 @@ namespace Server.Mobiles
         private int m_PhysicalResistance;
         private int m_PoisonResistance;
         private bool m_InDungeon;
+        private int m_TamedExperience;
 
         /* until we are sure about who should be getting deleted, move them instead */
         /* On OSI, they despawn */
@@ -388,6 +390,7 @@ namespace Server.Mobiles
             }
             m_Tier = 1.0;
             m_Level = 1;
+            LevelExperience = 0;
             m_InDungeon = false;
             m_Loyalty = MaxLoyalty; // Wonderfully Happy
             m_NextGambleTime = DateTime.Now;
@@ -565,7 +568,6 @@ namespace Server.Mobiles
                     return;
                 }
 
-                m_Veteran = value;
                 if (value)
                 {
                     Veteran.Convert(this);
@@ -574,7 +576,7 @@ namespace Server.Mobiles
                 {
                     Veteran.UnConvert(this);
                 }
-
+                m_Veteran = value;
                 InvalidateProperties();
             }
         }
@@ -623,6 +625,20 @@ namespace Server.Mobiles
                 InvalidateProperties();
             }
         }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int TamedExperience
+        {
+            get => m_TamedExperience;
+            set
+            {
+                m_TamedExperience = value;
+                LevelSystem.CheckExperience(LevelExperience, TamedExperience, 0, 0, this);
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int LevelExperience { get; set; }
 
         public bool InDungeon
         {
@@ -1045,7 +1061,6 @@ namespace Server.Mobiles
                     return;
                 }
 
-                m_Heroic = value;
                 if (value)
                 {
                     Heroic.Convert(this);
@@ -1054,7 +1069,7 @@ namespace Server.Mobiles
                 {
                     Heroic.UnConvert(this);
                 }
-
+                m_Heroic = value;
                 InvalidateProperties();
             }
         }
@@ -1710,31 +1725,9 @@ namespace Server.Mobiles
             set { m_Minions = value; }
         }
 
-        public List<MLQuest> MLQuests
-        {
-            get
-            {
-                if (m_MLQuests == null)
-                {
-                    if (StaticMLQuester)
-                    {
-                        m_MLQuests = MLQuestSystem.FindQuestList(GetType());
-                    }
-                    else
-                    {
-                        m_MLQuests = ConstructQuestList();
-                    }
-
-                    if (m_MLQuests == null)
-                    {
-                        // return EmptyList, but don't cache it (run construction again next time)
-                        return MLQuestSystem.EmptyList;
-                    }
-                }
-
-                return m_MLQuests;
-            }
-        }
+        public List<MLQuest> MLQuests =>
+            // Assign the quests if we don't have one, and if it is still null, return an empty list
+            (m_MLQuests ??= StaticMLQuester ? MLQuestSystem.FindQuestList(GetType()) : ConstructQuestList()) ?? MLQuestSystem.EmptyList;
 
         public virtual MonsterAbility[] GetMonsterAbilities() => null;
 
@@ -1948,7 +1941,7 @@ namespace Server.Mobiles
             }
 
             if (m is PlayerMobile mobile &&
-                (mobile.HonorActive || Deity.AlignmentCheck(this, mobile.CombatAlignment, false)))
+                (Deity.AlignmentCheck(this, mobile.CombatAlignment, false)))
             {
                 return false;
             }
@@ -2171,12 +2164,8 @@ namespace Server.Mobiles
 
             if (SubdueBeforeTame && !Controlled && oldHits > HitsMax / 10 && Hits <= HitsMax / 10)
             {
-                PublicOverheadMessage(
-                    MessageType.Regular,
-                    0x3B2,
-                    false,
-                    "* The creature has been beaten into subjugation! *"
-                );
+                // * The creature has been beaten into subjugation! *
+                PublicOverheadMessage(MessageType.Regular, 0x3B2, 1080057);
             }
         }
 
@@ -2626,7 +2615,7 @@ namespace Server.Mobiles
 
             Confidence.StopRegenerating(this);
 
-            WeightOverloading.FatigueOnDamage(this, amount);
+            StaminaSystem.FatigueOnDamage(this, amount);
 
             var speechType = SpeechType;
 
@@ -2874,7 +2863,7 @@ namespace Server.Mobiles
                             }
                     }
 
-                    from.SendMessage("You cut away some scales, but they remain on the corpse.");
+                    from.SendLocalizedMessage(1079284); // You cut away some scales, but they remain on the corpse.
                 }
 
                 corpse.Carved = true;
@@ -2890,7 +2879,9 @@ namespace Server.Mobiles
         {
             base.Serialize(writer);
 
-            writer.Write(31); // version
+            writer.Write(32); // version
+            // version 32
+            writer.Write(m_TamedExperience);
             // version 31
             writer.Write(m_InDungeon);
             writer.Write(m_Tier);
@@ -3057,6 +3048,10 @@ namespace Server.Mobiles
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+            if (version >= 32)
+            {
+                m_TamedExperience = reader.ReadInt();
+            }
             if (version >= 31)
             {
                 m_InDungeon = reader.ReadBool();
@@ -3306,23 +3301,9 @@ namespace Server.Mobiles
                 OwnerAbandonTime = reader.ReadDateTime();
             }
 
-            if (version >= 11)
-            {
-                m_HasGeneratedLoot = reader.ReadBool();
-            }
-            else
-            {
-                m_HasGeneratedLoot = true;
-            }
+            m_HasGeneratedLoot = version < 11 || reader.ReadBool();
 
-            if (version >= 12)
-            {
-                m_Paragon = reader.ReadBool();
-            }
-            else
-            {
-                m_Paragon = false;
-            }
+            m_Paragon = version >= 12 && reader.ReadBool();
 
             if (version >= 13 && reader.ReadBool())
             {
@@ -3506,52 +3487,25 @@ namespace Server.Mobiles
 
         public void RemoveFollowers()
         {
-            if (m_ControlMaster != null)
+            var master = m_ControlMaster ?? m_SummonMaster;
+            if (master != null)
             {
-                m_ControlMaster.Followers -= ControlSlots;
-                if (m_ControlMaster is PlayerMobile mobile)
+                master.Followers -= Math.Min(ControlSlots, master.Followers);
+                if (master is PlayerMobile pm)
                 {
-                    mobile.AllFollowers.Remove(this);
-                    if (mobile.AutoStabled.Contains(this))
-                    {
-                        mobile.AutoStabled.Remove(this);
-                    }
+                    pm.RemoveFollower(this);
+                    pm.AutoStabled?.Remove(this);
                 }
-            }
-            else if (m_SummonMaster != null)
-            {
-                m_SummonMaster.Followers -= ControlSlots;
-                (m_SummonMaster as PlayerMobile)?.AllFollowers.Remove(this);
-            }
-
-            if (m_ControlMaster?.Followers < 0)
-            {
-                m_ControlMaster.Followers = 0;
-            }
-
-            if (m_SummonMaster?.Followers < 0)
-            {
-                m_SummonMaster.Followers = 0;
             }
         }
 
         public void AddFollowers()
         {
-            if (m_ControlMaster != null)
+            var master = m_ControlMaster ?? m_SummonMaster;
+            if (master != null)
             {
-                m_ControlMaster.Followers += ControlSlots;
-                if (m_ControlMaster is PlayerMobile mobile)
-                {
-                    mobile.AllFollowers.Add(this);
-                }
-            }
-            else if (m_SummonMaster != null)
-            {
-                m_SummonMaster.Followers += ControlSlots;
-                if (m_SummonMaster is PlayerMobile mobile)
-                {
-                    mobile.AllFollowers.Add(this);
-                }
+                master.Followers += ControlSlots;
+                (master as PlayerMobile)?.AddFollower(this);
             }
         }
 
@@ -3643,6 +3597,10 @@ namespace Server.Mobiles
             {
                 MLQuestSystem.HandleDeletion(this);
             }
+
+            UnsummonTimer.StopTimer(this);
+
+            StaminaSystem.RemoveEntry(this as IHasSteps);
 
             base.OnAfterDelete();
         }
@@ -4183,10 +4141,25 @@ namespace Server.Mobiles
         public override void AddNameProperties(IPropertyList list)
         {
             base.AddNameProperties(list);
-            list.Add(1114057, $"Level: {Level.ToString()}");          // ~1_val~
-            list.Add(1114057, $"Alignment: {Deity.GetCreatureAlignment(GetType()).ToString()}");   // ~1_val~
-            list.Add(1114057, $"Level range: {(MinLevel - 1 < 1 ? 1 : MinLevel).ToString()} - {MaxLevel.ToString()}");   // ~1_val~
-            list.Add(1114057, $"XP: {FinalExperience().ToString()}"); // ~1_val~
+            list.Add(1114057, $"Level: {Level.ToString()}");                                     // ~1_val~
+            list.Add(1114057, $"Alignment: {Deity.GetCreatureAlignment(GetType()).ToString()}"); // ~1_val~
+
+            if (Owners.Count > 0)
+            {
+                string xp = (LevelExperience + TamedExperience).ToString();
+                int nextLevel = (int)LevelSystem.NextLevel(this);
+                list.Add(1114057, $"{xp}/{nextLevel.ToString()}: XP"); // ~1_val~
+            }
+            else
+            {
+                if (Tamable)
+                {
+                    list.Add(1114057, $"Taming requirement: {MinTameSkill.ToString()}");   // ~1_val~
+                }
+                list.Add(1114057, $"Level range: {(MinLevel - 1 < 1 ? 1 : MinLevel).ToString()} - {MaxLevel.ToString()}");   // ~1_val~
+                list.Add(1114057, $"XP: {FinalExperience().ToString()}"); // ~1_val~
+            }
+
             list.Add(1114057, $"Mana: {Mana.ToString()}/{ManaMax.ToString()}"); // ~1_val~
             list.Add(1114057, $"Hits: {Hits.ToString()}/{HitsMax.ToString()}"); // ~1_val~
             list.Add(1114057, $"Stamina: {Stam.ToString()}/{StamMax.ToString()}"); // ~1_val~
@@ -4632,7 +4605,7 @@ namespace Server.Mobiles
             }
 
             // int challengeRating = baseXp / 100;
-            // scaleXp += (challengeRating + challengeRating / 7) * Level;
+            scaleXp += AOS.Scale(scaleXp, 30);
             return scaleXp;
         }
 
@@ -4825,7 +4798,7 @@ namespace Server.Mobiles
                 ControlTarget = ControlMaster;
                 ControlOrder = OrderType.Follow;
 
-                ProcessDeltaQueue();
+                ProcessDelta();
                 SendIncomingPacket();
                 SendIncomingPacket();
 
@@ -5047,15 +5020,22 @@ namespace Server.Mobiles
                             {
                                 contributedXp += AOS.Scale(contributedXp, wisdom.Level * 30);
                             }
-                            if (player.Ranger())
+
+                            bool isPlayerMaxLevel = LevelSystem.MaxLevel(player);
+                            List<BaseCreature> rangerCreatures = player.RangerCreatures();
+                            if (rangerCreatures.Count > 0)
                             {
-                                contributedXp /= 2; // 50% ranger 50% normal gain
-                                if (!player.MaxLevel())
+                                contributedXp /= rangerCreatures.Count + 1; // divided amongst the ranger followers plus player
+                                if (!isPlayerMaxLevel)
                                 {
                                     player.RangerExperience += contributedXp;
                                 }
+                                foreach (var creature in rangerCreatures)
+                                {
+                                    creature.TamedExperience += contributedXp;
+                                }
                             }
-                            if (!player.MaxLevel())
+                            if (!isPlayerMaxLevel)
                             {
                                 player.NonCraftExperience += contributedXp;
                             }
@@ -5096,8 +5076,8 @@ namespace Server.Mobiles
                 {
                     if (Utility.Random(100) < 15)
                     {
-                        Item[] items = Backpack?.FindItemsByType(typeof(Item));
-                        if (items is not null && items.Length > 0)
+                        List<Item> items = Backpack?.FindItemsByType(typeof(Item));
+                        if (items is not null && items.Count > 0)
                         {
                             Deity.DestroyItem(playerThatKilled, $"{Name}'s backpack");
                         }
@@ -5122,8 +5102,8 @@ namespace Server.Mobiles
                 if (!creatureThatKilled.Controlled || creatureThatKilled.ControlMaster is null && !creatureThatKilled._provocationTimer.Running && Backpack is not null)
                 {
                     // it was an alignment kill, remove all items
-                    Item[] items = Backpack?.FindItemsByType(typeof(Item));
-                    if (items is not null && items.Length > 0)
+                    List<Item> items = Backpack?.FindItemsByType(typeof(Item));
+                    if (items is not null && items.Count > 0)
                     {
                         foreach (var item in items)
                         {
@@ -5152,6 +5132,7 @@ namespace Server.Mobiles
 
             SummonMaster = null;
             ReceivedHonorContext?.Cancel();
+
             base.OnDelete();
             m?.InvalidateProperties();
         }
@@ -5249,11 +5230,21 @@ namespace Server.Mobiles
         }
 
         public static bool Summon(BaseCreature creature, Mobile caster, Point3D p, int sound, TimeSpan duration) =>
-            Summon(creature, true, caster, p, sound, duration);
+            Summon(creature, true, caster, p, sound, duration, null);
+
+        public static bool Summon(
+            BaseCreature creature, Mobile caster, Point3D p, int sound, TimeSpan duration,
+            Action onUnsummon
+        ) => Summon(creature, true, caster, p, sound, duration, onUnsummon);
 
         public static bool Summon(
             BaseCreature creature, bool controlled, Mobile caster, Point3D p, int sound,
             TimeSpan duration
+        ) => Summon(creature, controlled, caster, p, sound, duration, null);
+
+        public static bool Summon(
+            BaseCreature creature, bool controlled, Mobile caster, Point3D p, int sound,
+            TimeSpan duration, Action onUnsummon
         )
         {
             if (caster.Followers + creature.ControlSlots > caster.FollowersMax)
@@ -5306,7 +5297,8 @@ namespace Server.Mobiles
                 }
             }
 
-            new UnsummonTimer(creature, duration).Start();            creature.SummonEnd = Core.Now + duration;
+            new UnsummonTimer(creature, duration, onUnsummon).Start();
+            creature.SummonEnd = Core.Now + duration;
 
             creature.MoveToWorld(p, caster.Map);
 
@@ -5397,9 +5389,8 @@ namespace Server.Mobiles
                 return false;
             }
 
-            var eable = GetItemsInRange<Corpse>(2);
             Corpse toRummage = null;
-            foreach (var c in eable)
+            foreach (var c in GetItemsInRange<Corpse>(2))
             {
                 if (c.Items.Count > 0)
                 {
@@ -5407,8 +5398,6 @@ namespace Server.Mobiles
                     break;
                 }
             }
-
-            eable.Free();
 
             if (toRummage == null)
             {
@@ -5564,11 +5553,10 @@ namespace Server.Mobiles
 
         public static void TeleportPets(Mobile master, Point3D loc, Map map, bool onlyBonded = false)
         {
-            if (master is PlayerMobile pm)
+            if (master is PlayerMobile { AllFollowers: not null } pm)
             {
-                for (var i = 0; i < pm.AllFollowers.Count; i++)
+                foreach (var m in pm.AllFollowers)
                 {
-                    var m = pm.AllFollowers[i];
                     if (m.Map == master.Map && master.InRange(m, 3) && m is BaseCreature
                             { Controlled: true, ControlOrder: OrderType.Guard or OrderType.Follow or OrderType.Come } pet &&
                         pet.ControlMaster == master && (!onlyBonded || pet.IsBonded))
@@ -5591,7 +5579,6 @@ namespace Server.Mobiles
                     queue.Enqueue(pet);
                 }
             }
-            eable.Free();
 
             while (queue.Count > 0)
             {
@@ -5616,11 +5603,11 @@ namespace Server.Mobiles
             Stam = StamMax;
             Mana = 0;
 
-            ProcessDeltaQueue();
+            ProcessDelta();
 
             IsDeadPet = false;
 
-            Span<byte> buffer = stackalloc byte[OutgoingMobilePackets.BondedStatusPacketLength];
+            Span<byte> buffer = stackalloc byte[OutgoingMobilePackets.BondedStatusPacketLength].InitializePacket();
             OutgoingMobilePackets.CreateBondedStatus(buffer, Serial, false);
             Effects.SendPacket(Location, Map, buffer);
 
@@ -5798,7 +5785,7 @@ namespace Server.Mobiles
           kappa+acidslime, grizzles+whatever, etc.
         */
 
-        public virtual Item NewHarmfulItem() => new PoolOfAcid(TimeSpan.FromSeconds(10), 30, 30);
+        public virtual Item NewHarmfulItem() => new Acid(TimeSpan.FromSeconds(10), 30, 30);
 
         public virtual void StopFlee()
         {
@@ -6172,15 +6159,13 @@ namespace Server.Mobiles
         {
             if (!IsDeadPet && Controlled && (ControlMaster == from || IsPetFriend(from)))
             {
-                var f = dropped;
-
-                if (CheckFoodPreference(f))
+                if (CheckFoodPreference(dropped))
                 {
-                    var amount = f.Amount;
+                    var amount = dropped.Amount;
 
                     if (amount > 0)
                     {
-                        int stamGain = f switch
+                        int stamGain = dropped switch
                         {
                             Gold => amount - 50,
                             _    => amount * 15 - 50
@@ -6189,6 +6174,8 @@ namespace Server.Mobiles
                         if (stamGain > 0)
                         {
                             Stam += stamGain;
+                            // 64 food = 3,640 steps
+                            StaminaSystem.RegenSteps(this as IHasSteps, stamGain * 4);
                         }
 
                         if (Core.SE)
@@ -7459,7 +7446,6 @@ namespace Server.Mobiles
                     queue.Enqueue(m);
                 }
             }
-            eable.Free();
 
             while (queue.Count > 0)
             {

@@ -1,4 +1,5 @@
 using System;
+using Server.Engines.Virtues;
 using Server.Gumps;
 using Server.Misc;
 using Server.Mobiles;
@@ -139,7 +140,15 @@ namespace Server.Engines.MLQuests.Objectives
             {
                 if (m_Escort is BaseEscortable escort)
                 {
-                    escort.EndEscortSequence(pm);
+                    Titles.AwardFame(pm, 10, true);
+                }
+                else
+                {
+                    VirtueSystem.AwardVirtue(
+                        pm,
+                        VirtueName.Compassion,
+                        (m_Escort as BaseEscortable)?.IsPrisoner == true ? 400 : 200
+                    );
                 }
                 EndFollow(m_Escort);
                 StopTimer();

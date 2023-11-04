@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2022 - ModernUO Development Team                       *
+ * Copyright 2019-2023 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: Rectangle2D.cs                                                  *
  *                                                                       *
@@ -22,6 +22,8 @@ namespace Server;
 [PropertyObject]
 public struct Rectangle2D : IEquatable<Rectangle2D>, ISpanFormattable, ISpanParsable<Rectangle2D>
 {
+    public static Rectangle2D Empty => new();
+
     private Point2D _start;
     private Point2D _end;
 

@@ -29,7 +29,7 @@ namespace Server.Talent
             if (attacker.Backpack != null && HasSkillRequirement(attacker) && attacker.Mana >= ManaRequired)
             {
                 var potions = Array.ConvertAll(
-                    attacker.Backpack.FindItemsByType(typeof(BasePotion)),
+                    attacker.Backpack.FindItemsByType(typeof(BasePotion)).ToArray(),
                     item => (BasePotion)item
                 );
                 if (potions.Length > 0)
@@ -54,7 +54,7 @@ namespace Server.Talent
                         }
                         else if (potion is BaseConfusionBlastPotion blastPotion)
                         {
-                            blastPotion.Users = new List<Mobile> { attacker };
+                            blastPotion.Users = new HashSet<Mobile> { attacker };
                             blastPotion.Explode(attacker, target.Location, target.Map);
                         }
                         else if (potion is BasePoisonPotion poisonPotion)

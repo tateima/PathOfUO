@@ -2,7 +2,7 @@ using ModernUO.Serialization;
 
 namespace Server.Mobiles
 {
-    [SerializationGenerator(0,false)]
+    [SerializationGenerator(0, false)]
     public abstract partial class BaseWarHorse : BaseMount
     {
         public override string DefaultName => "a war horse";
@@ -52,6 +52,7 @@ namespace Server.Mobiles
             MinTameSkill = 29.1;
         }
 
+        public override int StepsMax => 6400;
         public override string CorpseName => "a war horse corpse";
 
         public override FoodType FavoriteFood => FoodType.FruitsAndVegies | FoodType.GrainsAndHay;

@@ -51,7 +51,7 @@ namespace Server.Commands
                 try
                 {
                     // Do not set the parent since it screws up mobile/container totals and weights.
-                    if (p.CanRead && p.CanWrite && p.Name != "Parent")
+                    if (p.CanRead && p.CanWrite && !src.DupeExcludedProperty(p.Name) && !dest.DupeExcludedProperty(p.Name))
                     {
                         p.SetValue(dest, p.GetValue(src, null), null);
                     }
@@ -106,11 +106,10 @@ namespace Server.Commands
                     pack = from.Backpack;
                 }
 
-                var c = copy.GetType().GetConstructor();
+                var c = copy.GetType().GetConstructor(out var paramCount);
                 if (c != null)
                 {
-                    var paramList = c.GetParameters();
-                    var args = paramList.Length == 0 ? null : new object[paramList.Length];
+                    var args = paramCount == 0 ? null : new object[paramCount];
                     if (args != null)
                     {
                         Array.Fill(args, Type.Missing);

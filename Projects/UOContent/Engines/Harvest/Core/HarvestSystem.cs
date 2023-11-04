@@ -87,13 +87,13 @@ namespace Server.Engines.Harvest
                 return;
             }
 
-            if (!GetHarvestDetails(from, tool, toHarvest, out var tileID, out var map, out var loc))
+            if (!GetHarvestDetails(from, tool, toHarvest, out var tileID, out var map, out var loc, out var isLand))
             {
                 OnBadHarvestTarget(from, tool, toHarvest);
                 return;
             }
 
-            if (!def.Validate(tileID))
+            if (!def.Validate(tileID, isLand))
             {
                 OnBadHarvestTarget(from, tool, toHarvest);
                 return;
@@ -322,17 +322,13 @@ namespace Server.Engines.Harvest
                 return false;
             }
 
-            var eable = m.GetItemsInRange(0);
-            foreach (var i in eable)
+            foreach (var i in m.GetItemsAt())
             {
                 if (i.StackWith(m, i, false))
                 {
-                    eable.Free();
                     return true;
                 }
             }
-
-            eable.Free();
 
             item.MoveToWorld(m.Location, map);
             return true;
@@ -382,14 +378,14 @@ namespace Server.Engines.Harvest
                 return false;
             }
 
-            if (!GetHarvestDetails(from, tool, toHarvest, out var tileID, out var map, out var loc))
+            if (!GetHarvestDetails(from, tool, toHarvest, out var tileID, out var map, out var loc, out var isLand))
             {
                 from.EndAction(locked);
                 OnBadHarvestTarget(from, tool, toHarvest);
                 return false;
             }
 
-            if (!def.Validate(tileID))
+            if (!def.Validate(tileID, isLand))
             {
                 from.EndAction(locked);
                 OnBadHarvestTarget(from, tool, toHarvest);
@@ -438,13 +434,13 @@ namespace Server.Engines.Harvest
 
         public virtual HarvestDefinition GetDefinition() => Definitions[0];
 
-        public virtual HarvestDefinition GetDefinition(int tileID)
+        public virtual HarvestDefinition GetDefinition(int tileID, bool isLand)
         {
             for (var i = 0; i < Definitions.Length; i++)
             {
                 var check = Definitions[i];
 
-                if (check.Validate(tileID))
+                if (check.Validate(tileID, isLand))
                 {
                     return check;
                 }
@@ -460,13 +456,13 @@ namespace Server.Engines.Harvest
                 return;
             }
 
-            if (!GetHarvestDetails(from, tool, toHarvest, out var tileID, out var map, out var loc))
+            if (!GetHarvestDetails(from, tool, toHarvest, out var tileID, out var map, out var loc, out var isLand))
             {
                 OnBadHarvestTarget(from, tool, toHarvest);
                 return;
             }
 
-            var def = GetDefinition(tileID);
+            var def = GetDefinition(tileID, isLand);
 
             if (def == null)
             {
@@ -502,33 +498,36 @@ namespace Server.Engines.Harvest
         }
 
         public virtual bool GetHarvestDetails(
-            Mobile from, Item tool, object toHarvest, out int tileID, out Map map,
-            out Point3D loc
+            Mobile from, Item tool, object toHarvest, out int tileID, out Map map, out Point3D loc, out bool isLand
         )
         {
-            if (toHarvest is Static staticObj && !staticObj.Movable)
+            if (toHarvest is Static { Movable: false } staticObj)
             {
-                tileID = (staticObj.ItemID & 0x3FFF) | 0x4000;
+                tileID = staticObj.ItemID;
                 map = staticObj.Map;
                 loc = staticObj.GetWorldLocation();
+                isLand = false;
             }
             else if (toHarvest is StaticTarget staticTarget)
             {
-                tileID = (staticTarget.ItemID & 0x3FFF) | 0x4000;
+                tileID = staticTarget.ItemID;
                 map = from.Map;
                 loc = staticTarget.Location;
+                isLand = false;
             }
             else if (toHarvest is LandTarget landTarget)
             {
                 tileID = landTarget.TileID;
                 map = from.Map;
                 loc = landTarget.Location;
+                isLand = true;
             }
             else
             {
                 tileID = 0;
                 map = null;
                 loc = Point3D.Zero;
+                isLand = false;
                 return false;
             }
 

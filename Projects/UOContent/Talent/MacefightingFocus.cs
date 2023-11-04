@@ -4,11 +4,10 @@ namespace Server.Talent
     {
         public MacefightingFocus()
         {
-            BlockedBy = new[] { typeof(ArcherFocus) };
             RequiredWeaponSkill = SkillName.Macing;
             DisplayName = "Macefighting focus";
-            Description = "Chance of getting a critical strike with macing weapons.";
-            AdditionalDetail = $"{CriticalDamageDetail} The chance increases 1% per level and applies to any weapon that requires mace fighting.";
+            Description = "Unlocks weapon proficiencies with mace fighting weapons.";
+            AdditionalDetail = $"Can now use mace weapons. Chance of getting a critical strike with macing weapons. {CriticalDamageDetail} The chance increases 1% per level and applies to any weapon that requires mace fighting.";
             AddEndAdditionalDetailsY = 80;
             ImageID = 172;
             GumpHeight = 80;

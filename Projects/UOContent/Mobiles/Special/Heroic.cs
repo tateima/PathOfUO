@@ -23,6 +23,15 @@ namespace Server.Mobiles
             {
                 return;
             }
+
+            if (bc.Tamable)
+            {
+                if (bc.MinTameSkill < 40)
+                {
+                    bc.MinTameSkill = 40;
+                }
+                bc.MinTameSkill += 10;
+            }
             bc.SetResistance(ResistanceType.Cold, bc.BaseColdResistance + 10);
             bc.SetResistance(ResistanceType.Poison, bc.BasePoisonResistance + 10);
             bc.SetResistance(ResistanceType.Energy, bc.BaseEnergyResistance + 10);
@@ -36,6 +45,10 @@ namespace Server.Mobiles
             if (!bc.IsHeroic)
             {
                 return;
+            }
+            if (bc.Tamable)
+            {
+                bc.MinTameSkill -= 20;
             }
             bc.SetResistance(ResistanceType.Cold, bc.BaseColdResistance - 10);
             bc.SetResistance(ResistanceType.Poison, bc.BasePoisonResistance - 10);

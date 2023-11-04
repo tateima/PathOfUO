@@ -9,8 +9,8 @@ namespace Server.Talent
         {
             StatModNames = new[] { "PlateWarmaster" };
             DisplayName = "Plate warmaster";
-            Description = "Reduces damage while wearing plate. Increases Str by 4 per Level";
-            AdditionalDetail = $"{PassiveDetail}";
+            Description = "Unlocks plate armour proficiency";
+            AdditionalDetail = $"Reduces damage while wearing plate. Increases Str by 4 per Level. {PassiveDetail}";
             ImageID = 393;
             GumpHeight = 85;
             AddEndY = 75;

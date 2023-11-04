@@ -9,8 +9,8 @@ namespace Server.Talent
         {
             StatModNames = new[] { "BoneWarmasterStr", "BoneWarmasterInt" };
             DisplayName = "Bone warmaster";
-            Description = "Reduces damage while wearing bone. Increases Int by 2 and Str by 2 per Level";
-            AdditionalDetail = $"{PassiveDetail}";
+            Description = "Unlocks bone armour proficiency";
+            AdditionalDetail = $"Reduces damage while wearing bone. Increases Int by 2 and Str by 2 per Level. {PassiveDetail}";
             ImageID = 396;
             GumpHeight = 70;
             UpdateOnEquip = true;

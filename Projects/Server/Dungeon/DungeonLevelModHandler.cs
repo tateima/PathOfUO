@@ -265,7 +265,7 @@ public class DungeonLevelModHandler
 
     public static void ResetDungeonSpawners(Map map, Point2D pointOne, Point2D pointTwo)
     {
-        IPooledEnumerable<Item> items = map.GetItemsInBounds(
+        Map.ItemBoundsEnumerable<Item> items = map.GetItemsInBounds(
             new Rectangle2D(pointOne, pointTwo)
         );
         foreach (var item in items)

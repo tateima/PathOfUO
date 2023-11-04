@@ -90,11 +90,14 @@ namespace Server.Gumps
                     AddHtml(x, y, 200, 45, $"<BASEFONT COLOR=#FFFFE5>{talent.DisplayName}: ({talentLevel}/{talent.MaxLevel})</FONT>");
                     int hue = 0;
                     if (
+                        dependencyMatrices is { Count: > 0 }
+                        &&
                         !talent.IgnoreRequirements
                         &&
                         (!hasAllDependencies
                          ||
-                         talent.DeityAlignment != Deity.Alignment.None && talent.DeityAlignment != player.Alignment
+                         talent.DeityAlignment is not Deity.Alignment.None &&
+                         talent.DeityAlignment != player.Alignment
                          ||
                          blockedBy != null && hasBlocker != null
                          ||

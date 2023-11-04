@@ -9,8 +9,8 @@ namespace Server.Talent
         {
             StatModNames = new[] { "DragonWarmasterStr", "DragonWarmasterInt" };
             DisplayName = "Dragon warmaster";
-            Description = "Reduces damage while wearing dragon armor. Increases Str by 3 and Int by 1 per Level";
-            AdditionalDetail = $"{PassiveDetail}";
+            Description = "Unlocks dragon armour proficiency";
+            AdditionalDetail = $"Reduces damage while wearing dragon armor. Increases Str by 3 and Int by 1 per Level. {PassiveDetail}";
             ImageID = 397;
             GumpHeight = 85;
             AddEndY = 75;

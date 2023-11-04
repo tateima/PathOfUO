@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Server.Gumps;
 using Server.Items;
@@ -34,16 +35,16 @@ namespace Server.Talent
             if (!OnCooldown && from.Mana > ManaRequired && HasSkillRequirement(from))
             {
                 BaseInstrument instrument = null;
-                from.Backpack?.FindItemsByType<BaseInstrument>()
-                    .ForEach(
-                        packInstrument =>
+                List<Item> instruments = from.Backpack?.FindItemsByType(typeof(BaseInstrument));
+                instruments?.ForEach(
+                    packInstrument =>
+                    {
+                        if (((BaseInstrument)packInstrument).UsesRemaining > 0)
                         {
-                            if (packInstrument.UsesRemaining > 0)
-                            {
-                                instrument = packInstrument;
-                            }
+                            instrument = (BaseInstrument)packInstrument;
                         }
-                    );
+                    }
+                );
 
                 if (instrument != null)
                 {

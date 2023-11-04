@@ -1,3 +1,4 @@
+using ModernUO.Serialization;
 using System;
 using System.Collections.Generic;
 using Server.Items;
@@ -5,7 +6,8 @@ using Server.Engines.BulkOrders;
 
 namespace Server.Mobiles
 {
-    public class Cook : BaseVendor
+    [SerializationGenerator(0, false)]
+    public partial class Cook : BaseVendor
     {
         private readonly List<SBInfo> m_SBInfos = new();
 
@@ -14,10 +16,6 @@ namespace Server.Mobiles
         {
             SetSkill(SkillName.Cooking, 90.0, 100.0);
             SetSkill(SkillName.TasteID, 75.0, 98.0);
-        }
-
-        public Cook(Serial serial) : base(serial)
-        {
         }
 
         protected override List<SBInfo> SBInfos => m_SBInfos;
@@ -40,7 +38,6 @@ namespace Server.Mobiles
 
             AddItem(new HalfApron());
         }
-
         public override bool SupportsBulkOrders(Mobile from) => true;
 
         public override Item CreateBulkOrder(Mobile from, bool fromContextMenu)
@@ -66,20 +63,6 @@ namespace Server.Mobiles
             }
 
             return null;
-        }
-
-        public override void Serialize(IGenericWriter writer)
-        {
-            base.Serialize(writer);
-
-            writer.Write(0); // version
-        }
-
-        public override void Deserialize(IGenericReader reader)
-        {
-            base.Deserialize(reader);
-
-            var version = reader.ReadInt();
         }
     }
 }

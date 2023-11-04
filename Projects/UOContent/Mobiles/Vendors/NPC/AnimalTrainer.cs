@@ -1,4 +1,6 @@
+using ModernUO.Serialization;
 using System.Collections.Generic;
+using Server.Collections;
 using Server.ContextMenus;
 using Server.Gumps;
 using Server.Items;
@@ -8,7 +10,8 @@ using Server.Targeting;
 
 namespace Server.Mobiles
 {
-    public class AnimalTrainer : BaseVendor
+    [SerializationGenerator(0, false)]
+    public partial class AnimalTrainer : BaseVendor
     {
         private readonly List<SBInfo> m_SBInfos = new();
 
@@ -18,10 +21,6 @@ namespace Server.Mobiles
             SetSkill(SkillName.AnimalLore, 64.0, 100.0);
             SetSkill(SkillName.AnimalTaming, 90.0, 100.0);
             SetSkill(SkillName.Veterinary, 65.0, 88.0);
-        }
-
-        public AnimalTrainer(Serial serial) : base(serial)
-        {
         }
 
         protected override List<SBInfo> SBInfos => m_SBInfos;
@@ -44,11 +43,11 @@ namespace Server.Mobiles
 
         public override void AddCustomContextEntries(Mobile from, List<ContextMenuEntry> list)
         {
-            if (from.Alive)
+            if (from is PlayerMobile { Alive: true } pm)
             {
                 list.Add(new StableEntry(this, from));
 
-                if (from.Stabled.Count > 0)
+                if (pm.Stabled?.Count > 0)
                 {
                     list.Add(new ClaimAllEntry(this, from));
                 }
@@ -108,31 +107,38 @@ namespace Server.Mobiles
 
         public void BeginClaimList(Mobile from)
         {
-            if (Deleted || !from.CheckAlive())
+            if (Deleted || !from.CheckAlive() || from is not PlayerMobile pm)
             {
                 return;
             }
 
             var list = new List<BaseCreature>();
 
-            for (var i = 0; i < from.Stabled.Count; ++i)
+            if (pm.Stabled?.Count > 0)
             {
-                var pet = from.Stabled[i] as BaseCreature;
+                using var queue = PooledRefQueue<Mobile>.Create();
 
-                if (pet?.Deleted != false)
+                foreach (var m in pm.Stabled)
                 {
-                    if (pet != null)
+                    if (m is BaseCreature pet)
                     {
+                        if (!pet.Deleted)
+                        {
+                            list.Add(pet);
+                            continue;
+                        }
+
                         pet.IsStabled = false;
                         pet.StabledBy = null;
                     }
 
-                    from.Stabled.RemoveAt(i);
-                    --i;
-                    continue;
+                    queue.Enqueue(m);
                 }
 
-                list.Add(pet);
+                while (queue.Count > 0)
+                {
+                    pm.RemoveStabled(queue.Dequeue());
+                }
             }
 
             if (list.Count > 0)
@@ -147,7 +153,7 @@ namespace Server.Mobiles
 
         public void EndClaimList(Mobile from, BaseCreature pet)
         {
-            if (pet?.Deleted != false || from.Map != Map || !from.Stabled.Contains(pet) || !from.CheckAlive())
+            if (pet?.Deleted != false || from.Map != Map || from is not PlayerMobile pm || pm.Stabled?.Contains(pet) != true || !from.CheckAlive())
             {
                 return;
             }
@@ -162,9 +168,8 @@ namespace Server.Mobiles
             {
                 DoClaim(from, pet);
 
-                from.Stabled.Remove(pet);
-
-                (from as PlayerMobile)?.AutoStabled.Remove(pet);
+                pm.RemoveStabled(pet);
+                pm.AutoStabled?.Remove(pet);
             }
             else
             {
@@ -178,8 +183,6 @@ namespace Server.Mobiles
             {
                 return;
             }
-
-            Container bank = from.FindBankNoCreate();
 
             if (!(from.Backpack?.GetAmount(typeof(Gold)) >= 30) &&
                 !(Banker.GetBalance(from) >= 30))
@@ -200,7 +203,7 @@ namespace Server.Mobiles
 
         public void EndStable(Mobile from, BaseCreature pet)
         {
-            if (Deleted || !from.CheckAlive())
+            if (Deleted || !from.CheckAlive() || from is not PlayerMobile pm)
             {
                 return;
             }
@@ -239,14 +242,12 @@ namespace Server.Mobiles
             {
                 SayTo(from, 1042564); // I'm sorry.  Your pet seems to be busy.
             }
-            else if (from.Stabled.Count >= GetMaxStabled(from))
+            else if (pm.Stabled?.Count >= GetMaxStabled(from))
             {
                 SayTo(from, 1042565); // You have too many pets in the stables!
             }
             else
             {
-                Container bank = from.FindBankNoCreate();
-
                 if (from.Backpack?.ConsumeTotal(typeof(Gold), 30) == true || Banker.Withdraw(from, 30))
                 {
                     pet.ControlTarget = null;
@@ -264,14 +265,10 @@ namespace Server.Mobiles
                         pet.Loyalty = MaxLoyalty; // Wonderfully happy
                     }
 
-                    from.Stabled.Add(pet);
+                    pm.AddStabled(pet);
 
-                    SayTo(
-                        from,
-                        Core.AOS
-                            ? 1049677
-                            : 502679
-                    ); // [AOS: Your pet has been stabled.] Very well, thy pet is stabled. Thou mayst recover it by saying 'claim' to me. In one real world week, I shall sell it off if it is not claimed!
+                    // [AOS: Your pet has been stabled.] Very well, thy pet is stabled. Thou mayst recover it by saying 'claim' to me. In one real world week, I shall sell it off if it is not claimed!
+                    SayTo(from, Core.AOS ? 1049677 : 502679);
                 }
                 else
                 {
@@ -282,7 +279,7 @@ namespace Server.Mobiles
 
         public void Claim(Mobile from, string petName = null)
         {
-            if (Deleted || !from.CheckAlive())
+            if (Deleted || !from.CheckAlive() || from is not PlayerMobile pm)
             {
                 return;
             }
@@ -292,51 +289,61 @@ namespace Server.Mobiles
 
             var claimByName = petName != null;
 
-            for (var i = 0; i < from.Stabled.Count; ++i)
+            if (pm.Stabled?.Count > 0)
             {
-                var pet = from.Stabled[i] as BaseCreature;
+                using var queue = PooledRefQueue<Mobile>.Create();
 
-                if (pet?.Deleted != false)
+                foreach (var m in pm.Stabled)
                 {
-                    if (pet != null)
+                    var pet = m as BaseCreature;
+
+                    if (pet?.Deleted != false)
                     {
-                        pet.IsStabled = false;
-                        pet.StabledBy = null;
-                    }
-                    from.Stabled.RemoveAt(i);
-                    --i;
-                    continue;
-                }
-
-                ++stabled;
-
-                if (claimByName && !pet.Name.InsensitiveEquals(petName))
-                {
-                    continue;
-                }
-
-                if (CanClaim(from, pet))
-                {
-                    DoClaim(from, pet);
-
-                    from.Stabled.RemoveAt(i);
-                    if (from is PlayerMobile claimingPlayer)
-                    {
-                        claimingPlayer.AutoStabled.Remove(pet);
-                        BaseTalent packLeader = claimingPlayer.GetTalent(typeof(PackLeader));
-                        if (packLeader != null)
+                        if (pet != null)
                         {
-                            packLeader.UpdateMobile(claimingPlayer);
+                            pet.IsStabled = false;
+                            pet.StabledBy = null;
                         }
+
+                        queue.Enqueue(pet);
+                        continue;
                     }
 
-                    --i;
+                    ++stabled;
 
-                    claimed = true;
+                    if (claimByName && !pet.Name.InsensitiveEquals(petName))
+                    {
+                        continue;
+                    }
+
+                    if (CanClaim(from, pet))
+                    {
+                        DoClaim(from, pet);
+
+                        if (from is PlayerMobile claimingPlayer)
+                        {
+                            claimingPlayer.AutoStabled.Remove(pet);
+                            BaseTalent packLeader = claimingPlayer.GetTalent(typeof(PackLeader));
+                            if (packLeader != null)
+                            {
+                                packLeader.UpdateMobile(claimingPlayer);
+                            }
+                        }
+
+                        queue.Enqueue(pet);
+
+                        claimed = true;
+                        pm.AutoStabled?.Remove(pet);
+                    }
+                    else
+                    {
+                        SayTo(from, 1049612, pet.Name); // ~1_NAME~ remained in the stables because you have too many followers.
+                    }
                 }
-                else
+
+                while (queue.Count > 0)
                 {
-                    SayTo(from, 1049612, pet.Name); // ~1_NAME~ remained in the stables because you have too many followers.
+                    pm.RemoveStabled(queue.Dequeue());
                 }
             }
 
@@ -411,20 +418,6 @@ namespace Server.Mobiles
             {
                 base.OnSpeech(e);
             }
-        }
-
-        public override void Serialize(IGenericWriter writer)
-        {
-            base.Serialize(writer);
-
-            writer.Write(0); // version
-        }
-
-        public override void Deserialize(IGenericReader reader)
-        {
-            base.Deserialize(reader);
-
-            var version = reader.ReadInt();
         }
 
         private class StableEntry : ContextMenuEntry

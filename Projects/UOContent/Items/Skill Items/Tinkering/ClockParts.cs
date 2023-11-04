@@ -1,81 +1,62 @@
-using Server.Mobiles;
+using ModernUO.Serialization;
 using Server.Talent;
 using Server.Targeting;
+using Server.Mobiles;
 
-namespace Server.Items
+namespace Server.Items;
+
+[Flippable(0x104F, 0x1050)]
+[SerializationGenerator(0, false)]
+public partial class ClockParts : Item
 {
-    [Flippable(0x104F, 0x1050)]
-    public class ClockParts : Item
+    [Constructible]
+    public ClockParts(int amount = 1) : base(0x104F)
     {
-        [Constructible]
-        public ClockParts(int amount = 1) : base(0x104F)
+        Stackable = true;
+        Amount = amount;
+        Weight = 1.0;
+    }
+    public override void OnDoubleClick(Mobile from)
+    {
+        base.OnDoubleClick(from);
+        if (from is PlayerMobile player)
         {
-            Stackable = true;
-            Amount = amount;
-            Weight = 1.0;
-        }
-
-        public ClockParts(Serial serial) : base(serial)
-        {
-        }
-
-        public override void OnDoubleClick(Mobile from)
-        {
-            base.OnDoubleClick(from);
-            if (from is PlayerMobile player)
+            BaseTalent inventive = player.GetTalent(typeof(Inventive));
+            if (inventive != null)
             {
-                BaseTalent inventive = player.GetTalent(typeof(Inventive));
-                if (inventive != null)
-                {
-                    player.SendMessage("What do you wish to use these spare clock parts on?");
-                    from.Target = new InternalTarget(inventive);
-                }
+                player.SendMessage("What do you wish to use these spare clock parts on?");
+                from.Target = new InternalTarget(inventive);
             }
         }
+    }
+    private class InternalTarget : Target
+    {
+        private readonly BaseTalent m_Inventive;
 
-        public override void Serialize(IGenericWriter writer)
+        public InternalTarget(BaseTalent inventive) : base(
+            2,
+            false,
+            TargetFlags.None
+        ) =>
+            m_Inventive = inventive;
+
+        protected override void OnTarget(Mobile from, object targeted)
         {
-            base.Serialize(writer);
-
-            writer.Write(0); // version
-        }
-
-        public override void Deserialize(IGenericReader reader)
-        {
-            base.Deserialize(reader);
-
-            var version = reader.ReadInt();
-        }
-
-        private class InternalTarget : Target
-        {
-            private readonly BaseTalent m_Inventive;
-
-            public InternalTarget(BaseTalent inventive) : base(
-                2,
-                false,
-                TargetFlags.None
-            ) =>
-                m_Inventive = inventive;
-
-            protected override void OnTarget(Mobile from, object targeted)
+            if (targeted is AutomatonConstruct automaton)
             {
-                if (targeted is AutomatonConstruct automaton)
+                if (automaton.Hits < automaton.HitsMax)
                 {
-                    if (automaton.Hits < automaton.HitsMax)
-                    {
-                        automaton.Heal(Utility.Random(m_Inventive.ModifySpellMultiplier()));
-                        from.PlaySound(0x241);
-                    }
-                    else
-                    {
-                        from.SendMessage("The automaton is not damaged");
-                    }
+                    automaton.Heal(Utility.Random(m_Inventive.ModifySpellMultiplier()));
+                    from.PlaySound(0x241);
                 }
                 else
                 {
-                    from.SendMessage("You cannot use these clock parts on this");
+                    from.SendMessage("The automaton is not damaged");
                 }
+            }
+            else
+            {
+                from.SendMessage("You cannot use these clock parts on this");
             }
         }
     }

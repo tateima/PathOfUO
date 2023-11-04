@@ -1,22 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Server.Engines.ConPVP;
 using Server.Items;
 using Server.Misc;
 using Server.Mobiles;
-using Server.Network;
 using Server.Pantheon;
 using Server.Spells.Bushido;
 using Server.Spells.Chivalry;
-using Server.Spells.Fourth;
-using Server.Spells.Fifth;
 using Server.Spells.Necromancy;
 using Server.Spells.Ninjitsu;
 using Server.Spells.Second;
-using Server.Spells.Seventh;
-using Server.Spells.Sixth;
-using Server.Spells.Eighth;
 using Server.Spells.Spellweaving;
 using Server.Targeting;
 using Server.Talent;
@@ -90,7 +83,7 @@ namespace Server.Spells
 
         public virtual bool BlockedByHorrificBeast => true;
         public virtual bool BlockedByAnimalForm => true;
-        public virtual bool BlocksMovement => true;
+        public virtual bool BlocksMovement => IsCasting;
 
         public virtual bool CheckNextSpellTime => Scroll is not BaseWand;
 
@@ -172,6 +165,8 @@ namespace Server.Spells
             {
                 Caster.Spell = null;
             }
+
+            Caster.Delta(MobileDelta.Flags); // Remove paralyze
         }
 
         public void StartDelayedDamageContext(Mobile m, Timer t)
@@ -229,7 +224,7 @@ namespace Server.Spells
             }
         }
 
-        public virtual int GetNewAosDamage(int bonus, uint dice, uint sides, Mobile singleTarget)
+        public virtual int GetNewAosDamage(int bonus, int dice, int sides, Mobile singleTarget)
         {
             if (singleTarget != null)
             {
@@ -245,10 +240,10 @@ namespace Server.Spells
             return GetNewAosDamage(bonus, dice, sides, false);
         }
 
-        public virtual int GetNewAosDamage(int bonus, uint dice, uint sides, bool playerVsPlayer) =>
+        public virtual int GetNewAosDamage(int bonus, int dice, int sides, bool playerVsPlayer) =>
             GetNewAosDamage(bonus, dice, sides, playerVsPlayer, 1.0);
 
-        public virtual int GetNewAosDamage(int bonus, uint dice, uint sides, bool playerVsPlayer, double scalar)
+        public virtual int GetNewAosDamage(int bonus, int dice, int sides, bool playerVsPlayer, double scalar)
         {
             var damage = Utility.Dice(dice, sides, bonus);
             var multiplier = (int)(100 * ReagentsScale());
@@ -311,7 +306,7 @@ namespace Server.Spells
             {
                 foreach (Type type in Info.Reagents)
                 {
-                    hasReagents = Caster.Backpack.FindItemsByType(type, true).Length > 0;
+                    hasReagents = Caster.Backpack.FindItemsByType(type, true).Count > 0;
                     if (!hasReagents)
                     {
                         break;
@@ -511,6 +506,8 @@ namespace Server.Spells
             {
                 DoHurtFizzle();
             }
+
+            Caster.Delta(MobileDelta.Flags); // Remove paralyze
         }
 
         public virtual void DoHurtFizzle()
@@ -541,8 +538,6 @@ namespace Server.Spells
                 Caster.PublicOverheadMessage(MessageType.Spell, Caster.SpeechHue, true, Info.Mantra, false);
             }
         }
-
-        private static ClientVersion _insufficientManaClientChange = new ClientVersion("7.0.65.4");
 
         public bool Cast()
         {
@@ -645,6 +640,8 @@ namespace Server.Spells
                             WeaponAbility.ClearCurrentAbility(Caster);
                         }
 
+                        Caster.Delta(MobileDelta.Flags); // Start paralyze
+
                         _castTimer = new CastTimer(this, castDelay);
                         // m_CastTimer.Start();
 
@@ -662,7 +659,7 @@ namespace Server.Spells
                         return true;
                     }
                 }
-                else if (Caster.NetState?.Version >= _insufficientManaClientChange)
+                else if (Caster.NetState?.IsKRClient != true && Caster.NetState?.Version >= ClientVersion.Version70654)
                 {
                     // Insufficient mana. You must have at least ~1_MANA_REQUIREMENT~ Mana to use this spell.
                     Caster.LocalOverheadMessage(MessageType.Regular, 0x22, 502625, requiredMana.ToString());
@@ -998,21 +995,23 @@ namespace Server.Spells
 
             protected override void OnTick()
             {
-                if (m_Spell.State != SpellState.Casting || m_Spell.Caster.Spell != m_Spell)
+                var caster = m_Spell.Caster;
+
+                if (m_Spell.State != SpellState.Casting || caster.Spell != m_Spell)
                 {
                     Stop();
                     return;
                 }
 
-                if (!m_Spell.Caster.Mounted && m_Spell.Info.Action >= 0)
+                if (!caster.Mounted && m_Spell.Info.Action >= 0)
                 {
-                    if (m_Spell.Caster.Body.IsHuman)
+                    if (caster.Body.IsHuman)
                     {
-                        m_Spell.Caster.Animate(m_Spell.Info.Action, 7, 1, true, false, 0);
+                        caster.Animate(m_Spell.Info.Action, 7, 1, true, false, 0);
                     }
-                    else if (m_Spell.Caster.Player && m_Spell.Caster.Body.IsMonster)
+                    else if (caster.Player && caster.Body.IsMonster)
                     {
-                        m_Spell.Caster.Animate(12, 7, 1, true, false, 0);
+                        caster.Animate(12, 7, 1, true, false, 0);
                     }
                 }
 
@@ -1034,27 +1033,31 @@ namespace Server.Spells
 
             protected override void OnTick()
             {
-                if (m_Spell?.Caster == null)
+                var caster = m_Spell?.Caster;
+
+                if (caster == null)
                 {
                     return;
                 }
 
-                if (m_Spell.State == SpellState.Casting && m_Spell.Caster.Spell == m_Spell)
+                if (m_Spell.State == SpellState.Casting && caster.Spell == m_Spell)
                 {
                     m_Spell.State = SpellState.Sequencing;
                     m_Spell._castTimer = null;
-                    m_Spell.Caster.OnSpellCast(m_Spell);
-                    m_Spell.Caster.Region?.OnSpellCast(m_Spell.Caster, m_Spell);
-                    m_Spell.Caster.NextSpellTime =
+                    caster.OnSpellCast(m_Spell);
+                    caster.Region?.OnSpellCast(caster, m_Spell);
+                    caster.NextSpellTime =
                         Core.TickCount + (int)m_Spell.GetCastRecovery().TotalMilliseconds; // Spell.NextSpellDelay;
 
-                    var originalTarget = m_Spell.Caster.Target;
+                    caster.Delta(MobileDelta.Flags); // Update paralyze
+
+                    var originalTarget = caster.Target;
 
                     m_Spell.OnCast();
 
-                    if (m_Spell.Caster.Player && m_Spell.Caster.Target != originalTarget)
+                    if (caster.Player && caster.Target != originalTarget)
                     {
-                        m_Spell.Caster.Target?.BeginTimeout(m_Spell.Caster, 30000); // 30 seconds
+                        caster.Target?.BeginTimeout(caster, 30000); // 30 seconds
                     }
 
                     m_Spell._castTimer = null;

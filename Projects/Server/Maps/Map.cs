@@ -1,10 +1,24 @@
+/*************************************************************************
+ * ModernUO                                                              *
+ * Copyright 2019-2023 - ModernUO Development Team                       *
+ * Email: hi@modernuo.com                                                *
+ * File: Map.cs                                                          *
+ *                                                                       *
+ * This program is free software: you can redistribute it and/or modify  *
+ * it under the terms of the GNU General Public License as published by  *
+ * the Free Software Foundation, either version 3 of the License, or     *
+ * (at your option) any later version.                                   *
+ *                                                                       *
+ * You should have received a copy of the GNU General Public License     *
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ *************************************************************************/
+
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using Server.Buffers;
+using Server.Collections;
 using Server.Items;
 using Server.Logging;
 using Server.Network;
@@ -24,303 +38,13 @@ public enum MapRules
     FeluccaRules = None
 }
 
-public interface IPooledEnumerable : IEnumerable
-{
-    void Free();
-}
-
-public interface IPooledEnumerable<T> : IPooledEnumerable, IEnumerable<T>
-{
-}
-
-public static class PooledEnumeration
-{
-    public delegate IEnumerable<T> Selector<out T>(Sector sector, Rectangle2D bounds);
-
-    static PooledEnumeration()
-    {
-        ClientSelector = SelectClients;
-        EntitySelector = SelectEntities;
-        MobileSelector = SelectMobiles<Mobile>;
-        ItemSelector = SelectItems<Item>;
-        MultiSelector = SelectMultis;
-        MultiTileSelector = SelectMultiTiles;
-    }
-
-    public static Selector<NetState> ClientSelector { get; set; }
-    public static Selector<IEntity> EntitySelector { get; set; }
-    public static Selector<Mobile> MobileSelector { get; set; }
-    public static Selector<Item> ItemSelector { get; set; }
-    public static Selector<BaseMulti> MultiSelector { get; set; }
-    public static Selector<StaticTile[]> MultiTileSelector { get; set; }
-
-    public static IEnumerable<NetState> SelectClients(Sector s, Rectangle2D bounds)
-    {
-        var clients = new List<NetState>(s.Clients.Count);
-        foreach (var client in s.Clients)
-        {
-            var m = client.Mobile;
-
-            if (m?.Deleted == false && bounds.Contains(m.Location))
-            {
-                clients.Add(client);
-            }
-        }
-
-        return clients;
-    }
-
-    public static IEnumerable<IEntity> SelectEntities(Sector s, Rectangle2D bounds)
-    {
-        var entities = new List<IEntity>(s.Mobiles.Count + s.Items.Count);
-        for (int i = s.Mobiles.Count - 1, j = s.Items.Count - 1; i >= 0 || j >= 0; --i, --j)
-        {
-            if (j >= 0)
-            {
-                Item item = s.Items[j];
-                if (item is { Deleted: false, Parent: null } && bounds.Contains(item.Location))
-                {
-                    entities.Add(item);
-                }
-            }
-
-            if (i >= 0)
-            {
-                Mobile mob = s.Mobiles[i];
-                if (mob is { Deleted: false } && bounds.Contains(mob.Location))
-                {
-                    entities.Add(mob);
-                }
-            }
-        }
-        return entities;
-    }
-
-    public static IEnumerable<T> SelectMobiles<T>(Sector s, Rectangle2D bounds) where T : Mobile
-    {
-        var entities = new List<T>(s.Mobiles.Count);
-        for (int i = s.Mobiles.Count - 1; i >= 0; --i)
-        {
-            if (s.Mobiles[i] is T { Deleted: false } mob && bounds.Contains(mob.Location))
-            {
-                entities.Add(mob);
-            }
-        }
-        return entities;
-    }
-
-    public static IEnumerable<T> SelectItems<T>(Sector s, Rectangle2D bounds) where T : Item
-    {
-        var entities = new List<T>(s.Items.Count);
-        for (int i = s.Items.Count - 1; i >= 0; --i)
-        {
-            if (s.Items[i] is T { Deleted: false, Parent: null } item && bounds.Contains(item.Location))
-            {
-                entities.Add(item);
-            }
-        }
-        return entities;
-    }
-
-    public static IEnumerable<BaseMulti> SelectMultis(Sector s, Rectangle2D bounds)
-    {
-        var entities = new List<BaseMulti>(s.Multis.Count);
-        for (int i = s.Multis.Count - 1; i >= 0; --i)
-        {
-            BaseMulti multi = s.Multis[i];
-            if (multi is { Deleted: false } && bounds.Contains(multi.Location))
-            {
-                entities.Add(multi);
-            }
-        }
-        return entities;
-    }
-
-    public static IEnumerable<StaticTile[]> SelectMultiTiles(Sector s, Rectangle2D bounds)
-    {
-        for (int l = s.Multis.Count - 1; l >= 0; --l)
-        {
-            BaseMulti o = s.Multis[l];
-            if (o?.Deleted != false)
-            {
-                continue;
-            }
-
-            MultiComponentList c = o.Components;
-
-            int x, y, xo, yo;
-            StaticTile[] t, r;
-
-            for (x = bounds.Start.X; x < bounds.End.X; x++)
-            {
-                xo = x - (o.X + c.Min.X);
-
-                if (xo < 0 || xo >= c.Width)
-                {
-                    continue;
-                }
-
-                for (y = bounds.Start.Y; y < bounds.End.Y; y++)
-                {
-                    yo = y - (o.Y + c.Min.Y);
-
-                    if (yo < 0 || yo >= c.Height)
-                    {
-                        continue;
-                    }
-
-                    t = c.Tiles[xo][yo];
-
-                    if (t.Length <= 0)
-                    {
-                        continue;
-                    }
-
-                    r = new StaticTile[t.Length];
-
-                    for (var i = 0; i < t.Length; i++)
-                    {
-                        r[i] = t[i];
-                        r[i].Z += o.Z;
-                    }
-
-                    yield return r;
-                }
-            }
-        }
-    }
-
-    public static Map.PooledEnumerable<NetState> GetClients(Map map, Rectangle2D bounds) =>
-        Map.PooledEnumerable<NetState>.Instantiate(map, bounds, ClientSelector ?? SelectClients);
-
-    public static Map.PooledEnumerable<IEntity> GetEntities(Map map, Rectangle2D bounds) =>
-        Map.PooledEnumerable<IEntity>.Instantiate(map, bounds, EntitySelector ?? SelectEntities);
-
-    public static Map.PooledEnumerable<Mobile> GetMobiles(Map map, Rectangle2D bounds) =>
-        GetMobiles<Mobile>(map, bounds);
-
-    public static Map.PooledEnumerable<T> GetMobiles<T>(Map map, Rectangle2D bounds) where T : Mobile =>
-        Map.PooledEnumerable<T>.Instantiate(map, bounds, SelectMobiles<T>);
-
-    public static Map.PooledEnumerable<T> GetItems<T>(Map map, Rectangle2D bounds) where T : Item =>
-        Map.PooledEnumerable<T>.Instantiate(map, bounds, SelectItems<T>);
-
-    public static Map.PooledEnumerable<BaseMulti> GetMultis(Map map, Rectangle2D bounds) =>
-        Map.PooledEnumerable<BaseMulti>.Instantiate(map, bounds, MultiSelector ?? SelectMultis);
-
-    public static Map.PooledEnumerable<StaticTile[]> GetMultiTiles(Map map, Rectangle2D bounds) =>
-        Map.PooledEnumerable<StaticTile[]>.Instantiate(map, bounds, MultiTileSelector ?? SelectMultiTiles);
-
-    public static IEnumerable<Sector> EnumerateSectors(Map map, Rectangle2D bounds)
-    {
-        if (map == null || map == Map.Internal)
-        {
-            yield break;
-        }
-
-        var x1 = bounds.Start.X;
-        var y1 = bounds.Start.Y;
-        var x2 = bounds.End.X;
-        var y2 = bounds.End.Y;
-
-        if (!Bound(map, ref x1, ref y1, ref x2, ref y2, out var xSector, out var ySector))
-        {
-            yield break;
-        }
-
-        var index = 0;
-
-        while (NextSector(map, x1, y1, x2, y2, ref index, ref xSector, ref ySector, out var s))
-        {
-            yield return s;
-        }
-    }
-
-    public static bool Bound(
-        Map map,
-        ref int x1,
-        ref int y1,
-        ref int x2,
-        ref int y2,
-        out int xSector,
-        out int ySector
-    )
-    {
-        if (map == null || map == Map.Internal)
-        {
-            xSector = ySector = 0;
-            return false;
-        }
-
-        map.Bound(x1, y1, out x1, out y1);
-        map.Bound(x2 - 1, y2 - 1, out x2, out y2);
-
-        x1 >>= Map.SectorShift;
-        y1 >>= Map.SectorShift;
-        x2 >>= Map.SectorShift;
-        y2 >>= Map.SectorShift;
-
-        xSector = x1;
-        ySector = y1;
-
-        return true;
-    }
-
-    private static bool NextSector(
-        Map map,
-        int x1,
-        int y1,
-        int x2,
-        int y2,
-        ref int index,
-        ref int xSector,
-        ref int ySector,
-        out Sector s
-    )
-    {
-        if (map == null)
-        {
-            s = null;
-            xSector = ySector = 0;
-            return false;
-        }
-
-        if (map == Map.Internal)
-        {
-            s = map.InvalidSector;
-            xSector = ySector = 0;
-            return false;
-        }
-
-        if (index++ > 0)
-        {
-            if (++ySector > y2)
-            {
-                ySector = y1;
-
-                if (++xSector > x2)
-                {
-                    xSector = x1;
-
-                    s = map.InvalidSector;
-                    return false;
-                }
-            }
-        }
-
-        s = map.GetRealSector(xSector, ySector);
-        return true;
-    }
-}
-
-public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
+public sealed partial class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
 {
     public const int SectorSize = 16;
     public const int SectorShift = 4;
     public const int SectorActiveRange = 2;
 
     private static ILogger logger = LogFactory.GetLogger(typeof(Map));
-
     private readonly int m_FileIndex;
     private readonly Sector[][] m_Sectors;
     private readonly int m_SectorsHeight;
@@ -502,7 +226,6 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
         return false;
     }
 
-
     public override string ToString() => Name;
 
     public string ToString(string format, IFormatProvider formatProvider)
@@ -574,9 +297,6 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
         return v / 2;
     }
 
-    public IPooledEnumerable<StaticTile[]> GetMultiTilesAt(int x, int y) =>
-        PooledEnumeration.GetMultiTiles(this, new Rectangle2D(x, y, 1, 1));
-
     private static void AcquireFixItems(Map map, int x, int y, Item[] pool, out int length)
     {
         length = 0;
@@ -585,8 +305,8 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
             return;
         }
 
-        var eable = map.GetItemsInRange(new Point3D(x, y, 0), 0);
-        foreach (var item in eable)
+        var p = new Point3D(x, y, 0);
+        foreach (var item in map.GetItemsInRange(p, 0))
         {
             if (item is not BaseMulti && item.ItemID <= TileData.MaxItemValue)
             {
@@ -598,8 +318,6 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
                 pool[length++] = item;
             }
         }
-
-        eable.Free();
 
         Array.Sort(pool, 0, length, ZComparer.Default);
     }
@@ -768,28 +486,28 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
 
         var sector = GetSector(p.X, p.Y);
 
-        for (var i = 0; i < sector.Items.Count; i++)
+        foreach (var item in sector.Items)
         {
-            var item = sector.Items[i];
-
-            if (item is not BaseMulti && item.ItemID <= TileData.MaxItemValue && item.AtWorldPoint(p.X, p.Y) &&
-                !item.Movable)
+            if (item is BaseMulti || item.ItemID > TileData.MaxItemValue || !item.AtWorldPoint(p.X, p.Y) ||
+                item.Movable)
             {
-                var id = item.ItemData;
+                continue;
+            }
 
-                if (id.Surface || id.Wet)
+            var id = item.ItemData;
+
+            if (id.Surface || id.Wet)
+            {
+                var itemZ = item.Z + id.CalcHeight;
+
+                if (itemZ > surfaceZ && itemZ <= p.Z)
                 {
-                    var itemZ = item.Z + id.CalcHeight;
+                    surface = item;
+                    surfaceZ = itemZ;
 
-                    if (itemZ > surfaceZ && itemZ <= p.Z)
+                    if (surfaceZ == p.Z)
                     {
-                        surface = item;
-                        surfaceZ = itemZ;
-
-                        if (surfaceZ == p.Z)
-                        {
-                            return surface;
-                        }
+                        return surface;
                     }
                 }
             }
@@ -815,6 +533,30 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
     {
         Bound(p.m_X, p.m_Y, out var x, out var y);
         return new Point2D(x, y);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void CalculateSectors(
+        Rectangle2D bounds,
+        out int sectorStartX, out int sectorStartY,
+        out int sectorEndX, out int sectorEndY)
+    {
+        int left = bounds.Start.X;
+        int top = bounds.Start.Y;
+        int right = bounds.End.X;
+        int bottom = bounds.End.Y;
+
+        // Limit the coordinates to inside the valid map region
+        Bound(left, top, out left, out top);
+        Bound(right - 1, bottom - 1, out right, out bottom);
+
+        // Calculate the top left sector
+        sectorStartX = left >> SectorShift;
+        sectorStartY = top >> SectorShift;
+
+        // Calculate the bottom right sector.
+        sectorEndX = right >> SectorShift;
+        sectorEndY = bottom >> SectorShift;
     }
 
     public void ActivateSectors(int cx, int cy)
@@ -872,22 +614,30 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
         }
     }
 
-    public void OnEnter(Mobile m)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void OnEnter(Mobile m) => OnEnter(m.Location, m);
+
+    public void OnEnter(Point3D p, Mobile m)
     {
         if (this != Internal)
         {
-            GetSector(m.Location).OnEnter(m);
+            GetSector(p).OnEnter(m);
         }
     }
 
     public void OnEnter(Item item)
+    {
+        OnEnter(item.Location, item);
+    }
+
+    public void OnEnter(Point3D p, Item item)
     {
         if (this == Internal)
         {
             return;
         }
 
-        GetSector(item.Location).OnEnter(item);
+        GetSector(p).OnEnter(item);
 
         if (item is BaseMulti m)
         {
@@ -900,22 +650,30 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
         }
     }
 
-    public void OnLeave(Mobile m)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void OnLeave(Mobile m) => OnLeave(m.Location, m);
+
+    public void OnLeave(Point3D p, Mobile m)
     {
         if (this != Internal)
         {
-            GetSector(m.Location).OnLeave(m);
+            GetSector(p).OnLeave(m);
         }
     }
 
     public void OnLeave(Item item)
+    {
+        OnLeave(item.Location, item);
+    }
+
+    public void OnLeave(Point3D p, Item item)
     {
         if (this == Internal)
         {
             return;
         }
 
-        GetSector(item.Location).OnLeave(item);
+        GetSector(p).OnLeave(item);
 
         if (item is BaseMulti m)
         {
@@ -1057,8 +815,17 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
         }
         else if (o is Item item)
         {
-            p = item.GetWorldLocation();
-            p.Z += item.ItemData.Height / 2 + 1;
+            // Calculate the height based on the container, not the item inside.
+            var rootParent = item.RootParent;
+            if (rootParent != null)
+            {
+                p = GetPoint(rootParent, eye);
+            }
+            else
+            {
+                p = item.GetWorldLocation();
+                p.Z += item.ItemData.Height / 2 + 1;
+            }
         }
         else if (o is Point3D point3D)
         {
@@ -1091,6 +858,9 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
         return p;
     }
 
+    public IPooledEnumerable<StaticTile[]> GetMultiTilesAt(int x, int y) =>
+        PooledEnumeration.GetMultiTiles(this, new Rectangle2D(x, y, 1, 1));
+
     public IPooledEnumerable<IEntity> GetObjectsInRange(Point3D p) => GetObjectsInRange(p, Core.GlobalMaxUpdateRange);
 
     public IPooledEnumerable<IEntity> GetObjectsInRange(Point3D p, int range) =>
@@ -1106,18 +876,6 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
 
     public IPooledEnumerable<NetState> GetClientsInBounds(Rectangle2D bounds) =>
         PooledEnumeration.GetClients(this, bounds);
-
-    public IPooledEnumerable<Item> GetItemsInRange(Point3D p) => GetItemsInRange(p, Core.GlobalMaxUpdateRange);
-
-    public IPooledEnumerable<Item> GetItemsInRange(Point3D p, int range) => GetItemsInRange<Item>(p, range);
-
-    public IPooledEnumerable<T> GetItemsInRange<T>(Point3D p, int range) where T : Item =>
-        GetItemsInBounds<T>(new Rectangle2D(p.m_X - range, p.m_Y - range, range * 2 + 1, range * 2 + 1));
-
-    public IPooledEnumerable<Item> GetItemsInBounds(Rectangle2D bounds) => GetItemsInBounds<Item>(bounds);
-
-    public IPooledEnumerable<T> GetItemsInBounds<T>(Rectangle2D bounds) where T : Item =>
-        PooledEnumeration.GetItems<T>(this, bounds);
 
     public IPooledEnumerable<Mobile> GetMobilesInRange(Point3D p) => GetMobilesInRange(p, Core.GlobalMaxUpdateRange);
 
@@ -1196,29 +954,28 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
         }
 
         var sector = GetSector(x, y);
-        var items = sector.Items;
         var mobs = sector.Mobiles;
 
-        for (var i = 0; i < items.Count; ++i)
+        foreach (var item in sector.Items)
         {
-            var item = items[i];
-
-            if (item is not BaseMulti && item.ItemID <= TileData.MaxItemValue && item.AtWorldPoint(x, y))
+            if (item is BaseMulti || item.ItemID > TileData.MaxItemValue || !item.AtWorldPoint(x, y))
             {
-                var id = item.ItemData;
-                surface = id.Surface;
-                impassable = id.Impassable;
+                continue;
+            }
 
-                if ((surface || impassable || checkBlocksFit && item.BlocksFit) && item.Z + id.CalcHeight > z &&
-                    z + height > item.Z)
-                {
-                    return false;
-                }
+            var id = item.ItemData;
+            surface = id.Surface;
+            impassable = id.Impassable;
 
-                if (surface && !impassable && !item.Movable && z == item.Z + id.CalcHeight)
-                {
-                    hasSurface = true;
-                }
+            if ((surface || impassable || checkBlocksFit && item.BlocksFit) && item.Z + id.CalcHeight > z &&
+                z + height > item.Z)
+            {
+                return false;
+            }
+
+            if (surface && !impassable && !item.Movable && z == item.Z + id.CalcHeight)
+            {
+                hasSurface = true;
             }
         }
 
@@ -1256,8 +1013,6 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
     public Sector GetSector(Point3D p) => InternalGetSector(p.m_X >> SectorShift, p.m_Y >> SectorShift);
 
     public Sector GetSector(Point2D p) => InternalGetSector(p.m_X >> SectorShift, p.m_Y >> SectorShift);
-
-    // public Sector GetSector(IPoint2D p) => InternalGetSector(p.X >> SectorShift, p.Y >> SectorShift);
 
     public Sector GetSector(int x, int y) => InternalGetSector(x >> SectorShift, y >> SectorShift);
 
@@ -1410,9 +1165,7 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
 
             if (contains && statics.Length == 0)
             {
-                var eable = GetItemsInRange(point, 0);
-
-                foreach (Item item in eable)
+                foreach (Item item in GetItemsInRange(point, 0))
                 {
                     if (item.Visible)
                     {
@@ -1420,8 +1173,6 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
                         break;
                     }
                 }
-
-                eable.Free();
 
                 if (contains)
                 {
@@ -1452,9 +1203,7 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
 
         var rect = new Rectangle2D(pTop.m_X, pTop.m_Y, pBottom.m_X - pTop.m_X + 1, pBottom.m_Y - pTop.m_Y + 1);
 
-        var area = GetItemsInBounds(rect);
-
-        foreach (var i in area)
+        foreach (var i in GetItemsInBounds(rect))
         {
             if (!i.Visible)
             {
@@ -1502,11 +1251,9 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
                 continue;
             }
 
-            area.Free();
             return false;
         }
 
-        area.Free();
         return true;
     }
 
@@ -1590,88 +1337,6 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
         return loc;
     }
 
-    public class NullEnumerable<T> : IPooledEnumerable<T>
-    {
-        public static readonly NullEnumerable<T> Instance = new();
-
-        private readonly IEnumerable<T> m_Empty = Enumerable.Empty<T>();
-
-        IEnumerator IEnumerable.GetEnumerator() => m_Empty.GetEnumerator();
-
-        public IEnumerator<T> GetEnumerator() => m_Empty.GetEnumerator();
-
-        public void Free()
-        {
-        }
-    }
-
-    public sealed class PooledEnumerable<T> : IPooledEnumerable<T>, IDisposable
-    {
-        private static readonly Queue<PooledEnumerable<T>> _Buffer = new(0x400);
-
-        private bool m_IsDisposed;
-
-        private List<T> m_Pool = new(0x40);
-
-        public PooledEnumerable(IEnumerable<T> pool)
-        {
-            m_Pool.AddRange(pool);
-        }
-
-        public void Dispose()
-        {
-            m_IsDisposed = true;
-
-            m_Pool.Clear();
-            m_Pool.TrimExcess();
-            m_Pool = null;
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => m_Pool.GetEnumerator();
-
-        public IEnumerator<T> GetEnumerator() => m_Pool.GetEnumerator();
-
-        public void Free()
-        {
-            if (m_IsDisposed)
-            {
-                return;
-            }
-
-            m_Pool.Clear();
-            m_Pool.Capacity = Math.Max(m_Pool.Capacity, 0x100);
-
-            lock (((ICollection)_Buffer).SyncRoot)
-            {
-                _Buffer.Enqueue(this);
-            }
-        }
-#pragma warning disable CA1000 // Do not declare static members on generic types
-        public static PooledEnumerable<T> Instantiate(
-            Map map, Rectangle2D bounds, PooledEnumeration.Selector<T> selector
-        )
-        {
-            PooledEnumerable<T> e = null;
-
-            lock (((ICollection)_Buffer).SyncRoot)
-            {
-                if (_Buffer.Count > 0)
-                {
-                    e = _Buffer.Dequeue();
-                }
-            }
-
-            var pool = PooledEnumeration.EnumerateSectors(map, bounds).SelectMany(s => selector(s, bounds));
-
-            if (e == null)
-            {
-                return new PooledEnumerable<T>(pool);
-            }
-
-            e.m_Pool.AddRange(pool);
-            return e;
-        }
-    }
 #pragma warning restore CA1000 // Do not declare static members on generic types
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Map Parse(string s) => Parse(s, null);
@@ -1766,5 +1431,187 @@ public sealed class Map : IComparable<Map>, ISpanFormattable, ISpanParsable<Map>
 
         result = default;
         return false;
+    }
+
+    public class Sector
+    {
+        // TODO: Can we avoid this?
+        private static readonly List<Mobile> m_DefaultMobileList = new();
+        private static readonly List<NetState> m_DefaultClientList = new();
+        private static readonly List<BaseMulti> m_DefaultMultiList = new();
+        private static readonly List<Region> m_DefaultRectList = new();
+        private bool m_Active;
+        private List<NetState> _clients;
+        private ValueLinkList<Item> _items;
+        private List<Mobile> _mobiles;
+        private List<BaseMulti> _multis;
+        private List<Region> _regions;
+
+        public Sector(int x, int y, Map owner)
+        {
+            X = x;
+            Y = y;
+            Owner = owner;
+            m_Active = false;
+        }
+
+        public List<Region> Regions => _regions ?? m_DefaultRectList;
+
+        public List<BaseMulti> Multis => _multis ?? m_DefaultMultiList;
+
+        public List<Mobile> Mobiles => _mobiles ?? m_DefaultMobileList;
+
+        internal ref readonly ValueLinkList<Item> Items => ref _items;
+
+        public List<NetState> Clients => _clients ?? m_DefaultClientList;
+
+        public bool Active => m_Active && Owner != Internal;
+
+        public Map Owner { get; }
+
+        public int X { get; }
+
+        public int Y { get; }
+
+        public void OnClientChange(NetState oldState, NetState newState)
+        {
+            Utility.Replace(ref _clients, oldState, newState);
+        }
+
+        public void OnEnter(Item item)
+        {
+            _items.AddLast(item);
+        }
+
+        public void OnLeave(Item item)
+        {
+            _items.Remove(item);
+        }
+
+        public void OnEnter(Mobile mob)
+        {
+            Utility.Add(ref _mobiles, mob);
+
+            if (mob.NetState != null)
+            {
+                Utility.Add(ref _clients, mob.NetState);
+
+                Owner.ActivateSectors(X, Y);
+            }
+        }
+
+        public void OnLeave(Mobile mob)
+        {
+            Utility.Remove(ref _mobiles, mob);
+
+            if (mob.NetState != null)
+            {
+                Utility.Remove(ref _clients, mob.NetState);
+
+                Owner.DeactivateSectors(X, Y);
+            }
+        }
+
+        public void OnEnter(Region region, Rectangle3D rect)
+        {
+            Utility.Add(ref _regions, region);
+
+            _regions.Sort();
+
+            UpdateMobileRegions();
+        }
+
+        public void OnLeave(Region region)
+        {
+            if (_regions != null)
+            {
+                for (var i = _regions.Count - 1; i >= 0; i--)
+                {
+                    var r = _regions[i];
+
+                    if (r == region)
+                    {
+                        _regions.RemoveAt(i);
+                        break;
+                    }
+                }
+
+                if (_regions.Count == 0)
+                {
+                    _regions = null;
+                }
+            }
+
+            UpdateMobileRegions();
+        }
+
+        private void UpdateMobileRegions()
+        {
+            if (_mobiles != null)
+            {
+                using var queue = PooledRefQueue<Mobile>.Create(_mobiles.Count);
+                foreach (var mob in _mobiles)
+                {
+                    queue.Enqueue(mob);
+                }
+
+                while (queue.Count > 0)
+                {
+                    queue.Dequeue().UpdateRegion();
+                }
+            }
+        }
+
+        public void OnMultiEnter(BaseMulti multi)
+        {
+            Utility.Add(ref _multis, multi);
+        }
+
+        public void OnMultiLeave(BaseMulti multi)
+        {
+            Utility.Remove(ref _multis, multi);
+        }
+
+        public void Activate()
+        {
+            if (!Active)
+            {
+                foreach (var item in _items)
+                {
+                    item.OnSectorActivate();
+                }
+
+                if (_mobiles != null)
+                {
+                    foreach (var mob in _mobiles)
+                    {
+                        mob.OnSectorActivate();
+                    }
+                }
+
+                m_Active = true;
+            }
+        }
+
+        public void Deactivate()
+        {
+            if (Active)
+            {
+                foreach (var item in _items)
+                {
+                    item.OnSectorDeactivate();
+                }
+
+                if (_mobiles != null)
+                {
+                    foreach (var mob in _mobiles)
+                    {
+                        mob.OnSectorDeactivate();
+                    }
+                }
+
+                m_Active = false;
+            }
+        }
     }
 }

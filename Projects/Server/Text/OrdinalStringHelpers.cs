@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2022 - ModernUO Development Team                       *
+ * Copyright 2019-2023 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: OrdinalStringHelpers.cs                                         *
  *                                                                       *
@@ -25,7 +25,7 @@ public static class OrdinalStringHelpers
         a.CompareTo(b, StringComparison.Ordinal);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int CompareOrdinal(this string a, string b) => StringComparer.Ordinal.Compare(a, b);
+    public static int CompareOrdinal(this string a, string b) => string.CompareOrdinal(a, b);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool EqualsOrdinal(this ReadOnlySpan<char> a, string b) =>

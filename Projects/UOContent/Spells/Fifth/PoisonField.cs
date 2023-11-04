@@ -278,8 +278,6 @@ namespace Server.Spells.Fifth
                                 }
                             }
 
-                            eable.Free();
-
                             while (queue.Count > 0)
                             {
                                 var m = queue.Dequeue();

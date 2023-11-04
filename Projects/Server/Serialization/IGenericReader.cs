@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2022 - ModernUO Development Team                       *
+ * Copyright 2019-2023 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: IGenericReader.cs                                               *
  *                                                                       *
@@ -26,6 +26,8 @@ public interface IGenericReader
     DateTime LastSerialized { get; init; }
 
     string ReadString(bool intern = false);
+    public string ReadStringRaw(bool intern = false);
+
     long ReadLong();
     ulong ReadULong();
     int ReadInt();

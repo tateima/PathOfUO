@@ -471,7 +471,7 @@ namespace Server.Pantheon
             var hasTalent = false;
             foreach (var talentType in TalentTypes)
             {
-                hasTalent = player.GetTalent(talentType) is not null;
+                hasTalent = player.HasTalent(talentType);
                 if (hasTalent)
                 {
                     break;
@@ -502,18 +502,18 @@ namespace Server.Pantheon
 
         public static void DestroyItem(PlayerMobile player, string contextOverride = "")
         {
-            Item[] items = player.Backpack?.FindItemsByType(typeof(Item));
-            Item[] bankItems = player.BankBox?.FindItemsByType(typeof(Item));
+            List<Item> items = player.Backpack?.FindItemsByType(typeof(Item));
+            List<Item> bankItems = player.BankBox?.FindItemsByType(typeof(Item));
             string context = "";
             Item item = null;
-            if (items is { Length: > 0 })
+            if (items is { Count: > 0})
             {
                 context = "backpack";
-                item = items[Utility.Random(items.Length)];
-            } else if (bankItems is { Length: > 0})
+                item = items[Utility.Random(items.Count)];
+            } else if (bankItems is { Count: > 0})
             {
                 context = "bank box";
-                item = bankItems[Utility.Random(bankItems.Length)];
+                item = bankItems[Utility.Random(bankItems.Count)];
             }
             if (item is not null)
             {
@@ -538,7 +538,7 @@ namespace Server.Pantheon
                 DestroyItem(player);
             } else if (Utility.Random(100) < 15 && player.AllFollowers.Count > 0)
             {
-                Mobile follower = player.AllFollowers[Utility.Random(player.AllFollowers.Count)];
+                Mobile follower = player.AllFollowers.ElementAt(Utility.Random(player.AllFollowers.Count));
                 player.SendMessage($"The gods have punished your disloyalty by removing one of your {follower.Name} followers.");
                 follower.Delete();
             }

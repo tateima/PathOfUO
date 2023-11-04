@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Server.Buffers;
+using Server.Text;
 
 namespace Server.Commands.Generic
 {
@@ -176,7 +176,7 @@ namespace Server.Commands.Generic
             }
         }
 
-        public string GenerateArgString(string[] args)
+        public static string GenerateArgString(string[] args)
         {
             if (args.Length == 0)
             {

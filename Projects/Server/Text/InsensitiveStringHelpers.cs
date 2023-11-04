@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2022 - ModernUO Development Team                       *
+ * Copyright 2019-2023 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: InsensitiveStringHelpers.cs                                     *
  *                                                                       *
@@ -25,7 +25,7 @@ public static class InsensitiveStringHelpers
         a.CompareTo(b, StringComparison.OrdinalIgnoreCase);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int InsensitiveCompare(this string a, string b) => StringComparer.Ordinal.Compare(a, b);
+    public static int InsensitiveCompare(this string a, string b) => string.Compare(a, b, StringComparison.OrdinalIgnoreCase);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InsensitiveEquals(this ReadOnlySpan<char> a, string b) =>

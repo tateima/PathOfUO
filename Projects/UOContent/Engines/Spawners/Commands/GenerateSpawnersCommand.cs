@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2022 - ModernUO Development Team                       *
+ * Copyright 2019-2023 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: GenerateSpawnersCommand.cs                                      *
  *                                                                       *
@@ -147,8 +147,7 @@ namespace Server.Engines.Spawners
 
                 // Delete all spawners at this location.
                 // Probably shouldn't do this outside of migrations? Is there a better way to find/fix spawners?
-                var eable = map.GetItemsInRange<BaseSpawner>(location, 0);
-                foreach (var spawner in eable)
+                foreach (var spawner in map.GetItemsAt<BaseSpawner>(location))
                 {
                     if (spawner.GetType() == type)
                     {
@@ -161,8 +160,6 @@ namespace Server.Engines.Spawners
                 {
                     queue.Dequeue().Delete();
                 }
-
-                eable.Free();
 
                 try
                 {

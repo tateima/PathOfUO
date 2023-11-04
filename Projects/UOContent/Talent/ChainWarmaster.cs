@@ -9,8 +9,8 @@ namespace Server.Talent
         {
             StatModNames = new[] { "ChainWarmasterStr", "ChainWarmasterDex" };
             DisplayName = "Chain warmaster";
-            Description = "Reduces damage while wearing chain or ringmail. Increases Str by 2 and Dex by 2 per Level";
-            AdditionalDetail = $"{PassiveDetail}";
+            Description = "Unlocks chain and ring armour proficiency";
+            AdditionalDetail = $"Reduces damage while wearing chain or ringmail. Increases Str by 2 and Dex by 2 per Level. {PassiveDetail}";
             ImageID = 394;
             GumpHeight = 85;
             UpdateOnEquip = true;

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Toolkit.HighPerformance;
+using Server.Collections;
 using Server.Engines.Quests.Haven;
 using Server.Engines.Quests.Necro;
 using Server.Engines.Spawners;
@@ -72,8 +74,6 @@ namespace Server.Commands
         private static readonly Type typeofHintItem = typeof(HintItem);
         private static readonly Type typeofCannon = typeof(Cannon);
         private static readonly Type typeofSerpentPillar = typeof(SerpentPillar);
-
-        private static readonly Queue<Item> m_DeleteQueue = new();
 
         private static readonly string[] m_EmptyParams = Array.Empty<string>();
         private List<DecorationEntryMag> m_Entries;
@@ -410,7 +410,7 @@ namespace Server.Commands
                         item = m_Type.CreateInstance<Item>();
                     }
                 }
-                else if (m_Type.IsSubclassOf(typeofBaseDoor))
+                else if (m_Type.IsSubclassOf(typeofBaseDoor) && m_Params.Length > 0)
                 {
                     var facing = DoorFacing.WestCW;
 
@@ -1032,16 +1032,16 @@ namespace Server.Commands
         private static bool FindItem(int x, int y, int z, Map map, Item srcItem)
         {
             var itemID = srcItem.ItemID;
+            var lt = srcItem.Light;
+            var srcName = srcItem.ItemData.Name;
+            var type = srcItem.GetType();
 
             var res = false;
 
-            IPooledEnumerable<Item> eable;
-
-            if (srcItem is BaseDoor)
+            using var queue = PooledRefQueue<Item>.Create();
+            foreach (var item in map.GetItemsInRange(new Point3D(x, y, z), 1))
             {
-                eable = map.GetItemsInRange(new Point3D(x, y, z), 1);
-
-                foreach (var item in eable)
+                if (srcItem is BaseDoor)
                 {
                     if (!(item is BaseDoor))
                     {
@@ -1055,7 +1055,7 @@ namespace Server.Commands
                     if (bd.Open)
                     {
                         p = new Point3D(bd.X - bd.Offset.X, bd.Y - bd.Offset.Y, bd.Z - bd.Offset.Z);
-                        bdItemID = bd.ClosedID;
+                        bdItemID = bd.ClosedId;
                     }
                     else
                     {
@@ -1074,18 +1074,10 @@ namespace Server.Commands
                     }
                     else if ((item.Z - z).Abs() < 8)
                     {
-                        m_DeleteQueue.Enqueue(item);
+                        queue.Enqueue(item);
                     }
                 }
-            }
-            else if (TileData.ItemTable[itemID & TileData.MaxItemValue].LightSource)
-            {
-                eable = map.GetItemsInRange(new Point3D(x, y, z), 0);
-
-                var lt = srcItem.Light;
-                var srcName = srcItem.ItemData.Name;
-
-                foreach (var item in eable)
+                else if (TileData.ItemTable[itemID & TileData.MaxItemValue].LightSource)
                 {
                     if (item.Z == z)
                     {
@@ -1093,7 +1085,7 @@ namespace Server.Commands
                         {
                             if (item.Light != lt)
                             {
-                                m_DeleteQueue.Enqueue(item);
+                                queue.Enqueue(item);
                             }
                             else
                             {
@@ -1102,24 +1094,17 @@ namespace Server.Commands
                         }
                         else if (item.ItemData.LightSource && item.ItemData.Name == srcName)
                         {
-                            m_DeleteQueue.Enqueue(item);
+                            queue.Enqueue(item);
                         }
                     }
                 }
-            }
-            else if (srcItem is Teleporter or FillableContainer or BaseBook)
-            {
-                eable = map.GetItemsInRange(new Point3D(x, y, z), 0);
-
-                var type = srcItem.GetType();
-
-                foreach (var item in eable)
+                else if (srcItem is Teleporter or FillableContainer or BaseBook)
                 {
                     if (item.Z == z && item.ItemID == itemID)
                     {
                         if (item.GetType() != type)
                         {
-                            m_DeleteQueue.Enqueue(item);
+                            queue.Enqueue(item);
                         }
                         else
                         {
@@ -1127,26 +1112,18 @@ namespace Server.Commands
                         }
                     }
                 }
-            }
-            else
-            {
-                eable = map.GetItemsInRange(new Point3D(x, y, z), 0);
-
-                foreach (var item in eable)
+                else
                 {
                     if (item.Z == z && item.ItemID == itemID)
                     {
-                        eable.Free();
                         return true;
                     }
                 }
             }
 
-            eable.Free();
-
-            while (m_DeleteQueue.Count > 0)
+            while (queue.Count > 0)
             {
-                m_DeleteQueue.Dequeue()?.Delete();
+                queue.Dequeue()?.Delete();
             }
 
             return res;
@@ -1183,11 +1160,9 @@ namespace Server.Commands
 
                         if (item is BaseDoor door)
                         {
-                            var eable = maps[j].GetItemsInRange<BaseDoor>(loc, 1);
-
                             var itemType = door.GetType();
 
-                            foreach (var link in eable)
+                            foreach (var link in maps[j].GetItemsInRange<BaseDoor>(loc, 1))
                             {
                                 if (link != item && link.Z == door.Z && link.GetType() == itemType)
                                 {
@@ -1196,8 +1171,6 @@ namespace Server.Commands
                                     break;
                                 }
                             }
-
-                            eable.Free();
                         }
                         else if (item is MarkContainer markCont)
                         {
@@ -1258,51 +1231,60 @@ namespace Server.Commands
 
             var indexOf = line.IndexOfOrdinal(' ');
 
-            list.m_Type = AssemblyHandler.FindTypeByName(line[..indexOf++]);
+            list.m_Type = AssemblyHandler.FindTypeByName(indexOf > -1 ? line[..indexOf] : line);
+            indexOf++;
 
             if (list.m_Type == null)
             {
                 throw new ArgumentException($"Type not found for header: '{line}'");
             }
 
-            line = line[indexOf..];
-            indexOf = line.IndexOfOrdinal('(');
-            if (indexOf >= 0)
+            var span = line.AsSpan(indexOf, line.Length - indexOf);
+
+            var argsStart = span.IndexOfOrdinal('(');
+
+            if (argsStart > -1)
             {
-                list.m_ItemID = Utility.ToInt32(line.AsSpan()[..(indexOf - 1)]);
-
-                var parms = line[++indexOf..^(line.EndsWithOrdinal(")") ? 1 : 0)];
-
-                list.m_Params = parms.Split(';');
-
-                for (var i = 0; i < list.m_Params.Length; ++i)
+                var parms = span[(argsStart + 1)..^(line.EndsWithOrdinal(")") ? 1 : 0)];
+                if (parms.Length == 0)
                 {
-                    list.m_Params[i] = list.m_Params[i].Trim();
+                    list.m_Params = Array.Empty<string>();
+                }
+                else
+                {
+                    list.m_Params = new string[parms.Count(';') + 1];
+
+                    indexOf = 0;
+                    foreach (var part in parms.Tokenize(';'))
+                    {
+                        list.m_Params[indexOf++] = part.Trim().ToString();
+                    }
                 }
             }
             else
             {
-                list.m_ItemID = Utility.ToInt32(line);
                 list.m_Params = m_EmptyParams;
             }
+
+            list.m_ItemID = Utility.ToInt32(argsStart > -1 ? span[..argsStart] : span);
 
             list.m_Entries = new List<DecorationEntryMag>();
 
             while ((line = ip.ReadLine()) != null)
             {
-                line = line.Trim();
+                span = line.AsSpan().Trim();
 
-                if (line.Length == 0)
+                if (span.Length == 0)
                 {
                     break;
                 }
 
-                if (line.StartsWithOrdinal("#"))
+                if (span.StartsWithOrdinal("#"))
                 {
                     continue;
                 }
 
-                list.m_Entries.Add(new DecorationEntryMag(line));
+                list.m_Entries.Add(new DecorationEntryMag(span));
             }
 
             return list;
@@ -1311,21 +1293,21 @@ namespace Server.Commands
 
     public class DecorationEntryMag
     {
-        public DecorationEntryMag(string line)
+        public DecorationEntryMag(ReadOnlySpan<char> line)
         {
             Pop(out var x, ref line);
             Pop(out var y, ref line);
             Pop(out var z, ref line);
 
             Location = new Point3D(Utility.ToInt32(x), Utility.ToInt32(y), Utility.ToInt32(z));
-            Extra = line;
+            Extra = line.ToString();
         }
 
         public Point3D Location { get; }
 
         public string Extra { get; }
 
-        public void Pop(out string v, ref string line)
+        public void Pop(out ReadOnlySpan<char> v, ref ReadOnlySpan<char> line)
         {
             var space = line.IndexOfOrdinal(' ');
 

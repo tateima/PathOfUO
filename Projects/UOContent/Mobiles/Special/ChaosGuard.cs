@@ -1,41 +1,22 @@
+using ModernUO.Serialization;
 using Server.Guilds;
 using Server.Items;
 using Server.Pantheon;
 
-namespace Server.Mobiles
+namespace Server.Mobiles;
+
+[SerializationGenerator(0, false)]
+public partial class ChaosGuard : BaseShieldGuard
 {
-    public class ChaosGuard : BaseShieldGuard
+    [Constructible]
+    public ChaosGuard()
     {
-        [Constructible]
-        public ChaosGuard()
-        {
-        }
-
-        public ChaosGuard(Serial serial) : base(serial)
-        {
-        }
-
-        public override int Keyword => 0x22; // *chaos shield*
-        public override BaseShield Shield => new ChaosShield();
-        public override int SignupNumber => 1007140; // Sign up with a guild of chaos if thou art interested.
-        public override GuildType Type => GuildType.Chaos;
-        public override bool BardImmune => true;
-
-
-        public override Mobile Focus { get; set; }
-
-        public override void Serialize(IGenericWriter writer)
-        {
-            base.Serialize(writer);
-
-            writer.Write(0); // version
-        }
-
-        public override void Deserialize(IGenericReader reader)
-        {
-            base.Deserialize(reader);
-
-            var version = reader.ReadInt();
-        }
     }
+    public override Mobile Focus { get; set; }
+    public override int Keyword => 0x22; // *chaos shield*
+    public override BaseShield Shield => new ChaosShield();
+    public override int SignupNumber => 1007140; // Sign up with a guild of chaos if thou art interested.
+    public override GuildType Type => GuildType.Chaos;
+
+    public override bool BardImmune => true;
 }

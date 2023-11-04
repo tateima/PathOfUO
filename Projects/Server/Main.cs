@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2022 - ModernUO Development Team                       *
+ * Copyright 2019-2023 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: Main.cs                                                         *
  *                                                                       *
@@ -30,6 +30,7 @@ using Server.Dungeon;
 using Server.Json;
 using Server.Logging;
 using Server.Network;
+using Server.Text;
 
 namespace Server;
 
@@ -37,6 +38,7 @@ public static class Core
 {
     private static readonly ILogger logger = LogFactory.GetLogger(typeof(Core));
 
+    private static bool _performSnapshot;
     private static bool _crashed;
     private static string _baseDirectory;
 
@@ -121,12 +123,12 @@ public static class Core
 
     public static Thread Thread { get; private set; }
 
+    private static long _firstTick;
+
     [ThreadStatic]
     private static long _tickCount;
 
     // Don't access this from other threads than the game thread.
-    // Persistence accesses this via AfterSerialize or Serialize in other threads, but the value is set and won't change
-    // since the game loop is frozen at that moment.
     private static DateTime _now;
 
     // For Unix Stopwatch.Frequency is normalized to 1ns
@@ -164,6 +166,8 @@ public static class Core
             return now == DateTime.MinValue ? DateTime.UtcNow : now;
         }
     }
+
+    public static long Uptime => Thread.CurrentThread != Thread ? 0 : TickCount - _firstTick;
 
     private static long _cycleIndex = 1;
     private static float[] _cyclesPerSecond = new float[128];
@@ -225,7 +229,6 @@ public static class Core
     public static int ScriptMobiles => _mobileCount;
 
     public static Expansion Expansion { get; set; }
-
     public static bool T2A => Expansion >= Expansion.T2A;
 
     public static bool UOR => Expansion >= Expansion.UOR;
@@ -396,6 +399,8 @@ public static class Core
 
         World.WaitForWriteCompletion();
 
+        World.ExitSerializationThreads();
+
         if (!_crashed)
         {
             EventSink.InvokeShutdown();
@@ -449,7 +454,7 @@ public static class Core
         Utility.PopColor();
 
         Utility.PushColor(ConsoleColor.DarkGray);
-        Console.WriteLine(@"Copyright 2019-2022 ModernUO Development Team
+        Console.WriteLine(@"Copyright 2019-2023 ModernUO Development Team
                 This program comes with ABSOLUTELY NO WARRANTY;
                 This is free software, and you are welcome to redistribute it under certain conditions.
 
@@ -514,7 +519,9 @@ public static class Core
         AssemblyHandler.Invoke("Initialize");
 
         TcpServer.Start();
+        PingServer.Start();
         EventSink.InvokeServerStarted();
+        _firstTick = TickCount;
         RunEventLoop();
     }
 
@@ -525,7 +532,7 @@ public static class Core
 #if DEBUG
             const bool idleCPU = true;
 #else
-                var idleCPU = ServerConfiguration.GetOrUpdateSetting("core.enableIdleCPU", false);
+            var idleCPU = ServerConfiguration.GetOrUpdateSetting("core.enableIdleCPU", false);
 #endif
 
             long last = TickCount;
@@ -546,11 +553,18 @@ public static class Core
                 // Handle networking
                 TcpServer.Slice();
                 NetState.Slice();
+                PingServer.Slice();
 
                 // Execute captured post-await methods (like Timer.Pause)
                 LoopContext.ExecuteTasks();
 
                 Timer.CheckTimerPool(); // Check for pool depletion so we can async refill it.
+
+                if (_performSnapshot)
+                {
+                    // Return value is the offset that can be used to fix timers that should drift
+                    World.Snapshot();
+                }
 
                 _tickCount = 0;
                 _now = DateTime.MinValue;
@@ -574,7 +588,13 @@ public static class Core
         {
             CurrentDomain_UnhandledException(null, new UnhandledExceptionEventArgs(e, true));
         }
+        finally
+        {
+            World.ExitSerializationThreads();
+        }
     }
+
+    internal static void RequestSnapshot() => _performSnapshot = true;
 
     public static void VerifySerialization()
     {

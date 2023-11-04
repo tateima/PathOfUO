@@ -6,12 +6,11 @@ namespace Server.Talent
     {
         public ArcherFocus()
         {
-            BlockedBy = new[] { typeof(MacefightingFocus), typeof(SwordsmanshipFocus), typeof(FencingFocus) };
             RequiredWeaponSkill = SkillName.Archery;
             RequiredWeapon = new[] { typeof(BaseRanged) };
             DisplayName = "Archer focus";
-            Description = "Chance of getting a critical strike with ranged weapons.";
-            AdditionalDetail = $"{CriticalDamageDetail} The chance increases 1% per level and applies to any weapon that requires archery.";
+            Description = "Unlocks weapon proficiencies with bow and crossbows.";
+            AdditionalDetail = $"Can now use bows and crossbows. Chance of getting a critical strike with ranged weapons. {CriticalDamageDetail} The chance increases 1% per level and applies to any weapon that requires archery.";
             ImageID = 114;
             GumpHeight = 75;
             AddEndY = 95;

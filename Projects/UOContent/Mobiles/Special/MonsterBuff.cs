@@ -27,6 +27,7 @@ namespace Server.Mobiles
         public static double BossFameBuff = 1.05;
         public static double BossKarmaBuff = 1.17;
         public static int BossDamageBuff = 4;
+        public static double BossTameableModifier = 30.0;
 
         public static double MinionGoldBuff = 1.07;
         public static double MinionHitsBuff = 1.2;
@@ -126,7 +127,8 @@ namespace Server.Mobiles
                     MinionFameBuff,
                     MinionKarmaBuff,
                     MinionDamageBuff,
-                    50
+                    50,
+                    3
                 );
                 bc.PublicOverheadMessage(MessageType.Regular, 0x0481, false, "* This creature grows in strength *");
             }
@@ -140,7 +142,7 @@ namespace Server.Mobiles
         {
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
-            Convert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff, 250);
+            Convert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff, 250, 10.0);
 
             if (bc.IsElectrified)
             {
@@ -174,7 +176,7 @@ namespace Server.Mobiles
         public static void RemoveElementalProperties(BaseCreature bc)
         {
             CheckHues(bc);
-            UnConvert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff, 250);
+            UnConvert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff, 250, 10.0);
             if (bc.IsElectrified)
             {
                 bc.SetResistance(ResistanceType.Energy, 0);
@@ -191,7 +193,7 @@ namespace Server.Mobiles
             else if (bc.IsFrozen)
             {
                 bc.SetResistance(ResistanceType.Cold, 0);
-                Item[] hearts = bc.Backpack?.FindItemsByType(typeof(IcyHeart));
+                List<Item> hearts = bc.Backpack?.FindItemsByType(typeof(IcyHeart));
                 if (hearts is not null)
                 {
                     foreach (var heart in hearts)
@@ -206,37 +208,37 @@ namespace Server.Mobiles
         {
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
-            Convert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff, 250);
+            Convert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff, 250, 10.0);
             AddLoot(bc);
         }
         public static void RemoveEthereal(BaseCreature bc)
         {
             CheckHues(bc);
-            UnConvert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff, 250);
+            UnConvert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, BossDamageBuff, 250, 10.0);
         }
         public static void AddCorrupted(BaseCreature bc)
         {
             CheckHues(bc);
-            Convert(bc, NoBuff, MinionHitsBuff, NoBuff, NoBuff, NoBuff, MinionSkillsBuff, NoBuff, NoBuff, NoBuff, 1, 100);
+            Convert(bc, NoBuff, MinionHitsBuff, NoBuff, NoBuff, NoBuff, MinionSkillsBuff, NoBuff, NoBuff, NoBuff, 1, 100, 5.0);
 
         }
         public static void RemoveCorrupted(BaseCreature bc)
         {
             CheckHues(bc);
-            UnConvert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, 1, 100);
+            UnConvert(bc, NoBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, NoBuff, NoBuff, 1, 100, 5.0);
         }
         public static void AddCorruptor(BaseCreature bc)
         {
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
-            Convert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff, 400);
+            Convert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff, 400, BossTameableModifier);
             AddLoot(bc);
             new CorruptorTimer(bc).Start();
         }
         public static void RemoveCorruptor(BaseCreature bc)
         {
             CheckHues(bc);
-            UnConvert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff, 400);
+            UnConvert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff, 400, BossTameableModifier);
         }
 
         public static void AddIllusion(BaseCreature bc, Mobile from)
@@ -278,37 +280,37 @@ namespace Server.Mobiles
         {
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
-            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200);
+            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200, 10.0);
             AddLoot(bc);
         }
         public static void RemoveIllusionist(BaseCreature bc)
         {
             CheckHues(bc);
-            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200);
+            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200, 10.0);
         }
         public static void AddRegenerative(BaseCreature bc)
         {
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
-            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200);
+            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200, 10.0);
             AddLoot(bc);
             new RegenerativeTimer(bc).Start();
         }
         public static void RemoveRegenerative(BaseCreature bc)
         {
             CheckHues(bc);
-            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200);
+            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200, 10.0);
         }
         public static void AddReflective(BaseCreature bc)
         {
             bc.Name = MonsterName.Generate();
             AddLoot(bc);
-            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200);
+            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200, 10.0);
             CheckHues(bc);
         }
         public static void RemoveReflective(BaseCreature bc)
         {
-            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200);
+            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200, 10.0);
             CheckHues(bc);
         }
         public static void AddMagicResistant(BaseCreature bc) {
@@ -319,7 +321,7 @@ namespace Server.Mobiles
             bc.SetResistance(ResistanceType.Poison, 100);
             bc.SetResistance(ResistanceType.Energy, 100);
             bc.Skills.MagicResist.Base = 120.0;
-            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200);
+            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200, 10.0);
             AddLoot(bc);
         }
         public static void RemoveMagicResistant(BaseCreature bc)
@@ -329,7 +331,7 @@ namespace Server.Mobiles
             bc.SetResistance(ResistanceType.Cold, 0);
             bc.SetResistance(ResistanceType.Poison, 0);
             bc.SetResistance(ResistanceType.Energy, 0);
-            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200);
+            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200, 10.0);
             bc.Skills.MagicResist.Base = 0;
         }
 
@@ -383,7 +385,7 @@ namespace Server.Mobiles
             bc.SetResistance(ResistanceType.Energy, bc.BaseEnergyResistance + 15);
             bc.SetResistance(ResistanceType.Fire, bc.BaseFireResistance + 15);
             bc.SetResistance(ResistanceType.Physical, bc.BasePhysicalResistance + 25);
-            Convert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff, 500);
+            Convert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff, 500, BossTameableModifier);
             AddLoot(bc);
         }
         public static void AddLoot(BaseCreature bc)
@@ -440,10 +442,10 @@ namespace Server.Mobiles
             bc.SetResistance(ResistanceType.Energy, bc.BaseEnergyResistance - 15);
             bc.SetResistance(ResistanceType.Fire, bc.BaseFireResistance - 15);
             bc.SetResistance(ResistanceType.Physical, bc.BasePhysicalResistance - 25);
-            UnConvert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff, 500);
+            UnConvert(bc, BossGoldBuff, BossHitsBuff, BossStrBuff, BossIntBuff, BossDexBuff, BossSkillsBuff, BossSpeedBuff, BossFameBuff, BossKarmaBuff, BossDamageBuff, 500, BossTameableModifier);
         }
 
-        public static void Convert(BaseCreature bc, double goldBuff, double hitsBuff, double strBuff, double intBuff, double dexBuff, double skillsBuff, double speedBuff, double fameBuff, double karmaBuff, int damageBuff, int baseXpModiefier = 0)
+        public static void Convert(BaseCreature bc, double goldBuff, double hitsBuff, double strBuff, double intBuff, double dexBuff, double skillsBuff, double speedBuff, double fameBuff, double karmaBuff, int damageBuff, int baseXpModiefier = 0, double tameableModifier = 0.0)
         {
             bc.ExperienceValue += baseXpModiefier;
             if (baseXpModiefier > 0)
@@ -452,7 +454,7 @@ namespace Server.Mobiles
             }
             if (bc.Backpack != null)
             {
-                Item[] goldItems = bc.Backpack.FindItemsByType(typeof(Gold));
+                List<Item> goldItems = bc.Backpack.FindItemsByType(typeof(Gold));
                 foreach(Item gold in goldItems)
                 {
                     ((Gold)gold).Amount = (int)(((Gold)gold).Amount * goldBuff);
@@ -462,6 +464,15 @@ namespace Server.Mobiles
             if (bc.HitsMaxSeed >= 0)
             {
                 bc.HitsMaxSeed = (int)(bc.HitsMaxSeed * hitsBuff);
+            }
+
+            if (bc.Tamable)
+            {
+                if (bc.MinTameSkill < 50 && tameableModifier > 4.0)
+                {
+                    bc.MinTameSkill = 50;
+                }
+                bc.MinTameSkill += tameableModifier;
             }
 
             bc.RawStr = (int)(bc.RawStr * strBuff);
@@ -511,7 +522,7 @@ namespace Server.Mobiles
                 }
             }
         }
-        public static void UnConvert(BaseCreature bc, double goldBuff, double hitsBuff, double strBuff, double intBuff, double dexBuff, double skillsBuff, double speedBuff, double fameBuff, double karmaBuff, int damageBuff, int baseXpModifier = 0)
+        public static void UnConvert(BaseCreature bc, double goldBuff, double hitsBuff, double strBuff, double intBuff, double dexBuff, double skillsBuff, double speedBuff, double fameBuff, double karmaBuff, int damageBuff, int baseXpModifier = 0, double tameableModifier = 0.0)
         {
             bc.ExperienceValue -= baseXpModifier;
             bc.Hue = 0;
@@ -528,6 +539,11 @@ namespace Server.Mobiles
             bc.Hits = bc.HitsMax;
             bc.Mana = bc.ManaMax;
             bc.Stam = bc.StamMax;
+
+            if (bc.Tamable)
+            {
+                bc.MinTameSkill -= tameableModifier;
+            }
 
             for (var i = 0; i < bc.Skills.Length; i++)
             {

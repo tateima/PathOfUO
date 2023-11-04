@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ModernUO.Serialization;
-using Server;
+using Server.Collections;
 using Server.Engines.Plants;
 using Server.Engines.Quests;
 using Server.Engines.Quests.Hag;
@@ -12,7 +12,6 @@ using Server.Items;
 using Server.Mobiles;
 using Server.Talent;
 using Server.Multis;
-using Server.Network;
 using Server.Targeting;
 using Server.Spells;
 
@@ -1252,7 +1251,7 @@ public abstract partial class BaseBeverage : Item, IHasQuantity
 
                 var obj = qs.FindObjective<FindIngredientObjective>();
 
-                if (obj?.Completed == true && obj.Ingredient == Ingredient.SwampWater)
+                if (obj?.Completed == false && obj.Ingredient == Ingredient.SwampWater)
                 {
                     var contains = false;
 
@@ -1454,15 +1453,15 @@ public abstract partial class BaseBeverage : Item, IHasQuantity
 
     public static bool ConsumeTotal(Container pack, Type itemType, BeverageType content, int quantity)
     {
-        var items = pack.FindItemsByType(itemType);
+        var total = 0;
+        using var queue = PooledRefQueue<BaseBeverage>.Create();
 
         // First pass, compute total
-        var total = 0;
-
-        for (var i = 0; i < items.Length; ++i)
+        foreach (var bev in pack.FindItemsByType<BaseBeverage>())
         {
-            if (items[i] is BaseBeverage bev && bev.Content == content && !bev.IsEmpty)
+            if (itemType.IsInstanceOfType(bev) && bev.Content == content && !bev.IsEmpty)
             {
+                queue.Enqueue(bev);
                 total += bev.Quantity;
             }
         }
@@ -1473,12 +1472,9 @@ public abstract partial class BaseBeverage : Item, IHasQuantity
 
             var need = quantity;
 
-            for (var i = 0; i < items.Length; ++i)
+            while (queue.Count > 0)
             {
-                if (items[i] is not BaseBeverage bev || bev.Content != content || bev.IsEmpty)
-                {
-                    continue;
-                }
+                var bev = queue.Dequeue();
 
                 var theirQuantity = bev.Quantity;
 

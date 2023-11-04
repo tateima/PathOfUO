@@ -84,7 +84,6 @@ namespace Server.Mobiles
                         queue.Enqueue(m);
                     }
                 }
-                eable.Free();
 
                 var amount = queue.Count - 6;
                 if (amount > 0)
@@ -102,15 +101,6 @@ namespace Server.Mobiles
             }
 
             base.OnThink();
-        }
-
-        [AfterDeserialization]
-        private void AfterDeserialization()
-        {
-            if (BaseSoundID == 263)
-            {
-                BaseSoundID = 0;
-            }
         }
     }
 }

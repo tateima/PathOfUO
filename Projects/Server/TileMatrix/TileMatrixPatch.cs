@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2022 - ModernUO Development Team                       *
+ * Copyright 2019-2023 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: TileMatrixPatch.cs                                              *
  *                                                                       *
@@ -158,7 +158,7 @@ public class TileMatrixPatch
 
                 while (pCur < pEnd)
                 {
-                    lists[pCur->m_X & 0x7][pCur->m_Y & 0x7].Add(pCur->m_ID, pCur->m_Z);
+                    lists[pCur->m_X & 0x7][pCur->m_Y & 0x7].Add(pCur);
                     pCur += 1;
                 }
 

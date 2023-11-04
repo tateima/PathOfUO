@@ -148,8 +148,8 @@ namespace Server.Engines.PathQuests.Definitions
         public override bool CanOffer(IQuestGiver quester, PlayerMobile pm, MLQuestContext context, bool message)
         {
             bool hasHead = false;
-            Item[] heads = pm.Backpack?.FindItemsByType(typeof(Head));
-            if (heads?.Length > 0)
+            List<Item> heads = pm.Backpack?.FindItemsByType(typeof(Head));
+            if (heads != null)
             {
                 foreach (var headItem in heads)
                 {
@@ -317,7 +317,5 @@ namespace Server.Engines.PathQuests.Definitions
 
         public override bool DeleteCorpseOnDeath => false;
 
-        public override void EndEscortSequence(PlayerMobile pm)
-        { }
     }
 }

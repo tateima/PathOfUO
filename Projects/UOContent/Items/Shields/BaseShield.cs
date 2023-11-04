@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Server.Mobiles;
 using ModernUO.Serialization;
-using Server.Network;
 using Server.Talent;
 
 namespace Server.Items;

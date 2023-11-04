@@ -42,10 +42,6 @@ namespace Server.Misc
             m.CheckSkill(skill, n);
         }
 
-        private static bool CheckTransform(Mobile m, Type type) => TransformationSpellHelper.UnderTransformation(m, type);
-
-        private static bool CheckAnimal(Mobile m, Type type) => AnimalForm.UnderTransformation(m, type);
-
         private static TimeSpan Mobile_HitsRegenRate(Mobile from)
         {
             var points = AosAttributes.GetValue(from, AosAttribute.RegenHits);
@@ -77,12 +73,12 @@ namespace Server.Misc
                 points = 0;
             }
 
-            if (CheckTransform(from, typeof(HorrificBeastSpell)))
+            if (TransformationSpellHelper.UnderTransformation(from, typeof(HorrificBeastSpell)))
             {
                 points += 20;
             }
 
-            if (CheckAnimal(from, typeof(Dog)) || CheckAnimal(from, typeof(Cat)))
+            if (AnimalForm.UnderTransformation(from, typeof(Dog)) || AnimalForm.UnderTransformation(from, typeof(Cat)))
             {
                 points += from.Skills.Ninjitsu.Fixed / 30;
             }
@@ -108,12 +104,12 @@ namespace Server.Misc
 
             var cappedPoints = AosAttributes.GetValue(from, AosAttribute.RegenStam);
 
-            if (CheckTransform(from, typeof(VampiricEmbraceSpell)))
+            if (TransformationSpellHelper.UnderTransformation(from, typeof(VampiricEmbraceSpell)))
             {
                 cappedPoints += 15;
             }
 
-            if (CheckAnimal(from, typeof(Kirin)))
+            if (AnimalForm.UnderTransformation(from, typeof(Kirin)))
             {
                 cappedPoints += 20;
             }
@@ -178,11 +174,11 @@ namespace Server.Misc
 
                 var cappedPoints = AosAttributes.GetValue(from, AosAttribute.RegenMana);
 
-                if (CheckTransform(from, typeof(VampiricEmbraceSpell)))
+                if (TransformationSpellHelper.UnderTransformation(from, typeof(VampiricEmbraceSpell)))
                 {
                     cappedPoints += 3;
                 }
-                else if (CheckTransform(from, typeof(LichFormSpell)))
+                else if (TransformationSpellHelper.UnderTransformation(from, typeof(LichFormSpell)))
                 {
                     cappedPoints += 13;
                 }

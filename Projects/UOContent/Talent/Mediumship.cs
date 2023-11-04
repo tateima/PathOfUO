@@ -46,8 +46,8 @@ namespace Server.Talent
         {
             if (from.Backpack != null)
             {
-                var scrolls = from.Backpack.FindItemsByType<HauntedScroll>();
-                if (scrolls.Count > 1)
+                var scrolls = from.Backpack?.FindItemsByType(typeof(HauntedScroll));
+                if (scrolls is { Count: > 1 })
                 {
                     from.SendMessage(
                         "Thou spirit connection cannot sustain more than one story at a time. One scroll in thy pack is required."
@@ -55,7 +55,12 @@ namespace Server.Talent
                 }
                 else
                 {
-                    return scrolls.Find(b => b.HookNumber > 0);
+                    return (HauntedScroll)scrolls?.Find(b =>
+                        {
+                            var scroll = (HauntedScroll)b;
+                            return scroll.HookNumber > 0;
+                        }
+                    );
                 }
             }
 

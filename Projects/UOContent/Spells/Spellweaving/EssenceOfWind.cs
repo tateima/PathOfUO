@@ -69,8 +69,6 @@ namespace Server.Spells.Spellweaving
                         new BuffInfo(BuffIcon.EssenceOfWind, 1075802, duration, m, $"{fcMalus}\t{ssiMalus}")
                     );
                 }
-
-                eable.Free();
             }
 
             FinishSequence();

@@ -150,24 +150,21 @@ namespace Server.Items
             {
                 int range = GetShrineRange(region);
                 var items = map.GetItemsInRange(location, range);
-                if (items is not null)
+                var nearbyShrine = false;
+                foreach (var item in items)
                 {
-                    var nearbyShrine = false;
-                    foreach (var item in items)
+                    if (item is Shrine { Activated: false })
                     {
-                        if (item is Shrine { Activated: false })
-                        {
-                            nearbyShrine = true;
-                            break;
-                        }
+                        nearbyShrine = true;
+                        break;
                     }
+                }
 
-                    if (!nearbyShrine)
-                    {
-                        Shrine shrine = new Shrine();
-                        Point3D shrineLocation = map.GetRandomNearbyLocation(location, 3, 2, 4, 1);
-                        shrine.MoveToWorld(shrineLocation, map);
-                    }
+                if (!nearbyShrine)
+                {
+                    Shrine shrine = new Shrine();
+                    Point3D shrineLocation = map.GetRandomNearbyLocation(location, 3, 2, 4, 1);
+                    shrine.MoveToWorld(shrineLocation, map);
                 }
             }
         }
@@ -252,7 +249,7 @@ namespace Server.Items
 
         public void AlterMana(bool drain, int sound)
         {
-            int percentage = AOS.Scale(Player.Mana, 5);
+            int percentage = AOS.Scale(Player.ManaMax, 30);
             int alteration = (drain) ? percentage * -1 : percentage;
             if (Player.Mana - alteration < 0 && drain)
             {
@@ -275,7 +272,7 @@ namespace Server.Items
 
         public void AlterStamina(bool drain, int sound)
         {
-            int percentage = AOS.Scale(Player.Stam, 5);
+            int percentage = AOS.Scale(Player.StamMax, 30);
             int alteration = (drain) ? percentage * -1 : percentage;
             if (Player.Stam - alteration < 0 && drain)
             {
@@ -591,8 +588,8 @@ namespace Server.Items
                         CheckSetMessage(ref message, "Famine and pestilence clouds your judgement.");
                         if (Player.Backpack is not null)
                         {
-                            Item[] consumables = Player.Backpack.FindItemsByType(typeof(Food));
-                            Item[] drinks = Player.Backpack.FindItemsByType(typeof(BaseBeverage));
+                            List<Item> consumables = Player.Backpack.FindItemsByType(typeof(Food));
+                            List<Item> drinks = Player.Backpack.FindItemsByType(typeof(BaseBeverage));
                             if (consumables is not null)
                             {
                                 foreach (var consumable in consumables)
@@ -610,7 +607,7 @@ namespace Server.Items
                                 {
                                     drink.Delete();
                                     count++;
-                                    if (count > drinks.Length / 2)
+                                    if (count > drinks.Count / 2)
                                     {
                                         break;
                                     }
@@ -828,9 +825,10 @@ namespace Server.Items
         [AfterDeserialization]
         private void AfterDeserialization()
         {
+
             if (_activated)
             {
-                Timer.StartTimer(TimeSpan.FromMinutes(TimeLeft), RemoveShrineEffect);
+                RemoveShrineEffect();
             }
         }
     }

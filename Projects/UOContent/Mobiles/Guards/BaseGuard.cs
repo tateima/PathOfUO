@@ -1,145 +1,113 @@
+using ModernUO.Serialization;
 using Server.Items;
 using Server.Talent;
 
-namespace Server.Mobiles
+namespace Server.Mobiles;
+
+[SerializationGenerator(0)]
+public abstract partial class BaseGuard : BaseCreature
 {
-    public abstract class BaseGuard : BaseCreature
+    public BaseGuard() : base(AIType.AI_Melee, FightMode.None)
     {
-        public AIType AiType;
+    }
 
-        public BaseGuard() : base(AIType.AI_Melee, FightMode.None)
+    public abstract Mobile Focus { get; set; }
+
+    public override bool HandlesOnSpeech(Mobile from) => true;
+
+    public override bool CanRummageCorpses => true;
+
+    public override bool InitialInnocent => false;
+
+    public override bool AlwaysAttackable => true;
+
+    public override void OnSpeech(SpeechEventArgs e)
+    {
+        if (Deleted || !e.Mobile.CheckAlive())
         {
+            return;
         }
 
-        public BaseGuard(Serial serial) : base(serial)
+        if (e.Mobile.InRange(this, 10))
         {
-        }
-
-        public abstract Mobile Focus { get; set; }
-
-        public override bool HandlesOnSpeech(Mobile from) => true;
-
-        public override bool CanRummageCorpses => true;
-
-        public override bool InitialInnocent => false;
-
-        public override bool AlwaysAttackable => true;
-
-        public override void OnSpeech(SpeechEventArgs e)
-        {
-            if (Deleted || !e.Mobile.CheckAlive())
+            if (!e.Handled)
             {
-                return;
+                if (e.Speech.ToLower().Contains("guards") && e.Mobile.Combatant is not null)
+                {
+                    Combatant = e.Mobile.Combatant;
+                    e.Handled = true;
+                }
             }
+        }
 
-            if (e.Mobile.InRange(this, 10))
+        if (e.Mobile.InRange(this, 2))
+        {
+            string speech = e.Speech.ToLower();
+            PlayerMobile player = (PlayerMobile)e.Mobile;
+            Detective detective = player.GetTalent(typeof(Detective)) as Detective;
+            if (detective?.HasSkillRequirement(e.Mobile) != null)
             {
+                CaseNote note = Detective.GetPlayerCaseNote(player);
                 if (!e.Handled)
                 {
-                    if (e.Speech.ToLower().Contains("guards") && e.Mobile.Combatant is not null)
+                    if (string.Equals(speech, "give me a case"))
                     {
-                        Combatant = e.Mobile.Combatant;
                         e.Handled = true;
-                    }
-                }
-            }
-
-            if (e.Mobile.InRange(this, 2))
-            {
-                string speech = e.Speech.ToLower();
-                PlayerMobile player = (PlayerMobile)e.Mobile;
-                Detective detective = player.GetTalent(typeof(Detective)) as Detective;
-                if (detective?.HasSkillRequirement(e.Mobile) != null)
-                {
-                    CaseNote note = Detective.GetPlayerCaseNote(player);
-                    if (!e.Handled) {
-                        if (string.Equals(speech, "give me a case")) {
-                            e.Handled = true;
-                            if (note != null) {
-                                SayTo(player, "Thy already have an active case");
-                            } else {
-                                Detective.GiveCaseNote(player);
-                                SayTo(player, "Here is a new active case");
-                            }
-                        } else if (string.Equals(speech, "here are my case notes")) {
-                            e.Handled = true;
-                            if (note != null && detective.GiveRewards(player, note)) {
-                                SayTo(player, "Thank thee for your assistance, here is your reward");
-                            } else {
-                                SayTo(player, "Thou has no case notes to show me");
-                            }
+                        if (note != null)
+                        {
+                            SayTo(player, "Thy already have an active case");
                         }
-                        if (!e.Handled) {
-                            SayTo(player, "I do not understand thee. If you wish to give me a case say 'here is my case'. If you wish to receive a new case say 'give me a case'.");
+                        else
+                        {
+                            Detective.GiveCaseNote(player);
+                            SayTo(player, "Here is a new active case");
                         }
                     }
-                }
-                else
-                {
-                    base.OnSpeech(e);
-                }
-            }
-        }
-
-        public static void Spawn(Mobile caller, Mobile target, int amount = 1, bool onlyAdditional = false)
-        {
-            if (target?.Deleted != false)
-            {
-                return;
-            }
-
-            foreach (var m in target.GetMobilesInRange(15))
-            {
-                if (m is BaseGuard g)
-                {
-                    if (g.Combatant == null) // idling
+                    else if (string.Equals(speech, "here are my case notes"))
                     {
-                        g.Combatant = target;
-
-                        --amount;
+                        e.Handled = true;
+                        if (note != null && detective.GiveRewards(player, note))
+                        {
+                            SayTo(player, "Thank thee for your assistance, here is your reward");
+                        }
+                        else
+                        {
+                            SayTo(player, "Thou has no case notes to show me");
+                        }
                     }
-                    else if (g.Combatant == target && !onlyAdditional)
+
+                    if (!e.Handled)
                     {
-                        --amount;
+                        SayTo(
+                            player,
+                            "I do not understand thee. If you wish to give me a case say 'here is my case'. If you wish to receive a new case say 'give me a case'."
+                        );
                     }
                 }
             }
-
-            while (amount-- > 0)
+            else
             {
-                caller.Region.MakeGuard(target);
+                base.OnSpeech(e);
             }
         }
+    }
 
-        public override bool OnBeforeDeath()
-        {
-            Effects.SendLocationParticles(
-                EffectItem.Create(Location, Map, EffectItem.DefaultDuration),
-                0x3728,
-                10,
-                10,
-                2023
-            );
+    public AIType AiType { get; set; }
 
-            PlaySound(0x1FE);
+    public override bool OnBeforeDeath()
+    {
+        Effects.SendLocationParticles(
+            EffectItem.Create(Location, Map, EffectItem.DefaultDuration),
+            0x3728,
+            10,
+            10,
+            2023
+        );
 
-            Delete();
+        PlaySound(0x1FE);
 
-            return false;
-        }
+        Delete();
 
-        public override void Serialize(IGenericWriter writer)
-        {
-            base.Serialize(writer);
-
-            writer.Write(0); // version
-        }
-
-        public override void Deserialize(IGenericReader reader)
-        {
-            base.Deserialize(reader);
-
-            var version = reader.ReadInt();
-        }
+        return false;
     }
 }

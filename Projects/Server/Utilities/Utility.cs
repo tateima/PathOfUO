@@ -677,11 +677,12 @@ public static class Utility
         }
     }
 
-    public static void FormatBuffer(this TextWriter op, ReadOnlySpan<byte> first, ReadOnlySpan<byte> second, int totalLength)
+    public static void FormatBuffer(this TextWriter op, ReadOnlySpan<byte> data)
     {
         op.WriteLine("        0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F");
         op.WriteLine("       -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --");
 
+        var totalLength = data.Length;
         if (totalLength <= 0)
         {
             op.WriteLine("0000   ");
@@ -692,21 +693,8 @@ public static class Utility
         Span<char> lineChars = stackalloc char[47];
         for (var i = 0; i < totalLength; i += 16)
         {
-            var length = Math.Min(totalLength - i, 16);
-            if (i < first.Length)
-            {
-                var firstLength = Math.Min(length, first.Length - i);
-                first.Slice(i, firstLength).CopyTo(lineBytes);
-
-                if (firstLength < length)
-                {
-                    second[..(length - first.Length - i)].CopyTo(lineBytes[(length - firstLength)..]);
-                }
-            }
-            else
-            {
-                second.Slice(i - first.Length, length).CopyTo(lineBytes);
-            }
+            var length = Math.Min(data.Length - i, 16);
+            data.Slice(i, length).CopyTo(lineBytes);
 
             var charsWritten = ((ReadOnlySpan<byte>)lineBytes[..length]).ToSpacedHexString(lineChars);
 
@@ -804,6 +792,27 @@ public static class Utility
         }
 
         return outputList;
+    }
+
+    // ToArray returns an array containing the contents of the List.
+    // This requires copying the List, which is an O(n) operation.
+    public static List<R> ToList<T, R>(this PooledRefList<T> poolList) where T : R
+    {
+        var size = poolList._size;
+        var items = poolList._items;
+
+        var list = new List<R>(size);
+        if (size == 0)
+        {
+            return list;
+        }
+
+        for (var i = 0; i < items.Length; i++)
+        {
+            list.Add(items[i]);
+        }
+
+        return list;
     }
 
     public static bool ToBoolean(string value) =>
@@ -949,14 +958,18 @@ public static class Utility
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InUpdateRange(Point3D p1, Point3D p2) => InRange(p1, p2, 18);
 
-    // 4d6+8 would be: Utility.Dice( 4, 6, 8 )
-    public static int Dice(uint amount, uint sides, int bonus)
+    public static int Dice(int amount, int sides, int bonus)
     {
+        if (amount <= 0 || sides <= 0)
+        {
+            return 0;
+        }
+
         var total = 0;
 
         for (var i = 0; i < amount; ++i)
         {
-            total += (int)RandomSources.Source.Next(1, sides);
+            total += RandomSources.Source.Next(1, sides);
         }
 
         return total + bonus;
@@ -977,6 +990,17 @@ public static class Utility
     public static void Shuffle<T>(this Span<T> list)
     {
         var count = list.Length;
+        for (var i = 0; i < count; i++)
+        {
+            var r = RandomMinMax(i, count - 1);
+            (list[r], list[i]) = (list[i], list[r]);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Shuffle<T>(this PooledRefList<T> list)
+    {
+        var count = list.Count;
         for (var i = 0; i < count; i++)
         {
             var r = RandomMinMax(i, count - 1);
@@ -1034,6 +1058,27 @@ public static class Utility
         } while (i < count);
 
         return sampleList;
+    }
+
+    public static void RandomSample<T>(this T[] source, int count, List<T> dest)
+    {
+        if (count <= 0)
+        {
+            return;
+        }
+
+        var length = source.Length;
+        Span<bool> list = stackalloc bool[length];
+
+        var i = 0;
+        do
+        {
+            var rand = Random(length);
+            if (!(list[rand] && (list[rand] = true)))
+            {
+                dest.Add(source[rand]);
+            }
+        } while (++i < count);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1455,74 +1500,66 @@ public static class Utility
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Remove<T>(ref List<T> list, T value)
     {
-        if (list != null)
+        if (list?.Remove(value) != true)
         {
-            var removed = list.Remove(value);
-
-            if (list.Count == 0)
-            {
-                list = null;
-            }
-
-            return removed;
+            return false;
         }
 
-        return false;
+        if (list.Count == 0)
+        {
+            list = null;
+        }
+
+        return true;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Remove<T>(ref HashSet<T> set, T value)
     {
-        if (set != null)
+        if (set?.Remove(value) != true)
         {
-            var removed = set.Remove(value);
-
-            if (set.Count == 0)
-            {
-                set = null;
-            }
-
-            return removed;
+            return false;
         }
 
-        return false;
+        if (set.Count == 0)
+        {
+            set = null;
+        }
+
+        return true;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Remove<K, V>(ref Dictionary<K, V> dict, K key)
     {
-        if (dict != null)
+        if (dict?.Remove(key) != true)
         {
-            var removed = dict.Remove(key);
-
-            if (dict.Count == 0)
-            {
-                dict = null;
-            }
-
-            return removed;
+            return false;
         }
 
-        return false;
+        if (dict.Count == 0)
+        {
+            dict = null;
+        }
+
+        return true;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Remove<K, V>(ref Dictionary<K, V> dict, K key, out V value)
     {
-        if (dict != null)
+        if (dict?.Remove(key, out value) != true)
         {
-            var removed = dict.Remove(key, out value);
-
-            if (dict.Count == 0)
-            {
-                dict = null;
-            }
-
-            return removed;
+            value = default;
+            return false;
         }
 
-        value = default;
-        return false;
+        if (dict.Count == 0)
+        {
+            dict = null;
+        }
+
+        return true;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1702,5 +1739,41 @@ public static class Utility
         }
 
         return center;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int GetUnderlyingNumericBitLength(this TypeCode typeCode) =>
+        typeCode switch
+        {
+            TypeCode.Byte   => 8,
+            TypeCode.SByte  => 8,
+            TypeCode.Int16  => 16,
+            TypeCode.UInt16 => 16,
+            TypeCode.Char   => 16,
+            TypeCode.Int32  => 32,
+            TypeCode.UInt32 => 32,
+            TypeCode.Int64  => 64,
+            TypeCode.UInt64 => 64,
+            _               => 64
+        };
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsNullOrWhiteSpace(this ReadOnlySpan<char> span) =>
+        span == default || span.IsEmpty || span.IsWhiteSpace();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool InTypeList(this Item item, Type[] types) => item.GetType().InTypeList(types);
+
+    public static bool InTypeList(this Type t, Type[] types)
+    {
+        for (var i = 0; i < types.Length; ++i)
+        {
+            if (types[i].IsAssignableFrom(t))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

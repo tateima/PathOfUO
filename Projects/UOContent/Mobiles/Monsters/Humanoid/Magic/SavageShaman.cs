@@ -306,8 +306,6 @@ namespace Server.Mobiles
                         break;
                     }
             }
-
-            eable.Free();
         }
     }
 }

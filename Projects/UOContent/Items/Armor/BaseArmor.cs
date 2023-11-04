@@ -1344,32 +1344,32 @@ namespace Server.Items
                     bool validChest = false;
                     BaseArmor chestArmor = (BaseArmor)m.ChestArmor;
                     if (chestArmor != null) {
-                        validChest = chestArmor.MaterialType is ArmorMaterialType.Studded or ArmorMaterialType.Leather;
+                        validChest = chestArmor.MaterialType is ArmorMaterialType.Studded or ArmorMaterialType.Leather or ArmorMaterialType.Barbed;
                     }
                     bool validPants = false;
                     BaseArmor legArmor = (BaseArmor)m.LegsArmor;
                     if (legArmor != null) {
-                        validPants = legArmor.MaterialType is ArmorMaterialType.Studded or ArmorMaterialType.Leather;
+                        validPants = legArmor.MaterialType is ArmorMaterialType.Studded or ArmorMaterialType.Leather or ArmorMaterialType.Barbed;
                     }
                     bool validGloves = false;
                     BaseArmor glovesArmor = (BaseArmor)m.HandArmor;
                     if (glovesArmor != null) {
-                        validGloves = glovesArmor.MaterialType is ArmorMaterialType.Studded or ArmorMaterialType.Leather;
+                        validGloves = glovesArmor.MaterialType is ArmorMaterialType.Studded or ArmorMaterialType.Leather or ArmorMaterialType.Barbed;
                     }
                     bool validArms = false;
                     BaseArmor armsArmor = (BaseArmor)m.ArmsArmor;
                     if (armsArmor != null) {
-                        validArms = armsArmor.MaterialType is ArmorMaterialType.Studded or ArmorMaterialType.Leather;
+                        validArms = armsArmor.MaterialType is ArmorMaterialType.Studded or ArmorMaterialType.Leather or ArmorMaterialType.Barbed;
                     }
                     bool validGorget = false;
                     BaseArmor gorgetArmor = (BaseArmor)m.NeckArmor;
                     if (gorgetArmor != null) {
-                        validGorget = gorgetArmor.MaterialType is ArmorMaterialType.Studded or ArmorMaterialType.Leather;
+                        validGorget = gorgetArmor.MaterialType is ArmorMaterialType.Studded or ArmorMaterialType.Leather or ArmorMaterialType.Barbed;
                     }
                     bool validHelm = false;
                     BaseArmor helmArmor = (BaseArmor)m.HeadArmor;
                     if (helmArmor != null) {
-                        validHelm = helmArmor.MaterialType is ArmorMaterialType.Leather or ArmorMaterialType.Leather;
+                        validHelm = helmArmor.MaterialType is ArmorMaterialType.Studded or ArmorMaterialType.Leather or ArmorMaterialType.Barbed;
                     }
                     return validChest && validPants && validGloves && validArms && validGorget && validHelm;
                 } catch (InvalidCastException ex)
@@ -1547,22 +1547,22 @@ namespace Server.Items
                     bool validPants = false;
                     BaseArmor legArmor = (BaseArmor)m.LegsArmor;
                     if (legArmor != null) {
-                        validPants = legArmor.MaterialType is ArmorMaterialType.Dragon or ArmorMaterialType.Dragon;
+                        validPants = legArmor.MaterialType is ArmorMaterialType.Dragon;
                     }
                     bool validGloves = false;
                     BaseArmor glovesArmor = (BaseArmor)m.HandArmor;
                     if (glovesArmor != null) {
-                        validGloves = glovesArmor.MaterialType is ArmorMaterialType.Dragon or ArmorMaterialType.Dragon;
+                        validGloves = glovesArmor.MaterialType is ArmorMaterialType.Dragon;
                     }
                     bool validArms = false;
                     BaseArmor armsArmor = (BaseArmor)m.ArmsArmor;
                     if (armsArmor != null) {
-                        validArms = armsArmor.MaterialType is ArmorMaterialType.Dragon or ArmorMaterialType.Dragon;
+                        validArms = armsArmor.MaterialType is ArmorMaterialType.Dragon;
                     }
                     bool validHelm = false;
                     BaseArmor helmArmor = (BaseArmor)m.HeadArmor;
                     if (helmArmor != null) {
-                        validHelm = helmArmor.MaterialType is ArmorMaterialType.Dragon or ArmorMaterialType.Dragon;
+                        validHelm = helmArmor.MaterialType is ArmorMaterialType.Dragon;
                     }
                     return validChest && validPants && validArms && validGloves && validHelm;
                 }

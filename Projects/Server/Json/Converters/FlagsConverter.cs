@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2021 - ModernUO Development Team                            *
+ * Copyright 2019-2023 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: FlagsConverter.cs                                               *
  *                                                                       *
@@ -129,21 +129,5 @@ public class FlagsConverter<T> : JsonConverter<T> where T : struct, Enum
             TypeCode.Int64  => (ulong)(long)value,
             TypeCode.UInt64 => (ulong)value,
             _               => throw new InvalidOperationException()
-        };
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static ulong GetUnderlyingTypeLength(TypeCode typeCode) =>
-        typeCode switch
-        {
-            TypeCode.Byte   => 8,
-            TypeCode.SByte  => 8,
-            TypeCode.Int16  => 16,
-            TypeCode.UInt16 => 16,
-            TypeCode.Char   => 16,
-            TypeCode.Int32  => 32,
-            TypeCode.UInt32 => 32,
-            TypeCode.Int64  => 64,
-            TypeCode.UInt64 => 64,
-            _               => 64
         };
 }

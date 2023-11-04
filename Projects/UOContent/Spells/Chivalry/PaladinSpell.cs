@@ -7,17 +7,17 @@ namespace Server.Spells.Chivalry
 {
     public abstract class PaladinSpell : Spell
     {
-        private BaseTalent m_HolyAvenger;
+        private BaseTalent _holyAvenger;
         public BaseTalent HolyAvenger
         {
-            get { return m_HolyAvenger; }
-            set { m_HolyAvenger = value; }
+            get { return _holyAvenger; }
+            set { _holyAvenger = value; }
         }
-        private BaseTalent m_LightAffinity;
+        private BaseTalent _lightAffinity;
         public BaseTalent LightAffinity
         {
-            get { return m_LightAffinity; }
-            set { m_LightAffinity = value; }
+            get { return _lightAffinity; }
+            set { _lightAffinity = value; }
         }
         public PaladinSpell(Mobile caster, Item scroll, SpellInfo info) : base(caster, scroll, info)
         {
@@ -43,7 +43,7 @@ namespace Server.Spells.Chivalry
         public override int CastRecoveryBase => 7;
         public bool CheckLightAffinity()
         {
-            return m_LightAffinity != null;
+            return _lightAffinity != null;
         }
 
         public void LightAffinityScalar(ref double scalar)

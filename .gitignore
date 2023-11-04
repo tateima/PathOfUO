@@ -3,10 +3,13 @@
 /Distribution/ModernUO.*
 /Distribution/Assemblies
 /Distribution/bsdtar
+/Distribution/Configuration/antimacro.json
 /Distribution/Configuration/assistants.json
+/Distribution/Configuration/expansion.json
 /Distribution/Configuration/modernuo.json
 /Distribution/Configuration/email-settings.json
 /Distribution/Configuration/throttles.json
+/Distribution/Configuration/tot.json
 /Distribution/Logs
 /Distribution/Archives
 /Distribution/Backups
@@ -24,6 +27,7 @@
 /Projects/*/bin
 /Projects/*/Generated
 
+*.swp
 *.log
 *.user
 /.idea

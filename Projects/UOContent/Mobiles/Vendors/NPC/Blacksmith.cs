@@ -1,3 +1,4 @@
+using ModernUO.Serialization;
 using System;
 using System.Collections.Generic;
 using Server.ContextMenus;
@@ -83,7 +84,7 @@ namespace Server.Mobiles
                         }
                         durableItem.MaxHitPoints -= 1;
                         durableItem.HitPoints = durableItem.MaxHitPoints;
-                        _playerMobile.PlaySound(0x02A);
+                        _playerMobile?.PlaySound(0x02A);
                         _blacksmith.SayTo(_playerMobile, $"Thank thee, this has cost you {cost.ToString()} gold coins.");
                     }
                     else
@@ -98,7 +99,8 @@ namespace Server.Mobiles
             }
         }
     }
-    public class Blacksmith : BaseVendor
+    [SerializationGenerator(0, false)]
+    public partial class Blacksmith : BaseVendor
     {
         private readonly List<SBInfo> m_SBInfos = new();
 
@@ -112,10 +114,6 @@ namespace Server.Mobiles
             SetSkill(SkillName.Swords, 60.0, 83.0);
             SetSkill(SkillName.Tactics, 60.0, 83.0);
             SetSkill(SkillName.Parry, 61.0, 93.0);
-        }
-
-        public Blacksmith(Serial serial) : base(serial)
-        {
         }
 
         protected override List<SBInfo> SBInfos => m_SBInfos;
@@ -172,20 +170,6 @@ namespace Server.Mobiles
 
             AddItem(new Bascinet());
             AddItem(new SmithHammer());
-        }
-
-        public override void Serialize(IGenericWriter writer)
-        {
-            base.Serialize(writer);
-
-            writer.Write(0); // version
-        }
-
-        public override void Deserialize(IGenericReader reader)
-        {
-            base.Deserialize(reader);
-
-            var version = reader.ReadInt();
         }
 
         public override Item CreateBulkOrder(Mobile from, bool fromContextMenu)

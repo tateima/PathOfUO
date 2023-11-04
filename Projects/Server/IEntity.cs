@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2022 - ModernUO Development Team                       *
+ * Copyright 2019-2023 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: IEntity.cs                                                      *
  *                                                                       *
@@ -30,6 +30,12 @@ public interface IEntity : IPoint3D, ISerializable
     bool InRange(Point3D p, int range);
 
     void RemoveItem(Item item);
+
+    bool OnMoveOff(Mobile m);
+
+    bool OnMoveOver(Mobile m);
+
+    public void OnMovement(Mobile m, Point3D oldLocation);
 }
 
 public class Entity : IEntity
@@ -43,13 +49,11 @@ public class Entity : IEntity
 
     public Entity(Serial serial) => Serial = serial;
 
-    DateTime ISerializable.Created { get; set; } = Core.Now;
+    public DateTime Created { get; set; } = Core.Now;
 
-    DateTime ISerializable.LastSerialized { get; set; } = DateTime.MaxValue;
+    public long SavePosition { get; set; } = -1;
 
-    long ISerializable.SavePosition { get; set; } = -1;
-
-    BufferWriter ISerializable.SaveBuffer { get; set; }
+    public BufferWriter SaveBuffer { get; set; }
 
     public int TypeRef => -1;
 
@@ -85,6 +89,14 @@ public class Entity : IEntity
     {
     }
 
+    public bool OnMoveOff(Mobile m) => true;
+
+    public bool OnMoveOver(Mobile m) => true;
+
+    public void OnMovement(Mobile m, Point3D oldLocation)
+    {
+    }
+
     public bool InRange(Point2D p, int range) =>
         p.m_X >= Location.m_X - range
         && p.m_X <= Location.m_X + range
@@ -110,12 +122,6 @@ public class Entity : IEntity
     }
 
     public void Serialize(IGenericWriter writer)
-    {
-    }
-
-    public bool ShouldExecuteAfterSerialize => false;
-
-    public void AfterSerialize()
     {
     }
 }

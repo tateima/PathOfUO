@@ -9,8 +9,8 @@ namespace Server.Talent
         {
             StatModNames = new[] { "LeatherWarmaster" };
             DisplayName = "Leather warmaster";
-            Description = "Reduces damage while wearing leather. Increases Dex by 4 per Level";
-            AdditionalDetail = $"{PassiveDetail}";
+            Description = "Unlocks leather armour proficiencies";
+            AdditionalDetail = $"Reduces damage while wearing leather, barbed or studded armour. Increases Dex by 4 per Level. {PassiveDetail}";
             ImageID = 386;
             GumpHeight = 85;
             AddEndY = 90;
