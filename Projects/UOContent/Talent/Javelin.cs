@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
+using Server.Collections;
 using Server.Items;
+using Server.Mobiles;
 using Server.Targeting;
 
 namespace Server.Talent
@@ -86,10 +88,15 @@ namespace Server.Talent
                         from.SendMessage("Thou cannot throw a spear at this target");
                         return;
                     }
-
-                    var targetInRange = from.GetMobilesInRange(_javelin.Level*3).Any(mobile => mobile == target);
-
-                    if (targetInRange)
+                    using var list = PooledRefList<Mobile>.Create();
+                    foreach (var mobile in from.GetMobilesInRange(_javelin.Level * 3))
+                    {
+                        if (mobile == target)
+                        {
+                            list.Add(mobile);
+                        }
+                    }
+                    if (list.Count > 0)
                     {
                         _target = target;
                         from.RevealingAction();

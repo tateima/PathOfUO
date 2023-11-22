@@ -20,7 +20,7 @@ namespace Server.Talent
         {
             if (Utility.Random(100) < Level)
             {
-                CriticalStrike(ref damage);
+               CriticalStrike(target, attacker, ref damage);
             }
         }
     }

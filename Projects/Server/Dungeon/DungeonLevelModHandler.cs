@@ -864,7 +864,7 @@ public class DungeonLevelModHandler
 
     public static void NotifyPlayersInDungeon(Map map, Point2D pointOne, Point2D pointTwo, DungeonLevelMod.DungeonDifficulty difficulty)
     {
-        IPooledEnumerable<Mobile> mobiles = map.GetMobilesInBounds(
+        Map.MobileBoundsEnumerable<Mobile> mobiles = map.GetMobilesInBounds(
             new Rectangle2D(pointOne, pointTwo)
         );
         foreach (var mobile in mobiles)

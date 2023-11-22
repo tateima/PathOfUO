@@ -60,6 +60,7 @@ namespace Server.Mobiles
                 PackItem(new GlacialStaff());
             }
         }
+        public override bool CanCannibalise(Mobile target) => base.CanCannibalise(target) || target is GiantSerpent or IceSnake;
 
         public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "an ice serpent corpse";

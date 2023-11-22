@@ -41,7 +41,12 @@ namespace Server.Items
             }
 
             ClearCurrentAbility(attacker);
+            BeginDisarm(attacker, defender);
 
+        }
+
+        public static void BeginDisarm(Mobile attacker, Mobile defender)
+        {
             var toDisarm = defender.FindItemOnLayer(Layer.OneHanded);
 
             if (toDisarm?.Movable != true)

@@ -12,11 +12,11 @@ namespace Server.Mobiles
         public static double StrBuff = 1.020;
         public static double IntBuff = 1.10;
         public static double DexBuff = 1.10;
-        public static double SkillsBuff = 1.10;
+        public static double SkillsBuff = 1.25;
         public static double SpeedBuff = 1.10;
         public static double FameBuff = 1.11;
         public static double KarmaBuff = 1.11;
-        public static int DamageBuff = 5;
+        public static int DamageBuff = 2;
         public static void Convert(BaseCreature bc)
         {
             if (bc.IsVeteran)

@@ -18,11 +18,11 @@ namespace Server.Mobiles
         public static readonly int CorruptionRange = 12;
 
         public static double BossGoldBuff = 1.15;
-        public static double BossHitsBuff = 3;
-        public static double BossStrBuff = 1.05;
+        public static double BossHitsBuff = 2.5;
+        public static double BossStrBuff = 1.25;
         public static double BossIntBuff = 1.20;
         public static double BossDexBuff = 1.20;
-        public static double BossSkillsBuff = 1.20;
+        public static double BossSkillsBuff = 1.50;
         public static double BossSpeedBuff = 1.3;
         public static double BossFameBuff = 1.05;
         public static double BossKarmaBuff = 1.17;
@@ -34,7 +34,7 @@ namespace Server.Mobiles
         public static double MinionStrBuff = 1.07;
         public static double MinionIntBuff = 1.07;
         public static double MinionDexBuff = 1.07;
-        public static double MinionSkillsBuff = 1.07;
+        public static double MinionSkillsBuff = 1.15;
         public static double MinionSpeedBuff = 1.02;
         public static double MinionFameBuff = 1.09;
         public static double MinionKarmaBuff = 1.09;
@@ -61,7 +61,7 @@ namespace Server.Mobiles
             if (bc.IsCorruptor || bc.IsSoulFeeder)
             {
                 bc.Hue = CorruptorHue;
-            } else if (bc.IsBoss)
+            } else if (bc.IsBoss || bc.IsWarlord)
             {
                 bc.Hue = BossHue;
             }
@@ -77,7 +77,7 @@ namespace Server.Mobiles
             {
                 bc.Hue = RegenerativeHue;
             }
-            else if (bc.IsMagicResistant)
+            else if (bc.IsMagicResistant || bc.IsMagical)
             {
                 bc.Hue = MagicResistantHue;
             } else if (bc.IsEthereal)
@@ -313,6 +313,54 @@ namespace Server.Mobiles
             UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200, 10.0);
             CheckHues(bc);
         }
+        public static void AddWarlord(BaseCreature bc) {
+            bc.Name = MonsterName.Generate();
+            CheckHues(bc);
+            bc.SetSkill(SkillName.Tactics, 85.1, 100.0);
+            bc.SetSkill(SkillName.Wrestling, 85.1, 100.0);
+            bc.SetSkill(SkillName.Swords, 85.1, 100.0);
+            bc.SetSkill(SkillName.Macing, 85.1, 100.0);
+            bc.SetSkill(SkillName.Fencing, 85.1, 100.0);
+            bc.SetSkill(SkillName.Lumberjacking, 85.1, 100.0);
+            bc.SetSkill(SkillName.Anatomy, 85.1, 100.0);
+            if (bc.RawStr < 350)
+            {
+                bc.SetStr(350, 450);; // half strength as ogre lords
+            }
+            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200, 10.0);
+            AddLoot(bc);
+        }
+        public static void RemoveWarlord(BaseCreature bc)
+        {
+            CheckHues(bc);
+            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200, 10.0);
+            bc.Skills.Tactics.Base = 0;
+            bc.Skills.Wrestling.Base = 0;
+            bc.Skills.Swords.Base = 0;
+            bc.Skills.Macing.Base = 0;
+            bc.Skills.Fencing.Base = 0;
+            bc.Skills.Lumberjacking.Base = 0;
+            bc.Skills.Anatomy.Base = 0;
+            bc.SetStr(66, 105);
+        }
+        public static void AddMagical(BaseCreature bc) {
+            bc.Name = MonsterName.Generate();
+            CheckHues(bc);
+            bc.SetSkill(SkillName.Magery, 85.1, 100.0);
+            if (bc.RawInt < 265)
+            {
+                bc.SetInt(265, 305); // similar to lich
+            }
+            Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200, 10.0);
+            AddLoot(bc);
+        }
+        public static void RemoveMagical(BaseCreature bc)
+        {
+            CheckHues(bc);
+            UnConvert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200, 10.0);
+            bc.Skills.Magery.Base = 0;
+            bc.SetInt(31, 55);; // similar to ettin
+        }
         public static void AddMagicResistant(BaseCreature bc) {
             bc.Name = MonsterName.Generate();
             CheckHues(bc);
@@ -320,7 +368,7 @@ namespace Server.Mobiles
             bc.SetResistance(ResistanceType.Cold, 100);
             bc.SetResistance(ResistanceType.Poison, 100);
             bc.SetResistance(ResistanceType.Energy, 100);
-            bc.Skills.MagicResist.Base = 120.0;
+            bc.SetSkill(SkillName.MagicResist, 85.1, 100.0);
             Convert(bc, BossGoldBuff, BossHitsBuff, NoBuff, NoBuff, NoBuff, BossSkillsBuff, NoBuff, BossFameBuff, BossKarmaBuff, 0, 200, 10.0);
             AddLoot(bc);
         }
@@ -465,6 +513,15 @@ namespace Server.Mobiles
             {
                 bc.HitsMaxSeed = (int)(bc.HitsMaxSeed * hitsBuff);
             }
+            int soulFeedControlSlots = bc.SoulFeeds / 5;
+            if (soulFeedControlSlots > 0)
+            {
+                bc.ControlSlots += soulFeedControlSlots;
+            }
+            if (tameableModifier >= 15.0)
+            {
+                bc.ControlSlots++;
+            }
 
             if (bc.Tamable)
             {
@@ -490,6 +547,10 @@ namespace Server.Mobiles
                 if (skill.Base > 0.0)
                 {
                     skill.Base *= skillsBuff;
+                    if (skill.Base >= 120.0)
+                    {
+                        skill.Base = 120.0;
+                    }
                 }
             }
 
@@ -530,6 +591,17 @@ namespace Server.Mobiles
             if (bc.HitsMaxSeed >= 0)
             {
                 bc.HitsMaxSeed = (int)(bc.HitsMaxSeed / hitsBuff);
+            }
+
+            int soulFeedControlSlots = bc.SoulFeeds / 5;
+            if (soulFeedControlSlots > 0)
+            {
+                bc.ControlSlots -= soulFeedControlSlots;
+            }
+
+            if (tameableModifier >= 15.0)
+            {
+                bc.ControlSlots--;
             }
 
             bc.RawStr = (int)(bc.RawStr / strBuff);
@@ -638,6 +710,16 @@ namespace Server.Mobiles
                 if (Utility.Random(100) < chance && !creature.IsSoulFeeder)
                 {
                     creature.IsSoulFeeder = true;
+                    challengerBuffs++;
+                }
+                if (Utility.Random(100) < chance && !creature.IsMagical)
+                {
+                    creature.IsMagical = true;
+                    challengerBuffs++;
+                }
+                if (Utility.Random(100) < chance && !creature.IsWarlord)
+                {
+                    creature.IsWarlord = true;
                     challengerBuffs++;
                 }
                 if (Utility.Random(100) < chance - 2 && !creature.IsBoss)
@@ -763,7 +845,7 @@ namespace Server.Mobiles
         {
             foreach (Mobile mobile in owner.GetMobilesInRange(8))
             {
-                if (mobile != owner && (mobile is PlayerMobile || owner.IsEnemy(mobile)) && owner.InLOS(mobile))
+                if (mobile != owner && owner.ControlMaster != mobile && (mobile is PlayerMobile || owner.IsEnemy(mobile)) && owner.InLOS(mobile))
                 {
                     CheckElementalAttack(owner, mobile);
                     mobile.RevealingAction();
@@ -966,7 +1048,7 @@ namespace Server.Mobiles
                     {
                         if (mobile is BaseCreature creature)
                         {
-                            if (m_Owner == mobile || creature.IsInvulnerable || creature.IsBoss || creature.IsParagon || creature.IsEthereal || creature.IsReflective || Core.AOS && !m_Owner.InLOS(mobile))
+                            if (creature.ControlMaster != null || m_Owner == mobile || creature.IsInvulnerable || creature.IsBoss || creature.IsParagon || creature.IsEthereal || creature.IsReflective || Core.AOS && !m_Owner.InLOS(mobile))
                             {
                                 continue;
                             }
@@ -976,7 +1058,7 @@ namespace Server.Mobiles
                                 creature.Combatant = m_Owner.Combatant;
                             }
                             creature.IsCorrupted = true;
-                        } else if (mobile is PlayerMobile player) {
+                        } else if (mobile is PlayerMobile player && m_Owner.ControlMaster != player) {
                             if (CheckElementalEffect(5 + m_Modifier))
                             {
                                 m_Modifier = 0;
@@ -996,6 +1078,98 @@ namespace Server.Mobiles
                 {
                     Stop();
                 }
+            }
+        }
+
+        public static void RemoveRandomBuff(BaseCreature creature)
+        {
+            if (creature.IsBoss && Utility.RandomBool())
+            {
+                creature.IsBoss = false;
+                return;
+            }
+
+            if (creature.IsBurning && Utility.RandomBool())
+            {
+                creature.IsBurning = false;
+                return;
+            }
+
+            if (creature.IsCorrupted && Utility.RandomBool())
+            {
+                creature.IsCorrupted = false;
+                return;
+            }
+
+            if (creature.IsCorruptor && Utility.RandomBool())
+            {
+                creature.IsCorruptor = false;
+                return;
+            }
+
+            if (creature.IsElectrified && Utility.RandomBool())
+            {
+                creature.IsElectrified = false;
+                return;
+            }
+
+            if (creature.IsEthereal && Utility.RandomBool())
+            {
+                creature.IsEthereal = false;
+                return;
+            }
+
+            if (creature.IsFrozen && Utility.RandomBool())
+            {
+                creature.IsFrozen = false;
+                return;
+            }
+
+            if (creature.IsHeroic && Utility.RandomBool())
+            {
+                creature.IsHeroic = false;
+                return;
+            }
+
+            if (creature.IsIllusionist && Utility.RandomBool())
+            {
+                creature.IsIllusionist = false;
+                return;
+            }
+
+            if (creature.IsReflective && Utility.RandomBool())
+            {
+                creature.IsReflective = false;
+                return;
+            }
+
+            if (creature.IsRegenerative && Utility.RandomBool())
+            {
+                creature.IsRegenerative = false;
+                return;
+            }
+
+            if (creature.IsToxic && Utility.RandomBool())
+            {
+                creature.IsToxic = false;
+                return;
+            }
+
+            if (creature.IsVeteran && Utility.RandomBool())
+            {
+                creature.IsVeteran = false;
+                return;
+            }
+
+            if (creature.IsMagicResistant && Utility.RandomBool())
+            {
+                creature.IsMagicResistant = false;
+                return;
+            }
+
+            if (creature.IsSoulFeeder && Utility.RandomBool())
+            {
+                creature.IsSoulFeeder = false;
             }
         }
     }

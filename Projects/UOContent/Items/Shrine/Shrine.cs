@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using ModernUO.Serialization;
 using Org.BouncyCastle.Asn1.Cms;
+using Server.Collections;
 using Server.Factions;
 using Server.Misc;
 using Server.Mobiles;
@@ -141,7 +142,7 @@ namespace Server.Items
 
         public static bool ValidShrineAnchor(Region region, Type anchorType) => !Array.Exists(OppositionGroup.SeaCreatures, type => type == anchorType) && !region.IsPartOf<GuardedRegion>();
 
-        public static int GetShrineRange(Region region) => region.IsPartOf<DungeonRegion>() ? 25 : 75;
+        public static int GetShrineRange(Region region) => region.IsPartOf<DungeonRegion>() ? 75 : 300;
 
         public static void CreateShrine(Point3D location, Region region, Type anchorType, Map map, bool ignoreValidationCheck = false)
         {
@@ -214,16 +215,20 @@ namespace Server.Items
 
         public void RespawnShrine()
         {
-            var mobiles = Map.GetMobilesInRange(Location, GetShrineRange(Region)).ToArray();
-            if (mobiles.Length > 0)
+            using var list = PooledRefList<Mobile>.Create();
+            foreach(var mobile in Map.GetMobilesInRange(Location, GetShrineRange(Region)))
             {
-                var mobile = mobiles[Utility.Random(mobiles.Length)];
+                list.Add(mobile);
+            }
+            if (list.Count > 0)
+            {
+                var mobile = list[Utility.Random(list.Count)];
                 int attempts = 0;
                 bool validAnchor = ValidShrineAnchor(mobile.Region, mobile.GetType());
                 bool attemptCreation = validAnchor;
                 while (!validAnchor)
                 {
-                    mobile = mobiles[Utility.Random(mobiles.Length)];
+                    mobile = list[Utility.Random(list.Count)];
                     attemptCreation = ValidShrineAnchor(mobile.Region, mobile.GetType());
                     validAnchor = attemptCreation;
                     attempts++;
@@ -444,10 +449,14 @@ namespace Server.Items
             if (!Deleted)
             {
                 Point3D randomLocation = Map.GetRandomNearbyLocation(Location, 8);
-                var nearbyMobiles = Map.GetMobilesInRange(randomLocation, 1).ToArray();
-                if (nearbyMobiles.Length > 0)
+                using var list = PooledRefList<Mobile>.Create();
+                foreach(var mobile in Map.GetMobilesInRange(randomLocation, 1))
                 {
-                    Mobile entity = nearbyMobiles[Utility.Random(nearbyMobiles.Length)];
+                    list.Add(mobile);
+                }
+                if (list.Count > 0)
+                {
+                    Mobile entity = list[Utility.Random(list.Count)];
                     Effects.SendBoltEffect(entity);
                     entity.Damage(Utility.RandomMinMax(2, 10));
                 }

@@ -80,10 +80,10 @@ public partial class Moongate : Item
         new DelayTimer(m, this, range).Start();
     }
 
-        public virtual void OnGateUsed(Mobile m)
-        {
-            PlanarTravel.NextPlanarTravel(m, 3);
-        }
+    public virtual void OnGateUsed(Mobile m)
+    {
+        PlanarTravel.NextPlanarTravel(m, 3);
+    }
 
     public virtual void UseGate(Mobile m)
     {

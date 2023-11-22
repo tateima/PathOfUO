@@ -43,7 +43,7 @@ namespace Server.Mobiles
             Tamable = true;
             MinTameSkill = 84.3;
         }
-
+        public override bool CanCannibalise(Mobile target) => base.CanCannibalise(target) || target is GiantSerpent or IceSerpent or LavaSerpent or IceSnake or LavaSnake or LavaLizard or Snake;
         public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a silver serpent corpse";
         public override Faction FactionAllegiance => TrueBritannians.Instance;

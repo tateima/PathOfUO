@@ -8,15 +8,15 @@ namespace Server.Mobiles
     {
         // Buffs
         public static double GoldBuff = 2.30;
-        public static double HitsBuff = 3;
-        public static double StrBuff = 3.5;
-        public static double IntBuff = 2.75;
-        public static double DexBuff = 2.75;
-        public static double SkillsBuff = 2.20;
+        public static double HitsBuff = 2;
+        public static double StrBuff = 1.30;
+        public static double IntBuff = 1.20;
+        public static double DexBuff = 1.20;
+        public static double SkillsBuff = 1.4;
         public static double SpeedBuff = 1.20;
-        public static double FameBuff = 2.20;
-        public static double KarmaBuff = 2.20;
-        public static int DamageBuff = 6;
+        public static double FameBuff = 1.20;
+        public static double KarmaBuff = 1.20;
+        public static int DamageBuff = 4;
         public static void Convert(BaseCreature bc)
         {
             if (bc.IsHeroic)
@@ -30,8 +30,9 @@ namespace Server.Mobiles
                 {
                     bc.MinTameSkill = 40;
                 }
-                bc.MinTameSkill += 10;
+                bc.MinTameSkill += 17;
             }
+            bc.ControlSlots++;
             bc.SetResistance(ResistanceType.Cold, bc.BaseColdResistance + 10);
             bc.SetResistance(ResistanceType.Poison, bc.BasePoisonResistance + 10);
             bc.SetResistance(ResistanceType.Energy, bc.BaseEnergyResistance + 10);
@@ -48,8 +49,9 @@ namespace Server.Mobiles
             }
             if (bc.Tamable)
             {
-                bc.MinTameSkill -= 20;
+                bc.MinTameSkill -= 17;
             }
+            bc.ControlSlots--;
             bc.SetResistance(ResistanceType.Cold, bc.BaseColdResistance - 10);
             bc.SetResistance(ResistanceType.Poison, bc.BasePoisonResistance - 10);
             bc.SetResistance(ResistanceType.Energy, bc.BaseEnergyResistance - 10);

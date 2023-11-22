@@ -43,6 +43,8 @@ namespace Server.Mobiles
             MinTameSkill = 65.1;
         }
 
+        public override bool CanCannibalise(Mobile target) => base.CanCannibalise(target) || target is DireWolf or GreyWolf or TimberWolf;
+
         public override string CorpseName => "a white wolf corpse";
         public override string DefaultName => "a white wolf";
 

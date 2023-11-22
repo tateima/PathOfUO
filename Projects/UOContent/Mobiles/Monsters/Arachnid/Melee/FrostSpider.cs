@@ -45,6 +45,7 @@ namespace Server.Mobiles
 
             PackItem(new SpidersSilk(7));
         }
+        public override bool CanCannibalise(Mobile target) => base.CanCannibalise(target) || target is GiantSpider;
 
         public override string CorpseName => "a frost spider corpse";
         public override string DefaultName => "a frost spider";

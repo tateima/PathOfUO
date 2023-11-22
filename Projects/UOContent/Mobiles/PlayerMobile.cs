@@ -1092,7 +1092,10 @@ namespace Server.Mobiles
             {
                 if (follower is BaseCreature { IsStabled: false, Alive: true, Tamable: true } followerCreature)
                 {
-                    elligibleRangerCreatures.Add(followerCreature);
+                    if (followerCreature is BaseMount { Rider: null } or not BaseMount)
+                    {
+                        elligibleRangerCreatures.Add(followerCreature);
+                    }
                 }
             }
             return elligibleRangerCreatures;
@@ -1163,6 +1166,8 @@ namespace Server.Mobiles
                 }
             }
         }
+
+        public DateTime NextBandageTime { get; set; }
 
         public bool Neutral() => Alignment is Deity.Alignment.None;
 
@@ -4587,7 +4592,7 @@ namespace Server.Mobiles
                 list.Add(1114057, $"Next prayer: {WaitTeleporter.FormatTime(m_NextPrayer - Core.Now)}"); // ~1_val~
                 list.Add(1114057, $"Next challenge: {WaitTeleporter.FormatTime(m_NextDeityChallenge - Core.Now)}"); // ~1_val~
             }
-            string xp = (LevelExperience + CraftExperience + NonCraftExperience).ToString();
+            string xp = (LevelExperience + CraftExperience + NonCraftExperience + RangerExperience).ToString();
             int nextLevel = (int)LevelSystem.NextLevel(this);
             list.Add(1114057, $"{xp}/{nextLevel.ToString()}: XP");                  // ~1_val~
             if (Core.Now < m_NextPlanarTravel) {

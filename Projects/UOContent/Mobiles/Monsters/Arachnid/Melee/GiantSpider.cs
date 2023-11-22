@@ -38,11 +38,11 @@ namespace Server.Mobiles
 
             Tamable = true;
             ControlSlots = 1;
-            MinTameSkill = 59.1;
+            MinTameSkill = 61.1;
 
             PackItem(new SpidersSilk(5));
         }
-
+        public override bool CanCannibalise(Mobile target) => base.CanCannibalise(target) || target is FrostSpider;
         public override string CorpseName => "a giant spider corpse";
         public override string DefaultName => "a giant spider";
 

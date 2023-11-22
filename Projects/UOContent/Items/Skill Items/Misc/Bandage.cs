@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MimeKit;
 using ModernUO.Serialization;
 using Server.Engines.ConPVP;
 using Server.Factions;
@@ -98,6 +99,11 @@ public partial class Bandage : Item, IDyable
 
             if (targeted is Mobile mobile)
             {
+                if (mobile is PlayerMobile playerMobile && playerMobile.NextBandageTime >= DateTime.Now
+                    || mobile is BaseCreature baseCreature && baseCreature.NextBandageTime >= DateTime.Now)
+                {
+                    from.SendMessage("You cannot heal that target with bandages at this time.");
+                }
                 if (from.InRange(_bandage.GetWorldLocation(), Bandage.Range))
                 {
                     if (!(BandageContext.BeginHeal(from, mobile) == null || DuelContext.IsFreeConsume(from)))
@@ -229,104 +235,106 @@ public class BandageContext : Timer
             return;
         }
 
-        if (!Patient.Alive || petPatient?.IsDeadPet == true)
-        {
-            if (Patient.Map?.CanFit(Patient.Location, 16, false, false) != true)
-            {
-                Healer.SendLocalizedMessage(501042);  // Target can not be resurrected at that location.
-                Patient.SendLocalizedMessage(502391); // Thou can not be resurrected there!
-                return;
-            }
-
-            if (Patient.Region?.IsPartOf("Khaldun") == true)
-            {
-                // The veil of death in this area is too strong and resists thy efforts to restore life.
-                Healer.SendLocalizedMessage(1010395);
-                return;
-            }
-
-            var healing = Healer.Skills[primarySkill].Value;
-            var anatomy = Healer.Skills[secondarySkill].Value;
-            var chance = (healing - 68.0) / 50.0 - Slips * 0.02;
-            checkSkills = healing >= 80.0 && anatomy >= 80.0;
-
-            // TODO: Dbl check doesn't check for faction of the horse here?
-            if (!(checkSkills && chance > Utility.RandomDouble())
-                && (!Core.SE || petPatient is not FactionWarHorse || petPatient.ControlMaster != Healer))
-            {
-                if (petPatient?.IsDeadPet == true)
-                {
-                    Healer.SendLocalizedMessage(503256); // You fail to resurrect the creature.
-                }
-                else
-                {
-                    Healer.SendLocalizedMessage(500966); // You are unable to resurrect your patient.
-                }
-
-                return;
-            }
-
-            healerNumber = 500965; // You are able to resurrect your patient.
-            patientNumber = -1;
-
-            Patient.PlaySound(0x214);
-            Patient.FixedEffect(0x376A, 10, 16);
-
-            if (petPatient?.IsDeadPet == true)
-            {
-                var master = petPatient.ControlMaster;
-
-                if (master != null && Healer == master)
-                {
-                    petPatient.ResurrectPet();
-
-                    for (var i = 0; i < petPatient.Skills.Length; ++i)
-                    {
-                        petPatient.Skills[i].Base -= 0.1;
-                    }
-                }
-                else if (master?.InRange(petPatient, 3) == true)
-                {
-                    healerNumber = 503255; // You are able to resurrect the creature.
-
-                    master.CloseGump<PetResurrectGump>();
-                    master.SendGump(new PetResurrectGump(Healer, petPatient));
-                }
-                else
-                {
-                    var found = false;
-
-                    var friends = petPatient.Friends;
-
-                    for (var i = 0; i < friends?.Count; ++i)
-                    {
-                        var friend = friends[i];
-
-                        if (friend.InRange(petPatient, 3))
-                        {
-                            healerNumber = 503255; // You are able to resurrect the creature.
-
-                            friend.CloseGump<PetResurrectGump>();
-                            friend.SendGump(new PetResurrectGump(Healer, petPatient));
-
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (!found)
-                    {
-                        healerNumber = 1049670; // The pet's owner must be nearby to attempt resurrection.
-                    }
-                }
-            }
-            else
-            {
-                Patient.CloseGump<ResurrectGump>();
-                Patient.SendGump(new ResurrectGump(Patient, Healer));
-            }
-        }
-        else if (Patient.Poisoned && !(venomBlood != null))
+        // ignore this, we dont resurrect!
+        // if (!Patient.Alive || petPatient?.IsDeadPet == true)
+        // {
+        //     if (Patient.Map?.CanFit(Patient.Location, 16, false, false) != true)
+        //     {
+        //         Healer.SendLocalizedMessage(501042);  // Target can not be resurrected at that location.
+        //         Patient.SendLocalizedMessage(502391); // Thou can not be resurrected there!
+        //         return;
+        //     }
+        //
+        //     if (Patient.Region?.IsPartOf("Khaldun") == true)
+        //     {
+        //         // The veil of death in this area is too strong and resists thy efforts to restore life.
+        //         Healer.SendLocalizedMessage(1010395);
+        //         return;
+        //     }
+        //
+        //     var healing = Healer.Skills[primarySkill].Value;
+        //     var anatomy = Healer.Skills[secondarySkill].Value;
+        //     var chance = (healing - 68.0) / 50.0 - Slips * 0.02;
+        //     checkSkills = healing >= 80.0 && anatomy >= 80.0;
+        //
+        //     // TODO: Dbl check doesn't check for faction of the horse here?
+        //     if (!(checkSkills && chance > Utility.RandomDouble())
+        //         && (!Core.SE || petPatient is not FactionWarHorse || petPatient.ControlMaster != Healer))
+        //     {
+        //         if (petPatient?.IsDeadPet == true)
+        //         {
+        //             Healer.SendLocalizedMessage(503256); // You fail to resurrect the creature.
+        //         }
+        //         else
+        //         {
+        //             Healer.SendLocalizedMessage(500966); // You are unable to resurrect your patient.
+        //         }
+        //
+        //         return;
+        //     }
+        //
+        //     healerNumber = 500965; // You are able to resurrect your patient.
+        //     patientNumber = -1;
+        //
+        //     Patient.PlaySound(0x214);
+        //     Patient.FixedEffect(0x376A, 10, 16);
+        //
+        //     if (petPatient?.IsDeadPet == true)
+        //     {
+        //         var master = petPatient.ControlMaster;
+        //
+        //         if (master != null && Healer == master)
+        //         {
+        //             petPatient.ResurrectPet();
+        //
+        //             for (var i = 0; i < petPatient.Skills.Length; ++i)
+        //             {
+        //                 petPatient.Skills[i].Base -= 0.1;
+        //             }
+        //         }
+        //         else if (master?.InRange(petPatient, 3) == true)
+        //         {
+        //             healerNumber = 503255; // You are able to resurrect the creature.
+        //
+        //             master.CloseGump<PetResurrectGump>();
+        //             master.SendGump(new PetResurrectGump(Healer, petPatient));
+        //         }
+        //         else
+        //         {
+        //             var found = false;
+        //
+        //             var friends = petPatient.Friends;
+        //
+        //             for (var i = 0; i < friends?.Count; ++i)
+        //             {
+        //                 var friend = friends[i];
+        //
+        //                 if (friend.InRange(petPatient, 3))
+        //                 {
+        //                     healerNumber = 503255; // You are able to resurrect the creature.
+        //
+        //                     friend.CloseGump<PetResurrectGump>();
+        //                     friend.SendGump(new PetResurrectGump(Healer, petPatient));
+        //
+        //                     found = true;
+        //                     break;
+        //                 }
+        //             }
+        //
+        //             if (!found)
+        //             {
+        //                 healerNumber = 1049670; // The pet's owner must be nearby to attempt resurrection.
+        //             }
+        //         }
+        //     }
+        //     else
+        //     {
+        //         Patient.CloseGump<ResurrectGump>();
+        //         Patient.SendGump(new ResurrectGump(Patient, Healer));
+        //     }
+        // }
+        // else
+        if (Patient.Poisoned && venomBlood == null)
         {
             Healer.SendLocalizedMessage(500969); // You finish applying the bandages.
 
@@ -457,6 +465,15 @@ public class BandageContext : Timer
         {
             Healer.CheckSkill(secondarySkill, 0.0, 120.0);
             Healer.CheckSkill(primarySkill, 0.0, 120.0);
+        }
+        DateTime now = DateTime.Now;
+        now = now.AddSeconds(5);
+        if (petPatient?.Alive == true)
+        {
+            petPatient.NextBandageTime = now;
+        } else if (Patient is PlayerMobile { Alive: true } playerMobile)
+        {
+            playerMobile.NextBandageTime = now;
         }
     }
 

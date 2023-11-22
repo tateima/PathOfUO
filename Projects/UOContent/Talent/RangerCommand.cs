@@ -6,10 +6,11 @@ namespace Server.Talent
         {
             TalentDependencies = new[] { typeof(NatureAffinity) };
             DisplayName = "Ranger command";
-            Description = "Decreases stat and skill loss of tamed creatures by 1% per level.";
-            AdditionalDetail = "This talent requires at least 30 animal taming and animal lore.";
+            Description = "Improves stat and skills loss/gain of tamed creatures.";
+            AdditionalDetail = "After taming, losses will be reduced by 1% per level. When levelling, tamed creatures will receive increased gains by 3% per level. It will also reduce the chance of your tames losing their special suffixes (e.g Veteran/Heroic). This talent requires at least 30 animal taming and animal lore.";
             ImageID = 188;
-            AddEndY = 95;
+            AddEndY = 115;
+            AddEndAdditionalDetailsY = 120;
         }
 
         public override bool HasSkillRequirement(Mobile mobile) => mobile.Skills[SkillName.AnimalTaming].Base >= 30 &&

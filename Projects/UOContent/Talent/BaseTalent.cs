@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using Server.Gumps;
 using Server.Items;
 using Server.Mobiles;
@@ -477,15 +478,114 @@ namespace Server.Talent
             return mobile;
         }
 
+        public static int GetCriticalStrikeDice() => Utility.RandomMinMax(1, 5);
 
-        public static void CriticalStrike(ref int damage)
+        public static void CriticallyWeaken(Mobile target, StatType statType)
         {
-            damage *= 2;
+            target.AddStatMod(
+                new StatMod(statType, "CriticalStrikeWeakness", Utility.RandomMinMax(1, 3), TimeSpan.FromSeconds(30))
+            );
+            target.PrivateOverheadMessage(MessageType.Regular, target.SpeechHue, true, "You are critically hit, causing temporary weakness.", target.NetState);
         }
 
-        public static void CriticalStrike(ref double damage)
+        public static void CriticalStrike(Mobile target, Mobile from, ref double damage)
         {
-            damage *= 2.0;
+            if (Utility.Random(10) < 4)
+            {
+                damage *= 2.0;
+            }
+            else if (target is PlayerMobile player)
+            {
+                ApplyCriticalStrikeEffect(player, from);
+            } else if (target is BaseCreature creature)
+            {
+                ApplyCriticalStrikeEffect(creature, from);
+            }
+        }
+
+        public static void CriticalStrike(Mobile target, Mobile from, ref int damage)
+        {
+            if (Utility.Random(10) < 4)
+            {
+                damage *= 2;
+            }
+            else
+            {
+                if (target is PlayerMobile player)
+                {
+                    ApplyCriticalStrikeEffect(player, from);
+                } else if (target is BaseCreature creature)
+                {
+                    target.PublicOverheadMessage(MessageType.Regular, target.SpeechHue, false, $"* The {creature.Name} suffers a critical strike effect *");
+                    ApplyCriticalStrikeEffect(creature, from);
+                }
+            }
+        }
+
+        public static void ApplyCriticalStrikeEffect(PlayerMobile player, Mobile from)
+        {
+            switch(GetCriticalStrikeDice())
+            {
+                case 1:
+                    {
+                        Blindness.BlindMobile(player); // head
+                        break;
+                    }
+                case 2:
+                    {
+                        BleedAttack.BeginBleed(player, from); // torso
+                        break;
+                    }
+                case 3:
+                    {
+                        Disarm.BeginDisarm(from, player); // torso
+                        break;
+                    }
+                case 4:
+                    {
+                        CriticallyWeaken(player, StatType.Str); // right arm
+                        break;
+                    }
+                default:
+                    {
+                        CriticallyWeaken(player, StatType.Dex);
+                        break;
+                    }
+            };
+
+        }
+
+        public static void ApplyCriticalStrikeEffect(BaseCreature creature, Mobile from)
+        {
+            switch(GetCriticalStrikeDice())
+            {
+                case 1:
+                    {
+                        Blindness.BlindMobile(creature); // head
+                        break;
+                    }
+                case 2:
+                    {
+                        BleedAttack.BeginBleed(creature, from); // torso
+                        break;
+                    }
+                case 3:
+                    {
+                        Disarm.BeginDisarm(from, creature); // torso
+                        break;
+                    }
+                case 4:
+                    {
+                        CriticallyWeaken(creature, StatType.Str); // right arm
+                        break;
+                    }
+                default:
+                    {
+                        CriticallyWeaken(creature, StatType.Dex);
+                        break;
+                    }
+            };
+
         }
 
         public virtual void OnUse(Mobile from)
@@ -785,8 +885,8 @@ namespace Server.Talent
                 var targetSkill = target.Skills[skill.SkillName];
                 if (targetSkill.Base > 10.0)
                 {
-                    var lesser = skills.Where(s => s.Base < targetSkill.Base).Min();
-                    if (lesser is not null && skills.Count > amount)
+                    var lesser = skills.MinBy(s => s.Base);
+                    if (skills.Count > amount)
                     {
                         var index = skills.FindIndex(0, s => s.SkillName == lesser.SkillName);
                         skills[index] = targetSkill;

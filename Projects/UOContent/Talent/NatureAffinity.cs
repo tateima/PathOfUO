@@ -21,8 +21,8 @@ namespace Server.Talent
             };
             DisplayName = "Nature affinity";
             Description =
-                "Increases damage done by special moves and nature spells. Wild animals come to your aid in battle.";
-            AdditionalDetail = $"The damage is increased by 1% per level. {PassiveDetail}";
+                "Increases damage done by special moves, tamed creatures and nature spells. Wild animals come to your aid in battle.";
+            AdditionalDetail = $"The damage is increased by 1% per level. Tamed creatures will also gain a damage reduction of equivalent value. {PassiveDetail}";
             ImageID = 139;
         }
 

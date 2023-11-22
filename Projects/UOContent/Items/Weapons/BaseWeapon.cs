@@ -1903,6 +1903,15 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
 
     public virtual int AbsorbDamage(Mobile attacker, Mobile defender, int damage)
     {
+        if (defender is PlayerMobile defendingPlayer && defendingPlayer.mShrineType is ShrineType.Combat)
+        {
+            damage -= Utility.RandomMinMax(1, 3);
+            if (damage < 0)
+            {
+                damage = 1;
+            }
+        }
+
         if (Core.AOS)
         {
             return AbsorbDamageAOS(attacker, defender, damage);
@@ -2038,6 +2047,11 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
                 {
                     value.CheckHitEffect(attacker, defender, ref damage);
                 }
+            }
+
+            if (attackingPlayer.mShrineType is ShrineType.Combat)
+            {
+                damage += Utility.RandomMinMax(1, 3);
             }
         }
         /*

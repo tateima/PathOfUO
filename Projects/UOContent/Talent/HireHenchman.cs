@@ -1,4 +1,5 @@
 using System.Linq;
+using Server.Collections;
 using Server.Items;
 using Server.Mobiles;
 
@@ -25,7 +26,14 @@ namespace Server.Talent
         {
             if (from is PlayerMobile player)
             {
-                TavernKeeper keeper = from.GetMobilesInRange(3).OfType<TavernKeeper>().FirstOrDefault();
+                TavernKeeper keeper = null;
+                foreach (var mobile in from.GetMobilesInRange(3))
+                {
+                    if (mobile.GetType() == typeof(TavernKeeper))
+                    {
+                        keeper = (TavernKeeper)mobile;
+                    }
+                }
                 if (keeper != null)
                 {
                     if (player.Henchmen.Count + player.RestedHenchmen.Count < 2)

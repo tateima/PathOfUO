@@ -2473,6 +2473,7 @@ public abstract class BaseAI
         {
             // Get the current distance
             var iCurrDist = (int)m_Mobile.GetDistanceToSqrt(m);
+            var mobilesInRange = m_Mobile.GetMobilesInRange(0);
 
             if (iCurrDist < iWantDistMin || iCurrDist > iWantDistMax)
             {

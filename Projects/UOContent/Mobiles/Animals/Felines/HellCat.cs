@@ -41,7 +41,7 @@ namespace Server.Mobiles
             ControlSlots = 1;
             MinTameSkill = 71.1;
         }
-
+        public override bool CanCannibalise(Mobile target) => base.CanCannibalise(target) || target is PredatorHellCat;
         public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a hell cat corpse";
         public override string DefaultName => "a hell cat";

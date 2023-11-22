@@ -31,7 +31,7 @@ namespace Server.Talent
                 ApplyStaminaCost(attacker);
                 target.PlaySound(0x206);
                 target.Paralyze(TimeSpan.FromSeconds(Level * 5));
-                CriticalStrike(ref damage);
+               CriticalStrike(target, attacker, ref damage);
                 Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds - Level * 10), ExpireTalentCooldown, out _talentTimerToken);
             }
         }

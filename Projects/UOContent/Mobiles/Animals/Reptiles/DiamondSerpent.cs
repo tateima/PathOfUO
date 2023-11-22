@@ -32,6 +32,7 @@ namespace Server.Mobiles
         public DiamondSerpent(Serial serial) : base(serial)
         {
         }
+        public override bool CanCannibalise(Mobile target) => base.CanCannibalise(target) || target is SilverSerpent;
         public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
         public override string CorpseName => "a diamond serpent corpse";
         public override string DefaultName => "a diamond serpent";

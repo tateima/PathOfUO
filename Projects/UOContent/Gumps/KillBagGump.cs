@@ -48,7 +48,7 @@ namespace Server.Gumps
                         from.SendSound(0x55);
                     }
                     var paginatedKills = kills.Skip((page-1)*20).Take(20);
-                    int y = 80;
+                    int y = 50;
                     int x = 80;
                     int i = 0;
                     if (totalPages > 1)

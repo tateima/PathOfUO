@@ -129,11 +129,12 @@ namespace Server.Gumps
                             {
                                 AddLabel(x, y, 0, skill.Name + " " + currentSkillValue);
                                 if (
-                                    (BaseTalent.IsCraftingSkill(m_SkillGroup.Skills[i]) && player.CraftSkillPoints > 0)
+                                    BaseTalent.IsCraftingSkill(m_SkillGroup.Skills[i]) && player.CraftSkillPoints > 0
                                     ||
-                                    (!BaseTalent.IsCraftingSkill(m_SkillGroup.Skills[i]) && !BaseTalent.IsRangerSkill(m_SkillGroup.Skills[i]) && player.NonCraftSkillPoints > 0)
+                                    !BaseTalent.IsCraftingSkill(m_SkillGroup.Skills[i]) && (player.NonCraftSkillPoints > 0 || player.RangerSkillPoints > 0)
                                     ||
-                                    (BaseTalent.IsRangerSkill(m_SkillGroup.Skills[i]) && player.RangerSkillPoints > 0)
+                                    // only rangers can increase ranger skills, but a ranger can still increase non craft skills
+                                    BaseTalent.IsRangerSkill(m_SkillGroup.Skills[i]) && player.RangerSkillPoints > 0
                                 )
                                 {
                                     AddButton(buttonX, y + 2, 2223, 2223, 200 + i);
@@ -258,7 +259,16 @@ namespace Server.Gumps
                                             amount += loreSeeker.Level;
                                         }
                                     }
-                                    player.NonCraftSkillPoints--;
+
+                                    if (player.NonCraftSkillPoints <= 0)
+                                    {
+                                        // Rangers are allowed to invest in non craft skills too
+                                        player.RangerSkillPoints--;
+                                    }
+                                    else
+                                    {
+                                        player.NonCraftSkillPoints--;
+                                    }
                                 }
                                 player.Skills[m_SkillGroup.Skills[info.ButtonID - 200]].Base += amount;
                             }

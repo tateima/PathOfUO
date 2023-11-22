@@ -22,7 +22,7 @@ namespace Server.Talent
             if (Utility.Random(100) < Level)
             {
                 // critical damage them with the same damage again
-                CriticalStrike(ref damage);
+                CriticalStrike(target, attacker, ref damage);
             }
         }
     }

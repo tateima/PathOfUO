@@ -40,10 +40,12 @@ namespace Server.Mobiles
             Karma = -5000;
 
             VirtualArmor = 36;
-
+            Tamable = true;
+            ControlSlots = 2;
+            MinTameSkill = 81.1;
             PackItem(new SpidersSilk(8));
         }
-
+        public override bool CanCannibalise(Mobile target) => base.CanCannibalise(target) || target is GiantSpider or FrostSpider;
         public override string CorpseName => "a dread spider corpse";
         public override string DefaultName => "a dread spider";
 

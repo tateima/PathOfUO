@@ -94,6 +94,7 @@ namespace Server.Multis
 
             if (m is BaseCreature bc)
             {
+                bc.SetLevel();
                 bc.RangeHome = wanderRange;
                 bc.Home = loc;
             }

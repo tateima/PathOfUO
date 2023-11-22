@@ -41,7 +41,7 @@ namespace Server.Mobiles
             ControlSlots = 1;
             MinTameSkill = 35.1;
         }
-
+        public override bool CanCannibalise(Mobile target) => base.CanCannibalise(target) || target is BrownBear or GrizzlyBear or BlackBear;
         public override string CorpseName => "a polar bear corpse";
         public override string DefaultName => "a polar bear";
 

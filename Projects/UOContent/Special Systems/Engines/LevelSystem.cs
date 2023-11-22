@@ -2,6 +2,7 @@
 using Server.Mobiles;
 using Server.Pantheon;
 using Server.SkillHandlers;
+using Server.Talent;
 
 namespace Server.Misc;
 
@@ -41,7 +42,7 @@ public class LevelSystem
         int craftExperience, int rangerExperience, Mobile target
     )
     {
-        bool isMaxLevel = !MaxLevel(target);
+        bool isMaxLevel = MaxLevel(target);
         int requiredExperience = NextLevel(target);
         if (levelExperience + nonCraftExperience + craftExperience + rangerExperience >= requiredExperience && !isMaxLevel)
         {
@@ -96,6 +97,7 @@ public class LevelSystem
                     playerMobile.Level <= 70)
                 {
                     playerMobile.TalentPoints += 2;
+
                 }
                 else if (playerMobile.Level <= 75)
                 {
@@ -105,15 +107,24 @@ public class LevelSystem
                 // reset craft and non craft experience for next level tracking
                 playerMobile.CraftExperience = (int)(remainingExp * craftingContr);
                 playerMobile.NonCraftExperience = (int)(remainingExp * nonCraftingContr);
-                playerMobile.RangerSkillPoints = (int)(remainingExp * rangerContr);
+                playerMobile.RangerExperience = (int)(remainingExp * rangerContr);
                 playerMobile.SendMessage("You have gained a level!");
                 playerMobile.LevelExperience = GetBaseExperience(playerMobile.Level);
             }
             else if (target is BaseCreature creature)
             {
                 creature.Level++;
-                AnimalTaming.ScaleStats(creature, 0.03);
-                AnimalTaming.ScaleSkills(creature, 0.03);
+                double scale = 1.03;
+                if (creature.Tamable && creature.ControlMaster is PlayerMobile controlMaster)
+                {
+                    BaseTalent rangerCommand = controlMaster.GetTalent(typeof(RangerCommand));
+                    if (rangerCommand != null)
+                    {
+                        scale += 0.003 * rangerCommand.Level;
+                    }
+                }
+                AnimalTaming.ScaleStats(creature, scale);
+                AnimalTaming.ScaleSkills(creature, scale);
                 creature.LevelExperience = GetBaseExperience(creature.Level) + remainingExp;
             }
 

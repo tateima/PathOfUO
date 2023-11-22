@@ -58,6 +58,7 @@ namespace Server.Mobiles
 
         public static int GetMaxStabled(Mobile from)
         {
+            return 999;
             var taming = from.Skills.AnimalTaming.Value;
             var anlore = from.Skills.AnimalLore.Value;
             var vetern = from.Skills.Veterinary.Value;

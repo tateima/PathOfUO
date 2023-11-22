@@ -205,37 +205,37 @@ public static class CharacterCreation
         {
             if (rangerSkilLNames.Count > 0)
             {
-                ((PlayerMobile)newChar).RangerSkillPoints = 4;
-                ((PlayerMobile)newChar).CraftSkillPoints = 4;
-                ((PlayerMobile)newChar).NonCraftSkillPoints = 4;
+                ((PlayerMobile)newChar).RangerSkillPoints = 2;
+                ((PlayerMobile)newChar).CraftSkillPoints = 2;
+                ((PlayerMobile)newChar).NonCraftSkillPoints = 2;
             }
             else
             {
-                ((PlayerMobile)newChar).CraftSkillPoints = 6;
-                ((PlayerMobile)newChar).NonCraftSkillPoints = 6;
+                ((PlayerMobile)newChar).CraftSkillPoints = 3;
+                ((PlayerMobile)newChar).NonCraftSkillPoints = 3;
             }
         } else if (craftingSkillNames.Count > 0)
         {
             if (rangerSkilLNames.Count > 0)
             {
-                ((PlayerMobile)newChar).RangerSkillPoints = 6;
-                ((PlayerMobile)newChar).CraftSkillPoints = 6;
+                ((PlayerMobile)newChar).RangerSkillPoints = 3;
+                ((PlayerMobile)newChar).CraftSkillPoints = 3;
             }
             else
             {
-                ((PlayerMobile)newChar).CraftSkillPoints = 12;
+                ((PlayerMobile)newChar).CraftSkillPoints = 6;
             }
         }
         else
         {
             if (rangerSkilLNames.Count > 0)
             {
-                ((PlayerMobile)newChar).RangerSkillPoints = 6;
-                ((PlayerMobile)newChar).NonCraftSkillPoints = 6;
+                ((PlayerMobile)newChar).RangerSkillPoints = 3;
+                ((PlayerMobile)newChar).NonCraftSkillPoints = 3;
             }
             else
             {
-                ((PlayerMobile)newChar).NonCraftSkillPoints = 12;
+                ((PlayerMobile)newChar).NonCraftSkillPoints = 6;
             }
         }
         ((PlayerMobile)newChar).TalentPoints = 1;

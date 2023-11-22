@@ -130,7 +130,7 @@ namespace Server.SkillHandlers
                     mobile.PrivateOverheadMessage(MessageType.Regular, 0x3B2, 502469, from.NetState);
                     return;
                 }
-                if (((PlayerMobile)from).GetTalent(typeof(ExoticTamer)) is null && creature is ManaDrake or NecroticWyvern or PrismaticDrake or SilverSerpent or DiamondSerpent)
+                if (((PlayerMobile)from).GetTalent(typeof(ExoticTamer)) is null && creature is ManaDrake or NecroticWyvern or PrismaticDrake or SilverSerpent or DiamondSerpent or DreadSpider)
                 {
                     // You have no chance of taming this creature.
                     creature.PrivateOverheadMessage(MessageType.Regular, 0x3B2, false, "This creature is exotic and requires special talents", from.NetState);
@@ -218,31 +218,7 @@ namespace Server.SkillHandlers
                 }
                 else if (creature.CanAngerOnTame && Utility.RandomDouble() < 0.95)
                 {
-                    // You seem to anger the beast!
-                    creature.PrivateOverheadMessage(MessageType.Regular, 0x3B2, 502805, from.NetState);
-
-                    creature.PlaySound(creature.GetAngerSound());
-                    creature.Direction = creature.GetDirectionTo(from);
-
-                    if (creature.BardPacified && Utility.RandomDouble() < 0.75)
-                    {
-                        Timer.StartTimer(TimeSpan.FromSeconds(2.0), () => Pacify(creature));
-                    }
-                    else
-                    {
-                        creature.BardEndTime = Core.Now;
-                    }
-
-                    creature.BardPacified = false;
-
-                    creature.AIObject?.DoMove(creature.Direction);
-
-                    if (from is PlayerMobile pm &&
-                        !(VirtueSystem.GetVirtues(pm)?.HonorActive == true ||
-                          TransformationSpellHelper.UnderTransformation(pm, typeof(EtherealVoyageSpell))))
-                    {
-                        creature.Combatant = pm;
-                    }
+                    DoAnger(creature, from);
                 }
                 else
                 {
@@ -257,6 +233,35 @@ namespace Server.SkillHandlers
                     new InternalTimer(from, creature, Utility.Random(3, 2)).Start();
 
                     m_SetSkillTime = false;
+                }
+            }
+
+            private static void DoAnger(BaseCreature creature, Mobile from)
+            {
+                // You seem to anger the beast!
+                creature.PrivateOverheadMessage(MessageType.Regular, 0x3B2, 502805, from.NetState);
+
+                creature.PlaySound(creature.GetAngerSound());
+                creature.Direction = creature.GetDirectionTo(from);
+
+                if (creature.BardPacified && Utility.RandomDouble() < 0.75)
+                {
+                    Timer.StartTimer(TimeSpan.FromSeconds(2.0), () => Pacify(creature));
+                }
+                else
+                {
+                    creature.BardEndTime = Core.Now;
+                }
+
+                creature.BardPacified = false;
+
+                creature.AIObject?.DoMove(creature.Direction);
+
+                if (from is PlayerMobile pm &&
+                    !(VirtueSystem.GetVirtues(pm)?.HonorActive == true ||
+                      TransformationSpellHelper.UnderTransformation(pm, typeof(EtherealVoyageSpell))))
+                {
+                    creature.Combatant = pm;
                 }
             }
 
@@ -290,6 +295,7 @@ namespace Server.SkillHandlers
 
                     var de = m_Creature.FindMostRecentDamageEntry(false);
                     var alreadyOwned = m_Creature.Owners.Contains(m_Tamer);
+                    m_Creature.TamingAttempts.TryGetValue(m_Tamer, out int attempts);
 
                     if (!m_Tamer.InRange(m_Creature, Core.AOS ? 7 : 6))
                     {
@@ -347,10 +353,11 @@ namespace Server.SkillHandlers
                         m_Creature.PrivateOverheadMessage(MessageType.Regular, 0x3B2, 1054025, m_Tamer.NetState);
                         Stop();
                     }
-                    else if (de?.LastDamage > m_StartTime)
+                    else if (de?.LastDamage > m_StartTime ||  attempts >= 6)
                     {
                         m_BeingTamed.Remove(m_Creature);
                         m_Tamer.NextSkillTime = Core.TickCount;
+                        DoAnger(m_Creature, m_Tamer);
                         // The animal is too angry to continue taming.
                         m_Creature.PrivateOverheadMessage(MessageType.Regular, 0x3B2, 502794, m_Tamer.NetState);
                         Stop();
@@ -426,6 +433,8 @@ namespace Server.SkillHandlers
 
                                 if (m_Tamer is PlayerMobile player)
                                 {
+                                    int levelLoss = 5;
+                                    int monsterSpecialModifier = 0;
                                     if (player.GetTalent(typeof(RangerCommand)) is RangerCommand rangerCommand)
                                     {
                                         greaterDragonScale += rangerCommand.ModifySpellScalar();
@@ -433,6 +442,8 @@ namespace Server.SkillHandlers
                                         paralyzedScale += rangerCommand.ModifySpellScalar();
                                         skillScale += rangerCommand.ModifySpellScalar();
                                         statLossScale -= rangerCommand.ModifySpellScalar();
+                                        levelLoss -= rangerCommand.Level;
+                                        monsterSpecialModifier = rangerCommand.Level;
                                     }
                                     if (m_Creature is GreaterDragon)
                                     {
@@ -458,12 +469,50 @@ namespace Server.SkillHandlers
                                         ScaleStats(m_Creature, statLossScale);
                                     }
 
-                                    if (m_Creature.Level > player.Level && !LevelSystem.MaxLevel(player))
+                                    if (m_Creature.Level >= player.Level && !LevelSystem.MaxLevel(player))
                                     {
-                                        double levelLossScale = (m_Creature.Level - player.Level) * 0.03;
-                                        m_Creature.Level = player.Level;
+                                        int minLevel = player.Level - levelLoss;
+                                        if (minLevel < 1)
+                                        {
+                                            minLevel = 1;
+                                        }
+                                        int newLevel = Utility.RandomMinMax(minLevel, player.Level);
+                                        double levelLossScale = 1.0 - (m_Creature.Level - newLevel) * 0.03;
+                                        if (levelLossScale < 0)
+                                        {
+                                            // min 90% scale down
+                                            levelLossScale = 0.10;
+                                        }
+                                        m_Creature.Level = newLevel;
+                                        m_Creature.TamedExperience = LevelSystem.GetBaseExperience(newLevel);
+                                        bool removeSpecials = m_Creature.HasMonsterSpecial;
+                                        while (removeSpecials)
+                                        {
+                                            Item item = m_Creature.Backpack?.FindItemByType(typeof(Item));
+                                            while (item != null)
+                                            {
+                                                item.Delete();
+                                                item = m_Creature.Backpack?.FindItemByType(typeof(Item));
+                                            }
+
+                                            if (Utility.Random(200) < 199 - monsterSpecialModifier*2)
+                                            {
+                                                MonsterBuff.RemoveRandomBuff(m_Creature);
+                                            }
+                                            else
+                                            {
+                                                removeSpecials = false;
+                                            }
+                                        }
                                         ScaleStats(m_Creature, levelLossScale);
                                         ScaleSkills(m_Creature, levelLossScale);
+                                        // award 6% of the experience for the tame
+                                        int tamingExperience = AOS.Scale(m_Creature.FinalExperience(), 6);
+                                        if (tamingExperience > 0)
+                                        {
+                                            player.RangerExperience += tamingExperience;
+                                            player.SendMessage($"You have earned {tamingExperience} from the tame.");
+                                        }
                                     }
                                 }
                             }
@@ -485,6 +534,23 @@ namespace Server.SkillHandlers
                         }
                         else
                         {
+                            if (m_Creature.TamingAttempts.ContainsKey(m_Tamer))
+                            {
+                                if (m_Creature.LastTamingAttempt <= DateTime.Now.AddHours(-3))
+                                {
+                                    attempts = 1; // reset their taming attempts after 3 hours
+                                }
+                                else
+                                {
+                                    attempts++;
+                                }
+                                m_Creature.TamingAttempts[m_Tamer] = attempts;
+                            }
+                            else
+                            {
+                                m_Creature.TamingAttempts.TryAdd(m_Tamer, 1);
+                            }
+                            m_Creature.LastTamingAttempt = DateTime.Now;
                             // You fail to tame the creature.
                             m_Creature.PrivateOverheadMessage(MessageType.Regular, 0x3B2, 502798, m_Tamer.NetState);
                         }

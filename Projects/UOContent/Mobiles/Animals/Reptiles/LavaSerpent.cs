@@ -43,6 +43,7 @@ namespace Server.Mobiles
             PackItem(new Bone());
             // TODO: body parts, armour
         }
+        public override bool CanCannibalise(Mobile target) => base.CanCannibalise(target) || target is LavaSnake or GiantSerpent;
 
         public override string CorpseName => "a lava serpent corpse";
         public override string DefaultName => "a lava serpent";

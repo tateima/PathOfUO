@@ -212,6 +212,8 @@ namespace Server.Mobiles
         private static readonly bool EnableRummaging = true;
         public static readonly TimeSpan ShoutDelay = TimeSpan.FromMinutes(1);
 
+        public DateTime NextBandageTime { get; set; }
+
         private DateTime m_NextGambleTime;
 
         public DateTime NextGambleTime
@@ -233,7 +235,11 @@ namespace Server.Mobiles
         public int CannibalPoints
         {
             get { return m_CannibalPoints; }
-            set { m_CannibalPoints = value; }
+            set
+            {
+                m_CannibalPoints = value;
+                InvalidateProperties();
+            }
         }
 
         private static readonly Type[] m_Eggs =
@@ -308,6 +314,9 @@ namespace Server.Mobiles
         private int m_FailedReturnHome; /* return to home failure counter */
         private int m_FireResistance;
 
+        private Dictionary<Mobile, int> m_TamingAttempts = new();
+        private DateTime m_LastTamingAttempt;
+
         private bool m_HasGeneratedLoot; // have we generated our loot yet?
         private TimerExecutionToken _healTimerToken;
         private TimerExecutionToken _provocationTimer;
@@ -338,6 +347,8 @@ namespace Server.Mobiles
         private long m_NextRummageTime;
 
         private bool m_Paragon;
+        private bool m_Warlord;
+        private bool m_Magical;
         private bool m_Heroic;
         private bool m_Veteran;
         private bool m_Boss;
@@ -388,6 +399,8 @@ namespace Server.Mobiles
             {
                 iRangePerception = DefaultRangePerception;
             }
+
+            m_LastTamingAttempt = DateTime.UnixEpoch;
             m_Tier = 1.0;
             m_Level = 1;
             LevelExperience = 0;
@@ -402,6 +415,8 @@ namespace Server.Mobiles
             m_NumberOfMinions = 0;
             m_Blinded = false;
             m_Feared = false;
+            m_Magical = false;
+            m_Warlord = false;
 
             RangePerception = iRangePerception;
             RangeFight = iRangeFight;
@@ -481,6 +496,19 @@ namespace Server.Mobiles
                     SpeedMod = CurrentSpeed * 2;
                 }
             }
+        }
+
+        public DateTime LastTamingAttempt
+        {
+            get => m_LastTamingAttempt;
+            set => m_LastTamingAttempt = value;
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public Dictionary<Mobile, int> TamingAttempts
+        {
+            get => m_TamingAttempts;
+            set => m_TamingAttempts = value;
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
@@ -616,6 +644,7 @@ namespace Server.Mobiles
             }
         }
 
+        [CommandProperty(AccessLevel.GameMaster)]
         public int Level
         {
             get => m_Level;
@@ -1023,7 +1052,12 @@ namespace Server.Mobiles
                 {
                     if (Combatant != null)
                     {
-                        List<Mobile> mobilesInRange = new List<Mobile>(GetMobilesInRange(12));
+                        using var list = PooledRefList<Mobile>.Create();
+                        var mobilesInRange = GetMobilesInRange(12);
+                        foreach (var mobile in mobilesInRange)
+                        {
+                            list.Add(mobile);
+                        }
                         foreach (Mobile minion in Minions.ToList())
                         {
                             if (!minion.Alive)
@@ -1032,7 +1066,7 @@ namespace Server.Mobiles
                                 continue;
                             }
 
-                            Mobile nearby = mobilesInRange.Find(m => m.Serial == minion.Serial);
+                            Mobile nearby = list.Find(m => m.Serial == minion.Serial);
                             if (nearby is null)
                             {
                                 Point3D point = new Point3D(Location.X, Location.Y, Location.Z);
@@ -1047,6 +1081,54 @@ namespace Server.Mobiles
                         MonsterBuff.DespawnMinions(this);
                     }
                 }
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsWarlord
+        {
+            get => m_Warlord;
+            set
+            {
+                if (m_Warlord == value)
+                {
+                    return;
+                }
+
+                if (value)
+                {
+                    MonsterBuff.AddWarlord(this);
+                }
+                else
+                {
+                    MonsterBuff.RemoveWarlord(this);
+                }
+                m_Warlord = value;
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public bool IsMagical
+        {
+            get => m_Magical;
+            set
+            {
+                if (m_Magical == value)
+                {
+                    return;
+                }
+
+                if (value)
+                {
+                    MonsterBuff.AddMagical(this);
+                }
+                else
+                {
+                    MonsterBuff.RemoveMagical(this);
+                }
+                m_Magical = value;
+                InvalidateProperties();
             }
         }
 
@@ -1073,6 +1155,8 @@ namespace Server.Mobiles
                 InvalidateProperties();
             }
         }
+
+        public bool HasMonsterSpecial => IsHeroic || IsVeteran || IsCorruptor || IsBoss || IsCorrupted || IsEthereal || IsFrozen || IsElectrified || IsBurning || IsIllusionist || IsReflective || IsRegenerative || IsToxic || IsSoulFeeder || IsMagicResistant || IsWarlord || IsMagical;
 
         public virtual bool HasManaOveride => false;
 
@@ -1545,7 +1629,8 @@ namespace Server.Mobiles
             get => m_IsBonded;
             set
             {
-                m_IsBonded = value;
+                // prevent bonding
+                m_IsBonded = false;
                 InvalidateProperties();
             }
         }
@@ -2009,7 +2094,7 @@ namespace Server.Mobiles
                 Animate(18, 5, 1, true, false, 0);
             }
 
-            Loyalty -= 3;
+            Loyalty -= 1;
             return false;
         }
 
@@ -2879,7 +2964,19 @@ namespace Server.Mobiles
         {
             base.Serialize(writer);
 
-            writer.Write(32); // version
+            writer.Write(35); // version
+            // version 35
+            writer.Write(m_Warlord);
+            writer.Write(m_Magical);
+            // version 34
+            writer.Write(m_LastTamingAttempt);
+            // version 33
+            writer.Write(m_TamingAttempts.Count);
+            foreach (var tamingAttempt in m_TamingAttempts)
+            {
+                writer.Write(tamingAttempt.Key);
+                writer.Write(tamingAttempt.Value);
+            }
             // version 32
             writer.Write(m_TamedExperience);
             // version 31
@@ -3048,6 +3145,29 @@ namespace Server.Mobiles
             base.Deserialize(reader);
 
             var version = reader.ReadInt();
+            if (version >= 35)
+            {
+                m_Warlord = reader.ReadBool();
+                m_Magical = reader.ReadBool();
+            }
+            if (version >= 34)
+            {
+                m_LastTamingAttempt = reader.ReadDateTime();
+            }
+            else
+            {
+                m_LastTamingAttempt = DateTime.UnixEpoch;
+            }
+            if (version >= 33)
+            {
+                int tamingAttemptCount = reader.ReadInt();
+                for (var i = 0; i < tamingAttemptCount; i++)
+                {
+                    Mobile attemptBy = reader.ReadEntity<Mobile>();
+                    int attempts = reader.ReadInt();
+                    m_TamingAttempts.Add(attemptBy, attempts);
+                }
+            }
             if (version >= 32)
             {
                 m_TamedExperience = reader.ReadInt();
@@ -3206,6 +3326,16 @@ namespace Server.Mobiles
 
                 m_Controlled = reader.ReadBool();
                 m_ControlMaster = reader.ReadEntity<Mobile>();
+                if (version >= 32)
+                {
+                    // fix up any creatures with invalid experience
+                    int baseLevelExperience = LevelSystem.GetBaseExperience(m_Level);
+                    if (m_ControlMaster != null && m_TamedExperience < baseLevelExperience)
+                    {
+                        m_TamedExperience += baseLevelExperience;
+                    }
+                }
+
                 ControlTarget = reader.ReadEntity<Mobile>();
                 ControlDest = reader.ReadPoint3D();
                 m_ControlOrder = (OrderType)reader.ReadInt();
@@ -3402,8 +3532,8 @@ namespace Server.Mobiles
                 Deity.RewardPoints((PlayerMobile)from,
                     new[]
                     {
-                        Utility.RandomMinMax(1, dropped.Amount/100),
-                        Utility.RandomMinMax(-1, -(dropped.Amount/100))
+                        Utility.RandomMinMax(1, dropped.Amount/50),
+                        Utility.RandomMinMax(-1, -(dropped.Amount/50))
                     }, new []
                     {
                         Deity.Alignment.Charity,
@@ -3523,6 +3653,22 @@ namespace Server.Mobiles
         public override bool Move(Direction d)
         {
             if (!base.Move(d))
+            {
+                return false;
+            }
+
+            bool notStackedOnMobile = true;
+            foreach (var mobile in GetMobilesInRange(0))
+            {
+                if (mobile != this)
+                {
+                    notStackedOnMobile = false;
+                    Pushing = true;
+                    break;
+                }
+            }
+
+            if (!notStackedOnMobile)
             {
                 return false;
             }
@@ -4147,14 +4293,24 @@ namespace Server.Mobiles
             if (Owners.Count > 0)
             {
                 string xp = (LevelExperience + TamedExperience).ToString();
-                int nextLevel = (int)LevelSystem.NextLevel(this);
-                list.Add(1114057, $"{xp}/{nextLevel.ToString()}: XP"); // ~1_val~
+                int nextLevel = LevelSystem.NextLevel(this);
+                if (ControlMaster is PlayerMobile playerController)
+                {
+                    BaseTalent cannibalism = playerController.GetTalent(typeof(Cannibalism));
+                    if (cannibalism != null)
+                    {
+                        list.Add(1114057, $"Cannibalism: {CannibalPoints.ToString()}"); // ~1_val~
+                    }
+                }
+                list.Add(1114057, $"Control slots: {ControlSlots.ToString()}"); // ~1_val~
+                list.Add(1114057, $"{xp}/{nextLevel.ToString()}: XP");          // ~1_val~
             }
             else
             {
                 if (Tamable)
                 {
-                    list.Add(1114057, $"Taming requirement: {MinTameSkill.ToString()}");   // ~1_val~
+                    list.Add(1114057, $"Taming requirement: {MinTameSkill.ToString()}"); // ~1_val~
+                    list.Add(1114057, $"Control slots: {ControlSlots.ToString()}");      // ~1_val~
                 }
                 list.Add(1114057, $"Level range: {(MinLevel - 1 < 1 ? 1 : MinLevel).ToString()} - {MaxLevel.ToString()}");   // ~1_val~
                 list.Add(1114057, $"XP: {FinalExperience().ToString()}"); // ~1_val~
@@ -4175,6 +4331,16 @@ namespace Server.Mobiles
             else if (IsMinion)
             {
                 list.Add(1114057, "Minion");               // ~1_val~
+            }
+
+            if (IsMagical)
+            {
+                list.Add(1114057, "Magical"); // ~1_val~
+            }
+
+            if (IsWarlord)
+            {
+                list.Add(1114057, "Warlord"); // ~1_val~
             }
 
             if (IsMagicResistant)
@@ -4605,7 +4771,7 @@ namespace Server.Mobiles
             }
 
             // int challengeRating = baseXp / 100;
-            scaleXp += AOS.Scale(scaleXp, 30);
+            scaleXp += AOS.Scale(scaleXp, 5);
             return scaleXp;
         }
 
@@ -4614,6 +4780,8 @@ namespace Server.Mobiles
             xpScale += AOS.Scale((int)xpScale, percent) > xpFixed ? AOS.Scale((int)xpScale, percent) : xpFixed;
             return xpScale;
         }
+
+        public virtual bool CanCannibalise(Mobile target) => GetType() == target.GetType();
 
         public int ExperienceScale(int xp)
         {
@@ -4669,6 +4837,16 @@ namespace Server.Mobiles
             }
 
             if (IsMagicResistant)
+            {
+                xpScale = ExperienceCompareScale(xpScale, 100, 15);
+            }
+
+            if (IsMagical)
+            {
+                xpScale = ExperienceCompareScale(xpScale, 100, 15);
+            }
+
+            if (IsWarlord)
             {
                 xpScale = ExperienceCompareScale(xpScale, 100, 15);
             }
@@ -4776,6 +4954,18 @@ namespace Server.Mobiles
             }
 
             return xp;
+        }
+
+        public void ModifyKillerXpByLevel(int killerLevel, ref int contributedXp)
+        {
+            if (Level > killerLevel + 5)
+            {
+                contributedXp += (Level - killerLevel) * Level;
+            }
+            else if (Level < killerLevel)
+            {
+                contributedXp /= killerLevel + 1 - Level;
+            }
         }
 
         public override void OnDeath(Container c)
@@ -4988,8 +5178,24 @@ namespace Server.Mobiles
                             contributedXp += AOS.Scale(contributedXp, 100);
                         }
 
+                        List<BaseCreature> rangerCreatures = player.RangerCreatures();
+                        contributedXp /= rangerCreatures.Count + 1; // divided amongst the ranger followers plus player
+                        foreach (var creature in rangerCreatures)
+                        {
+                            int creatureContributedXp = contributedXp;
+                            if (Level >= creature.Level - 2 && !LevelSystem.MaxLevel(creature))
+                            {
+                                ModifyKillerXpByLevel(creature.Level, ref creatureContributedXp);
+                                creature.TamedExperience += creatureContributedXp;
+                                player.SendMessage(
+                                    $"Your pet named {creature.Name} gains {creatureContributedXp.ToString()} experience."
+                                );
+                            }
+                        }
+
                         if (Level >= player.Level - 2)
                         {
+                            // check kill bag
                             int totalTypeKills = 1;
                             if (player.KillBag.TryGetValue(GetType(), out int previousKills))
                             {
@@ -5002,14 +5208,7 @@ namespace Server.Mobiles
                                 }
                             }
                             player.KillBag.AddOrUpdate(GetType(), totalTypeKills, (type, kills) => totalTypeKills);
-                            if (Level > player.Level + 5)
-                            {
-                                contributedXp += (Level - player.Level) * Level;
-                            }
-                            else if (Level < player.Level)
-                            {
-                                contributedXp /= player.Level + 1 - Level;
-                            }
+                            ModifyKillerXpByLevel(player.Level, ref contributedXp);
                             BaseTalent fastLearner = player.GetTalent(typeof(FastLearner));
                             if (fastLearner != null)
                             {
@@ -5022,20 +5221,14 @@ namespace Server.Mobiles
                             }
 
                             bool isPlayerMaxLevel = LevelSystem.MaxLevel(player);
-                            List<BaseCreature> rangerCreatures = player.RangerCreatures();
                             if (rangerCreatures.Count > 0)
                             {
-                                contributedXp /= rangerCreatures.Count + 1; // divided amongst the ranger followers plus player
                                 if (!isPlayerMaxLevel)
                                 {
                                     player.RangerExperience += contributedXp;
                                 }
-                                foreach (var creature in rangerCreatures)
-                                {
-                                    creature.TamedExperience += contributedXp;
-                                }
                             }
-                            if (!isPlayerMaxLevel)
+                            else if (!isPlayerMaxLevel)
                             {
                                 player.NonCraftExperience += contributedXp;
                             }
@@ -5875,6 +6068,7 @@ namespace Server.Mobiles
             AlterDamageToByLevel(target, ref scalar);
             AlterDamageFromBuffs(false, ref scalar);
             AlterDamageToByPlayerNatureBuff(ref scalar);
+            AlterDamageToByNatureAffinity(ref scalar);
         }
 
         public virtual void AlterSpellDamageFrom(Mobile from, ref int damage)
@@ -5911,6 +6105,45 @@ namespace Server.Mobiles
                 damage += AOS.Scale(damage, 20);
             }
             AlterDamageFromBuffs(false, ref damage);
+            AlterDamageToByNatureAffinity(ref damage);
+        }
+
+        private void AlterDamageFromByNatureAffinity(ref int damage)
+        {
+            Mobile master = GetMaster();
+            if (master is PlayerMobile playerMaster)
+            {
+                BaseTalent natureAffinity = playerMaster.GetTalent(typeof(NatureAffinity));
+                damage -= AOS.Scale(damage, natureAffinity.Level);
+            }
+        }
+
+        private void AlterDamageToByNatureAffinity(ref int damage)
+        {
+            Mobile master = GetMaster();
+            if (master is PlayerMobile playerMaster)
+            {
+                BaseTalent natureAffinity = playerMaster.GetTalent(typeof(NatureAffinity));
+                damage += AOS.Scale(damage, natureAffinity.Level);
+            }
+        }
+        private void AlterDamageFromByNatureAffinity(ref double damage)
+        {
+            Mobile master = GetMaster();
+            if (master is PlayerMobile playerMaster)
+            {
+                BaseTalent natureAffinity = playerMaster.GetTalent(typeof(NatureAffinity));
+                damage -= natureAffinity.ModifySpellScalar();
+            }
+        }
+        private void AlterDamageToByNatureAffinity(ref double damage)
+        {
+            Mobile master = GetMaster();
+            if (master is PlayerMobile playerMaster)
+            {
+                BaseTalent natureAffinity = playerMaster.GetTalent(typeof(NatureAffinity));
+                damage += natureAffinity.ModifySpellScalar();
+            }
         }
 
         private bool MasterHasNatureBuff()
@@ -6037,6 +6270,8 @@ namespace Server.Mobiles
                     _                     => damage
                 };
             }
+
+            AlterDamageFromByNatureAffinity(ref damage);
         }
 
         public void AlterDamageFromByLevel(Mobile from, ref double damage)
@@ -6053,6 +6288,7 @@ namespace Server.Mobiles
                     _                     => damage
                 };
             }
+            AlterDamageFromByNatureAffinity(ref damage);
         }
 
         public bool CheckCriticalStrike(int defenderLevel, int attackerLevel) => attackerLevel > defenderLevel + 5 && Utility.Random(135) < attackerLevel - defenderLevel;
@@ -6064,7 +6300,7 @@ namespace Server.Mobiles
                 damage += AOS.Scale(damage, (attackerLevel - defenderLevel) * 12);
                 if (CheckCriticalStrike(defenderLevel, attackerLevel))
                 {
-                    BaseTalent.CriticalStrike(ref damage);
+                    BaseTalent.CriticalStrike(Combatant, this, ref damage);
                 }
             }
             if (defenderLevel > attackerLevel && attackingPlayer)
@@ -6100,7 +6336,7 @@ namespace Server.Mobiles
                 damage += 1.0 - ((attackerLevel - (double)defenderLevel) / 8.0);
                 if (CheckCriticalStrike(defenderLevel, attackerLevel))
                 {
-                    BaseTalent.CriticalStrike(ref damage);
+                    BaseTalent.CriticalStrike(Combatant, this, ref damage);
                 }
             } else if (defenderLevel > attackerLevel && attackingPlayer)
             {
@@ -6112,17 +6348,17 @@ namespace Server.Mobiles
             {
                 if (IsHeroic || IsBoss)
                 {
-                    damage += 0.2;
+                    damage += 0.15;
                 }
                 if (IsVeteran)
                 {
-                    damage += 0.1;
+                    damage += 0.07;
                 }
             }
 
             if (damage <= 0)
             {
-                damage = 0.1;
+                damage = 0.01;
             }
 
             return damage;

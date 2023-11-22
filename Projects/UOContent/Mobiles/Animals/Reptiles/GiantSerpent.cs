@@ -46,7 +46,7 @@ namespace Server.Mobiles
             // TODO: Body parts
         }
         public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
-
+        public override bool CanCannibalise(Mobile target) => base.CanCannibalise(target) || target is Snake;
         public override string CorpseName => "a giant serpent corpse";
         public override string DefaultName => "a giant snake";
 
