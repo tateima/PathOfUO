@@ -44,7 +44,7 @@ namespace Server.Spells.Fifth
                 {
                     Expansion.None  => TimeSpan.FromSeconds(20),
                     < Expansion.LBR => TimeSpan.FromSeconds(15 + Caster.Skills.Magery.Value * 0.4),
-                    _               => TimeSpan.FromSeconds(3 + Caster.Skills.Magery.Fixed * 0.4)
+                    _               => TimeSpan.FromSeconds(3 + Caster.Skills.Magery.Value * 0.4)
                 };
 
                 for (var i = -2; i <= 2; ++i)
@@ -144,38 +144,38 @@ namespace Server.Spells.Fifth
                     return;
                 }
 
-                Poison p;
+                int level;
 
                 if (Core.AOS)
                 {
-                    int value = (m_Caster.Skills.Magery.Fixed + m_Caster.Skills.Poisoning.Fixed) / 2;
+                    double value = m_Caster.Skills.Magery.Value + m_Caster.Skills.Poisoning.Value;
                     if (m_Caster is PlayerMobile player)
                     {
                         BaseTalent spellMind = player.GetTalent(typeof(SpellMind));
                         if (spellMind != null)
                         {
-                            value += spellMind.ModifySpellMultiplier();
+                            value *= 1.0 + spellMind.ModifySpellScalar();
                         }
                         BaseTalent darkAffinity = player.GetTalent(typeof(DarkAffinity));
                         if (darkAffinity != null)
                         {
-                            value += darkAffinity.ModifySpellMultiplier();
+                            value *= 1.0 + darkAffinity.ModifySpellScalar();
                         }
                     }
-                    p = (value) switch
+                    level = (value) switch
                     {
-                        >= 1000 => Poison.Deadly,
-                        > 850   => Poison.Greater,
-                        > 650   => Poison.Regular,
-                        _       => Poison.Lesser
+                        > 199.8 => 3,
+                        > 170.2  => 2,
+                        > 130.2  => 1,
+                        _        => 0
                     };
                 }
                 else
                 {
-                    p = Poison.Regular;
+                    level = 1;
                 }
 
-                if (m.ApplyPoison(m_Caster, p) == ApplyPoisonResult.Poisoned)
+                if (m.ApplyPoison(m_Caster, Poison.GetPoison(level)) is ApplyPoisonResult.Poisoned or ApplyPoisonResult.HigherPoisonActive)
                 {
                     if (SpellHelper.CanRevealCaster(m))
                     {

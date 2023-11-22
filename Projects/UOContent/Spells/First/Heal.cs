@@ -59,16 +59,16 @@ namespace Server.Spells.First
             {
                 SpellHelper.Turn(Caster, m);
 
-                int toHeal;
+                double toHeal;
 
                 if (Core.AOS)
                 {
-                    toHeal = Caster.Skills.Magery.Fixed / 120;
+                    toHeal = Caster.Skills.Magery.Value / 12;
                     toHeal += Utility.RandomMinMax(1, 4);
 
                     if (Core.SE && Caster != m)
                     {
-                        toHeal = (int)(toHeal * 1.5);
+                        toHeal *= 1.5;
                     }
                 }
                 else
@@ -76,19 +76,19 @@ namespace Server.Spells.First
                     toHeal = (int)(Caster.Skills.Magery.Value * 0.1);
                     toHeal += Utility.Random(1, 5);
                 }
-                toHeal = (int)(toHeal * ReagentsScale());
+                toHeal *= ReagentsScale();
 
                 if (Caster is PlayerMobile player)
                 {
                     BaseTalent lightAffinity = player.GetTalent(typeof(LightAffinity));
                     if (lightAffinity != null)
                     {
-                        toHeal += AOS.Scale(toHeal, lightAffinity.ModifySpellMultiplier());
+                        toHeal *= 1.0 + lightAffinity.ModifySpellScalar();
                     }
                 }
 
                 // m.Heal( toHeal, Caster );
-                SpellHelper.Heal(toHeal, m, Caster);
+                SpellHelper.Heal((int)toHeal, m, Caster);
 
                 m.FixedParticles(0x376A, 9, 32, 5005, EffectLayer.Waist);
                 m.PlaySound(0x1F2);

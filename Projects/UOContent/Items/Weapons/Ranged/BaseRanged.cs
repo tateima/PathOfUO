@@ -82,6 +82,12 @@ namespace Server.Items
                             OnMiss(attacker, defender);
                         }
                     }
+                    else if (WeaponAbility.GetCurrentAbility(attacker) is LightningArrow lightningArrow)
+                    {
+                        // Lightning Arrow doesn't require ammunition
+                        attacker.MovingEffect(defender, EffectID, 18, 1, false, false);
+                        lightningArrow.OnHit(attacker, defender, 0, new WorldLocation(defender));
+                    }
                 }
 
                 attacker.RevealingAction();
@@ -208,7 +214,6 @@ namespace Server.Items
             }
 
             attacker.MovingEffect(defender, EffectID, 18, 1, false, false);
-
             return true;
         }
     }

@@ -324,7 +324,7 @@ namespace Server.Spells
                 BaseTalent spellMind = player.GetTalent(typeof(SpellMind));
                 if (spellMind != null)
                 {
-                   scale += (double)spellMind.Level / 20;
+                    scale += (double)spellMind.Level / 20;
                 }
             }
             return scale;

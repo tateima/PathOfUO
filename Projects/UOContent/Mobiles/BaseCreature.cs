@@ -6133,7 +6133,7 @@ namespace Server.Mobiles
             if (master is PlayerMobile playerMaster)
             {
                 BaseTalent natureAffinity = playerMaster.GetTalent(typeof(NatureAffinity));
-                damage -= natureAffinity.ModifySpellScalar();
+                damage *= 1.0 - natureAffinity.ModifySpellScalar();
             }
         }
         private void AlterDamageToByNatureAffinity(ref double damage)
@@ -6142,7 +6142,7 @@ namespace Server.Mobiles
             if (master is PlayerMobile playerMaster)
             {
                 BaseTalent natureAffinity = playerMaster.GetTalent(typeof(NatureAffinity));
-                damage += natureAffinity.ModifySpellScalar();
+                damage *= 1.0 + natureAffinity.ModifySpellScalar();
             }
         }
 

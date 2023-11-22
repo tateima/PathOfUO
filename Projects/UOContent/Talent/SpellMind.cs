@@ -11,5 +11,7 @@ namespace Server.Talent
             AdditionalDetail = $"{PassiveDetail}";
             ImageID = 128;
         }
+
+        public override double ModifySpellScalar() => Level / 100.0 * 2;
     }
 }
