@@ -438,35 +438,38 @@ namespace Server.Mobiles
         }
         public static void AddLoot(BaseCreature bc)
         {
-            int dynamicXp = (int)bc.DynamicExperienceValue();
-            int lootRating = dynamicXp / 355;
-            if (lootRating > 7)
+            if (bc.AI is not AIType.AI_Animal)
             {
-                lootRating = 7;
-            }
-            switch (lootRating)
-            {
-                default:
-                    bc.ForceRandomLoot(LootPack.Average, 1);
-                    break;
-                case 2:
-                    bc.ForceRandomLoot(LootPack.Average, Utility.RandomMinMax(1, 2));
-                    break;
-                case 3:
-                    bc.ForceRandomLoot(LootPack.Rich, Utility.RandomMinMax(2, 4));
-                    break;
-                case 4:
-                    bc.ForceRandomLoot(LootPack.Rich, Utility.RandomMinMax(1, 2));
-                    break;
-                case 5:
-                    bc.ForceRandomLoot(LootPack.FilthyRich, Utility.RandomMinMax(1, 2));
-                    break;
-                case 6:
-                    bc.ForceRandomLoot(LootPack.UltraRich, Utility.RandomMinMax(1, 2));
-                    break;
-                case 7:
-                    bc.ForceRandomLoot(LootPack.UltraRich, Utility.RandomMinMax(2, 4));
-                    break;
+                int dynamicXp = (int)bc.DynamicExperienceValue();
+                int lootRating = dynamicXp / 355;
+                if (lootRating > 7)
+                {
+                    lootRating = 7;
+                }
+                switch (lootRating)
+                {
+                    default:
+                        bc.ForceRandomLoot(LootPack.Average, 1);
+                        break;
+                    case 2:
+                        bc.ForceRandomLoot(LootPack.Average, Utility.RandomMinMax(1, 2));
+                        break;
+                    case 3:
+                        bc.ForceRandomLoot(LootPack.Rich, Utility.RandomMinMax(2, 4));
+                        break;
+                    case 4:
+                        bc.ForceRandomLoot(LootPack.Rich, Utility.RandomMinMax(1, 2));
+                        break;
+                    case 5:
+                        bc.ForceRandomLoot(LootPack.FilthyRich, Utility.RandomMinMax(1, 2));
+                        break;
+                    case 6:
+                        bc.ForceRandomLoot(LootPack.UltraRich, Utility.RandomMinMax(1, 2));
+                        break;
+                    case 7:
+                        bc.ForceRandomLoot(LootPack.UltraRich, Utility.RandomMinMax(2, 4));
+                        break;
+                }
             }
         }
 

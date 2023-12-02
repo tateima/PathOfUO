@@ -1167,8 +1167,6 @@ namespace Server.Mobiles
             }
         }
 
-        public DateTime NextBandageTime { get; set; }
-
         public bool Neutral() => Alignment is Deity.Alignment.None;
 
         public bool Heroism()

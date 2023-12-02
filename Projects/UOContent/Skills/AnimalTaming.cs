@@ -353,7 +353,7 @@ namespace Server.SkillHandlers
                         m_Creature.PrivateOverheadMessage(MessageType.Regular, 0x3B2, 1054025, m_Tamer.NetState);
                         Stop();
                     }
-                    else if (de?.LastDamage > m_StartTime ||  attempts >= 6)
+                    else if (de?.LastDamage > m_StartTime ||  attempts >= Utility.RandomMinMax(3, 6))
                     {
                         m_BeingTamed.Remove(m_Creature);
                         m_Tamer.NextSkillTime = Core.TickCount;
@@ -484,7 +484,6 @@ namespace Server.SkillHandlers
                                             levelLossScale = 0.10;
                                         }
                                         m_Creature.Level = newLevel;
-                                        m_Creature.TamedExperience = LevelSystem.GetBaseExperience(newLevel);
                                         bool removeSpecials = m_Creature.HasMonsterSpecial;
                                         while (removeSpecials)
                                         {
@@ -495,7 +494,7 @@ namespace Server.SkillHandlers
                                                 item = m_Creature.Backpack?.FindItemByType(typeof(Item));
                                             }
 
-                                            if (Utility.Random(200) < 199 - monsterSpecialModifier*2)
+                                            if (Utility.Random(200) < 199 - monsterSpecialModifier)
                                             {
                                                 MonsterBuff.RemoveRandomBuff(m_Creature);
                                             }
@@ -525,6 +524,7 @@ namespace Server.SkillHandlers
                             {
                                 // It seems to accept you as master.
                                 m_Creature.PrivateOverheadMessage(MessageType.Regular, 0x3B2, 502799, m_Tamer.NetState);
+                                m_Creature.TamedExperience = LevelSystem.GetBaseExperience(m_Creature.Level);
                                 m_Creature.Owners.Add(m_Tamer);
                             }
 
@@ -536,9 +536,9 @@ namespace Server.SkillHandlers
                         {
                             if (m_Creature.TamingAttempts.ContainsKey(m_Tamer))
                             {
-                                if (m_Creature.LastTamingAttempt <= DateTime.Now.AddHours(-3))
+                                if (m_Creature.LastTamingAttempt <= DateTime.Now.AddMinutes(-30))
                                 {
-                                    attempts = 1; // reset their taming attempts after 3 hours
+                                    attempts = 1; // reset their taming attempts after 30 minutes
                                 }
                                 else
                                 {

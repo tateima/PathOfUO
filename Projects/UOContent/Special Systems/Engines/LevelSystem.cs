@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Server.Mobiles;
 using Server.Pantheon;
 using Server.SkillHandlers;
@@ -114,18 +115,21 @@ public class LevelSystem
             else if (target is BaseCreature creature)
             {
                 creature.Level++;
-                double scale = 1.03;
+                double scale = 1.001;
                 if (creature.Tamable && creature.ControlMaster is PlayerMobile controlMaster)
                 {
                     BaseTalent rangerCommand = controlMaster.GetTalent(typeof(RangerCommand));
                     if (rangerCommand != null)
                     {
-                        scale += 0.003 * rangerCommand.Level;
+                        scale += 0.001 * rangerCommand.Level;
                     }
                 }
+                int originalDex = creature.RawDex;
                 AnimalTaming.ScaleStats(creature, scale);
-                AnimalTaming.ScaleSkills(creature, scale);
-                creature.LevelExperience = GetBaseExperience(creature.Level) + remainingExp;
+                // reset dex, its too OP to scale
+                creature.RawDex = originalDex;
+                AnimalTaming.ScaleSkills(creature, scale, 1.0);
+                creature.TamedExperience = GetBaseExperience(creature.Level) + remainingExp;
             }
 
             target.FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);

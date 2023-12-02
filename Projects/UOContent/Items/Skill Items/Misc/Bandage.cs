@@ -99,11 +99,6 @@ public partial class Bandage : Item, IDyable
 
             if (targeted is Mobile mobile)
             {
-                if (mobile is PlayerMobile playerMobile && playerMobile.NextBandageTime >= DateTime.Now
-                    || mobile is BaseCreature baseCreature && baseCreature.NextBandageTime >= DateTime.Now)
-                {
-                    from.SendMessage("You cannot heal that target with bandages at this time.");
-                }
                 if (from.InRange(_bandage.GetWorldLocation(), Bandage.Range))
                 {
                     if (!(BandageContext.BeginHeal(from, mobile) == null || DuelContext.IsFreeConsume(from)))
@@ -466,15 +461,6 @@ public class BandageContext : Timer
             Healer.CheckSkill(secondarySkill, 0.0, 120.0);
             Healer.CheckSkill(primarySkill, 0.0, 120.0);
         }
-        DateTime now = DateTime.Now;
-        now = now.AddSeconds(5);
-        if (petPatient?.Alive == true)
-        {
-            petPatient.NextBandageTime = now;
-        } else if (Patient is PlayerMobile { Alive: true } playerMobile)
-        {
-            playerMobile.NextBandageTime = now;
-        }
     }
 
     public static BandageContext BeginHeal(Mobile healer, Mobile patient)
@@ -512,28 +498,28 @@ public class BandageContext : Timer
             {
                 if (Core.AOS)
                 {
-                    seconds = 5.0 + 0.5 * ((double)(120 - dex) / 10); // TODO: Verify algorithm
+                    seconds = 6.0 + 0.5 * ((double)(120 - dex) / 10); // TODO: Verify algorithm
                 }
                 else
                 {
-                    seconds = 9.4 + 0.6 * ((double)(120 - dex) / 10);
+                    seconds = 10.4 + 0.6 * ((double)(120 - dex) / 10);
                 }
             }
             else
             {
                 if (Core.AOS && GetPrimarySkill(patient) == SkillName.Veterinary)
                 {
-                    seconds = 2.0;
+                    seconds = 4.0;
                 }
                 else if (Core.AOS)
                 {
                     if (dex < 204)
                     {
-                        seconds = 3.2 - Math.Sin((double)dex / 130) * 2.5 + resDelay;
+                        seconds = 5.2 - Math.Sin((double)dex / 130) * 2.5 + resDelay;
                     }
                     else
                     {
-                        seconds = 0.7 + resDelay;
+                        seconds = 2.7 + resDelay;
                     }
                 }
                 else if (dex >= 100)
@@ -542,11 +528,11 @@ public class BandageContext : Timer
                 }
                 else if (dex >= 40)
                 {
-                    seconds = 4.0 + resDelay;
+                    seconds = 3.0 + resDelay;
                 }
                 else
                 {
-                    seconds = 5.0 + resDelay;
+                    seconds = 4.0 + resDelay;
                 }
             }
 

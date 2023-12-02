@@ -265,7 +265,7 @@ namespace Server.Talent
             set
             {
                 _onCooldown = value;
-                if (!_onCooldown && User is not null)
+                if (User is not null)
                 {
                     User.CloseGump<TalentBarGump>();
                     User.SendGump(new TalentBarGump(User, 1, 0, new List<TalentGump.TalentGumpPage>()));
@@ -338,17 +338,16 @@ namespace Server.Talent
 
         public bool HasAllDependencies(List<BaseTalent[]> dependencyMatrices)
         {
-            if (dependencyMatrices is not null)
+            if (dependencyMatrices is not null && dependencyMatrices.Count > 0)
             {
                 bool hasEnoughDependencies = false;
                 int numberOfDependenciesSatisfied = 0;
                 foreach (var dependencyMatrix in dependencyMatrices)
                 {
-                    bool dependencyMet = false;
                     BaseTalent dependsOn = dependencyMatrix.Length > 0 ? dependencyMatrix[0] : null;
                     BaseTalent hasDependency = dependencyMatrix.Length > 1 ? dependencyMatrix[1] : null;
-                    dependencyMet = dependsOn is not null && hasDependency is not null &&
-                                    (hasDependency.Level >= TalentDependencyPoints || hasDependency.Level == hasDependency.MaxLevel);
+                    var dependencyMet = dependsOn is not null && hasDependency is not null &&
+                                        (hasDependency.Level >= TalentDependencyPoints || hasDependency.Level == hasDependency.MaxLevel);
                     if (dependencyMet)
                     {
                         numberOfDependenciesSatisfied++;
@@ -361,7 +360,7 @@ namespace Server.Talent
                 }
                 return hasEnoughDependencies;
             }
-            return false;
+            return true;
         }
 
         public static List<BaseTalent[]> GetTalentDependencies(PlayerMobile player, BaseTalent talent)

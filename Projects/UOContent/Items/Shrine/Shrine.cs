@@ -496,7 +496,7 @@ namespace Server.Items
             _activated = true;
             string message = "";
             // int minutes = ShrineEffectTimeInMinutes;
-            if (Utility.Random(100) < 1)
+            if (Utility.Random(50) < 1)
             {
                 CheckSetMessage(ref message, ShrineEmpty);
             }

@@ -212,8 +212,6 @@ namespace Server.Mobiles
         private static readonly bool EnableRummaging = true;
         public static readonly TimeSpan ShoutDelay = TimeSpan.FromMinutes(1);
 
-        public DateTime NextBandageTime { get; set; }
-
         private DateTime m_NextGambleTime;
 
         public DateTime NextGambleTime
@@ -2356,13 +2354,12 @@ namespace Server.Mobiles
                     MinLevel = minLevel;
                 }
 
-                double scale = 1.00 + number * 0.05;
+                double scale = 1.00 + (0.05 * number);
                 if (remove)
                 {
-                    scale = 1.00 - number * 0.05;
+                    scale = 1.00 - (0.05 * number);
                     newLevel = Level - number;
                 }
-
                 Level = newLevel;
                 MonsterBuff.Convert(this, scale, scale, scale, scale, scale, scale, 1.00, scale, scale, 0);
             }
@@ -2449,7 +2446,7 @@ namespace Server.Mobiles
         }
 
         public void CheckSetDungeonDifficultyModifier(Point3D location, Map m, DungeonLevelMod.DungeonDifficulty[] dungeonDifficulties,
-            int level, int originalDungeonMin, int originalDungeonMinMax, int originalDungeonMax, ref int newDungeonMin, ref int newDungeonMinMax, ref int newDungeonMax)
+            int level, ref int newDungeonMin, ref int newDungeonMinMax, ref int newDungeonMax)
         {
             foreach (var difficulty in dungeonDifficulties)
             {
@@ -2460,9 +2457,6 @@ namespace Server.Mobiles
                         level
                     ))
                 {
-                    newDungeonMin = originalDungeonMin;
-                    newDungeonMinMax = originalDungeonMinMax;
-                    newDungeonMax = originalDungeonMax;
 
                     int modifier = 0;
                     if (difficulty == DungeonLevelMod.DungeonDifficulty.Hard)
@@ -2504,18 +2498,18 @@ namespace Server.Mobiles
         {
             int dungeonLevel = 0;
             int newDungeonMin = 0;
-            int newDungeonMinMx = 0;
+            int newDungeonMinMax = 0;
             int newDungeonMax = 0;
 
             int originalDungeonMin = 0;
-            int originalDungeonMinMx = 0;
+            int originalDungeonMinMax = 0;
             int originalDungeonMax = 0;
 
             if (DungeonLevelModHandler.IsInLevelOneDungeon(location, m))
             {
                 dungeonLevel = 1;
                 originalDungeonMin = 26;
-                originalDungeonMinMx = 30;
+                originalDungeonMinMax = 30;
                 originalDungeonMax = 36;
 
                 // can only nerf level one
@@ -2528,7 +2522,7 @@ namespace Server.Mobiles
             {
                 dungeonLevel = 2;
                 originalDungeonMin = 36;
-                originalDungeonMinMx = 40;
+                originalDungeonMinMax = 40;
                 originalDungeonMax = 46;
                 AddLoot(LootPack.LowScrolls);
                 Backpack?.DropItem(Loot.RandomArmorOrShieldOrWeaponOrJewelry());
@@ -2537,7 +2531,7 @@ namespace Server.Mobiles
             {
                 dungeonLevel = 3;
                 originalDungeonMin = 46;
-                originalDungeonMinMx = 50;
+                originalDungeonMinMax = 50;
                 originalDungeonMax = 56;
                 AddLoot(LootPack.MedScrolls);
                 AddLoot(LootPack.Gems);
@@ -2547,7 +2541,7 @@ namespace Server.Mobiles
             {
                 dungeonLevel = 4;
                 originalDungeonMin = 56;
-                originalDungeonMinMx = 60;
+                originalDungeonMinMax = 60;
                 originalDungeonMax = 66;
                 AddLoot(LootPack.HighScrolls);
                 AddLoot(LootPack.Gems);
@@ -2565,19 +2559,19 @@ namespace Server.Mobiles
 
             if (dungeonLevel > 0)
             {
+                newDungeonMin = originalDungeonMin;
+                newDungeonMinMax = originalDungeonMinMax;
+                newDungeonMax = originalDungeonMax;
                 CheckSetDungeonDifficultyModifier(
                     location,
                     m,
                     new [] { DungeonLevelMod.DungeonDifficulty.Beginner, DungeonLevelMod.DungeonDifficulty.Hard, DungeonLevelMod.DungeonDifficulty.Epic },
                     dungeonLevel,
-                    originalDungeonMin,
-                    originalDungeonMinMx,
-                    originalDungeonMax,
                     ref newDungeonMin,
-                    ref newDungeonMinMx,
+                    ref newDungeonMinMax,
                     ref newDungeonMax
                 );
-                AlterCreatureDungeonLevel(newDungeonMin, newDungeonMinMx, newDungeonMax);
+                AlterCreatureDungeonLevel(newDungeonMin, newDungeonMinMax, newDungeonMax);
             }
         }
         public override void OnBeforeSpawn(Point3D location, Map m)
@@ -2599,6 +2593,11 @@ namespace Server.Mobiles
                     }
                 }
                 IsParagon = true;
+            }
+            if (MinLevel < Level)
+            {
+                double hitsBuff = 1.0 + 0.1 * (Level - MinLevel);
+                MonsterBuff.Convert(this, 1.0, hitsBuff, 1.0, 1.0, 1.0, 1.0, 1.00, 1.0, 1.0, 0);
             }
             base.OnBeforeSpawn(location, m);
             Shrine.CreateShrine(location, Region, GetType(), m);
@@ -5288,7 +5287,10 @@ namespace Server.Mobiles
                 if (creatureThatKilled.IsSoulFeeder)
                 {
                     MonsterBuff.AddFeederStats(creatureThatKilled);
-                } else if (!creatureThatKilled.Controlled && IsEnemy(creatureThatKilled) && creatureThatKilled.DynamicExperienceValue() < DynamicExperienceValue() && creatureThatKilled.Level <= Level)
+                } else if (!creatureThatKilled.Controlled && IsEnemy(creatureThatKilled)
+                                                          && creatureThatKilled.DynamicExperienceValue() < DynamicExperienceValue()
+                                                          && creatureThatKilled.Level <= Level
+                                                          && creatureThatKilled.ControlMaster == null)
                 {
                     MonsterBuff.LevelUp(creatureThatKilled);
                 }
@@ -6058,47 +6060,35 @@ namespace Server.Mobiles
         public virtual void AlterDamageScalarFrom(Mobile caster, ref double scalar)
         {
             TriggerAbilityAlterDamageScalar(MonsterAbilityTrigger.TakeSpellDamage, caster, ref scalar);
-            AlterDamageFromPlayerBuffs(caster, ref scalar);
-            AlterDamageFromPlayerNatureBuff(ref scalar);
+            // AlterDamageFromPlayerBuffs(caster, ref scalar);
+            // AlterDamageFromPlayerNatureBuff(ref scalar);
         }
 
-        public virtual void AlterDamageScalarTo(Mobile target, ref double scalar)
+        public virtual void AlterDamageTo(Mobile to, ref double scalar)
         {
-            TriggerAbilityAlterDamageScalar(MonsterAbilityTrigger.GiveSpellDamage, target, ref scalar);
-            AlterDamageToByLevel(target, ref scalar);
+            AlterDamageToByLevel(to, ref scalar);
             AlterDamageFromBuffs(false, ref scalar);
             AlterDamageToByPlayerNatureBuff(ref scalar);
             AlterDamageToByNatureAffinity(ref scalar);
         }
 
+        public virtual void AlterDamageScalarTo(Mobile to, ref double scalar)
+        {
+            TriggerAbilityAlterDamageScalar(MonsterAbilityTrigger.GiveSpellDamage, to, ref scalar);
+            AlterDamageTo(to, ref scalar);
+        }
+
         public virtual void AlterSpellDamageFrom(Mobile from, ref int damage)
         {
             TriggerAbilityAlterDamage(MonsterAbilityTrigger.TakeSpellDamage, from, ref damage);
-            AlterDamageFromByLevel(from, ref damage);
-            AlterDamageFromBuffs(true, ref damage);
-            AlterDamageFromPlayerBuffs(from, ref damage);
-            AlterDamageFromPlayerNatureBuff(ref damage);
+            // AlterDamageFromByLevel(from, ref damage);
+            // AlterDamageFromBuffs(true, ref damage);
+            // AlterDamageFromPlayerBuffs(from, ref damage);
+            // AlterDamageFromPlayerNatureBuff(ref damage);
         }
 
-        public virtual void AlterSpellDamageTo(Mobile to, ref int damage)
+        public virtual void AlterDamageTo(Mobile to, ref int damage)
         {
-            TriggerAbilityAlterDamage(MonsterAbilityTrigger.GiveSpellDamage, to, ref damage);
-            // AlterDamageToByPlayerNatureBuff(ref damage);
-            // AlterDamageToByLevel(to, ref damage);
-        }
-
-        public virtual void AlterMeleeDamageFrom(Mobile from, ref int damage)
-        {
-            TriggerAbilityAlterDamage(MonsterAbilityTrigger.TakeMeleeDamage, from, ref damage);
-            AlterDamageFromByLevel(from, ref damage);
-            AlterDamageFromBuffs(true, ref damage);
-            AlterDamageFromPlayerBuffs(from, ref damage);
-            AlterDamageFromPlayerNatureBuff(ref damage);
-        }
-
-        public virtual void AlterMeleeDamageTo(Mobile to, ref int damage)
-        {
-            TriggerAbilityAlterDamage(MonsterAbilityTrigger.GiveMeleeDamage, to, ref damage);
             AlterDamageToByLevel(to, ref damage);
             if (MasterHasNatureBuff())
             {
@@ -6106,6 +6096,27 @@ namespace Server.Mobiles
             }
             AlterDamageFromBuffs(false, ref damage);
             AlterDamageToByNatureAffinity(ref damage);
+        }
+
+        public virtual void AlterSpellDamageTo(Mobile to, ref int damage)
+        {
+            TriggerAbilityAlterDamage(MonsterAbilityTrigger.GiveSpellDamage, to, ref damage);
+            // AlterDamageTo(to, ref damage);
+        }
+
+        public virtual void AlterMeleeDamageFrom(Mobile from, ref int damage)
+        {
+            TriggerAbilityAlterDamage(MonsterAbilityTrigger.TakeMeleeDamage, from, ref damage);
+            // AlterDamageFromByLevel(from, ref damage);
+            // AlterDamageFromBuffs(true, ref damage);
+            // AlterDamageFromPlayerBuffs(from, ref damage);
+            // AlterDamageFromPlayerNatureBuff(ref damage);
+        }
+
+        public virtual void AlterMeleeDamageTo(Mobile to, ref int damage)
+        {
+            TriggerAbilityAlterDamage(MonsterAbilityTrigger.GiveMeleeDamage, to, ref damage);
+            AlterDamageTo(to, ref damage);
         }
 
         private void AlterDamageFromByNatureAffinity(ref int damage)
@@ -6295,18 +6306,18 @@ namespace Server.Mobiles
 
         public int CalculateDamageFromLevels(int defenderLevel, int attackerLevel, int damage, bool attackingPlayer)
         {
-            if (attackerLevel > defenderLevel + 2 && !attackingPlayer)
+            if (attackerLevel > defenderLevel + 2)
             {
-                damage += AOS.Scale(damage, (attackerLevel - defenderLevel) * 12);
+                damage += AOS.Scale(damage, (attackerLevel - defenderLevel) * 10);
                 if (CheckCriticalStrike(defenderLevel, attackerLevel))
                 {
                     BaseTalent.CriticalStrike(Combatant, this, ref damage);
                 }
             }
-            if (defenderLevel > attackerLevel && attackingPlayer)
+            if (defenderLevel > attackerLevel)
             {
-                // 7 levels differential, so at 7 levels its 82% less damage
-                damage -= AOS.Scale(damage, (defenderLevel - attackerLevel) * 12);
+                // 7 levels differential, so at 7 levels its 70% less damage
+                damage -= AOS.Scale(damage, (defenderLevel - attackerLevel) * 10);
             }
 
             if (!attackingPlayer)
@@ -6331,17 +6342,17 @@ namespace Server.Mobiles
 
         public double CalculateDamageFromLevels(int defenderLevel, int attackerLevel, double damage, bool attackingPlayer)
         {
-            if (attackerLevel > defenderLevel + 2 && !attackingPlayer)
+            if (attackerLevel > defenderLevel + 2)
             {
-                damage += 1.0 - ((attackerLevel - (double)defenderLevel) / 8.0);
+                damage += 1.0 - (attackerLevel - (double)defenderLevel) / 10.0;
                 if (CheckCriticalStrike(defenderLevel, attackerLevel))
                 {
                     BaseTalent.CriticalStrike(Combatant, this, ref damage);
                 }
-            } else if (defenderLevel > attackerLevel && attackingPlayer)
+            } else if (defenderLevel > attackerLevel)
             {
-                // 7 levels differential, so at 7 levels its 87% less damage
-                damage -= 1.0 - ((defenderLevel - (double)attackerLevel) / 8.0);
+                // 7 levels differential, so at 7 levels its 70% less damage
+                damage -= 1.0 - (defenderLevel - (double)attackerLevel) / 10.0;
             }
 
             if (!attackingPlayer)

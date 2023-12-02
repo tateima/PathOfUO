@@ -200,7 +200,7 @@ public static class SkillCheck
         return from is not PlayerMobile mobile || AntiMacroSystem.AntiMacroCheck(mobile, skill, obj);
     }
 
-        public static void Gain(Mobile from, Skill skill)
+    public static void Gain(Mobile from, Skill skill)
     {
         if (from is BaseCreature { IsDeadPet: true })
         {
