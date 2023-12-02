@@ -3362,7 +3362,7 @@ namespace Server.Mobiles
             // This fixes a "bug" where players put blessed items in nested bags and they were dropped on death
             if (Core.AOS && Backpack?.Deleted == false)
             {
-                foreach (var item in Backpack.EnumerateItemsByType<Item>(predicate: FindItems_Callback))
+                foreach (var item in Backpack.EnumerateItems(true, FindItems_Callback))
                 {
                     Backpack.AddItem(item);
                 }
@@ -5734,7 +5734,23 @@ namespace Server.Mobiles
 
             if (NetState?.BuffIcon == true)
             {
-                b.SendAddBuffPacket(NetState, Serial);
+                // Synchronize the buff icon as close to _on the second_ as we can.
+                var msecs = b.TimeLength.Milliseconds;
+                if (msecs >= 8)
+                {
+                    Timer.DelayCall(TimeSpan.FromMilliseconds(msecs), (buffInfo, pm) =>
+                    {
+                        // They are still online, we still have the buff icon in the table, and it is the same buff icon
+                        if (pm.NetState != null && pm.m_BuffTable.TryGetValue(buffInfo.ID, out var checkBuff) && checkBuff == buffInfo)
+                        {
+                            buffInfo.SendAddBuffPacket(pm.NetState, pm.Serial);
+                        }
+                    }, b, this);
+                }
+                else
+                {
+                    b.SendAddBuffPacket(NetState, Serial);
+                }
             }
         }
 
