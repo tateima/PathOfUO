@@ -5267,8 +5267,8 @@ namespace Server.Mobiles
                 {
                     if (Utility.Random(100) < 15)
                     {
-                        List<Item> items = Backpack?.FindItemsByType(typeof(Item));
-                        if (items is not null && items.Count > 0)
+                        Container.FindItemsByTypeEnumerator<Item> items = Backpack.FindItemsByType(typeof(Item));
+                        if (items.Current != null)
                         {
                             Deity.DestroyItem(playerThatKilled, $"{Name}'s backpack");
                         }
@@ -5296,13 +5296,10 @@ namespace Server.Mobiles
                 if (!creatureThatKilled.Controlled || creatureThatKilled.ControlMaster is null && !creatureThatKilled._provocationTimer.Running && Backpack is not null)
                 {
                     // it was an alignment kill, remove all items
-                    List<Item> items = Backpack?.FindItemsByType(typeof(Item));
-                    if (items is not null && items.Count > 0)
+                    Container.FindItemsByTypeEnumerator<Item> items = Backpack.FindItemsByType(typeof(Item));
+                    foreach (var item in items)
                     {
-                        foreach (var item in items)
-                        {
-                            item.Delete();
-                        }
+                        item.Delete();
                     }
                 }
             }

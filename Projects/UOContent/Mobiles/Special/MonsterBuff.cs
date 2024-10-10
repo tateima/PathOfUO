@@ -193,13 +193,10 @@ namespace Server.Mobiles
             else if (bc.IsFrozen)
             {
                 bc.SetResistance(ResistanceType.Cold, 0);
-                List<Item> hearts = bc.Backpack?.FindItemsByType(typeof(IcyHeart));
-                if (hearts is not null)
+                Container.FindItemsByTypeEnumerator<Item> hearts = bc.Backpack.FindItemsByType(typeof(IcyHeart));
+                foreach (var heart in hearts)
                 {
-                    foreach (var heart in hearts)
-                    {
-                        heart.Delete();
-                    }
+                    heart.Delete();
                 }
             }
         }
@@ -505,7 +502,7 @@ namespace Server.Mobiles
             }
             if (bc.Backpack != null)
             {
-                List<Item> goldItems = bc.Backpack.FindItemsByType(typeof(Gold));
+                Container.FindItemsByTypeEnumerator<Item> goldItems = bc.Backpack.FindItemsByType(typeof(Gold));
                 foreach(Item gold in goldItems)
                 {
                     ((Gold)gold).Amount = (int)(((Gold)gold).Amount * goldBuff);

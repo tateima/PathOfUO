@@ -148,16 +148,13 @@ namespace Server.Engines.PathQuests.Definitions
         public override bool CanOffer(IQuestGiver quester, PlayerMobile pm, MLQuestContext context, bool message)
         {
             bool hasHead = false;
-            List<Item> heads = pm.Backpack?.FindItemsByType(typeof(Head));
-            if (heads != null)
+            Container.FindItemsByTypeEnumerator<Item> heads = pm.Backpack.FindItemsByType(typeof(Head));
+            foreach (var headItem in heads)
             {
-                foreach (var headItem in heads)
+                hasHead = headItem is Head { DefaultName: "Sarissa" };
+                if (hasHead)
                 {
-                    hasHead = headItem is Head { DefaultName: "Sarissa" };
-                    if (hasHead)
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
 

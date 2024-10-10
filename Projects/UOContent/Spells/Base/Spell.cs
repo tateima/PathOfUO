@@ -301,16 +301,14 @@ namespace Server.Spells
 
         public virtual bool HasReagents()
         {
-            bool hasReagents = true;
+            bool hasReagents = false;
             if (Caster is PlayerMobile player)
             {
                 foreach (Type type in Info.Reagents)
                 {
-                    hasReagents = Caster.Backpack.FindItemsByType(type, true).Count > 0;
-                    if (!hasReagents)
-                    {
-                        break;
-                    }
+
+                    var reagents = Caster.Backpack.FindItemsByType(type);
+                    hasReagents = reagents.Current != null;
                 }
             }
             return hasReagents;

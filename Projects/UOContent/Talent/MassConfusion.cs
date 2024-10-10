@@ -41,16 +41,15 @@ namespace Server.Talent
                 else
                 {
                     BaseInstrument instrument = null;
-                    List<Item> instruments = from.Backpack?.FindItemsByType(typeof(BaseInstrument));
-                    instruments?.ForEach(
-                        packInstrument =>
+                    Container.FindItemsByTypeEnumerator<Item> instruments = from.Backpack.FindItemsByType(typeof(BaseInstrument));
+                    foreach (var packInstrument in instruments)
+                    {
+                        if (((BaseInstrument)packInstrument).UsesRemaining > 0)
                         {
-                            if (((BaseInstrument)packInstrument).UsesRemaining > 0)
-                            {
-                                instrument = (BaseInstrument)packInstrument;
-                            }
+                            instrument = (BaseInstrument)packInstrument;
+                            break;
                         }
-                    );
+                    }
 
                     if (instrument != null)
                     {

@@ -597,29 +597,24 @@ namespace Server.Items
                         CheckSetMessage(ref message, "Famine and pestilence clouds your judgement.");
                         if (Player.Backpack is not null)
                         {
-                            List<Item> consumables = Player.Backpack.FindItemsByType(typeof(Food));
-                            List<Item> drinks = Player.Backpack.FindItemsByType(typeof(BaseBeverage));
-                            if (consumables is not null)
+                            Container.FindItemsByTypeEnumerator<Item> consumables = Player.Backpack.FindItemsByType(typeof(Food));
+                            Container.FindItemsByTypeEnumerator<Item> drinks = Player.Backpack.FindItemsByType(typeof(BaseBeverage));
+                            foreach (var consumable in consumables)
                             {
-                                foreach (var consumable in consumables)
+                                if (consumable.Amount > 1)
                                 {
-                                    if (consumable.Amount > 1)
-                                    {
-                                        consumable.Amount /= 2;
-                                    }
+                                    consumable.Amount /= 2;
                                 }
                             }
-                            if (drinks is not null)
+                            int amount = Utility.RandomMinMax(3,8);
+                            int count = 0;
+                            foreach (var drink in drinks)
                             {
-                                int count = 0;
-                                foreach (var drink in drinks)
+                                drink.Delete();
+                                count++;
+                                if (count >= amount)
                                 {
-                                    drink.Delete();
-                                    count++;
-                                    if (count > drinks.Count / 2)
-                                    {
-                                        break;
-                                    }
+                                    break;
                                 }
                             }
                         }

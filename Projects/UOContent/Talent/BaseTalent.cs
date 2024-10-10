@@ -644,10 +644,10 @@ namespace Server.Talent
         public bool HasResourceQuantity(Mobile mobile, Type type, int amount)
         {
             int itemAmount = 0;
-            var items = mobile.BankBox?.FindItemsByType(type);
-            if (items != null)
+            var items = mobile.BankBox.FindItemsByType(type);
+            while(items.MoveNext())
             {
-                itemAmount += items.Sum(item => item.Amount);
+                itemAmount += items.Current.Amount;
             }
             if (amount > 0 && itemAmount >= amount)
             {

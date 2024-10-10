@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using Server.Items;
 
 namespace Server.Talent
@@ -28,40 +26,40 @@ namespace Server.Talent
         {
             if (attacker.Backpack != null && HasSkillRequirement(attacker) && attacker.Mana >= ManaRequired)
             {
-                var potions = Array.ConvertAll(
-                    attacker.Backpack.FindItemsByType(typeof(BasePotion)).ToArray(),
-                    item => (BasePotion)item
-                );
-                if (potions.Length > 0)
+                var potions = attacker.Backpack.FindItemsByType(typeof(BasePotion));
+                List<BasePotion> harmfulPotions = new List<BasePotion>();
+                while (potions.MoveNext())
                 {
-                    var harmfulPotions = potions.Where(
-                            w => w is BaseConflagrationPotion or BaseExplosionPotion or BasePoisonPotion or BaseConfusionBlastPotion
-                        )
-                        .ToArray();
-                    if (harmfulPotions.Length > 0)
+                    var potion = potions.Current as BasePotion;
+                    if (potion is BaseConflagrationPotion or BaseExplosionPotion or BasePoisonPotion
+                        or BaseConfusionBlastPotion)
                     {
-                        ApplyManaCost(attacker);
-                        var potion = harmfulPotions[Utility.Random(harmfulPotions.Length)];
-                        if (potion is BaseConflagrationPotion conflagrationPotion)
-                        {
-                            conflagrationPotion.Users = new List<Mobile> { attacker };
-                            conflagrationPotion.Explode(attacker, target.Location, target.Map);
-                        }
-                        else if (potion is BaseExplosionPotion explosionPotion)
-                        {
-                            explosionPotion.Users = new HashSet<Mobile> { attacker };
-                            explosionPotion.Explode(attacker, true, target.Location, target.Map);
-                        }
-                        else if (potion is BaseConfusionBlastPotion blastPotion)
-                        {
-                            blastPotion.Users = new HashSet<Mobile> { attacker };
-                            blastPotion.Explode(attacker, target.Location, target.Map);
-                        }
-                        else if (potion is BasePoisonPotion poisonPotion)
-                        {
-                            poisonPotion.DoPoison(target);
-                            poisonPotion.Consume();
-                        }
+                        harmfulPotions.Add(potion);
+                    }
+                }
+                if (harmfulPotions.Count > 0)
+                {
+                    ApplyManaCost(attacker);
+                    var potion = harmfulPotions[Utility.Random(harmfulPotions.Count)];
+                    if (potion is BaseConflagrationPotion conflagrationPotion)
+                    {
+                        conflagrationPotion.Users = new List<Mobile> { attacker };
+                        conflagrationPotion.Explode(attacker, target.Location, target.Map);
+                    }
+                    else if (potion is BaseExplosionPotion explosionPotion)
+                    {
+                        explosionPotion.Users = new HashSet<Mobile> { attacker };
+                        explosionPotion.Explode(attacker, true, target.Location, target.Map);
+                    }
+                    else if (potion is BaseConfusionBlastPotion blastPotion)
+                    {
+                        blastPotion.Users = new HashSet<Mobile> { attacker };
+                        blastPotion.Explode(attacker, target.Location, target.Map);
+                    }
+                    else if (potion is BasePoisonPotion poisonPotion)
+                    {
+                        poisonPotion.DoPoison(target);
+                        poisonPotion.Consume();
                     }
                 }
             }

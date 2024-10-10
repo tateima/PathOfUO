@@ -40,7 +40,7 @@ namespace Server.Mobiles
 
             Tamable = true;
             ControlSlots = 1;
-            MinTameSkill = 83.1;
+            MinTameSkill = 75.1;
         }
 
         public override bool CanCannibalise(Mobile target) => base.CanCannibalise(target) || target is TimberWolf or GreyWolf or WhiteWolf;

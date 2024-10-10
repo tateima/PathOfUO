@@ -502,19 +502,27 @@ namespace Server.Pantheon
 
         public static void DestroyItem(PlayerMobile player, string contextOverride = "")
         {
-            List<Item> items = player.Backpack?.FindItemsByType(typeof(Item));
-            List<Item> bankItems = player.BankBox?.FindItemsByType(typeof(Item));
+            Container.FindItemsByTypeEnumerator<Item> items = player.Backpack.FindItemsByType(typeof(Item));
+            Container.FindItemsByTypeEnumerator<Item> bankItems = player.BankBox.FindItemsByType(typeof(Item));
             string context = "";
             Item item = null;
-            if (items is { Count: > 0})
+            foreach (var backpackItem in items)
             {
                 context = "backpack";
-                item = items[Utility.Random(items.Count)];
-            } else if (bankItems is { Count: > 0})
-            {
-                context = "bank box";
-                item = bankItems[Utility.Random(bankItems.Count)];
+                item = backpackItem;
+                break;
             }
+
+            if (string.IsNullOrEmpty(context))
+            {
+                foreach (var bankItem in bankItems)
+                {
+                    context = "bank box";
+                    item = bankItem;
+                    break;
+                }
+            }
+
             if (item is not null)
             {
                 if (contextOverride.Length > 0)

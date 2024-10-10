@@ -38,14 +38,22 @@ namespace Server.Talent
         {
             if (from.Backpack != null)
             {
+                CaseNote caseNote = null;
                 var caseNotes = from.Backpack.FindItemsByType(typeof(CaseNote));
-                if (caseNotes.Count > 1)
+                int caseNoteCount = 0;
+                while (caseNotes.MoveNext())
+                {
+                    caseNoteCount++;
+                    caseNote = caseNotes.Current as CaseNote;
+                }
+
+                if (caseNoteCount > 1)
                 {
                     from.SendMessage("You can only work on one case at a time.");
                 }
-                else if (caseNotes.Any())
+                else
                 {
-                    return (CaseNote)caseNotes.First();
+                    return caseNote;
                 }
             }
 

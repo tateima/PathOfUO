@@ -54,11 +54,11 @@ namespace Server.Talent
             var maxShots = Level + 1;
             if (attacker.Weapon is BaseRanged bow && CanApplyHitEffect(bow))
             {
-                var ammoItems = attacker.Backpack?.FindItemsByType(bow.AmmoType);
+                var ammoItems = attacker.Backpack.FindItemsByType(bow.AmmoType);
                 var ammoCount = 0;
-                if (ammoItems != null)
+                foreach (var ammoItem in ammoItems)
                 {
-                    ammoCount += ammoItems.Sum(item => item.Amount);
+                    ammoCount += ammoItem.Amount;
                 }
 
                 if (ammoCount < maxShots)
