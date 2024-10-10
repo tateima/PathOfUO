@@ -9,6 +9,8 @@ namespace Server.Engines.MLQuests.Gumps
         private readonly MLQuest m_Quest;
         private readonly IQuestGiver m_Quester;
 
+        public override bool Singleton => true;
+
         public QuestOfferGump(MLQuest quest, IQuestGiver quester, PlayerMobile pm)
             : base(1049010) // Quest Offer
         {
@@ -16,7 +18,6 @@ namespace Server.Engines.MLQuests.Gumps
             m_Quester = quester;
 
             CloseOtherGumps(pm);
-            pm.CloseGump<QuestOfferGump>();
 
             SetTitle(quest.Title);
             RegisterButton(ButtonPosition.Left, ButtonGraphic.Accept, 1);
@@ -34,7 +35,7 @@ namespace Server.Engines.MLQuests.Gumps
             AddRewardsPage(quest);
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (sender.Mobile is not PlayerMobile pm)
             {

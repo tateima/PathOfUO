@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Runtime.CompilerServices;
 using ModernUO.Serialization;
 using Server.Accounting;
+using Server.Collections;
 using Server.ContextMenus;
 using Server.Gumps;
 using Server.Mobiles;
-using Server.Network;
 using Server.Regions;
 using Server.Text;
 
@@ -127,7 +128,7 @@ public partial class HouseRaffleStone : Item
             {
                 if (value == HouseRaffleState.Active)
                 {
-                    this.Clear(_entries);
+                    ClearEntries();
                     Winner = null;
                     Deed = null;
                     Started = Core.Now;
@@ -234,10 +235,11 @@ public partial class HouseRaffleStone : Item
         }
     }
 
-    public bool ValidLocation() =>
-        _plotBounds.Start != Point2D.Zero &&
-        _plotBounds.End != Point2D.Zero &&
-        _plotFacet != null && _plotFacet != Map.Internal;
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool ValidLocation(Rectangle2D bounds, Map map) =>
+        bounds.Start != Point2D.Zero &&
+        bounds.End != Point2D.Zero &&
+        map != null && map != Map.Internal;
 
     private void InvalidateRegion()
     {
@@ -247,7 +249,7 @@ public partial class HouseRaffleStone : Item
             _region = null;
         }
 
-        if (ValidLocation())
+        if (ValidLocation(_plotBounds, _plotFacet))
         {
             _region = new HouseRaffleRegion(this);
             _region.Register();
@@ -289,7 +291,7 @@ public partial class HouseRaffleStone : Item
 
         foreach (var entry in Entries)
         {
-            if (Utility.IPMatchClassC(entry.Address, address))
+            if (entry.Address.MatchClassC(address))
             {
                 if (++tickets >= EntryLimitPerIP)
                 {
@@ -337,31 +339,33 @@ public partial class HouseRaffleStone : Item
         return new Point3D(x, y, z);
     }
 
-    public string FormatLocation() =>
-        !ValidLocation() ? "no location set" : FormatLocation(GetPlotCenter(), _plotFacet, true);
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string FormatLocation(Rectangle2D bounds, Point3D center, Map map) =>
+        !ValidLocation(bounds, map) ? "no location set" : FormatLocation(center, map, true);
 
-    public string FormatPrice() => _ticketPrice == 0 ? "FREE" : $"{_ticketPrice} gold";
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string FormatPrice(int price) => price == 0 ? "FREE" : $"{price} gold";
 
     public override void GetProperties(IPropertyList list)
     {
         base.GetProperties(list);
 
-        if (ValidLocation())
+        if (ValidLocation(_plotBounds, _plotFacet))
         {
-            list.Add(FormatLocation());
+            list.Add(FormatLocation(_plotBounds, GetPlotCenter(), _plotFacet));
         }
 
         switch (_currentState)
         {
             case HouseRaffleState.Active:
                 {
-                    list.Add(1060658, $"{"ticket price"}\t{FormatPrice()}");  // ~1_val~: ~2_val~
+                    list.Add(1060658, $"{"ticket price"}\t{FormatPrice(_ticketPrice)}");  // ~1_val~: ~2_val~
                     list.Add(1060659, $"{"ends"}\t{_started + _duration}"); // ~1_val~: ~2_val~
                     break;
                 }
             case HouseRaffleState.Completed:
                 {
-                    list.Add(1060658, $"winner\t{_winner?.Name ?? "Unknown"}"); // ~1_val~: ~2_val~
+                    list.Add(1060658, $"{"winner"}\t{_winner?.Name ?? "Unknown"}"); // ~1_val~: ~2_val~
                     break;
                 }
         }
@@ -375,7 +379,7 @@ public partial class HouseRaffleStone : Item
         {
             case HouseRaffleState.Active:
                 {
-                    LabelTo(from, 1060658, $"Ends\t{_started + _duration}"); // ~1_val~: ~2_val~
+                    LabelTo(from, 1060658, $"{"Ends"}\t{_started + _duration}"); // ~1_val~: ~2_val~
                     break;
                 }
             case HouseRaffleState.Completed:
@@ -383,28 +387,28 @@ public partial class HouseRaffleStone : Item
                     LabelTo(
                         from,
                         1060658, // ~1_val~: ~2_val~
-                        $"Winner\t{_winner?.Name ?? "Unknown"}"
+                        $"{"Winner"}\t{_winner?.Name ?? "Unknown"}"
                     );
                     break;
                 }
         }
     }
 
-    public override void GetContextMenuEntries(Mobile from, List<ContextMenuEntry> list)
+    public override void GetContextMenuEntries(Mobile from, ref PooledRefList<ContextMenuEntry> list)
     {
-        base.GetContextMenuEntries(from, list);
+        base.GetContextMenuEntries(from, ref list);
 
         if (from.AccessLevel >= AccessLevel.Seer)
         {
-            list.Add(new EditEntry(from, this));
+            list.Add(new EditEntry());
 
             if (_currentState == HouseRaffleState.Inactive)
             {
-                list.Add(new ActivateEntry(from, this));
+                list.Add(new ActivateEntry(ValidLocation(_plotBounds, _plotFacet)));
             }
             else
             {
-                list.Add(new ManagementEntry(from, this));
+                list.Add(new ManagementEntry());
             }
         }
     }
@@ -433,13 +437,11 @@ public partial class HouseRaffleStone : Item
         else
         {
             from.SendGump(
-                new WarningGump(
-                    1150470, // CONFIRM TICKET PURCHASE
-                    0x7F00,
-                    $"You are about to purchase a raffle ticket for the house plot located at {FormatLocation()}.  The ticket price is {FormatPrice()}.  Tickets are non-refundable and you can only purchase one ticket per account.  Do you wish to continue?",
-                    0xFFFFFF,
-                    420,
-                    280,
+                new ConfirmTicketPurchaseGump(
+                    _plotBounds,
+                    GetPlotCenter(),
+                    _plotFacet,
+                    _ticketPrice,
                     okay => Purchase_Callback(from, okay)
                 )
             );
@@ -465,13 +467,13 @@ public partial class HouseRaffleStone : Item
             if (_ticketPrice == 0 || from.Backpack?.ConsumeTotal(typeof(Gold), _ticketPrice) == true ||
                 Banker.Withdraw(from, _ticketPrice))
             {
-                this.Add(Entries, new RaffleEntry(from));
+                AddToEntries(new RaffleEntry(from));
 
                 from.SendMessage(MessageHue, "You have successfully entered the plot's raffle.");
             }
             else
             {
-                from.SendMessage(MessageHue, $"You do not have the {FormatPrice()} required to enter the raffle.");
+                from.SendMessage(MessageHue, $"You do not have the {FormatPrice(_ticketPrice)} required to enter the raffle.");
             }
         }
         else
@@ -499,7 +501,7 @@ public partial class HouseRaffleStone : Item
 
                 _winner.SendMessage(
                     MessageHue,
-                    $"Congratulations, {_winner.Name}! You have won the raffle for the plot located at {FormatLocation()}."
+                    $"Congratulations, {_winner.Name}! You have won the raffle for the plot located at {FormatLocation(_plotBounds, GetPlotCenter(), _plotFacet)}."
                 );
 
                 if (_winner.AddToBackpack(Deed))
@@ -595,70 +597,66 @@ public partial class HouseRaffleStone : Item
         }
     }
 
-    private class RaffleContextMenuEntry : ContextMenuEntry
+    private class EditEntry : ContextMenuEntry
     {
-        protected readonly Mobile _from;
-        protected readonly HouseRaffleStone _stone;
-
-        public RaffleContextMenuEntry(Mobile from, HouseRaffleStone stone, int label) : base(label)
-        {
-            _from = from;
-            _stone = stone;
-        }
-    }
-
-    private class EditEntry : RaffleContextMenuEntry
-    {
-        public EditEntry(Mobile from, HouseRaffleStone stone) : base(from, stone, 5101) // Edit
+        public EditEntry() : base(5101)
         {
         }
 
-        public override void OnClick()
+        public override void OnClick(Mobile from, IEntity target)
         {
-            if (_stone.Deleted || _from.AccessLevel < AccessLevel.Seer)
+            if (from.AccessLevel < AccessLevel.Seer || target is not HouseRaffleStone stone || stone.Deleted)
             {
                 return;
             }
 
-            _from.SendGump(new PropertiesGump(_from, _stone));
+            from.SendGump(new PropertiesGump(from, stone));
         }
     }
 
-    private class ActivateEntry : RaffleContextMenuEntry
+    private class ActivateEntry : ContextMenuEntry
     {
-        public ActivateEntry(Mobile from, HouseRaffleStone stone) : base(from, stone, 5113) // Start
-        {
-            if (!stone.ValidLocation())
-            {
-                Flags |= CMEFlags.Disabled;
-            }
-        }
+        public ActivateEntry(bool enabled) : base(5113) => Enabled = enabled;
 
-        public override void OnClick()
+        public override void OnClick(Mobile from, IEntity target)
         {
-            if (_stone.Deleted || _from.AccessLevel < AccessLevel.Seer || !_stone.ValidLocation())
+            if (from.AccessLevel >= AccessLevel.Seer && target is HouseRaffleStone { Deleted: false } stone &&
+                ValidLocation(stone._plotBounds, stone._plotFacet))
             {
-                return;
+                stone.CurrentState = HouseRaffleState.Active;
             }
-
-            _stone.CurrentState = HouseRaffleState.Active;
         }
     }
 
-    private class ManagementEntry : RaffleContextMenuEntry
+    private class ManagementEntry : ContextMenuEntry
     {
-        public ManagementEntry(Mobile from, HouseRaffleStone stone) : base(from, stone, 5032) // Game Monitor
+        public ManagementEntry() : base(5032)
         {
         }
 
-        public override void OnClick()
+        public override void OnClick(Mobile from, IEntity target)
         {
-            if (_stone.Deleted || _from.AccessLevel < AccessLevel.Seer)
+            if (from.AccessLevel >= AccessLevel.Seer && target is HouseRaffleStone { Deleted: false } stone)
             {
-                return;
+                from.SendGump(new HouseRaffleManagementGump(stone));
             }
+        }
+    }
 
-            _from.SendGump(new HouseRaffleManagementGump(_stone));
+    private class ConfirmTicketPurchaseGump : StaticWarningGump<ConfirmTicketPurchaseGump>
+    {
+        public override int Header => 1150470; // CONFIRM TICKET PURCHASE
+        public override int HeaderColor => 0x7F00;
+        public override int ContentColor => 0xFFFFFF;
+        public override int Width => 420;
+        public override int Height => 280;
+
+        public override string Content { get; }
+
+        public ConfirmTicketPurchaseGump(Rectangle2D bounds, Point3D center, Map map, int price, Action<bool> callback) : base(callback)
+        {
+            Content =
+                $"You are about to purchase a raffle ticket for the house plot located at {FormatLocation(bounds, center, map)}.  The ticket price is {FormatPrice(price)}.  Tickets are non-refundable and you can only purchase one ticket per account.  Do you wish to continue?";
         }
     }
 }

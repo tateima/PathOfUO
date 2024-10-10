@@ -2,7 +2,7 @@ using Server.Targeting;
 
 namespace Server.Spells.Second
 {
-    public class HarmSpell : MagerySpell, ISpellTargetingMobile
+    public class HarmSpell : MagerySpell, ITargetingSpell<Mobile>
     {
         private static readonly SpellInfo _info = new(
             "Harm",
@@ -71,13 +71,11 @@ namespace Server.Spells.Second
 
                 SpellHelper.Damage(this, m, damage, 0, 0, 100, 0, 0);
             }
-
-            FinishSequence();
         }
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetMobile(this, TargetFlags.Harmful, Core.ML ? 10 : 12);
+            Caster.Target = new SpellTarget<Mobile>(this, TargetFlags.Harmful);
         }
 
         public override double GetSlayerDamageScalar(Mobile target) => 1.0;

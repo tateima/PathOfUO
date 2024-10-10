@@ -305,8 +305,7 @@ namespace Server.Spells
             }
         }
 
-        private static SpecialMoveContext GetContext(Mobile m) =>
-            _playersTable.TryGetValue(m, out var context) ? context : null;
+        private static SpecialMoveContext GetContext(Mobile m) => _playersTable.GetValueOrDefault(m);
 
         private class SpecialMoveTimer : Timer
         {

@@ -3,7 +3,7 @@ using Server.Misc;
 
 namespace Server.Spells.Fifth
 {
-    public class DispelFieldSpell : MagerySpell, ISpellTargetingItem
+    public class DispelFieldSpell : MagerySpell, ITargetingSpell<Item>
     {
         private static readonly SpellInfo _info = new(
             "Dispel Field",
@@ -47,13 +47,11 @@ namespace Server.Spells.Fifth
 
                 item.Delete();
             }
-
-            FinishSequence();
         }
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetItem(this, range: Core.ML ? 10 : 12);
+            Caster.Target = new SpellTarget<Item>(this);
         }
     }
 }

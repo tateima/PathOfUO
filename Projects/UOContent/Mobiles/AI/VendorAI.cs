@@ -1,14 +1,20 @@
+using System.Runtime.CompilerServices;
+
+namespace Server.Mobiles;
 using Server.Talent;
 using System;
 using Server.Gumps;
 
-namespace Server.Mobiles
+public class VendorAI : BaseAI
 {
-    public class VendorAI : BaseAI
+    // Guards! A villan attacks me!
+    // Guards! Help!
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static int GetRandomGuardMessage() => Utility.RandomBool() ? 1005305 : 501603;
+
+    public VendorAI(BaseCreature m) : base(m)
     {
-        public VendorAI(BaseCreature m) : base(m)
-        {
-        }
+    }
 
         public override bool DoActionWander()
         {
@@ -24,17 +30,17 @@ namespace Server.Mobiles
                     m_Mobile.DebugSay($"{m_Mobile.Combatant.Name} is attacking me");
                 }
 
-                m_Mobile.Say(Utility.RandomBool() ? 1005305 : 501603);
-                Action = ActionType.Flee;
-            }
-            else
+            m_Mobile.Say(GetRandomGuardMessage());
+            Action = ActionType.Flee;
+        }
+        else
+        {
+            if (m_Mobile.FocusMob != null)
             {
-                if (m_Mobile.FocusMob != null)
+                if (m_Mobile.Debug)
                 {
-                    if (m_Mobile.Debug)
-                    {
-                        m_Mobile.DebugSay($"{m_Mobile.FocusMob.Name} has talked to me");
-                    }
+                    m_Mobile.DebugSay($"{m_Mobile.FocusMob.Name} has talked to me");
+                }
 
                     Action = ActionType.Interact;
                 }
@@ -60,7 +66,7 @@ namespace Server.Mobiles
                     m_Mobile.DebugSay($"{m_Mobile.Combatant.Name} is attacking me");
                 }
 
-                m_Mobile.Say(Utility.RandomList(1005305, 501603));
+            m_Mobile.Say(GetRandomGuardMessage());
 
                 Action = ActionType.Flee;
 

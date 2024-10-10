@@ -34,11 +34,6 @@ public partial class Bandage : Item, IDyable
         return true;
     }
 
-    public static void Initialize()
-    {
-        EventSink.BandageTargetRequest += EventSink_BandageTargetRequest;
-    }
-
     public override void OnDoubleClick(Mobile from)
     {
         if (from.InRange(GetWorldLocation(), Range))
@@ -55,7 +50,7 @@ public partial class Bandage : Item, IDyable
         }
     }
 
-    private static void EventSink_BandageTargetRequest(Mobile from, Item item, Mobile target)
+    public static void BandageTargetRequest(Mobile from, Item item, Mobile target)
     {
         if (item is not Bandage b || b.Deleted)
         {
@@ -227,7 +222,6 @@ public class BandageContext : Timer
             return;
         }
 
-        // ignore this, we dont resurrect!
         // if (!Patient.Alive || petPatient?.IsDeadPet == true)
         // {
         //     if (Patient.Map?.CanFit(Patient.Location, 16, false, false) != true)
@@ -288,7 +282,6 @@ public class BandageContext : Timer
         //         {
         //             healerNumber = 503255; // You are able to resurrect the creature.
         //
-        //             master.CloseGump<PetResurrectGump>();
         //             master.SendGump(new PetResurrectGump(Healer, petPatient));
         //         }
         //         else
@@ -305,7 +298,6 @@ public class BandageContext : Timer
         //                 {
         //                     healerNumber = 503255; // You are able to resurrect the creature.
         //
-        //                     friend.CloseGump<PetResurrectGump>();
         //                     friend.SendGump(new PetResurrectGump(Healer, petPatient));
         //
         //                     found = true;
@@ -321,12 +313,10 @@ public class BandageContext : Timer
         //     }
         //     else
         //     {
-        //         Patient.CloseGump<ResurrectGump>();
-        //         Patient.SendGump(new ResurrectGump(Patient, Healer));
+        //         Patient.SendGump(new ResurrectGump(Healer));
         //     }
         // }
-        // else
-        if (Patient.Poisoned && venomBlood == null)
+        if (Patient.Poisoned)
         {
             Healer.SendLocalizedMessage(500969); // You finish applying the bandages.
 

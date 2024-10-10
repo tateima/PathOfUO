@@ -3,7 +3,7 @@ using Server.Network;
 
 namespace Server.Spells.Sixth
 {
-    public class MarkSpell : MagerySpell, ISpellTargetingItem
+    public class MarkSpell : MagerySpell, ITargetingSpell<Item>
     {
         private static readonly SpellInfo _info = new(
             "Mark",
@@ -56,13 +56,11 @@ namespace Server.Spells.Sixth
                 Caster.PlaySound(0x1FA);
                 Effects.SendLocationEffect(Caster, 14201, 16);
             }
-
-            FinishSequence();
         }
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetItem(this, range: Core.ML ? 10 : 12);
+            Caster.Target = new SpellTarget<Item>(this);
         }
 
         public override bool CheckCast()

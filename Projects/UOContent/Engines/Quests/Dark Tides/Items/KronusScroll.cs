@@ -52,7 +52,7 @@ public partial class KronusScroll : QuestItem
             {
                 if (pm.Map == m_WellOfTearsMap && m_WellOfTearsArea.Contains(pm.Location))
                 {
-                    QuestObjective obj = qs.FindObjective<UseCallingScrollObjective>();
+                    var obj = qs.FindObjective<UseCallingScrollObjective>();
 
                     if (obj?.Completed == false)
                     {
@@ -129,7 +129,7 @@ public partial class KronusScroll : QuestItem
 
                     var hue = Utility.RandomList(0x481, 0x482, 0x489, 0x497, 0x66D);
 
-                    Effects.SendMovingEffect(map, 0x36D4, from, to,0, 0, false, true, hue);
+                    Effects.SendMovingEffect(map, 0x36D4, from, to, 0, 0, false, true, hue);
                 }
             }
 

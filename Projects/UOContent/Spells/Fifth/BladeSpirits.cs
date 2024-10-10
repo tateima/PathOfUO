@@ -3,7 +3,7 @@ using Server.Mobiles;
 
 namespace Server.Spells.Fifth
 {
-    public class BladeSpiritsSpell : MagerySpell, ISpellTargetingPoint3D
+    public class BladeSpiritsSpell : MagerySpell, ITargetingSpell<IPoint3D>
     {
         private static readonly SpellInfo _info = new(
             "Blade Spirits",
@@ -37,8 +37,6 @@ namespace Server.Spells.Fifth
                 var duration = TimeSpan.FromSeconds(Core.AOS ? 120 : Utility.Random(80, 40));
                 BaseCreature.Summon(new BladeSpirits(), false, Caster, new Point3D(p), 0x212, duration);
             }
-
-            FinishSequence();
         }
 
         public override TimeSpan GetCastDelay()
@@ -80,7 +78,7 @@ namespace Server.Spells.Fifth
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetPoint3D(this, retryOnLOS: true);
+            Caster.Target = new SpellTarget<IPoint3D>(this, allowGround: true, retryOnLos: true);
         }
     }
 }

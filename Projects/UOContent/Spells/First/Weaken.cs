@@ -2,7 +2,7 @@ using Server.Targeting;
 
 namespace Server.Spells.First
 {
-    public class WeakenSpell : MagerySpell, ISpellTargetingMobile
+    public class WeakenSpell : MagerySpell, ITargetingSpell<Mobile>
     {
         private static readonly SpellInfo _info = new(
             "Weaken",
@@ -43,13 +43,11 @@ namespace Server.Spells.First
 
                 HarmfulSpell(m);
             }
-
-            FinishSequence();
         }
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetMobile(this, TargetFlags.Harmful, Core.ML ? 10 : 12);
+            Caster.Target = new SpellTarget<Mobile>(this, TargetFlags.Harmful);
         }
     }
 }

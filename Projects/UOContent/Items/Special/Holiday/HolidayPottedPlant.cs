@@ -33,7 +33,6 @@ public partial class PottedPlantDeed : Item
     {
         if (IsChildOf(from.Backpack))
         {
-            from.CloseGump<InternalGump>();
             from.SendGump(new InternalGump(this));
         }
         else
@@ -45,6 +44,8 @@ public partial class PottedPlantDeed : Item
     private class InternalGump : Gump
     {
         private readonly PottedPlantDeed _deed;
+
+        public override bool Singleton => true;
 
         public InternalGump(PottedPlantDeed deed) : base(100, 200)
         {
@@ -77,7 +78,7 @@ public partial class PottedPlantDeed : Item
             AddButton(295, 50, 0x845, 0x846, 5);
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (_deed?.Deleted != false)
             {

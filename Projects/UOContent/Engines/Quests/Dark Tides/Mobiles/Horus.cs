@@ -1,9 +1,8 @@
-using System.Collections.Generic;
 using ModernUO.Serialization;
+using Server.Collections;
 using Server.ContextMenus;
 using Server.Items;
 using Server.Mobiles;
-using Server.Network;
 
 namespace Server.Engines.Quests.Necro;
 
@@ -57,7 +56,7 @@ public partial class Horus : BaseQuester
 
         if (qs is DarkTidesQuest)
         {
-            QuestObjective obj = qs.FindObjective<FindCrystalCaveObjective>();
+            var obj = qs.FindObjective<FindCrystalCaveObjective>();
 
             if (obj?.Completed == false)
             {
@@ -70,86 +69,79 @@ public partial class Horus : BaseQuester
     {
         base.OnMovement(m, oldLocation);
 
-        if (InRange(m.Location, 2) && !InRange(oldLocation, 2) && m is PlayerMobile pm)
+        if (!InRange(m.Location, 2) || InRange(oldLocation, 2) || m is not PlayerMobile pm)
         {
-            var qs = pm.Quest;
+            return;
+        }
 
-            if (qs is DarkTidesQuest)
+        var qs = pm.Quest;
+
+        if (qs is not DarkTidesQuest)
+        {
+            return;
+        }
+
+        if (qs.FindObjective<ReturnToCrystalCaveObjective>() is { Completed: false } obj1)
+        {
+            obj1.Complete();
+            return;
+        }
+
+        if (qs.FindObjective<FindHorusAboutRewardObjective>() is { Completed: false } obj2)
+        {
+            var cont = GetNewContainer();
+
+            cont.DropItem(new Gold(500));
+
+            BaseJewel jewel = new GoldBracelet();
+            if (Core.AOS)
             {
-                QuestObjective obj = qs.FindObjective<ReturnToCrystalCaveObjective>();
+                BaseRunicTool.ApplyAttributesTo(jewel, 3, 20, 40);
+            }
 
-                if (obj?.Completed == false)
-                {
-                    obj.Complete();
-                }
-                else
-                {
-                    obj = qs.FindObjective<FindHorusAboutRewardObjective>();
+            cont.DropItem(jewel);
 
-                    if (obj?.Completed == false)
-                    {
-                        var cont = GetNewContainer();
-
-                        cont.DropItem(new Gold(500));
-
-                        BaseJewel jewel = new GoldBracelet();
-                        if (Core.AOS)
-                        {
-                            BaseRunicTool.ApplyAttributesTo(jewel, 3, 20, 40);
-                        }
-
-                        cont.DropItem(jewel);
-
-                        if (!pm.PlaceInBackpack(cont))
-                        {
-                            cont.Delete();
-                            // You need to clear some space in your inventory to continue with the quest.  Come back here when you have more space in your inventory.
-                            pm.SendLocalizedMessage(1046260);
-                        }
-                        else
-                        {
-                            obj.Complete();
-                        }
-                    }
-                }
+            if (pm.PlaceInBackpack(cont))
+            {
+                obj2.Complete();
+            }
+            else
+            {
+                cont.Delete();
+                // You need to clear some space in your inventory to continue with the quest.  Come back here when you have more space in your inventory.
+                pm.SendLocalizedMessage(1046260);
             }
         }
     }
 
-    public override void GetContextMenuEntries(Mobile from, List<ContextMenuEntry> list)
+    public override void GetContextMenuEntries(Mobile from, ref PooledRefList<ContextMenuEntry> list)
     {
-        base.GetContextMenuEntries(from, list);
+        base.GetContextMenuEntries(from, ref list);
 
-        if (from.Alive)
+        if (!from.Alive || from is not PlayerMobile pm)
         {
-            if (from is PlayerMobile pm)
-            {
-                var qs = pm.Quest;
+            return;
+        }
 
-                if (qs is DarkTidesQuest)
-                {
-                    QuestObjective obj = qs.FindObjective<SpeakCavePasswordObjective>();
-                    var enabled = obj?.Completed == false;
+        var qs = pm.Quest;
 
-                    list.Add(new SpeakPasswordEntry(this, pm, enabled));
-                }
-            }
+        if (qs is DarkTidesQuest)
+        {
+            var obj = qs.FindObjective<SpeakCavePasswordObjective>();
+            var enabled = obj?.Completed == false;
+
+            list.Add(new SpeakPasswordEntry(enabled));
         }
     }
 
     public virtual void OnPasswordSpoken(PlayerMobile from)
     {
-        var qs = from.Quest;
+        var obj = (from.Quest as DarkTidesQuest)?.FindObjective<SpeakCavePasswordObjective>();
 
-        if (qs is DarkTidesQuest)
+        if (obj?.Completed == false)
         {
-            QuestObjective obj = qs.FindObjective<SpeakCavePasswordObjective>();
-
-            if (obj?.Completed == false)
-            {
-                obj.Complete();
-                return;
-            }
+            obj.Complete();
+            return;
         }
 
         from.SendLocalizedMessage(1060185); // Horus ignores you.
@@ -157,25 +149,13 @@ public partial class Horus : BaseQuester
 
     private class SpeakPasswordEntry : ContextMenuEntry
     {
-        private readonly PlayerMobile _from;
-        private readonly Horus _horus;
+        public SpeakPasswordEntry(bool enabled) : base(6193, 3) => Enabled = enabled;
 
-        public SpeakPasswordEntry(Horus horus, PlayerMobile from, bool enabled) : base(6193, 3)
+        public override void OnClick(Mobile from, IEntity target)
         {
-            _horus = horus;
-            _from = from;
-
-            if (!enabled)
+            if (from.Alive && from is PlayerMobile pm && target is Horus horus)
             {
-                Flags |= CMEFlags.Disabled;
-            }
-        }
-
-        public override void OnClick()
-        {
-            if (_from.Alive)
-            {
-                _horus.OnPasswordSpoken(_from);
+                horus.OnPasswordSpoken(pm);
             }
         }
     }

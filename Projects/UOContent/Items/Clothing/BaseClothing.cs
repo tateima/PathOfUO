@@ -32,6 +32,7 @@ namespace Server.Items
         [SerializableFieldSaveFlag(0)]
         private bool ShouldSerializeResource() => _resource != DefaultResource;
 
+        [SerializedIgnoreDupe]
         [SerializableField(1)]
         [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         private AosAttributes _attributes;
@@ -42,6 +43,7 @@ namespace Server.Items
         [SerializableFieldDefault(1)]
         private AosAttributes AttributesDefaultValue() => new(this);
 
+        [SerializedIgnoreDupe]
         [SerializableField(2)]
         [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         private AosArmorAttributes _clothingAttributes;
@@ -52,6 +54,7 @@ namespace Server.Items
         [SerializableFieldDefault(2)]
         private AosArmorAttributes ClothingAttributesDefaultValue() => new(this);
 
+        [SerializedIgnoreDupe]
         [SerializableField(3)]
         [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         private AosSkillBonuses _skillBonuses;
@@ -62,6 +65,7 @@ namespace Server.Items
         [SerializableFieldDefault(3)]
         private AosSkillBonuses SkillBonusesDefaultValue() => new(this);
 
+        [SerializedIgnoreDupe]
         [SerializableField(4, setter: "private")]
         [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         private AosElementAttributes _resistances;
@@ -728,6 +732,12 @@ namespace Server.Items
             clothing.Resistances = new AosElementAttributes(newItem, Resistances);
             clothing.SkillBonuses = new AosSkillBonuses(newItem, SkillBonuses);
             clothing.ClothingAttributes = new AosArmorAttributes(newItem, ClothingAttributes);
+
+            // Set hue again because of resource
+            clothing.Hue = Hue;
+            // Set HP/Max again because of durability
+            clothing.HitPoints = HitPoints;
+            clothing.MaxHitPoints = MaxHitPoints;
         }
 
         public override bool AllowEquippedCast(Mobile from) =>

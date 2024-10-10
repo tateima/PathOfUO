@@ -47,7 +47,6 @@ public partial class HearthOfHomeFireDeed : BaseAddonDeed
     {
         if (IsChildOf(from.Backpack))
         {
-            from.CloseGump<InternalGump>();
             from.SendGump(new InternalGump(this));
         }
         else
@@ -65,6 +64,8 @@ public partial class HearthOfHomeFireDeed : BaseAddonDeed
     {
         private readonly HearthOfHomeFireDeed _deed;
 
+        public override bool Singleton => true;
+
         public InternalGump(HearthOfHomeFireDeed deed) : base(150, 50)
         {
             _deed = deed;
@@ -80,7 +81,7 @@ public partial class HearthOfHomeFireDeed : BaseAddonDeed
             AddButton(185, 35, 0x868, 0x869, 2); // East
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (_deed.Deleted || info.ButtonID == 0)
             {

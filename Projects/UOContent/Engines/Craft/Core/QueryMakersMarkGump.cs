@@ -14,13 +14,13 @@ namespace Server.Engines.Craft
         private readonly BaseTool m_Tool;
         private readonly Type m_TypeRes;
 
+        public override bool Singleton => true;
+
         public QueryMakersMarkGump(
             int quality, Mobile from, CraftItem craftItem, CraftSystem craftSystem, Type typeRes,
             BaseTool tool
         ) : base(100, 200)
         {
-            from.CloseGump<QueryMakersMarkGump>();
-
             m_Quality = quality;
             m_From = from;
             m_CraftItem = craftItem;
@@ -42,7 +42,7 @@ namespace Server.Engines.Craft
             AddButton(20, 125, 4005, 4007, 0);
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             var makersMark = info.ButtonID == 1;
 

@@ -48,10 +48,12 @@ public class AccountPacketTests : IClassFixture<ServerFixture>
         }
 
         public DateTime Created { get; set; }
-        public long SavePosition { get; set; }
-        public BufferWriter SaveBuffer { get; set; }
         public Serial Serial { get; }
         public void Deserialize(IGenericReader reader) => throw new NotImplementedException();
+
+        public byte SerializedThread { get; set; }
+        public int SerializedPosition { get; set; }
+        public int SerializedLength { get; set; }
 
         public void Serialize(IGenericWriter writer) => throw new NotImplementedException();
 

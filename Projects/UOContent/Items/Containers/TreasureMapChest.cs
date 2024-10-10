@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using ModernUO.Serialization;
+using Server.Collections;
 using Server.ContextMenus;
 using Server.Engines.PartySystem;
 using Server.Gumps;
 using Server.Network;
-using Server.Utilities;
 
 namespace Server.Items;
 
@@ -416,13 +416,13 @@ public partial class TreasureMapChest : LockableContainer
         base.OnAfterDelete();
     }
 
-    public override void GetContextMenuEntries(Mobile from, List<ContextMenuEntry> list)
+    public override void GetContextMenuEntries(Mobile from, ref PooledRefList<ContextMenuEntry> list)
     {
-        base.GetContextMenuEntries(from, list);
+        base.GetContextMenuEntries(from, ref list);
 
         if (from.Alive)
         {
-            list.Add(new RemoveEntry(from, this));
+            list.Add(new RemoveEntry(from == _owner));
         }
     }
 
@@ -433,7 +433,6 @@ public partial class TreasureMapChest : LockableContainer
             return;
         }
 
-        from.CloseGump<RemoveGump>();
         from.SendGump(new RemoveGump(from, this));
     }
 
@@ -453,6 +452,8 @@ public partial class TreasureMapChest : LockableContainer
         private readonly TreasureMapChest _chest;
         private readonly Mobile _from;
 
+        public override bool Singleton => true;
+
         public RemoveGump(Mobile from, TreasureMapChest chest) : base(15, 15)
         {
             _from = from;
@@ -466,18 +467,18 @@ public partial class TreasureMapChest : LockableContainer
             AddBackground(30, 0, 240, 240, 2620);
 
             // When this treasure chest is removed, any items still inside of it will be lost.
-            AddHtmlLocalized(45, 15, 200, 80, 1048125, 0xFFFFFF);
+            AddHtmlLocalized(45, 15, 200, 80, 1048125, 0x7FFF);
             // Are you certain you're ready to remove this chest?
-            AddHtmlLocalized(45, 95, 200, 60, 1048126, 0xFFFFFF);
+            AddHtmlLocalized(45, 95, 200, 60, 1048126, 0x7FFF);
 
             AddButton(40, 153, 4005, 4007, 1);
-            AddHtmlLocalized(75, 155, 180, 40, 1048127, 0xFFFFFF); // Remove the Treasure Chest
+            AddHtmlLocalized(75, 155, 180, 40, 1048127, 0x7FFF); // Remove the Treasure Chest
 
             AddButton(40, 195, 4005, 4007, 2);
-            AddHtmlLocalized(75, 197, 180, 35, 1006045, 0xFFFFFF); // Cancel
+            AddHtmlLocalized(75, 197, 180, 35, 1006045, 0x7FFF); // Cancel
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (info.ButtonID == 1)
             {
@@ -488,25 +489,16 @@ public partial class TreasureMapChest : LockableContainer
 
     private class RemoveEntry : ContextMenuEntry
     {
-        private readonly TreasureMapChest _chest;
-        private readonly Mobile _from;
+        public RemoveEntry(bool enabled) : base(6149, 3) => Enabled = enabled;
 
-        public RemoveEntry(Mobile from, TreasureMapChest chest) : base(6149, 3)
+        public override void OnClick(Mobile from, IEntity target)
         {
-            _from = from;
-            _chest = chest;
-
-            Enabled = from == chest._owner;
-        }
-
-        public override void OnClick()
-        {
-            if (_chest.Deleted || _from != _chest._owner || !_from.CheckAlive())
+            if (!from.CheckAlive() || target is not TreasureMapChest chest || chest.Deleted || from != chest._owner)
             {
                 return;
             }
 
-            _chest.BeginRemove(_from);
+            chest.BeginRemove(from);
         }
     }
 }

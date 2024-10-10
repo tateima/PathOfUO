@@ -21,7 +21,6 @@ public partial class SpecialHairDye : Item
     {
         if (from.InRange(GetWorldLocation(), 1))
         {
-            from.CloseGump<SpecialHairDyeGump>();
             from.SendGump(new SpecialHairDyeGump(this));
         }
         else
@@ -46,6 +45,8 @@ public class SpecialHairDyeGump : Gump
     };
 
     private SpecialHairDye _specialHairDye;
+
+    public override bool Singleton => true;
 
     public SpecialHairDyeGump(SpecialHairDye dye) : base(0, 0)
     {
@@ -78,7 +79,7 @@ public class SpecialHairDyeGump : Gump
         }
     }
 
-    public override void OnResponse(NetState from, RelayInfo info)
+    public override void OnResponse(NetState from, in RelayInfo info)
     {
         if (_specialHairDye.Deleted)
         {

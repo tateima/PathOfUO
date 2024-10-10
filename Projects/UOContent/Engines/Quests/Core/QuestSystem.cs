@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Server.Collections;
 using Server.ContextMenus;
 using Server.Engines.Quests.Ambitious;
 using Server.Engines.Quests.Collector;
@@ -246,7 +247,7 @@ namespace Server.Engines.Quests
             From.SendGump(new QuestOfferGump(this));
         }
 
-        public virtual void GetContextMenuEntries(List<ContextMenuEntry> list)
+        public virtual void GetContextMenuEntries(ref PooledRefList<ContextMenuEntry> list)
         {
             if (Objectives.Count > 0)
             {
@@ -263,7 +264,6 @@ namespace Server.Engines.Quests
 
         public virtual void ShowQuestLogUpdated()
         {
-            From.CloseGump<QuestLogUpdatedGump>();
             From.SendGump(new QuestLogUpdatedGump(this));
         }
 
@@ -271,18 +271,19 @@ namespace Server.Engines.Quests
         {
             if (Objectives.Count > 0)
             {
-                From.CloseGump<QuestItemInfoGump>();
-                From.CloseGump<QuestLogUpdatedGump>();
-                From.CloseGump<QuestObjectivesGump>();
-                From.CloseGump<QuestConversationsGump>();
+                var gumps = From.GetGumps();
+                gumps.Close<QuestItemInfoGump>();
+                gumps.Close<QuestLogUpdatedGump>();
+                gumps.Close<QuestConversationsGump>();
+                gumps.Close<QuestObjectivesGump>();
 
-                From.SendGump(new QuestObjectivesGump(Objectives));
+                gumps.Send(new QuestObjectivesGump(Objectives));
 
                 var last = Objectives[^1];
 
                 if (last.Info != null)
                 {
-                    From.SendGump(new QuestItemInfoGump(last.Info));
+                    gumps.Send(new QuestItemInfoGump(last.Info));
                 }
             }
         }
@@ -291,11 +292,13 @@ namespace Server.Engines.Quests
         {
             if (Conversations.Count > 0)
             {
-                From.CloseGump<QuestItemInfoGump>();
-                From.CloseGump<QuestObjectivesGump>();
-                From.CloseGump<QuestConversationsGump>();
+                var gumps = From.GetGumps();
 
-                From.SendGump(new QuestConversationsGump(Conversations));
+                gumps.Close<QuestItemInfoGump>();
+                gumps.Close<QuestObjectivesGump>();
+                gumps.Close<QuestConversationsGump>();
+
+                gumps.Send(new QuestConversationsGump(Conversations));
 
                 var last = Conversations[^1];
 
@@ -388,10 +391,10 @@ namespace Server.Engines.Quests
                 Conversations.Add(conv);
             }
 
-            From.CloseGump<QuestItemInfoGump>();
-            From.CloseGump<QuestObjectivesGump>();
-            From.CloseGump<QuestConversationsGump>();
-            From.SendGump(conv.Logged ? new QuestConversationsGump(Conversations) : new QuestConversationsGump(conv));
+            var gumps = From.GetGumps();
+            gumps.Close<QuestItemInfoGump>();
+            gumps.Close<QuestObjectivesGump>();
+            gumps.Send(conv.Logged ? new QuestConversationsGump(Conversations) : new QuestConversationsGump(conv));
 
             if (conv.Info != null)
             {
@@ -446,8 +449,8 @@ namespace Server.Engines.Quests
                 return false;
             }
 
-            if (questType == typeof(UzeraanTurmoilQuest) && pm.Profession != 1 && pm.Profession != 2 && pm.Profession != 5
-            ) // warrior / magician / paladin
+            // warrior / magician / paladin
+            if (questType == typeof(UzeraanTurmoilQuest) && pm.Profession != 1 && pm.Profession != 2 && pm.Profession != 5)
             {
                 return false;
             }
@@ -591,7 +594,7 @@ namespace Server.Engines.Quests
             AddButton(265, 220, 247, 248, 1);
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (info.ButtonID == 1)
             {
@@ -654,7 +657,7 @@ namespace Server.Engines.Quests
             AddImage(379, 60, system.Picture);
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (info.ButtonID == 1)
             {
@@ -682,41 +685,15 @@ namespace Server.Engines.Quests
         {
         }
 
-        public static int C16232(int c16)
-        {
-            c16 &= 0x7FFF;
-
-            var r = ((c16 >> 10) & 0x1F) << 3;
-            var g = ((c16 >> 05) & 0x1F) << 3;
-            var b = (c16 & 0x1F) << 3;
-
-            return (r << 16) | (g << 8) | b;
-        }
-
-        public static int C16216(int c16) => c16 & 0x7FFF;
-
-        public static int C32216(int c32)
-        {
-            c32 &= 0xFFFFFF;
-
-            var r = ((c32 >> 16) & 0xFF) >> 3;
-            var g = ((c32 >> 08) & 0xFF) >> 3;
-            var b = (c32 & 0xFF) >> 3;
-
-            return (r << 10) | (g << 5) | b;
-        }
-
-        public static string Color(string text, int color) => $"<BASEFONT COLOR=#{color:X6}>{text}</BASEFONT>";
-
         public void AddHtmlObject(int x, int y, int width, int height, object message, int color, bool back, bool scroll)
         {
             if (message is int html)
             {
-                AddHtmlLocalized(x, y, width, height, html, C16216(color), back, scroll);
+                AddHtmlLocalized(x, y, width, height, html, color.C16216(), back, scroll);
             }
             else
             {
-                AddHtml(x, y, width, height, Color(message.ToString(), C16232(color)), back, scroll);
+                AddHtml(x, y, width, height, message.ToString().Color(color.C16216()), back, scroll);
             }
         }
     }

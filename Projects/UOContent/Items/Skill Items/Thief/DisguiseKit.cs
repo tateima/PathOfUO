@@ -102,13 +102,13 @@ public class DisguiseGump : Gump
     private readonly DisguiseKit m_Kit;
     private readonly bool m_Used;
 
+    public override bool Singleton => true;
+
     public DisguiseGump(Mobile from, DisguiseKit kit, bool startAtHair, bool used) : base(50, 50)
     {
         m_From = from;
         m_Kit = kit;
         m_Used = used;
-
-        from.CloseGump<DisguiseGump>();
 
         AddPage(0);
 
@@ -172,7 +172,7 @@ public class DisguiseGump : Gump
         }
     }
 
-    public override void OnResponse(NetState sender, RelayInfo info)
+    public override void OnResponse(NetState sender, in RelayInfo info)
     {
         if (info.ButtonID == 0)
         {

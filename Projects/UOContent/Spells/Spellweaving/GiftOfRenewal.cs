@@ -6,7 +6,7 @@ using Server.Targeting;
 
 namespace Server.Spells.Spellweaving
 {
-    public class GiftOfRenewalSpell : ArcanistSpell, ISpellTargetingMobile
+    public class GiftOfRenewalSpell : ArcanistSpell, ITargetingSpell<Mobile>
     {
         private static readonly SpellInfo _info = new(
             "Gift of Renewal",
@@ -93,13 +93,11 @@ namespace Server.Spells.Spellweaving
                     );
                 }
             }
-
-            FinishSequence();
         }
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetMobile(this, TargetFlags.Beneficial, 10);
+            Caster.Target = new SpellTarget<Mobile>(this, TargetFlags.Beneficial);
         }
 
         public static bool StopEffect(Mobile m)
@@ -132,7 +130,8 @@ namespace Server.Spells.Spellweaving
 
             protected override void OnTick()
             {
-                if (Index + 1 == Count)
+                // Last tick will change running to false
+                if (!Running)
                 {
                     StopEffect(_mobile);
                     _mobile.PlaySound(0x455);

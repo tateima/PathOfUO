@@ -17,7 +17,6 @@ public partial class NameChangeDeed : Item
     {
         if (RootParent == from)
         {
-            from.CloseGump<NameChangeDeedGump>();
             from.SendGump(new NameChangeDeedGump(this));
         }
         else
@@ -31,6 +30,8 @@ public class NameChangeDeedGump : Gump
 {
     private readonly Item m_Sender;
 
+    public override bool Singleton => true;
+
     public NameChangeDeedGump(Item sender) : base(50, 50)
     {
         m_Sender = sender;
@@ -42,7 +43,7 @@ public class NameChangeDeedGump : Gump
         AddPage(0);
 
         AddBlackAlpha(10, 120, 250, 85);
-        AddHtml(10, 125, 250, 20, Color(Center("Name Change Deed"), 0xFFFFFF));
+        AddHtml(10, 125, 250, 20, "Name Change Deed".Center(0xFFFFFF));
 
         AddLabel(73, 15, 1152, "");
         AddLabel(20, 150, 0x480, "New Name:");
@@ -63,17 +64,13 @@ public class NameChangeDeedGump : Gump
         AddTextEntry(x + 2, y + 2, width - 4, height - 4, 0, index, "");
     }
 
-    public string Center(string text) => $"<CENTER>{text}</CENTER>";
-
-    public string Color(string text, int color) => $"<BASEFONT COLOR=#{color:X6}>{text}</BASEFONT>";
-
     public void AddButtonLabeled(int x, int y, int buttonID, string text)
     {
         AddButton(x, y - 1, 4005, 4007, buttonID);
-        AddHtml(x + 35, y, 240, 20, Color(text, 0xFFFFFF));
+        AddHtml(x + 35, y, 240, 20, text.Color(0xFFFFFF));
     }
 
-    public override void OnResponse(NetState sender, RelayInfo info)
+    public override void OnResponse(NetState sender, in RelayInfo info)
     {
         if (m_Sender?.Deleted != false || info.ButtonID != 1 || m_Sender.RootParent != sender.Mobile)
         {
@@ -81,9 +78,8 @@ public class NameChangeDeedGump : Gump
         }
 
         var m = sender.Mobile;
-        var nameEntry = info.GetTextEntry(0);
 
-        var newName = nameEntry?.Text.Trim();
+        var newName = info.GetTextEntry(0)?.Trim();
 
         if (!NameVerification.Validate(newName, 2, 16, true, false, true, 1, NameVerification.SpaceDashPeriodQuote))
         {

@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using ModernUO.Serialization;
 using Server.Collections;
 using Server.Engines.Spawners;
+using Server.Gumps;
 using Server.Items;
 using Server.Multis.Boats;
 using Server.Network;
+using CalcMoves = Server.Movement.Movement;
 
 namespace Server.Multis
 {
@@ -16,7 +19,8 @@ namespace Server.Multis
         Single
     }
 
-    public abstract class BaseBoat : BaseMulti
+    [SerializationGenerator(4, false)]
+    public abstract partial class BaseBoat : BaseMulti
     {
         public enum DryDockResult
         {
@@ -30,22 +34,21 @@ namespace Server.Multis
             Decaying
         }
 
-        private static Rectangle2D[] m_BritWrap =
+        private static readonly Rectangle2D[] BritWrap =
             { new(16, 16, 5120 - 32, 4096 - 32), new(5136, 2320, 992, 1760) };
+        private static readonly Rectangle2D[] IlshWrap = { new(16, 16, 2304 - 32, 1600 - 32) };
+        private static readonly Rectangle2D[] TokunoWrap = { new(16, 16, 1448 - 32, 1448 - 32) };
 
-        private static Rectangle2D[] m_IlshWrap = { new(16, 16, 2304 - 32, 1600 - 32) };
-        private static Rectangle2D[] m_TokunoWrap = { new(16, 16, 1448 - 32, 1448 - 32) };
+        private static readonly TimeSpan BoatDecayDelay = TimeSpan.FromDays(9.0);
 
-        private static TimeSpan BoatDecayDelay = TimeSpan.FromDays(9.0);
-
-        private static TimeSpan SlowInterval = TimeSpan.FromSeconds(NewBoatMovement ? 0.50 : 0.75);
-        private static TimeSpan FastInterval = TimeSpan.FromSeconds(NewBoatMovement ? 0.25 : 0.75);
+        private static readonly TimeSpan SlowInterval = TimeSpan.FromSeconds(NewBoatMovement ? 0.50 : 0.75);
+        private static readonly TimeSpan FastInterval = TimeSpan.FromSeconds(NewBoatMovement ? 0.25 : 0.75);
 
         private const int SlowSpeed = 1;
-        private static int FastSpeed = NewBoatMovement ? 1 : 3;
+        private static readonly int FastSpeed = NewBoatMovement ? 1 : 3;
 
-        private static TimeSpan SlowDriftInterval = TimeSpan.FromSeconds(NewBoatMovement ? 0.50 : 1.50);
-        private static TimeSpan FastDriftInterval = TimeSpan.FromSeconds(NewBoatMovement ? 0.25 : 0.75);
+        private static readonly TimeSpan SlowDriftInterval = TimeSpan.FromSeconds(NewBoatMovement ? 0.50 : 1.50);
+        private static readonly TimeSpan FastDriftInterval = TimeSpan.FromSeconds(NewBoatMovement ? 0.25 : 0.75);
 
         private const int SlowDriftSpeed = 1;
         private const int FastDriftSpeed = 1;
@@ -61,23 +64,47 @@ namespace Server.Multis
         private const Direction Port = Left;
         private const Direction Starboard = Right;
 
-        private int m_ClientSpeed;
+        [SerializableField(0)]
+        [SerializedCommandProperty(AccessLevel.GameMaster)]
+        private MapItem _mapItem;
 
-        private bool m_Decaying;
+        [SerializableField(1)]
+        [SerializedCommandProperty(AccessLevel.GameMaster)]
+        private int _nextNavPoint;
 
-        private DateTime m_DecayTime;
+        [SerializableField(4)]
+        [SerializedCommandProperty(AccessLevel.GameMaster)]
+        private Mobile _owner;
 
-        private Direction m_Facing;
+        [SerializableField(5)]
+        [SerializedCommandProperty(AccessLevel.GameMaster)]
+        private Plank _pPlank;
 
-        private string m_ShipName;
+        [SerializableField(6)]
+        [SerializedCommandProperty(AccessLevel.GameMaster)]
+        private Plank _sPlank;
 
+        [SerializableField(7)]
+        [SerializedCommandProperty(AccessLevel.GameMaster)]
+        private TillerMan _tillerMan;
+
+        [SerializableField(8)]
+        [SerializedCommandProperty(AccessLevel.GameMaster)]
+        private Hold _hold;
+
+        [SerializableField(9)]
+        [SerializedCommandProperty(AccessLevel.GameMaster)]
+        private bool _anchored;
+
+        private int _clientSpeed;
+        private bool _decaying;
 
         private TurnTimer _turnTimer;
         private MoveTimer _moveTimer;
 
         public BaseBoat() : base(0x0)
         {
-            m_DecayTime = Core.Now + BoatDecayDelay;
+            _timeOfDecay = Core.Now + BoatDecayDelay;
 
             TillerMan = new TillerMan(this);
             Hold = new Hold(this);
@@ -97,30 +124,43 @@ namespace Server.Multis
             Boats.Add(this);
         }
 
-        public BaseBoat(Serial serial) : base(serial)
-        {
-        }
-
-        [CommandProperty(AccessLevel.GameMaster)]
-        public Hold Hold { get; set; }
-
-        [CommandProperty(AccessLevel.GameMaster)]
-        public TillerMan TillerMan { get; set; }
-
-        [CommandProperty(AccessLevel.GameMaster)]
-        public Plank PPlank { get; set; }
-
-        [CommandProperty(AccessLevel.GameMaster)]
-        public Plank SPlank { get; set; }
-
-        [CommandProperty(AccessLevel.GameMaster)]
-        public Mobile Owner { get; set; }
-
+        [SerializableProperty(2)]
         [CommandProperty(AccessLevel.GameMaster)]
         public Direction Facing
         {
-            get => m_Facing;
-            set => SetFacing(value);
+            get => _facing;
+            set
+            {
+                SetFacing(value);
+                this.MarkDirty();
+            }
+        }
+
+        [DeltaDateTime]
+        [SerializableProperty(3)]
+        [CommandProperty(AccessLevel.GameMaster)]
+        public DateTime TimeOfDecay
+        {
+            get => _timeOfDecay;
+            set
+            {
+                _timeOfDecay = value;
+                TillerMan?.InvalidateProperties();
+                this.MarkDirty();
+            }
+        }
+
+        [SerializableProperty(10)]
+        [CommandProperty(AccessLevel.GameMaster)]
+        public string ShipName
+        {
+            get => _shipName;
+            set
+            {
+                _shipName = value;
+                TillerMan?.InvalidateProperties();
+                this.MarkDirty();
+            }
         }
 
         [CommandProperty(AccessLevel.GameMaster)]
@@ -133,38 +173,7 @@ namespace Server.Multis
         public int Speed { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster)]
-        public bool Anchored { get; set; }
-
-        [CommandProperty(AccessLevel.GameMaster)]
-        public string ShipName
-        {
-            get => m_ShipName;
-            set
-            {
-                m_ShipName = value;
-                TillerMan?.InvalidateProperties();
-            }
-        }
-
-        [CommandProperty(AccessLevel.GameMaster)]
         public BoatOrder Order { get; set; }
-
-        [CommandProperty(AccessLevel.GameMaster)]
-        public MapItem MapItem { get; set; }
-
-        [CommandProperty(AccessLevel.GameMaster)]
-        public int NextNavPoint { get; set; }
-
-        [CommandProperty(AccessLevel.GameMaster)]
-        public DateTime TimeOfDecay
-        {
-            get => m_DecayTime;
-            set
-            {
-                m_DecayTime = value;
-                TillerMan?.InvalidateProperties();
-            }
-        }
 
         public int Status
         {
@@ -258,7 +267,7 @@ namespace Server.Multis
         {
             var p = new Point3D(X + x, Y + y, Z);
 
-            return Rotate(p, (int)m_Facing / 2);
+            return Rotate(p, (int)_facing / 2);
         }
 
         public void UpdateComponents()
@@ -266,132 +275,57 @@ namespace Server.Multis
             if (PPlank != null)
             {
                 PPlank.MoveToWorld(GetRotatedLocation(PortOffset.X, PortOffset.Y), Map);
-                PPlank.SetFacing(m_Facing);
+                PPlank.SetFacing(_facing);
             }
 
             if (SPlank != null)
             {
                 SPlank.MoveToWorld(GetRotatedLocation(StarboardOffset.X, StarboardOffset.Y), Map);
-                SPlank.SetFacing(m_Facing);
+                SPlank.SetFacing(_facing);
             }
 
-            int xOffset = 0, yOffset = 0;
-            Movement.Movement.Offset(m_Facing, ref xOffset, ref yOffset);
+            var xOffset = 0;
+            var yOffset = 0;
+            CalcMoves.Offset(_facing, ref xOffset, ref yOffset);
 
             if (TillerMan != null)
             {
                 TillerMan.Location = new Point3D(
-                    X + xOffset * TillerManDistance + (m_Facing == Direction.North ? 1 : 0),
+                    X + xOffset * TillerManDistance + (_facing == Direction.North ? 1 : 0),
                     Y + yOffset * TillerManDistance,
                     TillerMan.Z
                 );
-                TillerMan.SetFacing(m_Facing);
+                TillerMan.SetFacing(_facing);
                 TillerMan.InvalidateProperties();
             }
 
             if (Hold != null)
             {
                 Hold.Location = new Point3D(X + xOffset * HoldDistance, Y + yOffset * HoldDistance, Hold.Z);
-                Hold.SetFacing(m_Facing);
+                Hold.SetFacing(_facing);
             }
         }
 
-        public override void Serialize(IGenericWriter writer)
+        private void Deserialize(IGenericReader reader, int version)
         {
-            base.Serialize(writer);
-
-            writer.Write(3);
-
-            writer.Write(MapItem);
-            writer.Write(NextNavPoint);
-
-            writer.Write((int)m_Facing);
-
-            writer.WriteDeltaTime(m_DecayTime);
-
-            writer.Write(Owner);
-            writer.Write(PPlank);
-            writer.Write(SPlank);
-            writer.Write(TillerMan);
-            writer.Write(Hold);
-            writer.Write(Anchored);
-            writer.Write(m_ShipName);
+            MapItem = (MapItem)reader.ReadEntity<Item>();
+            NextNavPoint = reader.ReadInt();
+            _facing = (Direction)reader.ReadInt();
+            _timeOfDecay = reader.ReadDeltaTime();
+            Owner = reader.ReadEntity<Mobile>();
+            PPlank = reader.ReadEntity<Plank>();
+            SPlank = reader.ReadEntity<Plank>();
+            TillerMan = reader.ReadEntity<TillerMan>();
+            Hold = reader.ReadEntity<Hold>();
+            Anchored = reader.ReadBool();
+            _shipName = reader.ReadString();
         }
 
-        public override void Deserialize(IGenericReader reader)
+        [AfterDeserialization(false)]
+        private void AfterDeserialization()
         {
-            base.Deserialize(reader);
-
-            var version = reader.ReadInt();
-
-            switch (version)
-            {
-                case 3:
-                    {
-                        MapItem = (MapItem)reader.ReadEntity<Item>();
-                        NextNavPoint = reader.ReadInt();
-
-                        goto case 2;
-                    }
-                case 2:
-                    {
-                        m_Facing = (Direction)reader.ReadInt();
-
-                        goto case 1;
-                    }
-                case 1:
-                    {
-                        m_DecayTime = reader.ReadDeltaTime();
-
-                        goto case 0;
-                    }
-                case 0:
-                    {
-                        if (version < 3)
-                        {
-                            NextNavPoint = -1;
-                        }
-
-                        if (version < 2)
-                        {
-                            if (ItemID == NorthID)
-                            {
-                                m_Facing = Direction.North;
-                            }
-                            else if (ItemID == SouthID)
-                            {
-                                m_Facing = Direction.South;
-                            }
-                            else if (ItemID == EastID)
-                            {
-                                m_Facing = Direction.East;
-                            }
-                            else if (ItemID == WestID)
-                            {
-                                m_Facing = Direction.West;
-                            }
-                        }
-
-                        Owner = reader.ReadEntity<Mobile>();
-                        PPlank = reader.ReadEntity<Plank>();
-                        SPlank = reader.ReadEntity<Plank>();
-                        TillerMan = reader.ReadEntity<TillerMan>();
-                        Hold = reader.ReadEntity<Hold>();
-                        Anchored = reader.ReadBool();
-                        m_ShipName = reader.ReadString();
-
-                        if (version < 1)
-                        {
-                            Refresh();
-                        }
-
-                        break;
-                    }
-            }
-
             Boats.Add(this);
-
-            Timer.DelayCall(() => CheckDecay());
+            CheckDecay();
         }
 
         public void RemoveKeys(Mobile m)
@@ -515,23 +449,23 @@ namespace Server.Multis
         {
             var p = new Point3D(X + MarkOffset.X, Y + MarkOffset.Y, Z + MarkOffset.Z);
 
-            return Rotate(p, (int)m_Facing / 2);
+            return Rotate(p, (int)_facing / 2);
         }
 
         public bool CheckKey(uint keyValue) => SPlank?.KeyValue == keyValue || PPlank?.KeyValue == keyValue;
 
         public void Refresh()
         {
-            m_DecayTime = Core.Now + BoatDecayDelay;
+            _timeOfDecay = Core.Now + BoatDecayDelay;
 
             TillerMan?.InvalidateProperties();
         }
 
-        private bool ShouldDecay => !IsMoving && Core.Now >= m_DecayTime;
+        private bool ShouldDecay => !IsMoving && Core.Now >= _timeOfDecay;
 
         public bool CheckDecay()
         {
-            if (m_Decaying)
+            if (_decaying)
             {
                 return true;
             }
@@ -539,7 +473,7 @@ namespace Server.Multis
             if (ShouldDecay)
             {
                 new DecayTimer(this).Start();
-                m_Decaying = true;
+                _decaying = true;
                 return true;
             }
 
@@ -774,7 +708,7 @@ namespace Server.Multis
             }
             else if (result == DryDockResult.Valid)
             {
-                from.SendGump(new ConfirmDryDockGump(from, this));
+                from.SendGump(new ConfirmDryDockGump(this));
             }
         }
 
@@ -853,7 +787,8 @@ namespace Server.Multis
 
             if (e.Speech.Length > 8)
             {
-                Rename(e.Speech[8..].Trim().DefaultIfNullOrEmpty(null));
+                var newName = e.Speech.AsSpan(8).Trim();
+                Rename(newName.Length == 0 ? null : newName.ToString());
             }
         }
 
@@ -869,7 +804,7 @@ namespace Server.Multis
                 newName = newName[..40];
             }
 
-            if (m_ShipName == newName)
+            if (_shipName == newName)
             {
                 TillerMan?.Say(502531); // Yes, sir.
 
@@ -878,9 +813,9 @@ namespace Server.Multis
 
             ShipName = newName;
 
-            if (TillerMan != null && m_ShipName != null)
+            if (TillerMan != null && _shipName != null)
             {
-                TillerMan.Say(1042885, m_ShipName); // This ship is now called the ~1_NEW_SHIP_NAME~.
+                TillerMan.Say(1042885, _shipName); // This ship is now called the ~1_NEW_SHIP_NAME~.
             }
             else
             {
@@ -909,7 +844,7 @@ namespace Server.Multis
                 return;
             }
 
-            if (m_ShipName == null)
+            if (_shipName == null)
             {
                 TillerMan?.Say(502526); // Ar, this ship has no name.
 
@@ -928,13 +863,13 @@ namespace Server.Multis
                 return;
             }
 
-            if (m_ShipName == null)
+            if (_shipName == null)
             {
                 TillerMan.Say(502526); // Ar, this ship has no name.
             }
             else
             {
-                TillerMan.Say(1042881, m_ShipName); // This is the ~1_BOAT_NAME~.
+                TillerMan.Say(1042881, _shipName); // This is the ~1_BOAT_NAME~.
             }
         }
 
@@ -1123,128 +1058,208 @@ namespace Server.Multis
                         switch (keyword)
                         {
                             case 0x42:
-                                SetName(e);
-                                break;
+                                {
+                                    SetName(e);
+                                    break;
+                                }
                             case 0x43:
-                                RemoveName(e.Mobile);
-                                break;
+                                {
+                                    RemoveName(e.Mobile);
+                                    break;
+                                }
                             case 0x44:
-                                GiveName(e.Mobile);
-                                break;
+                                {
+                                    GiveName(e.Mobile);
+                                    break;
+                                }
                             case 0x45:
-                                StartMove(Forward, true);
-                                break;
+                                {
+                                    StartMove(Forward, true);
+                                    break;
+                                }
                             case 0x46:
-                                StartMove(Backward, true);
-                                break;
+                                {
+                                    StartMove(Backward, true);
+                                    break;
+                                }
                             case 0x47:
-                                StartMove(Left, true);
-                                break;
+                                {
+                                    StartMove(Left, true);
+                                    break;
+                                }
                             case 0x48:
-                                StartMove(Right, true);
-                                break;
+                                {
+                                    StartMove(Right, true);
+                                    break;
+                                }
                             case 0x4B:
-                                StartMove(ForwardLeft, true);
-                                break;
+                                {
+                                    StartMove(ForwardLeft, true);
+                                    break;
+                                }
                             case 0x4C:
-                                StartMove(ForwardRight, true);
-                                break;
+                                {
+                                    StartMove(ForwardRight, true);
+                                    break;
+                                }
                             case 0x4D:
-                                StartMove(BackwardLeft, true);
-                                break;
+                                {
+                                    StartMove(BackwardLeft, true);
+                                    break;
+                                }
                             case 0x4E:
-                                StartMove(BackwardRight, true);
-                                break;
+                                {
+                                    StartMove(BackwardRight, true);
+                                    break;
+                                }
                             case 0x4F:
-                                StopMove(true);
-                                break;
+                                {
+                                    StopMove(true);
+                                    break;
+                                }
                             case 0x50:
-                                StartMove(Left, false);
-                                break;
+                                {
+                                    StartMove(Left, false);
+                                    break;
+                                }
                             case 0x51:
-                                StartMove(Right, false);
-                                break;
+                                {
+                                    StartMove(Right, false);
+                                    break;
+                                }
                             case 0x52:
-                                StartMove(Forward, false);
-                                break;
+                                {
+                                    StartMove(Forward, false);
+                                    break;
+                                }
                             case 0x53:
-                                StartMove(Backward, false);
-                                break;
+                                {
+                                    StartMove(Backward, false);
+                                    break;
+                                }
                             case 0x54:
-                                StartMove(ForwardLeft, false);
-                                break;
+                                {
+                                    StartMove(ForwardLeft, false);
+                                    break;
+                                }
                             case 0x55:
-                                StartMove(ForwardRight, false);
-                                break;
+                                {
+                                    StartMove(ForwardRight, false);
+                                    break;
+                                }
                             case 0x56:
-                                StartMove(BackwardRight, false);
-                                break;
+                                {
+                                    StartMove(BackwardRight, false);
+                                    break;
+                                }
                             case 0x57:
-                                StartMove(BackwardLeft, false);
-                                break;
+                                {
+                                    StartMove(BackwardLeft, false);
+                                    break;
+                                }
                             case 0x58:
-                                OneMove(Left);
-                                break;
+                                {
+                                    OneMove(Left);
+                                    break;
+                                }
                             case 0x59:
-                                OneMove(Right);
-                                break;
+                                {
+                                    OneMove(Right);
+                                    break;
+                                }
                             case 0x5A:
-                                OneMove(Forward);
-                                break;
+                                {
+                                    OneMove(Forward);
+                                    break;
+                                }
                             case 0x5B:
-                                OneMove(Backward);
-                                break;
+                                {
+                                    OneMove(Backward);
+                                    break;
+                                }
                             case 0x5C:
-                                OneMove(ForwardLeft);
-                                break;
+                                {
+                                    OneMove(ForwardLeft);
+                                    break;
+                                }
                             case 0x5D:
-                                OneMove(ForwardRight);
-                                break;
+                                {
+                                    OneMove(ForwardRight);
+                                    break;
+                                }
                             case 0x5E:
-                                OneMove(BackwardRight);
-                                break;
+                                {
+                                    OneMove(BackwardRight);
+                                    break;
+                                }
                             case 0x5F:
-                                OneMove(BackwardLeft);
-                                break;
+                                {
+                                    OneMove(BackwardLeft);
+                                    break;
+                                }
                             case 0x49:
                             case 0x65:
-                                StartTurn(2, true);
-                                break; // turn right
+                                {
+                                    StartTurn(2, true);
+                                    break; // turn right
+                                }
                             case 0x4A:
                             case 0x66:
-                                StartTurn(-2, true);
-                                break; // turn left
+                                {
+                                    StartTurn(-2, true);
+                                    break; // turn left
+                                }
                             case 0x67:
-                                StartTurn(-4, true);
-                                break; // turn around, come about
+                                {
+                                    StartTurn(-4, true);
+                                    break; // turn around, come about
+                                }
                             case 0x68:
-                                StartMove(Forward, true);
-                                break;
+                                {
+                                    StartMove(Forward, true);
+                                    break;
+                                }
                             case 0x69:
-                                StopMove(true);
-                                break;
+                                {
+                                    StopMove(true);
+                                    break;
+                                }
                             case 0x6A:
-                                LowerAnchor(true);
-                                break;
+                                {
+                                    LowerAnchor(true);
+                                    break;
+                                }
                             case 0x6B:
-                                RaiseAnchor(true);
-                                break;
+                                {
+                                    RaiseAnchor(true);
+                                    break;
+                                }
                             case 0x60:
-                                GiveNavPoint();
-                                break; // nav
+                                {
+                                    GiveNavPoint();
+                                    break; // nav
+                                }
                             case 0x61:
-                                NextNavPoint = 0;
-                                StartCourse(false, true);
-                                break; // start
+                                {
+                                    NextNavPoint = 0;
+                                    StartCourse(false, true);
+                                    break; // start
+                                }
                             case 0x62:
-                                StartCourse(false, true);
-                                break; // continue
+                                {
+                                    StartCourse(false, true);
+                                    break; // continue
+                                }
                             case 0x63:
-                                StartCourse(e.Speech, false, true);
-                                break; // goto*
+                                {
+                                    StartCourse(e.Speech, false, true);
+                                    break; // goto*
+                                }
                             case 0x64:
-                                StartCourse(e.Speech, true, true);
-                                break; // single*
+                                {
+                                    StartCourse(e.Speech, true, true);
+                                    break; // single*
+                                }
                         }
 
                         break;
@@ -1321,7 +1336,7 @@ namespace Server.Multis
                 return false;
             }
 
-            if (SetFacing((Direction)(((int)m_Facing + offset) & 0x7)))
+            if (SetFacing((Direction)(((int)_facing + offset) & 0x7)))
             {
                 return true;
             }
@@ -1353,7 +1368,7 @@ namespace Server.Multis
 
             Moving = dir;
             Speed = speed;
-            m_ClientSpeed = clientSpeed;
+            _clientSpeed = clientSpeed;
             Order = BoatOrder.Move;
 
             SafelyStartMoveTimer(interval, single);
@@ -1429,7 +1444,7 @@ namespace Server.Multis
 
             Moving = Direction.North;
             Speed = 0;
-            m_ClientSpeed = 0;
+            _clientSpeed = 0;
             _moveTimer?.Stop();
 
             if (message)
@@ -1561,8 +1576,8 @@ namespace Server.Multis
             return false;
         }
 
-        public static Rectangle2D[] GetWrapFor(Map m) => m == Map.Ilshenar ? m_IlshWrap :
-            m == Map.Tokuno ? m_TokunoWrap : m_BritWrap;
+        public static Rectangle2D[] GetWrapFor(Map m) => m == Map.Ilshenar ? IlshWrap :
+            m == Map.Tokuno ? TokunoWrap : BritWrap;
 
         public Direction GetMovementFor(int x, int y, out int maxSpeed)
         {
@@ -1597,7 +1612,7 @@ namespace Server.Multis
             {
                 dir = Moving;
                 speed = Speed;
-                clientSpeed = m_ClientSpeed;
+                clientSpeed = _clientSpeed;
             }
             else if (MapItem?.Deleted != false)
             {
@@ -1710,8 +1725,9 @@ namespace Server.Multis
                 return false;
             }
 
-            int rx = 0, ry = 0;
-            var d = (Direction)(((int)m_Facing + (int)dir) & 0x7);
+            var rx = 0;
+            var ry = 0;
+            var d = (Direction)(((int)_facing + (int)dir) & 0x7);
             Movement.Movement.Offset(d, ref rx, ref ry);
 
             for (var i = 1; i <= speed; ++i)
@@ -2024,50 +2040,60 @@ namespace Server.Multis
                 switch (facing)
                 {
                     case Direction.North:
-                        if (!CanFit(Location, Map, NorthID))
                         {
-                            return false;
-                        }
+                            if (!CanFit(Location, Map, NorthID))
+                            {
+                                return false;
+                            }
 
-                        break;
+                            break;
+                        }
                     case Direction.East:
-                        if (!CanFit(Location, Map, EastID))
                         {
-                            return false;
-                        }
+                            if (!CanFit(Location, Map, EastID))
+                            {
+                                return false;
+                            }
 
-                        break;
+                            break;
+                        }
                     case Direction.South:
-                        if (!CanFit(Location, Map, SouthID))
                         {
-                            return false;
-                        }
+                            if (!CanFit(Location, Map, SouthID))
+                            {
+                                return false;
+                            }
 
-                        break;
+                            break;
+                        }
                     case Direction.West:
-                        if (!CanFit(Location, Map, WestID))
                         {
-                            return false;
-                        }
+                            if (!CanFit(Location, Map, WestID))
+                            {
+                                return false;
+                            }
 
-                        break;
+                            break;
+                        }
                 }
             }
 
-            var old = m_Facing;
+            var old = _facing;
 
-            m_Facing = facing;
+            _facing = facing;
 
             TillerMan?.SetFacing(facing);
             Hold?.SetFacing(facing);
             PPlank?.SetFacing(facing);
             SPlank?.SetFacing(facing);
 
-            int xOffset = 0, yOffset = 0;
-            Movement.Movement.Offset(facing, ref xOffset, ref yOffset);
+            var xOffset = 0;
+            var yOffset = 0;
+            CalcMoves.Offset(facing, ref xOffset, ref yOffset);
 
-            var count = ((m_Facing - old) & 0x7) / 2;
+            var count = ((_facing - old) & 0x7) / 2;
 
+            using var queue = PooledRefQueue<IEntity>.Create();
             foreach (var e in GetMovingEntities())
             {
                 if (e == this)
@@ -2075,15 +2101,18 @@ namespace Server.Multis
                     continue;
                 }
 
-                if (e is Item item)
-                {
-                    item.Location = Rotate(item.Location, count);
-                }
-                else if (e is Mobile m)
+                if (e is Mobile m)
                 {
                     m.Direction = (m.Direction - old + facing) & Direction.Mask;
-                    m.Location = Rotate(m.Location, count);
                 }
+
+                queue.Enqueue(e);
+            }
+
+            while (queue.Count > 0)
+            {
+                var e = queue.Dequeue();
+                e.Location = Rotate(e.Location, count);
             }
 
             if (TillerMan != null)
@@ -2134,6 +2163,15 @@ namespace Server.Multis
         {
             EventSink.WorldLoad += UpdateAllComponents;
             EventSink.WorldSave += UpdateAllComponents;
+
+            // Fix tiler/hold/plank locations
+            foreach (var item in World.Items.Values)
+            {
+                if (item is BaseBoat boat)
+                {
+                    boat.UpdateComponents();
+                }
+            }
         }
 
         private class TurnTimer : Timer

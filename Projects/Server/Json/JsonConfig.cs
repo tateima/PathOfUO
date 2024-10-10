@@ -50,6 +50,7 @@ public static class JsonConfig
         options.Converters.Add(new TypeConverterFactory());
         options.Converters.Add(new WorldLocationConverterFactory());
         options.Converters.Add(new Point2DConverterFactory());
+        options.Converters.Add(new TextDefinitionConverterFactory());
 
         for (var i = 0; i < converters.Length; i++)
         {

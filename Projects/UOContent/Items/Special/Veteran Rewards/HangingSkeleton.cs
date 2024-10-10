@@ -65,7 +65,6 @@ public partial class HangingSkeleton : Item, IAddon, IRewardItem
 
             if (house?.IsOwner(from) == true)
             {
-                from.CloseGump<RewardDemolitionGump>();
                 from.SendGump(new RewardDemolitionGump(this, 1049783)); // Do you wish to re-deed this decoration?
             }
             else
@@ -129,7 +128,6 @@ public partial class HangingSkeletonDeed : Item, IRewardItem
             return;
         }
 
-        from.CloseGump<InternalGump>();
         from.SendGump(new InternalGump(this));
     }
 
@@ -146,6 +144,8 @@ public partial class HangingSkeletonDeed : Item, IRewardItem
     private class InternalGump : Gump
     {
         private readonly HangingSkeletonDeed _deed;
+
+        public override bool Singleton => true;
 
         public InternalGump(HangingSkeletonDeed skeleton) : base(100, 200)
         {
@@ -178,7 +178,7 @@ public partial class HangingSkeletonDeed : Item, IRewardItem
             AddButton(390, 50, 0x845, 0x846, 0x1B7F);
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (_deed?.Deleted != false || info.ButtonID != 0x1A03 && info.ButtonID != 0x1A05 &&
                 info.ButtonID != 0x1A09 && info.ButtonID != 0x1B1E && info.ButtonID != 0x1B7F)
@@ -253,7 +253,6 @@ public partial class HangingSkeletonDeed : Item, IRewardItem
 
             if (north && west)
             {
-                from.CloseGump<FacingGump>();
                 from.SendGump(new FacingGump(_deed, _itemID, p3d, house));
             }
             else if (north || west)
@@ -280,6 +279,8 @@ public partial class HangingSkeletonDeed : Item, IRewardItem
             private readonly Point3D _location;
             private readonly HangingSkeletonDeed _skeleton;
 
+            public override bool Singleton => true;
+
             public FacingGump(HangingSkeletonDeed banner, int itemID, Point3D location, BaseHouse house) : base(150, 50)
             {
                 _skeleton = banner;
@@ -303,7 +304,7 @@ public partial class HangingSkeletonDeed : Item, IRewardItem
                 AddButton(145, 35, 0x868, 0x869, (int)Buttons.South);
             }
 
-            public override void OnResponse(NetState sender, RelayInfo info)
+            public override void OnResponse(NetState sender, in RelayInfo info)
             {
                 if (_skeleton?.Deleted != false || _house == null)
                 {

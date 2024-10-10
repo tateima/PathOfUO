@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using ModernUO.CodeGeneratedEvents;
 using Server.Factions;
+using Server.Mobiles;
 using Server.Spells.Fifth;
 using Server.Spells.Ninjitsu;
 using Server.Spells.Seventh;
@@ -25,11 +27,6 @@ namespace Server.Spells.Mysticism
         }
 
         public override SpellCircle Circle => SpellCircle.Fourth;
-
-        public static void Initialize()
-        {
-            EventSink.PlayerDeath += OnPlayerDeath;
-        }
 
         public static bool UnderEffect(Mobile m) => _table.ContainsKey(m);
 
@@ -147,6 +144,7 @@ namespace Server.Spells.Mysticism
             FinishSequence();
         }
 
+        [OnEvent(nameof(PlayerMobile.PlayerDeathEvent))]
         public static void RemoveEffects(Mobile m)
         {
             if (!_table.Remove(m, out var mods))
@@ -163,11 +161,6 @@ namespace Server.Spells.Mysticism
             m.HueMod = -1;
 
             BuffInfo.RemoveBuff(m, BuffIcon.StoneForm);
-        }
-
-        private static void OnPlayerDeath(Mobile m)
-        {
-            RemoveEffects(m);
         }
     }
 }

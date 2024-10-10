@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using ModernUO.Serialization;
 using Server.Collections;
 using Server.ContextMenus;
@@ -121,7 +120,7 @@ public partial class HordeMinionFamiliar : BaseFamiliar
         if (Backpack?.Items.Count > 0)
         {
             from.SendGump(
-                new WarningGump(1060635, 30720, 1061672, 32512, 420, 280, okay => ConfirmRelease_Callback(from, okay))
+                new ReleaseFamiliarWarningGump(okay => ConfirmRelease_Callback(from, okay))
             );
         }
         else
@@ -179,10 +178,26 @@ public partial class HordeMinionFamiliar : BaseFamiliar
         PackAnimal.TryPackOpen(this, from);
     }
 
-    public override void GetContextMenuEntries(Mobile from, List<ContextMenuEntry> list)
+    public override void GetContextMenuEntries(Mobile from, ref PooledRefList<ContextMenuEntry> list)
     {
-        base.GetContextMenuEntries(from, list);
+        base.GetContextMenuEntries(from, ref list);
 
-        PackAnimal.GetContextMenuEntries(this, from, list);
+        PackAnimal.GetContextMenuEntries(this, from, ref list);
+    }
+
+    private class ReleaseFamiliarWarningGump : StaticWarningGump<ReleaseFamiliarWarningGump>
+    {
+        /*
+         * If you release your familiar, everything in its backpack will be destroyed!
+         * Are you sure you want to release your familiar?
+         */
+        public override int StaticLocalizedContent => 1061672;
+
+        public override int Width => 420;
+        public override int Height => 280;
+
+        public ReleaseFamiliarWarningGump(Action<bool> callback) : base(callback)
+        {
+        }
     }
 }

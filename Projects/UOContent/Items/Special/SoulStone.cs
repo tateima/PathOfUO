@@ -17,6 +17,7 @@ public partial class SoulStone : Item, ISecurable
     [SerializedCommandProperty(AccessLevel.GameMaster)]
     private string _lastUserName;
 
+    [SerializedIgnoreDupe]
     [SerializableField(1)]
     [SerializedCommandProperty(AccessLevel.GameMaster)]
     private SecureLevel _level;
@@ -225,19 +226,21 @@ public partial class SoulStone : Item, ISecurable
             return;
         }
 
-        from.CloseGump<SelectSkillGump>();
-        from.CloseGump<ConfirmSkillGump>();
-        from.CloseGump<ConfirmTransferGump>();
-        from.CloseGump<ConfirmRemovalGump>();
-        from.CloseGump<ErrorGump>();
+        var gumps = from.GetGumps();
+
+        gumps.Close<SelectSkillGump>();
+        gumps.Close<ConfirmSkillGump>();
+        gumps.Close<ConfirmTransferGump>();
+        gumps.Close<ConfirmRemovalGump>();
+        gumps.Close<ErrorGump>();
 
         if (IsEmpty)
         {
-            from.SendGump(new SelectSkillGump(this, from));
+            gumps.Send(new SelectSkillGump(this, from));
         }
         else
         {
-            from.SendGump(new ConfirmTransferGump(this, from));
+            gumps.Send(new ConfirmTransferGump(this, from));
         }
     }
 
@@ -315,7 +318,7 @@ public partial class SoulStone : Item, ISecurable
             }
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (info.ButtonID == 0 || !_stone.IsEmpty)
             {
@@ -397,7 +400,7 @@ public partial class SoulStone : Item, ISecurable
             AddButton(10, 360, 0xFA5, 0xFA6, 2);
 
             // Activate the stone.  I am ready to transfer the skill points to it.
-            AddHtmlLocalized(45,362,450,20,1070720,0x7FFF);
+            AddHtmlLocalized(45, 362, 450, 20, 1070720, 0x7FFF);
 
             AddButton(10, 380, 0xFA5, 0xFA6, 1);
             AddHtmlLocalized(45, 382, 450, 20, 1062279, 0x7FFF); // No, let me make another selection.
@@ -406,7 +409,7 @@ public partial class SoulStone : Item, ISecurable
             AddHtmlLocalized(45, 412, 450, 20, 1060051, 0x7FFF); // CANCEL
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (info.ButtonID == 0 || !_stone.IsEmpty)
             {
@@ -541,18 +544,18 @@ public partial class SoulStone : Item, ISecurable
             AddButton(10, 360, 0xFA5, 0xFA6, 2);
 
             // Activate the stone.  I am ready to retrieve the skill points from it.
-            AddHtmlLocalized(45,362,450,20,1070719,0x7FFF);
+            AddHtmlLocalized(45, 362, 450, 20, 1070719, 0x7FFF);
 
             AddButton(10, 380, 0xFA5, 0xFA6, 1);
 
             // Remove all skill points from this stone and DO NOT absorb them.
-            AddHtmlLocalized(45,382,450,20,1070723,0x7FFF);
+            AddHtmlLocalized(45, 382, 450, 20, 1070723, 0x7FFF);
 
             AddButton(10, 410, 0xFB1, 0xFB2, 0);
             AddHtmlLocalized(45, 412, 450, 20, 1060051, 0x7FFF); // CANCEL
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (info.ButtonID == 0 || _stone.IsEmpty)
             {
@@ -767,7 +770,7 @@ public partial class SoulStone : Item, ISecurable
             AddHtmlLocalized(45, 412, 450, 20, 1060051, 0x7FFF); // CANCEL
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (info.ButtonID == 0 || _stone.IsEmpty)
             {
@@ -813,7 +816,7 @@ public partial class SoulStone : Item, ISecurable
             AddHtmlLocalized(45, 412, 450, 20, 1060051, 0x7FFF); // CANCEL
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (info.ButtonID == 0)
             {

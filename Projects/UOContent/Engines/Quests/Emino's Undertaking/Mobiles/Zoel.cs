@@ -54,7 +54,7 @@ public partial class Zoel : BaseQuester
 
         if (qs is EminosUndertakingQuest)
         {
-            QuestObjective obj = qs.FindObjective<FindZoelObjective>();
+            var obj = qs.FindObjective<FindZoelObjective>();
 
             if (obj?.Completed == false)
             {
@@ -73,7 +73,7 @@ public partial class Zoel : BaseQuester
             {
                 if (dropped is NoteForZoel)
                 {
-                    QuestObjective obj = qs.FindObjective<GiveZoelNoteObjective>();
+                    var obj = qs.FindObjective<GiveZoelNoteObjective>();
 
                     if (obj?.Completed == false)
                     {
@@ -105,7 +105,6 @@ public partial class Zoel : BaseQuester
                 m.PlaySound(0x214);
                 m.FixedEffect(0x376A, 10, 16);
 
-                m.CloseGump<ResurrectGump>();
                 m.SendGump(new ResurrectGump(m, ResurrectMessage.Healer));
             }
         }

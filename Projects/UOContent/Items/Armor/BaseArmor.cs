@@ -18,6 +18,7 @@ namespace Server.Items
     [SerializationGenerator(9, false)]
     public abstract partial class BaseArmor : Item, IScissorable, IFactionItem, ICraftable, IWearableDurability, IAosItem, IPantheonItem
     {
+        [SerializedIgnoreDupe]
         [SerializableField(0)]
         [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         private AosAttributes _attributes;
@@ -28,6 +29,7 @@ namespace Server.Items
         [SerializableFieldDefault(0)]
         private AosAttributes AttributesDefaultValue() => new(this);
 
+        [SerializedIgnoreDupe]
         [SerializableField(1)]
         [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         private AosArmorAttributes _armorAttributes;
@@ -106,9 +108,6 @@ namespace Server.Items
         [SerializableFieldSaveFlag(10)]
         private bool ShouldSerializeCrafter() => _crafter != null;
 
-        // Field 11
-        private ArmorQuality _quality = ArmorQuality.Regular;
-
         [SerializableFieldSaveFlag(14)]
         private bool ShouldSerializeResource() => _resource != DefaultResource;
 
@@ -136,6 +135,7 @@ namespace Server.Items
         // Field 22
         private AMA _meditate = (AMA)(-1);
 
+        [SerializedIgnoreDupe]
         [SerializableField(23)]
         [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
         public AosSkillBonuses _skillBonuses;
@@ -305,6 +305,8 @@ namespace Server.Items
         public BaseArmor(int itemID) : base(itemID)
         {
             _crafter = null;
+
+            _quality = ArmorQuality.Regular;
             _resource = DefaultResource;
             Hue = CraftResources.GetHue(_resource);
             _hitPoints = _maxHitPoints = Utility.RandomMinMax(InitMinHits, InitMaxHits);
@@ -350,7 +352,7 @@ namespace Server.Items
         public virtual int OldDexReq => 0;
         public virtual int OldIntReq => 0;
 
-        [SerializableProperty(11, useField: nameof(_quality))]
+        [SerializableProperty(11)]
         [CommandProperty(AccessLevel.GameMaster)]
         public ArmorQuality Quality
         {
@@ -365,6 +367,9 @@ namespace Server.Items
 
         [SerializableFieldSaveFlag(11)]
         private bool ShouldSerializeArmorQuality() => _quality != ArmorQuality.Regular;
+
+        [SerializableFieldDefault(11)]
+        private ArmorQuality QualityDefaultValue() => ArmorQuality.Regular;
 
         [SerializableProperty(12)]
         [CommandProperty(AccessLevel.GameMaster)]
@@ -941,6 +946,12 @@ namespace Server.Items
             armor.Attributes = new AosAttributes(newItem, Attributes);
             armor.ArmorAttributes = new AosArmorAttributes(newItem, ArmorAttributes);
             armor.SkillBonuses = new AosSkillBonuses(newItem, SkillBonuses);
+
+            // Set hue again because of resource
+            armor.Hue = Hue;
+            // Set HP/Max again because of durability
+            armor.HitPoints = HitPoints;
+            armor.MaxHitPoints = MaxHitPoints;
         }
 
         public int ComputeStatReq(StatType type)

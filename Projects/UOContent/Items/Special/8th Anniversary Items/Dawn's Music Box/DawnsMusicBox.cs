@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using ModernUO.Serialization;
+using Server.Collections;
 using Server.ContextMenus;
 using Server.Gumps;
 using Server.Multis;
@@ -72,7 +73,7 @@ public partial class DawnsMusicBox : Item, ISecurable
         { MusicName.ValoriaShips, new DawnsMusicInfo(1075140, DawnsMusicRarity.Rare) }
     };
 
-    public static readonly MusicName[] _commonTracks =
+    private static readonly MusicName[] _commonTracks =
     {
         MusicName.Samlethe, MusicName.Sailing, MusicName.Britain2, MusicName.Britain1,
         MusicName.Bucsden, MusicName.Forest_a, MusicName.Cove, MusicName.Death,
@@ -86,7 +87,7 @@ public partial class DawnsMusicBox : Item, ISecurable
         MusicName.Mountn_a, MusicName.Wind, MusicName.Yew, MusicName.Zento
     };
 
-    public static readonly MusicName[] _uncommonTracks =
+    private static readonly MusicName[] _uncommonTracks =
     {
         MusicName.GwennoConversation, MusicName.DreadHornArea, MusicName.ElfCity,
         MusicName.GoodEndGame, MusicName.GoodVsEvil, MusicName.GreatEarthSerpents,
@@ -94,14 +95,16 @@ public partial class DawnsMusicBox : Item, ISecurable
         MusicName.MinocNegative, MusicName.ParoxysmusLair, MusicName.Paws
     };
 
-    public static readonly MusicName[] _rareTracks =
+    private static readonly MusicName[] _rareTracks =
     {
         MusicName.SelimsBar, MusicName.SerpentIsleCombat_U7, MusicName.ValoriaShips
     };
 
+    [SerializedIgnoreDupe]
     [SerializableField(0, setter: "private")]
     private List<MusicName> _tracks;
 
+    [SerializedIgnoreDupe]
     [SerializableField(1)]
     [SerializedCommandProperty(AccessLevel.GameMaster)]
     private SecureLevel _level;
@@ -117,9 +120,16 @@ public partial class DawnsMusicBox : Item, ISecurable
     {
         Weight = 1.0;
 
-        _tracks = new List<MusicName>();
+        var shuffledTracks = GetTracks(DawnsMusicRarity.Common);
+        shuffledTracks.Shuffle();
 
-        GetTracks(DawnsMusicRarity.Common).RandomSample(4, _tracks);
+        _tracks =
+        [
+            shuffledTracks[0],
+            shuffledTracks[1],
+            shuffledTracks[2],
+            shuffledTracks[3]
+        ];
     }
 
     public override int LabelNumber => 1075198; // Dawn's Music Box
@@ -131,8 +141,7 @@ public partial class DawnsMusicBox : Item, ISecurable
             return;
         }
 
-        box.Tracks = new List<MusicName>();
-        box.Tracks.AddRange(Tracks);
+        box.Tracks = [..Tracks];
     }
 
     public override void GetProperties(IPropertyList list)
@@ -183,11 +192,11 @@ public partial class DawnsMusicBox : Item, ISecurable
         }
     }
 
-    public override void GetContextMenuEntries(Mobile from, List<ContextMenuEntry> list)
+    public override void GetContextMenuEntries(Mobile from, ref PooledRefList<ContextMenuEntry> list)
     {
-        base.GetContextMenuEntries(from, list);
+        base.GetContextMenuEntries(from, ref list);
 
-        SetSecureLevelEntry.AddTo(from, this, list); // Set secure level
+        SetSecureLevelEntry.AddTo(from, this, ref list); // Set secure level
     }
 
     public override void OnDoubleClick(Mobile from)
@@ -203,7 +212,6 @@ public partial class DawnsMusicBox : Item, ISecurable
         }
         else
         {
-            from.CloseGump<DawnsMusicBoxGump>();
             from.SendGump(new DawnsMusicBoxGump(this));
         }
     }
@@ -257,7 +265,7 @@ public partial class DawnsMusicBox : Item, ISecurable
     private void Deserialize(IGenericReader reader, int version)
     {
         var count = reader.ReadInt();
-        _tracks = new List<MusicName>();
+        _tracks = [];
 
         for (var i = 0; i < count; i++)
         {

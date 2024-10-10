@@ -179,6 +179,8 @@ namespace Server.Engines.ConPVP
         private readonly PreferencesEntry m_Entry;
         private int m_ColumnX = 12;
 
+        public override bool Singleton => true;
+
         public PreferencesGump(Mobile from, Preferences prefs) : base(50, 50)
         {
             m_Entry = prefs.Find(from);
@@ -227,7 +229,7 @@ namespace Server.Engines.ConPVP
             }
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (m_Entry == null)
             {
@@ -254,10 +256,6 @@ namespace Server.Engines.ConPVP
             }
         }
 
-        public string Center(string text) => $"<CENTER>{text}</CENTER>";
-
-        public string Color(string text, int color) => $"<BASEFONT COLOR=#{color:X6}>{text}</BASEFONT>";
-
         private void AddBorderedText(int x, int y, int width, string text, int color, int borderColor)
         {
             AddColoredText(x, y, width, text, color);
@@ -265,14 +263,7 @@ namespace Server.Engines.ConPVP
 
         private void AddColoredText(int x, int y, int width, string text, int color)
         {
-            if (color == 0)
-            {
-                AddHtml(x, y, width, 20, text);
-            }
-            else
-            {
-                AddHtml(x, y, width, 20, Color(text, color));
-            }
+            AddHtml(x, y, width, 20, color == 0 ? text : text.Color(color));
         }
 
         private void AddColumnHeader(int width, string name)
@@ -282,7 +273,7 @@ namespace Server.Engines.ConPVP
 
             if (name != null)
             {
-                AddBorderedText(m_ColumnX, 13, width, Center(name), 0xFFFFFF, 0);
+                AddBorderedText(m_ColumnX, 13, width, name.Center(), 0xFFFFFF, 0);
             }
 
             m_ColumnX += width;

@@ -5,7 +5,6 @@ using System.Reflection;
 using ModernUO.Serialization;
 using Server.Collections;
 using Server.Engines.Plants;
-using Server.Engines.Quests;
 using Server.Engines.Quests.Hag;
 using Server.Engines.Quests.Matriarch;
 using Server.Items;
@@ -1398,7 +1397,7 @@ public abstract partial class BaseBeverage : Item, IHasQuantity
         {
             if (from is PlayerMobile { Quest: SolenMatriarchQuest qs })
             {
-                QuestObjective obj = qs.FindObjective<GatherWaterObjective>();
+                var obj = qs.FindObjective<GatherWaterObjective>();
 
                 if (obj?.Completed == false)
                 {
@@ -1502,12 +1501,7 @@ public abstract partial class BaseBeverage : Item, IHasQuantity
         _quantity = reader.ReadInt();
     }
 
-    public static void Initialize()
-    {
-        EventSink.Login += EventSink_Login;
-    }
-
-    private static void EventSink_Login(Mobile m)
+    public static void OnLogin(Mobile m)
     {
         CheckHeaveTimer(m);
     }

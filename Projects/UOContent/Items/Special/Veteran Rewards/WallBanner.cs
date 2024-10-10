@@ -304,7 +304,6 @@ public partial class WallBannerDeed : BaseAddonDeed, IRewardItem
 
         if (IsChildOf(from.Backpack))
         {
-            from.CloseGump<InternalGump>();
             from.SendGump(new InternalGump(this));
         }
         else
@@ -323,6 +322,8 @@ public partial class WallBannerDeed : BaseAddonDeed, IRewardItem
     private class InternalGump : Gump
     {
         private readonly WallBannerDeed _wallBanner;
+
+        public override bool Singleton => true;
 
         public InternalGump(WallBannerDeed wallBanner) : base(150, 50)
         {
@@ -466,7 +467,7 @@ public partial class WallBannerDeed : BaseAddonDeed, IRewardItem
             AddButton(70, 205, 0x8AF, 0x8AF, 0, GumpButtonType.Page, 4);
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (_wallBanner?.Deleted != false || info.ButtonID is <= 0 or >= 31)
             {

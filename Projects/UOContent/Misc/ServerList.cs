@@ -3,7 +3,9 @@ using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using ModernUO.CodeGeneratedEvents;
 using Server.Logging;
+using Server.Network;
 
 namespace Server.Misc
 {
@@ -39,6 +41,8 @@ namespace Server.Misc
 
         public static bool AutoDetect { get; private set; }
 
+        private static bool _useServerListingAddressConfig { get; set; }
+
         public static void Configure()
         {
             Address = ServerConfiguration.GetOrUpdateSetting("serverListing.address", null);
@@ -58,12 +62,18 @@ namespace Server.Misc
             else
             {
                 Resolve(Address, out _publicAddress);
-            }
 
-            EventSink.ServerList += EventSink_ServerList;
+                if (_publicAddress != null)
+                {
+                    _useServerListingAddressConfig = true;
+
+                    logger.Information("Server listing address set from config: {address}", _publicAddress);
+                }
+            }
         }
 
-        private static void EventSink_ServerList(ServerListEventArgs e)
+        [OnEvent(nameof(GatewayServer.ServerListEvent))]
+        public static void OnServerListEvent(GatewayServer.ServerListEventArgs e)
         {
             try
             {
@@ -78,9 +88,14 @@ namespace Server.Misc
                 var localAddress = ipep.Address;
                 var localPort = ipep.Port;
 
-                if (IsPrivateNetwork(localAddress))
+                if (_useServerListingAddressConfig)
+                {
+                    localAddress = _publicAddress;
+                }
+                else if (IsPrivateNetwork(localAddress))
                 {
                     ipep = (IPEndPoint)ns.Connection.RemoteEndPoint;
+
                     if (ipep == null || !IsPrivateNetwork(ipep.Address) && _publicAddress != null)
                     {
                         localAddress = _publicAddress;
@@ -153,18 +168,39 @@ namespace Server.Misc
             return false;
         }
 
-        // 10.0.0.0/8
-        // 172.16.0.0/12
-        // 192.168.0.0/16
-        // 169.254.0.0/16
-        // 100.64.0.0/10 RFC 6598
         private static bool IsPrivateNetwork(IPAddress ip) =>
-            ip.AddressFamily != AddressFamily.InterNetworkV6 &&
-            (Utility.IPMatch("192.168.*", ip) ||
-             Utility.IPMatch("10.*", ip) ||
-             Utility.IPMatch("172.16-31.*", ip) ||
-             Utility.IPMatch("169.254.*", ip) ||
-             Utility.IPMatch("100.64-127.*", ip));
+            ip.AddressFamily switch
+            {
+                AddressFamily.InterNetwork => IsPrivateNetworkV4(ip),
+                AddressFamily.InterNetworkV6 => IsPrivateNetworkV6(ip),
+                _ => false
+            };
+
+        private static readonly IFirewallEntry[] _privateNetworkV4 =
+        [
+            new CidrFirewallEntry("192.168.0.0/16"),
+            new CidrFirewallEntry("10.0.0.0/8"),
+            new CidrFirewallEntry("172.16.0.0/12"),
+            new CidrFirewallEntry("169.254.0.0/16"),
+            new CidrFirewallEntry("100.64.0.0/10")
+        ];
+
+        private static readonly IFirewallEntry[] _privateNetworkV6 =
+        [
+            new CidrFirewallEntry("fc00::/7"),
+            new CidrFirewallEntry("fe80::/10")
+        ];
+
+        private static bool IsPrivateNetworkV4(IPAddress ip) =>
+            _privateNetworkV4[0].IsBlocked(ip) ||
+            _privateNetworkV4[1].IsBlocked(ip) ||
+            _privateNetworkV4[2].IsBlocked(ip) ||
+            _privateNetworkV4[3].IsBlocked(ip) ||
+            _privateNetworkV4[4].IsBlocked(ip);
+
+        private static bool IsPrivateNetworkV6(IPAddress ip) =>
+            _privateNetworkV6[0].IsBlocked(ip) ||
+            _privateNetworkV6[1].IsBlocked(ip);
 
         private const string _ipifyUrl = "https://api.ipify.org";
 

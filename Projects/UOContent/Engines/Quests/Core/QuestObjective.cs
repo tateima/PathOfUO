@@ -10,7 +10,7 @@ namespace Server.Engines.Quests
     {
         private int m_CurProgress;
 
-        public abstract object Message { get; }
+        public abstract int Message { get; }
 
         public virtual int MaxProgress => 1;
         public virtual QuestItemInfo[] Info => null;
@@ -130,6 +130,8 @@ namespace Server.Engines.Quests
     {
         private readonly QuestSystem m_System;
 
+        public override bool Singleton => true;
+
         public QuestLogUpdatedGump(QuestSystem system) : base(3, 30)
         {
             m_System = system;
@@ -146,7 +148,7 @@ namespace Server.Engines.Quests
             AddButton(30, 15, 5575, 5576, 1);
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (info.ButtonID == 1)
             {
@@ -231,7 +233,7 @@ namespace Server.Engines.Quests
             }
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             for (var i = m_Objectives.Count - 1; i >= 0; --i)
             {

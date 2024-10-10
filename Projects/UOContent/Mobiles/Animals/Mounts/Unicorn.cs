@@ -61,7 +61,7 @@ namespace Server.Mobiles
         public override int Meat => 3;
         public override int Hides => 10;
         public override HideType HideType => HideType.Horned;
-        public override FoodType FavoriteFood => FoodType.FruitsAndVegies | FoodType.GrainsAndHay;
+        public override FoodType FavoriteFood => FoodType.FruitsAndVeggies | FoodType.GrainsAndHay;
 
         public override void OnDisallowedRider(Mobile m)
         {
@@ -91,7 +91,7 @@ namespace Server.Mobiles
                         if (Rider.CurePoison(this))
                         {
                             // Your mount senses you are in danger and aids you with magic.
-                            Rider.LocalOverheadMessage(MessageType.Regular,0x3B2,1080039);
+                            Rider.LocalOverheadMessage(MessageType.Regular, 0x3B2, 1080039);
                             Rider.FixedParticles(0x373A, 10, 15, 5012, EffectLayer.Waist);
                             Rider.PlaySound(0x1E0); // Cure spell effect.
                             Rider.PlaySound(0xA9);  // Unicorn's whinny.

@@ -4,7 +4,7 @@ using Server.Targeting;
 
 namespace Server.Spells.Fourth
 {
-    public class ManaDrainSpell : MagerySpell, ISpellTargetingMobile
+    public class ManaDrainSpell : MagerySpell, ITargetingSpell<Mobile>
     {
         private static readonly SpellInfo _info = new(
             "Mana Drain",
@@ -73,16 +73,14 @@ namespace Server.Spells.Fourth
 
                 HarmfulSpell(m);
             }
-
-            FinishSequence();
         }
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetMobile(this, TargetFlags.Harmful, Core.ML ? 10 : 12);
+            Caster.Target = new SpellTarget<Mobile>(this, TargetFlags.Harmful);
         }
 
-        private void AosDelay_Callback(Mobile m, int mana)
+        private static void AosDelay_Callback(Mobile m, int mana)
         {
             if (m.Alive && !m.IsDeadBondedPet)
             {

@@ -96,7 +96,6 @@ public partial class WreathAddon : Item, IDyable, IAddon
         {
             if (from.InRange(GetWorldLocation(), 3))
             {
-                from.CloseGump<WreathAddonGump>();
                 from.SendGump(new WreathAddonGump(from, this));
             }
             else
@@ -110,6 +109,8 @@ public partial class WreathAddon : Item, IDyable, IAddon
     {
         private readonly WreathAddon _addon;
         private readonly Mobile _from;
+
+        public override bool Singleton => true;
 
         public WreathAddonGump(Mobile from, WreathAddon addon) : base(150, 50)
         {
@@ -127,7 +128,7 @@ public partial class WreathAddon : Item, IDyable, IAddon
             AddButton(20, 125, 0xFA5, 0xFA7, 0);
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (_addon.Deleted)
             {
@@ -286,7 +287,7 @@ public partial class WreathDeed : Item
             AddButton(145, 35, 0x868, 0x869, 2);
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (_deed.Deleted)
             {

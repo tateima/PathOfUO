@@ -80,7 +80,7 @@ public class GlobalTownCrierEntryList : ITownCrierEntryList
         }
     }
 
-    public static void Initialize()
+    public static void Configure()
     {
         CommandSystem.Register("TownCriers", AccessLevel.GameMaster, TownCriers_OnCommand);
     }
@@ -197,12 +197,12 @@ public class TownCrierGump : Gump
     private readonly Mobile m_From;
     private readonly ITownCrierEntryList m_Owner;
 
+    public override bool Singleton => true;
+
     public TownCrierGump(Mobile from, ITownCrierEntryList owner) : base(50, 50)
     {
         m_From = from;
         m_Owner = owner;
-
-        from.CloseGump<TownCrierGump>();
 
         AddPage(0);
 
@@ -268,7 +268,7 @@ public class TownCrierGump : Gump
         }
     }
 
-    public override void OnResponse(NetState sender, RelayInfo info)
+    public override void OnResponse(NetState sender, in RelayInfo info)
     {
         if (info.ButtonID == 1)
         {

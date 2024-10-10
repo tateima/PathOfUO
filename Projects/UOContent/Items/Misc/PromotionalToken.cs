@@ -46,7 +46,6 @@ public abstract partial class PromotionalToken : Item
         }
         else
         {
-            from.CloseGump<PromotionalTokenGump>();
             from.SendGump(new PromotionalTokenGump(this));
         }
     }
@@ -71,6 +70,8 @@ public abstract partial class PromotionalToken : Item
     {
         private readonly PromotionalToken m_Token;
 
+        public override bool Singleton => true;
+
         public PromotionalTokenGump(PromotionalToken token) : base(10, 10)
         {
             m_Token = token;
@@ -86,7 +87,7 @@ public abstract partial class PromotionalToken : Item
             AddButton(90, 95, 0xF2, 0xF1, 0);  // Cancel
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (info.ButtonID != 1)
             {

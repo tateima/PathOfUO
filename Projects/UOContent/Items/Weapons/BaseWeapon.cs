@@ -178,6 +178,7 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool ShouldSerializeIdentified() => _identified;
 
+    [SerializedIgnoreDupe]
     [SerializableField(24)]
     [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
     private AosAttributes _attributes;
@@ -189,6 +190,7 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
     [SerializableFieldDefault(24)]
     private AosAttributes AttributesDefaultValue() => new(this);
 
+    [SerializedIgnoreDupe]
     [SerializableField(25)]
     [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
     private AosWeaponAttributes _weaponAttributes;
@@ -208,6 +210,7 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool ShouldSerializePlayerConstructed() => _playerConstructed;
 
+    [SerializedIgnoreDupe]
     [SerializableField(27)]
     [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
     private AosSkillBonuses _skillBonuses;
@@ -228,6 +231,7 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool ShouldSerializeSlayer2() => _slayer2 != SlayerName.None;
 
+    [SerializedIgnoreDupe]
     [SerializableField(29)]
     [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
     private AosElementAttributes _aosElementDamages;
@@ -486,6 +490,9 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
 
     [SerializableFieldSaveFlag(3)]
     private bool ShouldSerializeQuality() => _quality != WeaponQuality.Regular;
+
+    [SerializableFieldDefault(3)]
+    private WeaponQuality QualityDefaultValue() => WeaponQuality.Regular;
 
     [SerializableProperty(4)]
     [CommandProperty(AccessLevel.GameMaster)]
@@ -1018,6 +1025,8 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
 
             if (attacker is BaseCreature bc)
             {
+                // Only change direction if they are not a player.
+                attacker.Direction = attacker.GetDirectionTo(defender);
                 var ab = bc.GetWeaponAbility();
 
                 if (ab != null)
@@ -1057,6 +1066,12 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
         weap.AosElementDamages = new AosElementAttributes(newItem, AosElementDamages);
         weap.SkillBonuses = new AosSkillBonuses(newItem, SkillBonuses);
         weap.WeaponAttributes = new AosWeaponAttributes(newItem, WeaponAttributes);
+
+        // Set hue again because of resource
+        weap.Hue = Hue;
+        // Set HP/Max again because of durability
+        weap.HitPoints = HitPoints;
+        weap.MaxHitPoints = MaxHitPoints;
     }
 
     public int GetDurabilityBonus()
@@ -1576,11 +1591,6 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
             if (DualWield.Registry.TryGetValue(m, out var duelWield))
             {
                 bonus += duelWield.BonusSwingSpeed;
-            }
-
-            if (Feint.Registry.TryGetValue(m, out var feint))
-            {
-                bonus -= feint.SwingSpeedReduction;
             }
 
             var context = TransformationSpellHelper.GetContext(m);
@@ -2284,6 +2294,12 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
             move = null;
         }
 
+        if (Feint.GetDamageReduction(attacker, defender, out var feintReduction))
+        {
+            // example: 35 damage * 50 / 100 = 17 damage
+            damage -= damage * feintReduction / 100;
+        }
+
         var ignoreArmor = a is ArmorIgnore ||
                           move?.IgnoreArmor(attacker) == true ||
                           Bladeweave.BladeWeaving(attacker, out var bladeweavingAbi) &&
@@ -2954,7 +2970,9 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
         var strengthBonus = GetBonus(attacker.Str, 0.300, 100.0, 5.00);
         var anatomyBonus = GetBonus(attacker.Skills.Anatomy.Value, 0.500, 100.0, 5.00);
         var tacticsBonus = GetBonus(attacker.Skills.Tactics.Value, 0.625, 100.0, 6.25);
-        var lumberBonus = GetBonus(attacker.Skills.Lumberjacking.Value, 0.200, 100.0, 10.00);
+        var lumberBonus = Type == WeaponType.Axe
+            ? GetBonus(attacker.Skills.Lumberjacking.Value, 0.200, 100.0, 10.00)
+            : 0.0;
 
         int darkAffinityBonus = 0;
         if (attacker is PlayerMobile player)
@@ -2970,11 +2988,6 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
                 // switch tactics bonus to use Evaluating Intelligence instead
                 tacticsBonus = GetBonus(attacker.Skills.EvalInt.Value, 0.625, 100.0, 6.25);
             }
-        }
-
-        if (Type != WeaponType.Axe)
-        {
-            lumberBonus = 0.0;
         }
 
         /*
@@ -3013,9 +3026,10 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
             damageBonus = 100;
         }
 
-        var totalBonus = strengthBonus + anatomyBonus + tacticsBonus + lumberBonus + damageBonus + GetDamageBonus();
+        var totalBonus = strengthBonus + anatomyBonus + tacticsBonus + lumberBonus +
+                         (damageBonus + GetDamageBonus()) / 100.0;
 
-        return damage + damage * totalBonus / 100.0;
+        return damage + damage * totalBonus;
     }
 
     public virtual int ComputeDamageAOS(Mobile attacker, Mobile defender) =>
@@ -3600,7 +3614,7 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
             list.Add(1111917); // Immolated
         }
 
-        if (Core.ML && (ranged?.Velocity ?? 0) != 0)
+        if (Core.ML && (prop = ranged?.Velocity ?? 0) != 0)
         {
             list.Add(1072793, prop); // Velocity ~1_val~%
         }

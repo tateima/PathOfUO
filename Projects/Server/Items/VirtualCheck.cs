@@ -13,23 +13,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  *************************************************************************/
 
+using ModernUO.Serialization;
 using Server.Gumps;
-using Server.Network;
+using System;
 
 namespace Server.Items;
 
-public sealed class VirtualCheck : Item
+[SerializationGenerator(0, false)]
+public sealed partial class VirtualCheck : Item
 {
     public static bool UseEditGump { get; private set; }
+    public static unsafe delegate*<Mobile, VirtualCheck, IVirtualCheckGump> GumpActivator { get; set; }
 
-    public static void Configure()
+    public static unsafe void Configure()
     {
         UseEditGump = ServerConfiguration.GetSetting("virtualChecks.useEditGump", Core.TOL);
+
+        if (UseEditGump && GumpActivator is null)
+        {
+            throw new NullReferenceException(nameof(GumpActivator));
+        }
     }
 
-    private int m_Gold;
+    private int _gold;
 
-    private int m_Plat;
+    private int _plat;
 
     public VirtualCheck(int plat = 0, int gold = 0) : base(0x14F0)
     {
@@ -39,29 +47,21 @@ public sealed class VirtualCheck : Item
         Movable = false;
     }
 
-    public VirtualCheck(Serial serial)
-        : base(serial)
-    {
-    }
-
     public override bool IsVirtualItem => true;
-
     public override bool DisplayWeight => false;
     public override bool DisplayLootType => false;
-
     public override double DefaultWeight => 0;
-
     public override string DefaultName => "Offer Of Currency";
 
-    public EditGump Editor { get; private set; }
+    public IVirtualCheckGump Editor { get; private set; }
 
     [CommandProperty(AccessLevel.Administrator)]
     public int Plat
     {
-        get => m_Plat;
+        get => _plat;
         set
         {
-            m_Plat = value;
+            _plat = value;
             InvalidateProperties();
         }
     }
@@ -69,10 +69,10 @@ public sealed class VirtualCheck : Item
     [CommandProperty(AccessLevel.Administrator)]
     public int Gold
     {
-        get => m_Gold;
+        get => _gold;
         set
         {
-            m_Gold = value;
+            _gold = value;
             InvalidateProperties();
         }
     }
@@ -89,13 +89,13 @@ public sealed class VirtualCheck : Item
         return c.RootParent == check && IsChildOf(c);
     }
 
-    public override void OnDoubleClickSecureTrade(Mobile from)
+    public override unsafe void OnDoubleClickSecureTrade(Mobile from)
     {
         if (UseEditGump && IsAccessibleTo(from))
         {
             if (Editor?.Check?.Deleted != false)
             {
-                Editor = new EditGump(from, this);
+                Editor = GumpActivator(from, this);
                 Editor.Send();
             }
             else
@@ -159,238 +159,9 @@ public sealed class VirtualCheck : Item
         }
     }
 
-    public override void Serialize(IGenericWriter writer)
-    {
-    }
-
-    public override void Deserialize(IGenericReader reader)
+    [AfterDeserialization(false)]
+    private void AfterDeserialization()
     {
         Delete();
-    }
-
-    public class EditGump : Gump
-    {
-        public enum Buttons
-        {
-            Close,
-            Clear,
-            Accept,
-            AllPlat,
-            AllGold
-        }
-
-        private int m_Plat, m_Gold;
-
-        public EditGump(Mobile user, VirtualCheck check) : base(50, 50)
-        {
-            User = user;
-            Check = check;
-
-            m_Plat = Check.Plat;
-            m_Gold = Check.Gold;
-
-            Closable = true;
-            Disposable = true;
-            Draggable = true;
-            Resizable = false;
-
-            User.CloseGump<EditGump>();
-
-            CompileLayout();
-        }
-
-        public Mobile User { get; }
-        public VirtualCheck Check { get; private set; }
-
-        public override void OnServerClose(NetState owner)
-        {
-            base.OnServerClose(owner);
-
-            if (Check?.Deleted == false)
-            {
-                Check.UpdateTrade(User);
-            }
-        }
-
-        public void Close()
-        {
-            User.CloseGump<EditGump>();
-
-            if (Check?.Deleted == false)
-            {
-                Check.UpdateTrade(User);
-            }
-            else
-            {
-                Check = null;
-            }
-        }
-
-        public void Send()
-        {
-            if (Check?.Deleted == false)
-            {
-                User.SendGump(this);
-            }
-            else
-            {
-                Close();
-            }
-        }
-
-        public void Refresh(bool recompile)
-        {
-            if (Check?.Deleted != false)
-            {
-                Close();
-                return;
-            }
-
-            if (recompile)
-            {
-                CompileLayout();
-            }
-
-            Close();
-            Send();
-        }
-
-        private void CompileLayout()
-        {
-            if (Check?.Deleted != false)
-            {
-                return;
-            }
-
-            Entries.ForEach(e => e.Parent = null);
-            Entries.Clear();
-
-            AddPage(0);
-
-            AddBackground(0, 0, 400, 160, 3500);
-
-            // Title
-            AddImageTiled(25, 35, 350, 3, 96);
-            AddImage(10, 8, 113);
-            AddImage(360, 8, 113);
-
-            var title =
-                $"<BASEFONT COLOR=#FF2F4F4F><CENTER>BANK OF {User.RawName.ToUpper()}</CENTER>";
-
-            AddHtml(40, 15, 320, 20, title);
-
-            // Platinum Row
-            AddBackground(15, 60, 175, 20, 9300);
-            AddBackground(20, 45, 165, 30, 9350);
-            AddItem(20, 45, 3826); // Plat
-            AddLabel(60, 50, 0, User.Account.TotalPlat.ToString("#,0"));
-
-            AddButton(195, 50, 95, 95, (int)Buttons.AllPlat); // ->
-
-            AddBackground(210, 60, 175, 20, 9300);
-            AddBackground(215, 45, 165, 30, 9350);
-            AddTextEntry(225, 50, 145, 20, 0, 0, m_Plat.ToString(), User.Account.TotalPlat.ToString().Length);
-
-            // Gold Row
-            AddBackground(15, 100, 175, 20, 9300);
-            AddBackground(20, 85, 165, 30, 9350);
-            AddItem(20, 85, 3823); // Gold
-            AddLabel(60, 90, 0, User.Account.TotalGold.ToString("#,0"));
-
-            AddButton(195, 90, 95, 95, (int)Buttons.AllGold); // ->
-
-            AddBackground(210, 100, 175, 20, 9300);
-            AddBackground(215, 85, 165, 30, 9350);
-            AddTextEntry(225, 90, 145, 20, 0, 1, m_Gold.ToString(), User.Account.TotalGold.ToString().Length);
-
-            // Buttons
-            AddButton(20, 128, 12006, 12007, (int)Buttons.Close);
-            AddButton(215, 128, 12003, 12004, (int)Buttons.Clear);
-            AddButton(305, 128, 12000, 12002, (int)Buttons.Accept);
-        }
-
-        public override void OnResponse(NetState sender, RelayInfo info)
-        {
-            if (Check?.Deleted != false || sender.Mobile != User)
-            {
-                Close();
-                return;
-            }
-
-            bool refresh = false, updated = false;
-
-            switch ((Buttons)info.ButtonID)
-            {
-                case Buttons.Close:
-                    break;
-                case Buttons.Clear:
-                    {
-                        m_Plat = m_Gold = 0;
-                        refresh = true;
-                    }
-                    break;
-                case Buttons.Accept:
-                    {
-                        var platText = info.GetTextEntry(0).Text;
-                        var goldText = info.GetTextEntry(1).Text;
-
-                        if (!int.TryParse(platText, out m_Plat))
-                        {
-                            User.SendMessage("That is not a valid amount of platinum.");
-                            refresh = true;
-                        }
-                        else if (!int.TryParse(goldText, out m_Gold))
-                        {
-                            User.SendMessage("That is not a valid amount of gold.");
-                            refresh = true;
-                        }
-                        else
-                        {
-                            var totalPlat = User.Account.TotalPlat;
-                            var totalGold = User.Account.TotalGold;
-
-                            if (totalPlat < m_Plat || totalGold < m_Gold)
-                            {
-                                m_Plat = User.Account.TotalPlat;
-                                m_Gold = User.Account.TotalGold;
-                                User.SendMessage("You do not have that much currency.");
-                                refresh = true;
-                            }
-                            else
-                            {
-                                Check.Plat = m_Plat;
-                                Check.Gold = m_Gold;
-                                updated = true;
-                            }
-                        }
-                    }
-                    break;
-                case Buttons.AllPlat:
-                    {
-                        m_Plat = User.Account.TotalPlat;
-                        refresh = true;
-                    }
-                    break;
-                case Buttons.AllGold:
-                    {
-                        m_Gold = User.Account.TotalGold;
-                        refresh = true;
-                    }
-                    break;
-            }
-
-            if (updated)
-            {
-                User.SendMessage("Your offer has been updated.");
-            }
-
-            if (refresh && Check?.Deleted == false)
-            {
-                Refresh(true);
-                return;
-            }
-
-            Close();
-        }
     }
 }

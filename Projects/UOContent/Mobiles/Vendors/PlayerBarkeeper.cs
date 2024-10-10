@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Server.Collections;
 using Server.ContextMenus;
 using Server.Gumps;
 using Server.Items;
@@ -124,18 +125,13 @@ namespace Server.Mobiles
 
     public class ManageBarkeeperEntry : ContextMenuEntry
     {
-        private readonly PlayerBarkeeper m_Barkeeper;
-        private readonly Mobile m_From;
-
-        public ManageBarkeeperEntry(Mobile from, PlayerBarkeeper barkeeper) : base(6151, 12)
+        public ManageBarkeeperEntry() : base(6151, 12)
         {
-            m_From = from;
-            m_Barkeeper = barkeeper;
         }
 
-        public override void OnClick()
+        public override void OnClick(Mobile from, IEntity target)
         {
-            m_Barkeeper.BeginManagement(m_From);
+            (target as PlayerBarkeeper)?.BeginManagement(from);
         }
     }
 
@@ -372,13 +368,13 @@ namespace Server.Mobiles
             return Owner == from;
         }
 
-        public override void GetContextMenuEntries(Mobile from, List<ContextMenuEntry> list)
+        public override void GetContextMenuEntries(Mobile from, ref PooledRefList<ContextMenuEntry> list)
         {
-            base.GetContextMenuEntries(from, list);
+            base.GetContextMenuEntries(from, ref list);
 
             if (IsOwner(from) && from.InLOS(this))
             {
-                list.Add(new ManageBarkeeperEntry(from, this));
+                list.Add(new ManageBarkeeperEntry());
             }
         }
 
@@ -517,7 +513,6 @@ namespace Server.Mobiles
 
         public void BeginChangeAppearance(Mobile from)
         {
-            from.CloseGump<PlayerVendorCustomizeGump>();
             from.SendGump(new PlayerVendorCustomizeGump(this, from));
         }
 
@@ -686,13 +681,14 @@ namespace Server.Mobiles
         private readonly PlayerBarkeeper m_Barkeeper;
         private readonly Mobile m_From;
 
+        public override bool Singleton => true;
+
         public BarkeeperTitleGump(Mobile from, PlayerBarkeeper barkeeper) : base(0, 0)
         {
             m_From = from;
             m_Barkeeper = barkeeper;
 
             from.CloseGump<BarkeeperGump>();
-            from.CloseGump<BarkeeperTitleGump>();
 
             var entries = m_Entries;
 
@@ -788,7 +784,7 @@ namespace Server.Mobiles
             AddHtml(290, 440, 35, 40, "Back");
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             var buttonID = info.ButtonID;
 
@@ -836,12 +832,13 @@ namespace Server.Mobiles
         private readonly PlayerBarkeeper m_Barkeeper;
         private readonly Mobile m_From;
 
+        public override bool Singleton => true;
+
         public BarkeeperGump(Mobile from, PlayerBarkeeper barkeeper) : base(0, 0)
         {
             m_From = from;
             m_Barkeeper = barkeeper;
 
-            from.CloseGump<BarkeeperGump>();
             from.CloseGump<BarkeeperTitleGump>();
 
             RenderBackground();
@@ -1064,7 +1061,7 @@ namespace Server.Mobiles
             AddItem(580, 44, 4033);
         }
 
-        public override void OnResponse(NetState state, RelayInfo info)
+        public override void OnResponse(NetState state, in RelayInfo info)
         {
             if (!m_Barkeeper.IsOwner(m_From))
             {

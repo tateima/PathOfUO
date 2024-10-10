@@ -6,7 +6,7 @@ using Server.Targeting;
 
 namespace Server.Spells.Chivalry
 {
-    public class CloseWoundsSpell : PaladinSpell, ISpellTargetingMobile
+    public class CloseWoundsSpell : PaladinSpell, ITargetingSpell<Mobile>
     {
         private static readonly SpellInfo _info = new(
             "Close Wounds",
@@ -83,8 +83,6 @@ namespace Server.Spells.Chivalry
                 m.FixedParticles(0x376A, 1, 62, 9923, 3, 3, EffectLayer.Waist);
                 m.FixedParticles(0x3779, 1, 46, 9502, 5, 3, EffectLayer.Waist);
             }
-
-            FinishSequence();
         }
 
         public override bool CheckCast()
@@ -100,7 +98,7 @@ namespace Server.Spells.Chivalry
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetMobile(this, TargetFlags.Beneficial);
+            Caster.Target = new SpellTarget<Mobile>(this, TargetFlags.Beneficial);
         }
     }
 }

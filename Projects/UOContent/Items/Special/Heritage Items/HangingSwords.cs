@@ -40,7 +40,6 @@ public partial class HangingSwordsDeed : BaseAddonDeed
     {
         if (IsChildOf(from.Backpack))
         {
-            from.CloseGump<InternalGump>();
             from.SendGump(new InternalGump(this));
         }
         else
@@ -57,6 +56,8 @@ public partial class HangingSwordsDeed : BaseAddonDeed
     private class InternalGump : Gump
     {
         private readonly HangingSwordsDeed m_Deed;
+
+        public override bool Singleton => true;
 
         public InternalGump(HangingSwordsDeed deed) : base(60, 36)
         {
@@ -81,7 +82,7 @@ public partial class HangingSwordsDeed : BaseAddonDeed
             AddHtmlLocalized(44, 71, 213, 20, 1075387, 0x7FFF); // East
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (m_Deed?.Deleted != false || info.ButtonID == 0)
             {

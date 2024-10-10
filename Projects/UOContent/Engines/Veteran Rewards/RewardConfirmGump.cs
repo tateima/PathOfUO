@@ -9,12 +9,12 @@ namespace Server.Engines.VeteranRewards
         private readonly RewardEntry m_Entry;
         private readonly Mobile m_From;
 
+        public override bool Singleton => true;
+
         public RewardConfirmGump(Mobile from, RewardEntry entry) : base(0, 0)
         {
             m_From = from;
             m_Entry = entry;
-
-            from.CloseGump<RewardConfirmGump>();
 
             AddPage(0);
 
@@ -51,7 +51,7 @@ namespace Server.Engines.VeteranRewards
             AddHtmlLocalized(330, 266, 150, 35, 1006045); // Cancel
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (info.ButtonID == 1)
             {

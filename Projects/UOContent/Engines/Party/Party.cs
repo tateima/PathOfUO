@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using ModernUO.CodeGeneratedEvents;
 using Server.Factions;
+using Server.Mobiles;
 using Server.Network;
 using Server.Targeting;
 
@@ -96,15 +98,15 @@ namespace Server.Engines.PartySystem
             }
         }
 
-        public static void Initialize()
+        public static void Configure()
         {
             EventSink.Logout += EventSink_Logout;
-            EventSink.Login += EventSink_Login;
-            EventSink.PlayerDeath += EventSink_PlayerDeath;
 
             CommandSystem.Register("ListenToParty", AccessLevel.GameMaster, ListenToParty_OnCommand);
         }
 
+        [Usage("ListenToParty")]
+        [Description("Listen to the targeted player's party chat.")]
         public static void ListenToParty_OnCommand(CommandEventArgs e)
         {
             e.Mobile.BeginTarget(-1, false, TargetFlags.None, ListenToParty_OnTarget);
@@ -134,7 +136,8 @@ namespace Server.Engines.PartySystem
             }
         }
 
-        public static void EventSink_PlayerDeath(Mobile from)
+        [OnEvent(nameof(PlayerMobile.PlayerDeathEvent))]
+        public static void OnPlayerDeathEvent(Mobile from)
         {
             var p = Get(from);
 
@@ -157,7 +160,7 @@ namespace Server.Engines.PartySystem
             }
         }
 
-        public static void EventSink_Login(Mobile from)
+        public static void OnLogin(Mobile from)
         {
             var p = Get(from);
 

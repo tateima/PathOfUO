@@ -224,7 +224,10 @@ namespace Server.Spells
             }
         }
 
-        public virtual int GetNewAosDamage(int bonus, int dice, int sides, Mobile singleTarget)
+        public int GetNewAosDamage(int bonus, int dice, int sides, Mobile singleTarget) =>
+            GetNewAosDamage(bonus, dice, sides, true, singleTarget);
+
+        public virtual int GetNewAosDamage(int bonus, int dice, int sides, bool sdi = true, Mobile singleTarget = null)
         {
             if (singleTarget != null)
             {
@@ -233,17 +236,15 @@ namespace Server.Spells
                     dice,
                     sides,
                     Caster.Player && singleTarget.Player,
+                    sdi,
                     GetDamageScalar(singleTarget)
                 );
             }
 
-            return GetNewAosDamage(bonus, dice, sides, false);
+            return GetNewAosDamage(bonus, dice, sides, sdi, false);
         }
 
-        public virtual int GetNewAosDamage(int bonus, int dice, int sides, bool playerVsPlayer) =>
-            GetNewAosDamage(bonus, dice, sides, playerVsPlayer, 1.0);
-
-        public virtual int GetNewAosDamage(int bonus, int dice, int sides, bool playerVsPlayer, double scalar)
+        public virtual int GetNewAosDamage(int bonus, int dice, int sides, bool playerVsPlayer, bool sdi, double scalar = 1.0)
         {
             var damage = Utility.Dice(dice, sides, bonus);
             var multiplier = (int)(100 * ReagentsScale());
@@ -266,14 +267,17 @@ namespace Server.Spells
             var intBonus = Caster.Int / 10;
             damageBonus += intBonus;
 
-            var sdiBonus = AosAttributes.GetValue(Caster, AosAttribute.SpellDamage);
-            // PvP spell damage increase cap of 15% from an item's magic property
-            if (playerVsPlayer && sdiBonus > 15)
+            if (sdi)
             {
-                sdiBonus = 15;
-            }
+                var sdiBonus = AosAttributes.GetValue(Caster, AosAttribute.SpellDamage);
+                // PvP spell damage increase cap of 15% from an item's magic property
+                if (playerVsPlayer && sdiBonus > 15)
+                {
+                    sdiBonus = 15;
+                }
 
-            damageBonus += sdiBonus;
+                damageBonus += sdiBonus;
+            }
 
             var context = TransformationSpellHelper.GetContext(Caster);
 

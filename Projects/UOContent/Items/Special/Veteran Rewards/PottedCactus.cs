@@ -50,7 +50,6 @@ public partial class PottedCactusDeed : Item, IRewardItem
 
         if (IsChildOf(from.Backpack))
         {
-            from.CloseGump<InternalGump>();
             from.SendGump(new InternalGump(this));
         }
         else
@@ -72,6 +71,8 @@ public partial class PottedCactusDeed : Item, IRewardItem
     private class InternalGump : Gump
     {
         private readonly PottedCactusDeed _deed;
+
+        public override bool Singleton => true;
 
         public InternalGump(PottedCactusDeed cactus) : base(100, 200)
         {
@@ -107,7 +108,7 @@ public partial class PottedCactusDeed : Item, IRewardItem
             AddButton(355, 50, 0x845, 0x846, 0x1E13);
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (_deed?.Deleted != false || info.ButtonID is < 0x1E0F or > 0x1E14)
             {

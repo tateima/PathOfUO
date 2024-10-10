@@ -339,7 +339,7 @@ public partial class CannonAddon : BaseAddon
             AddHtmlLocalized(195, 109, 120, 20, 1076197, 0x7FFF); // Recharge
         }
 
-        public override void OnResponse(NetState state, RelayInfo info)
+        public override void OnResponse(NetState state, in RelayInfo info)
         {
             if (_cannon?.Deleted == false && info.ButtonID == (int)Buttons.Recharge)
             {
@@ -420,7 +420,6 @@ public partial class CannonDeed : BaseAddonDeed, IRewardItem, IRewardOption
 
         if (IsChildOf(from.Backpack))
         {
-            from.CloseGump<RewardOptionGump>();
             from.SendGump(new RewardOptionGump(this));
         }
         else

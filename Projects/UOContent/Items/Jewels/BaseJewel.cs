@@ -35,14 +35,17 @@ public abstract partial class BaseJewel : Item, ICraftable, IAosItem
     [SerializedCommandProperty(AccessLevel.GameMaster)]
     private GemType _gemType;
 
+    [SerializedIgnoreDupe]
     [SerializableField(4)]
     [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
     private AosAttributes _attributes;
 
+    [SerializedIgnoreDupe]
     [SerializableField(5, setter: "private")]
     [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
     private AosElementAttributes _resistances;
 
+    [SerializedIgnoreDupe]
     [SerializableField(6)]
     [SerializedCommandProperty(AccessLevel.GameMaster, canModify: true)]
     private AosSkillBonuses _skillBonuses;
@@ -315,6 +318,9 @@ public abstract partial class BaseJewel : Item, ICraftable, IAosItem
         jewel.Attributes = new AosAttributes(newItem, Attributes);
         jewel.Resistances = new AosElementAttributes(newItem, Resistances);
         jewel.SkillBonuses = new AosSkillBonuses(newItem, SkillBonuses);
+
+        // Set hue again because of resource
+        jewel.Hue = Hue;
     }
 
     public override void OnAdded(IEntity parent)

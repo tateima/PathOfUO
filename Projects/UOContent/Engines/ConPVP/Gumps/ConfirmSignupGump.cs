@@ -19,6 +19,8 @@ namespace Server.Engines.ConPVP
         private readonly Mobile m_Registrar;
         private readonly Tournament m_Tournament;
 
+        public override bool Singleton => true;
+
         public ConfirmSignupGump(Mobile from, Mobile registrar, Tournament tourney, List<Mobile> players) : base(50, 50)
         {
             m_From = from;
@@ -26,10 +28,11 @@ namespace Server.Engines.ConPVP
             m_Tournament = tourney;
             m_Players = players;
 
-            m_From.CloseGump<AcceptTeamGump>();
-            m_From.CloseGump<AcceptDuelGump>();
-            m_From.CloseGump<DuelContextGump>();
-            m_From.CloseGump<ConfirmSignupGump>();
+            var gumps = m_From.GetGumps();
+
+            gumps.Close<AcceptTeamGump>();
+            gumps.Close<AcceptDuelGump>();
+            gumps.Close<DuelContextGump>();
 
             var ruleset = tourney.Ruleset;
             var basedef = ruleset.Base;
@@ -129,7 +132,7 @@ namespace Server.Engines.ConPVP
 
             sb.Append(" Tournament Signup");
 
-            AddBorderedText(22, 22, 294, 20, Center(sb.ToString()), LabelColor32, BlackColor32);
+            AddBorderedText(22, 22, 294, 20, sb.ToString().Center(), LabelColor32, BlackColor32);
             AddBorderedText(
                 22,
                 50,
@@ -283,10 +286,6 @@ namespace Server.Engines.ConPVP
             AddButton(314, y, 247, 248, 1);
         }
 
-        public string Center(string text) => $"<CENTER>{text}</CENTER>";
-
-        public string Color(string text, int color) => $"<BASEFONT COLOR=#{color:X6}>{text}</BASEFONT>";
-
         private void AddBorderedText(int x, int y, int width, int height, string text, int color, int borderColor)
         {
             AddColoredText(x - 1, y - 1, width, height, text, borderColor);
@@ -298,14 +297,7 @@ namespace Server.Engines.ConPVP
 
         private void AddColoredText(int x, int y, int width, int height, string text, int color)
         {
-            if (color == 0)
-            {
-                AddHtml(x, y, width, height, text);
-            }
-            else
-            {
-                AddHtml(x, y, width, height, Color(text, color));
-            }
+            AddHtml(x, y, width, height, color == 0 ? text : text.Color(color));
         }
 
         public void AddGoldenButton(int x, int y, int bid)
@@ -314,7 +306,7 @@ namespace Server.Engines.ConPVP
             AddButton(x + 3, y + 3, 0xD8, 0xD8, bid);
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (info.ButtonID == 1 && info.IsSwitched(1))
             {

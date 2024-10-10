@@ -8,7 +8,7 @@ using Server.Targeting;
 
 namespace Server.Spells.Chivalry
 {
-    public class RemoveCurseSpell : PaladinSpell, ISpellTargetingMobile
+    public class RemoveCurseSpell : PaladinSpell, ITargetingSpell<Mobile>
     {
         private static readonly SpellInfo _info = new(
             "Remove Curse",
@@ -127,8 +127,6 @@ namespace Server.Spells.Chivalry
                     m.PlaySound(0x1DF);
                 }
             }
-
-            FinishSequence();
         }
 
         public override bool CheckCast()
@@ -144,7 +142,7 @@ namespace Server.Spells.Chivalry
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetMobile(this, TargetFlags.Beneficial, Core.ML ? 10 : 12);
+            Caster.Target = new SpellTarget<Mobile>(this, TargetFlags.Beneficial);
         }
     }
 }

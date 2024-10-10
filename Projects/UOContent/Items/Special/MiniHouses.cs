@@ -14,8 +14,8 @@ public partial class MiniHouseAddon : BaseAddon
         Construct();
     }
 
-    [CommandProperty(AccessLevel.GameMaster)]
     [SerializableProperty(0)]
+    [CommandProperty(AccessLevel.GameMaster)]
     public MiniHouseType Type
     {
         get => _type;
@@ -37,7 +37,7 @@ public partial class MiniHouseAddon : BaseAddon
             c.Delete();
         }
 
-        this.Clear(Components);
+        ClearComponents();
 
         var info = MiniHouseInfo.GetInfo(_type);
 

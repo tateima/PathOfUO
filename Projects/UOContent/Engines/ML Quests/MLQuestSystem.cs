@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using ModernUO.CodeGeneratedEvents;
 using Server.Commands;
 using Server.Commands.Generic;
 using Server.Engines.MLQuests.Gumps;
@@ -8,7 +9,6 @@ using Server.Engines.MLQuests.Objectives;
 using Server.Gumps;
 using Server.Items;
 using Server.Mobiles;
-using Server.Utilities;
 
 namespace Server.Engines.MLQuests
 {
@@ -144,6 +144,14 @@ namespace Server.Engines.MLQuests
         public static void Configure()
         {
             Enabled = ServerConfiguration.GetOrUpdateSetting("questSystem.enableMLQuests", Core.ML);
+
+            CommandSystem.Register("MLQuestsInfo", AccessLevel.Administrator, MLQuestsInfo_OnCommand);
+            CommandSystem.Register("SaveQuest", AccessLevel.Administrator, SaveQuest_OnCommand);
+            CommandSystem.Register("SaveAllQuests", AccessLevel.Administrator, SaveAllQuests_OnCommand);
+            CommandSystem.Register("InvalidQuestItems", AccessLevel.Administrator, InvalidQuestItems_OnCommand);
+
+            TargetCommands.Register(new ViewQuestsCommand());
+            TargetCommands.Register(new ViewContextCommand());
         }
 
         public static void Initialize()
@@ -165,16 +173,6 @@ namespace Server.Engines.MLQuests
             }
 
             MLQuestPersistence.EnsureExistence();
-
-            CommandSystem.Register("MLQuestsInfo", AccessLevel.Administrator, MLQuestsInfo_OnCommand);
-            CommandSystem.Register("SaveQuest", AccessLevel.Administrator, SaveQuest_OnCommand);
-            CommandSystem.Register("SaveAllQuests", AccessLevel.Administrator, SaveAllQuests_OnCommand);
-            CommandSystem.Register("InvalidQuestItems", AccessLevel.Administrator, InvalidQuestItems_OnCommand);
-
-            TargetCommands.Register(new ViewQuestsCommand());
-            TargetCommands.Register(new ViewContextCommand());
-
-            EventSink.QuestGumpRequest += EventSink_QuestGumpRequest;
         }
 
         [Usage("MLQuestsInfo"),
@@ -614,6 +612,7 @@ namespace Server.Engines.MLQuests
             return context;
         }
 
+        [OnEvent(nameof(PlayerMobile.PlayerDeathEvent))]
         public static void HandleDeath(PlayerMobile pm)
         {
             var context = GetContext(pm);
@@ -650,7 +649,7 @@ namespace Server.Engines.MLQuests
             }
         }
 
-        public static void EventSink_QuestGumpRequest(Mobile m)
+        public static void QuestGumpRequest(Mobile m)
         {
             if (!Enabled || m is not PlayerMobile pm)
             {

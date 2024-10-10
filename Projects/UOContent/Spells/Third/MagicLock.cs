@@ -3,7 +3,7 @@ using Server.Multis;
 
 namespace Server.Spells.Third
 {
-    public class MagicLockSpell : MagerySpell, ISpellTargetingItem
+    public class MagicLockSpell : MagerySpell, ITargetingSpell<Item>
     {
         private static readonly SpellInfo _info = new(
             "Magic Lock",
@@ -58,13 +58,11 @@ namespace Server.Spells.Third
                 cont.LockLevel = ILockpickable.MagicLock; // signal magic lock
                 cont.Locked = true;
             }
-
-            FinishSequence();
         }
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetItem(this, range: Core.ML ? 10 : 12);
+            Caster.Target = new SpellTarget<Item>(this);
         }
     }
 }

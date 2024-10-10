@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using Server.Commands;
 using Server.Factions;
+using Server.Gumps;
 using Server.Items;
 using Server.Logging;
 using Server.Misc;
 using Server.Mobiles;
-using Server.Utilities;
 using Server.Talent;
 
 namespace Server.Engines.Craft
@@ -551,7 +551,7 @@ namespace Server.Engines.Craft
                 {
                     amount += item.Amount;
                 }
-                else if ((hq as BaseBeverage)?.Content == RequiredBeverage)
+                else if (hq is not BaseBeverage bev || bev.Content == RequiredBeverage)
                 {
                     amount += hq.Quantity;
                 }
@@ -563,8 +563,7 @@ namespace Server.Engines.Craft
         public bool ConsumeRes(
             Mobile from, Type typeRes, CraftSystem craftSystem, ref int resHue, ref int maxAmount,
             ConsumeType consumeType, ref TextDefinition message
-        ) =>
-            ConsumeRes(from, typeRes, craftSystem, ref resHue, ref maxAmount, consumeType, ref message, false);
+        ) => ConsumeRes(from, typeRes, craftSystem, ref resHue, ref maxAmount, consumeType, ref message, false);
 
         public bool ConsumeRes(
             Mobile from, Type typeRes, CraftSystem craftSystem, ref int resHue, ref int maxAmount,
@@ -632,8 +631,7 @@ namespace Server.Engines.Craft
                     }
                 }
 
-                types[i] ??= new[] { baseType };
-
+                types[i] ??= [baseType];
                 int craftResAmount = craftRes.Amount;
                 // reduce amount required for Resourcesful Crafters
                 if (from is PlayerMobile crafter)
@@ -750,12 +748,7 @@ namespace Server.Engines.Craft
                 {
                     for (var i = 0; i < amounts.Length; i++)
                     {
-                        amounts[i] /= 2;
-
-                        if (amounts[i] < 1)
-                        {
-                            amounts[i] = 1;
-                        }
+                        amounts[i] = Math.Max(1, amounts[i] / 2);
                     }
                 }
 

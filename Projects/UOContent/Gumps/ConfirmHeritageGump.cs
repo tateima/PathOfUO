@@ -1,7 +1,6 @@
 using System;
 using Server.Items;
 using Server.Network;
-using Server.Utilities;
 
 namespace Server.Gumps
 {
@@ -9,6 +8,8 @@ namespace Server.Gumps
     {
         private readonly Type[] m_Selected;
         private readonly HeritageToken m_Token;
+
+        public override bool Singleton => true;
 
         public ConfirmHeritageGump(HeritageToken token, Type[] selected, int cliloc) : base(60, 36)
         {
@@ -28,7 +29,7 @@ namespace Server.Gumps
             AddHtmlLocalized(40, 75, 100, 20, 1060051, 0x7FFF); // CANCEL
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (m_Token?.Deleted != false)
             {

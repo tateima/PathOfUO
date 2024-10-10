@@ -24,9 +24,11 @@ public abstract partial class BaseBOBEntry : IBOBEntry
 
     public DateTime Created { get; set; } = Core.Now;
 
-    public DateTime LastSerialized { get; set; } = Core.Now;
-
     public Serial Serial { get; }
+
+    public byte SerializedThread { get; set; }
+    public int SerializedPosition { get; set; }
+    public int SerializedLength { get; set; }
 
     public bool Deleted { get; private set; }
 

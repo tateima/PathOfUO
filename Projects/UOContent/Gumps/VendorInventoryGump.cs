@@ -11,6 +11,8 @@ namespace Server.Gumps
         private readonly BaseHouse m_House;
         private readonly List<VendorInventory> m_Inventories;
 
+        public override bool Singleton => true;
+
         public VendorInventoryGump(BaseHouse house, Mobile from) : base(50, 50)
         {
             m_House = house;
@@ -45,7 +47,7 @@ namespace Server.Gumps
             }
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (info.ButtonID == 0)
             {

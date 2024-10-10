@@ -23,7 +23,7 @@ namespace Server.SkillHandlers
             SkillInfo.Table[(int)SkillName.Tracking].Callback = OnUse;
         }
 
-        public static void QuestArrow(NetState state, SpanReader reader, int packetLength)
+        public static void QuestArrow(NetState state, SpanReader reader)
         {
             if (state.Mobile is PlayerMobile from)
             {
@@ -39,9 +39,11 @@ namespace Server.SkillHandlers
             {
                 m.SendLocalizedMessage(1011350); // What do you wish to track?
 
-                m.CloseGump<TrackWhatGump>();
-                m.CloseGump<TrackWhoGump>();
-                m.SendGump(new TrackWhatGump(pm));
+                var gumps = pm.GetGumps();
+
+                gumps.Close<TrackWhoGump>();
+                gumps.Close<TrackWhatGump>();
+                gumps.Send(new TrackWhatGump(pm));
             }
 
             return TimeSpan.FromSeconds(10.0); // 10 second delay before being able to re-use a skill
@@ -124,7 +126,7 @@ namespace Server.SkillHandlers
             AddHtmlLocalized(320, 90, 100, 20, 1018090); // Players
         }
 
-        public override void OnResponse(NetState state, RelayInfo info)
+        public override void OnResponse(NetState state, in RelayInfo info)
         {
             if (info.ButtonID >= 1 && info.ButtonID <= 4)
             {
@@ -335,7 +337,7 @@ namespace Server.SkillHandlers
                 _ => m.Player
             };
 
-        public override void OnResponse(NetState state, RelayInfo info)
+        public override void OnResponse(NetState state, in RelayInfo info)
         {
             var index = info.ButtonID - 1;
 

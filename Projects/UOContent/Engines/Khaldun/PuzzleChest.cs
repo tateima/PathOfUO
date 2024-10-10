@@ -290,9 +290,11 @@ namespace Server.Items
                     );
                 }
 
-                from.CloseGump<PuzzleGump>();
-                from.CloseGump<StatusGump>();
-                from.SendGump(new PuzzleGump(from, this, solution, 0));
+                var gumps = from.GetGumps();
+
+                gumps.Close<StatusGump>();
+                gumps.Close<PuzzleGump>();
+                gumps.Send(new PuzzleGump(from, this, solution, 0));
 
                 return true;
             }
@@ -737,7 +739,7 @@ namespace Server.Items
                 }
             }
 
-            public override void OnResponse(NetState sender, RelayInfo info)
+            public override void OnResponse(NetState sender, in RelayInfo info)
             {
                 if (m_Chest.Deleted || info.ButtonID == 0 || !m_From.CheckAlive())
                 {

@@ -4,7 +4,7 @@ using Server.Talent;
 
 namespace Server.Spells.Third
 {
-    public class FireballSpell : MagerySpell, ISpellTargetingMobile
+    public class FireballSpell : MagerySpell, ITargetingSpell<Mobile>
     {
         private static readonly SpellInfo _info = new(
             "Fireball",
@@ -65,13 +65,11 @@ namespace Server.Spells.Third
 
                 SpellHelper.Damage(this, m, damage, 0, fire, cold, 0, 0);
             }
-
-            FinishSequence();
         }
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetMobile(this, TargetFlags.Harmful, Core.ML ? 10 : 12);
+            Caster.Target = new SpellTarget<Mobile>(this, TargetFlags.Harmful);
         }
     }
 }

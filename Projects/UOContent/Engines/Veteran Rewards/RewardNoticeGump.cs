@@ -7,11 +7,11 @@ namespace Server.Engines.VeteranRewards
     {
         private readonly Mobile m_From;
 
+        public override bool Singleton => true;
+
         public RewardNoticeGump(Mobile from) : base(0, 0)
         {
             m_From = from;
-
-            from.CloseGump<RewardNoticeGump>();
 
             AddPage(0);
 
@@ -29,7 +29,7 @@ namespace Server.Engines.VeteranRewards
             AddHtmlLocalized(320, 96, 150, 35, 1006045); // Cancel
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (info.ButtonID == 1)
             {

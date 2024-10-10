@@ -115,8 +115,6 @@ namespace Server.Spells.Chivalry
                 Caster.MoveToWorld(loc, map);
                 Caster.PlaySound(0x1FC);
             }
-
-            FinishSequence();
         }
 
         public override void OnCast()
@@ -128,6 +126,7 @@ namespace Server.Spells.Chivalry
             else
             {
                 Effect(m_Entry.Location, m_Entry.Map, true);
+                FinishSequence();
             }
         }
 

@@ -76,7 +76,6 @@ public partial class StoneAnkh : BaseAddon, IRewardItem
 
             if (house?.IsOwner(from) == true)
             {
-                from.CloseGump<RewardDemolitionGump>();
                 from.SendGump(new RewardDemolitionGump(this, 1049783)); // Do you wish to re-deed this decoration?
             }
             else
@@ -122,7 +121,6 @@ public partial class StoneAnkhDeed : BaseAddonDeed, IRewardItem
 
         if (IsChildOf(from.Backpack))
         {
-            from.CloseGump<InternalGump>();
             from.SendGump(new InternalGump(this));
         }
         else
@@ -150,6 +148,8 @@ public partial class StoneAnkhDeed : BaseAddonDeed, IRewardItem
     {
         private readonly StoneAnkhDeed _deed;
 
+        public override bool Singleton => true;
+
         public InternalGump(StoneAnkhDeed deed) : base(150, 50)
         {
             _deed = deed;
@@ -172,7 +172,7 @@ public partial class StoneAnkhDeed : BaseAddonDeed, IRewardItem
             AddButton(145, 35, 0x867, 0x869, (int)Buttons.East); // East
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (_deed?.Deleted != false || info.ButtonID == (int)Buttons.Cancel)
             {

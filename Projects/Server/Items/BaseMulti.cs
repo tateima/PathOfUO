@@ -15,16 +15,14 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using ModernUO.Serialization;
 
 namespace Server.Items;
 
+[SerializationGenerator(0, false)]
 public abstract partial class BaseMulti : Item
 {
     public BaseMulti(int itemID) : base(itemID) => Movable = false;
-
-    public BaseMulti(Serial serial) : base(serial)
-    {
-    }
 
     [CommandProperty(AccessLevel.GameMaster)]
     public override int ItemID
@@ -34,13 +32,9 @@ public abstract partial class BaseMulti : Item
         {
             if (base.ItemID != value)
             {
-                var facet = Parent == null ? Map : null;
-
-                facet?.OnLeave(this);
-
+                Map?.OnLeave(this);
                 base.ItemID = value;
-
-                facet?.OnEnter(this);
+                Map?.OnEnter(this);
             }
         }
     }
@@ -70,21 +64,6 @@ public abstract partial class BaseMulti : Item
     public virtual bool AllowsRelativeDrop => false;
 
     public virtual MultiComponentList Components => MultiData.GetComponents(ItemID);
-
-    [Obsolete("Replace with calls to OnLeave and OnEnter surrounding component invalidation.", true)]
-    public virtual void RefreshComponents()
-    {
-        if (Parent == null)
-        {
-            var facet = Map;
-
-            if (facet != null)
-            {
-                facet.OnLeave(this);
-                facet.OnEnter(this);
-            }
-        }
-    }
 
     public override int GetMaxUpdateRange() => 22;
 
@@ -155,27 +134,5 @@ public abstract partial class BaseMulti : Item
         }
 
         return false;
-    }
-
-    public override void Serialize(IGenericWriter writer)
-    {
-        base.Serialize(writer);
-
-        writer.Write(1); // version
-    }
-
-    public override void Deserialize(IGenericReader reader)
-    {
-        base.Deserialize(reader);
-
-        var version = reader.ReadInt();
-
-        if (version == 0)
-        {
-            if (ItemID >= 0x4000)
-            {
-                ItemID -= 0x4000;
-            }
-        }
     }
 }

@@ -6,7 +6,7 @@ using Server.Talent;
 
 namespace Server.Spells.Fourth
 {
-    public class GreaterHealSpell : MagerySpell, ISpellTargetingMobile
+    public class GreaterHealSpell : MagerySpell, ITargetingSpell<Mobile>
     {
         private static readonly SpellInfo _info = new(
             "Greater Heal",
@@ -80,8 +80,6 @@ namespace Server.Spells.Fourth
                 m.FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
                 m.PlaySound(0x202);
             }
-
-            FinishSequence();
         }
 
         public override bool CheckCast()
@@ -97,7 +95,7 @@ namespace Server.Spells.Fourth
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetMobile(this, TargetFlags.Beneficial, Core.ML ? 10 : 12);
+            Caster.Target = new SpellTarget<Mobile>(this, TargetFlags.Beneficial);
         }
     }
 }

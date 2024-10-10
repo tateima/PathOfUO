@@ -3,7 +3,7 @@ using Server.Targeting;
 
 namespace Server.Spells.Spellweaving
 {
-    public class WordOfDeathSpell : ArcanistSpell, ISpellTargetingMobile
+    public class WordOfDeathSpell : ArcanistSpell, ITargetingSpell<Mobile>
     {
         private static readonly SpellInfo _info = new("Word of Death", "Nyraxle", -1);
 
@@ -70,13 +70,11 @@ namespace Server.Spells.Spellweaving
 
                 SpellHelper.Damage(this, m, damage, 0, 0, 0, 0, 0, 100);
             }
-
-            FinishSequence();
         }
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetMobile(this, TargetFlags.Harmful, 10);
+            Caster.Target = new SpellTarget<Mobile>(this, TargetFlags.Harmful);
         }
     }
 }

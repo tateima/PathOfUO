@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2023 - ModernUO Development Team                       *
+ * Copyright 2019-2024 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: Main.cs                                                         *
  *                                                                       *
@@ -25,7 +25,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Server.Buffers;
 using Server.Dungeon;
 using Server.Json;
 using Server.Logging;
@@ -41,15 +40,11 @@ public static class Core
     private static bool _performProcessKill;
     private static bool _restartOnKill;
     private static bool _performSnapshot;
+    private static string _snapshotPath;
     private static bool _crashed;
     private static string _baseDirectory;
 
-    private static bool _profiling;
-    private static long _profileStart;
-    private static long _profileTime;
-#nullable enable
     private static bool? _isRunningFromXUnit;
-#nullable restore
 
     private static int _itemCount;
     private static int _mobileCount;
@@ -92,30 +87,7 @@ public static class Core
     }
 #nullable restore
 
-    public static bool Profiling
-    {
-        get => _profiling;
-        set
-        {
-            if (_profiling == value)
-            {
-                return;
-            }
-
-            _profiling = value;
-
-            if (_profileStart > 0)
-            {
-                _profileTime += Stopwatch.GetTimestamp() - _profileStart;
-            }
-
-            _profileStart = _profiling ? Stopwatch.GetTimestamp() : 0;
-        }
-    }
-
-    public static TimeSpan ProfileTime =>
-        TimeSpan.FromTicks(_profileStart > 0 ? _profileTime + (Stopwatch.GetTimestamp() - _profileStart) : _profileTime);
-
+    public static Assembly ApplicationAssembly { get; set; }
     public static Assembly Assembly { get; set; }
 
     // Assembly file version
@@ -127,50 +99,15 @@ public static class Core
 
     private static long _firstTick;
 
-    [ThreadStatic]
     private static long _tickCount;
 
-    // Don't access this from other threads than the game thread.
     private static DateTime _now;
 
-    // For Unix Stopwatch.Frequency is normalized to 1ns
-    // We don't anticipate needing this for Windows/OSX
-    private const long _maxTickCountBeforePrecisionLoss = long.MaxValue / 1000L;
-    private static readonly long _ticksPerMillisecond = Stopwatch.Frequency / 1000L;
+    public static long TickCount => _tickCount;
 
-    public static long TickCount
-    {
-        get
-        {
-            if (_tickCount != 0)
-            {
-                return _tickCount;
-            }
+    public static DateTime Now => _now;
 
-            var timestamp = Stopwatch.GetTimestamp();
-
-            return timestamp > _maxTickCountBeforePrecisionLoss
-                ? timestamp / _ticksPerMillisecond
-                // No precision loss
-                : 1000L * timestamp / Stopwatch.Frequency;
-        }
-        // Setting this to a value lower than the previous is bad. Timers will become delayed
-        // until time catches up.
-        set => _tickCount = value;
-    }
-
-    public static DateTime Now
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
-        {
-            // See notes above for _now and why this is a volatile variable.
-            var now = _now;
-            return now == DateTime.MinValue ? DateTime.UtcNow : now;
-        }
-    }
-
-    public static long Uptime => Thread.CurrentThread != Thread ? 0 : TickCount - _firstTick;
+    public static long Uptime => TickCount - _firstTick;
 
     private static long _cycleIndex;
     private static readonly double[] _cyclesPerSecond = new double[128];
@@ -179,9 +116,6 @@ public static class Core
 
     public static double AverageCPS => _cyclesPerSecond.Average();
 
-    public static bool MultiProcessor { get; private set; }
-
-    public static int ProcessorCount { get; private set; }
     public static string BaseDirectory
     {
         get
@@ -190,7 +124,7 @@ public static class Core
             {
                 try
                 {
-                    _baseDirectory = Assembly.Location;
+                    _baseDirectory = ApplicationAssembly.Location;
 
                     if (_baseDirectory.Length > 0)
                     {
@@ -210,21 +144,6 @@ public static class Core
     public static CancellationTokenSource ClosingTokenSource { get; } = new();
 
     public static bool Closing => ClosingTokenSource.IsCancellationRequested;
-
-    public static string Arguments
-    {
-        get
-        {
-            var sb = new StringBuilder();
-
-            if (_profiling)
-            {
-                Utility.Separate(sb, "-profile", " ");
-            }
-
-            return sb.ToString();
-        }
-    }
 
     public static int GlobalUpdateRange { get; set; } = 18;
 
@@ -309,11 +228,11 @@ public static class Core
 
     public static void Kill(bool restart = false)
     {
-        _performProcessKill = true;
         _restartOnKill = restart;
+        _performProcessKill = true;
     }
 
-    private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+    public static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
     {
         Console.WriteLine(e.IsTerminating ? "Error:" : "Warning:");
         Console.WriteLine(e.ExceptionObject);
@@ -340,10 +259,10 @@ public static class Core
             if (!close)
             {
                 Console.WriteLine("This exception is fatal, press return to exit");
-                Console.ReadLine();
+                ConsoleInputHandler.ReadLine();
             }
 
-            Kill();
+            DoKill();
         }
     }
 
@@ -379,27 +298,34 @@ public static class Core
 
         if (restart)
         {
-            if (IsWindows)
+            try
             {
-                Process.Start("dotnet", Assembly.Location);
-            }
-            else
-            {
-                var process = new Process
+                logger.Information("Restarting");
+                if (IsWindows)
                 {
-                    StartInfo = new ProcessStartInfo
+                    using var process = Process.Start("dotnet", $"{ApplicationAssembly.Location}");
+                }
+                else
+                {
+                    using var process = new Process();
+                    process.StartInfo = new ProcessStartInfo
                     {
                         FileName = "dotnet",
-                        Arguments = Assembly.Location,
+                        Arguments = $"{ApplicationAssembly.Location}",
                         UseShellExecute = true
-                    }
-                };
+                    };
 
-                process.Start();
+                    process.Start();
+                }
+                logger.Information("Restart done");
+            }
+            catch (Exception e)
+            {
+                logger.Error(e, "Restart failed");
             }
         }
 
-        Process.Kill();
+        Environment.Exit(0);
     }
 
     private static void HandleClosed()
@@ -409,45 +335,34 @@ public static class Core
         logger.Information("Shutting down");
 
         World.WaitForWriteCompletion();
-
         World.ExitSerializationThreads();
+        PingServer.Shutdown();
+        TcpServer.Shutdown();
 
         if (!_crashed)
         {
             EventSink.InvokeShutdown();
         }
     }
-    public static void Main(string[] args)
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static long GetTimestamp() => 1000L * Stopwatch.GetTimestamp() / Stopwatch.Frequency;
+
+    public static void Setup(Assembly applicationAssembly, Process process)
     {
+        Process = process;
+        ApplicationAssembly = applicationAssembly;
+        Assembly = Assembly.GetAssembly(typeof(Core));
+        Thread = Thread.CurrentThread;
+        LoopContext = new EventLoopContext();
+        SynchronizationContext.SetSynchronizationContext(LoopContext);
+
         AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
         AppDomain.CurrentDomain.AssemblyResolve += AssemblyHandler.AssemblyResolver;
 
-        LoopContext = new EventLoopContext();
-
-        SynchronizationContext.SetSynchronizationContext(LoopContext);
-
-        foreach (var a in args)
-        {
-            if (a.InsensitiveEquals("-profile"))
-            {
-                Profiling = true;
-            }
-        }
-
-        Thread = Thread.CurrentThread;
-        Process = Process.GetCurrentProcess();
-        Assembly = Assembly.GetEntryAssembly();
-
-        if (Assembly == null)
-        {
-            throw new Exception("Assembly entry is missing.");
-        }
-
-        if (Thread != null)
-        {
-            Thread.Name = "Core Thread";
-        }
+        Console.OutputEncoding = Encoding.UTF8;
+        Thread.Name = "Core Thread";
 
         if (BaseDirectory.Length > 0)
         {
@@ -474,30 +389,15 @@ public static class Core
             ".TrimMultiline());
         Utility.PopColor();
 
-        ProcessorCount = Environment.ProcessorCount;
-
-        if (ProcessorCount > 1)
-        {
-            MultiProcessor = true;
-        }
-
         Console.CancelKeyPress += Console_CancelKeyPressed;
+
+        // LibDeflate is not thread safe, so we need to create a new instance for each thread
+        var standard = Deflate.Standard;
+        AppDomain.CurrentDomain.ProcessExit += (_, _) => standard.Dispose();
 
         ServerConfiguration.Load();
 
         logger.Information("Running on {Framework}", RuntimeInformation.FrameworkDescription);
-
-        var s = Arguments;
-
-        if (s.Length > 0)
-        {
-            logger.Information("Running with arguments: {Args}", s);
-        }
-
-        if (MultiProcessor)
-        {
-            logger.Information($"Optimizing for {{ProcessorCount}} processor{(ProcessorCount == 1 ? "" : "s")}", ProcessorCount);
-        }
 
         var assemblyPath = Path.Join(BaseDirectory, AssembliesConfiguration);
 
@@ -517,7 +417,10 @@ public static class Core
 
         VerifySerialization();
 
-        Timer.Init(TickCount);
+        _now = DateTime.UtcNow;
+        _firstTick = _tickCount = GetTimestamp();
+
+        Timer.Init(_tickCount);
 
         AssemblyHandler.Invoke("Configure");
 
@@ -532,7 +435,6 @@ public static class Core
         TcpServer.Start();
         PingServer.Start();
         EventSink.InvokeServerStarted();
-        _firstTick = TickCount;
         RunEventLoop();
     }
 
@@ -547,7 +449,7 @@ public static class Core
 #endif
 
             var cycleCount = _cyclesPerSecond.Length;
-            long last = Stopwatch.GetTimestamp();
+            long last = _tickCount;
             const int interval = 100;
             double frequency = Stopwatch.Frequency * interval;
 
@@ -555,7 +457,7 @@ public static class Core
 
             while (!Closing)
             {
-                _tickCount = TickCount;
+                _tickCount = GetTimestamp();
                 _now = DateTime.UtcNow;
 
                 Mobile.ProcessDeltaQueue();
@@ -563,9 +465,7 @@ public static class Core
                 Timer.Slice(_tickCount);
 
                 // Handle networking
-                TcpServer.Slice();
                 NetState.Slice();
-                PingServer.Slice();
 
                 // Execute captured post-await methods (like Timer.Pause)
                 LoopContext.ExecuteTasks();
@@ -575,20 +475,20 @@ public static class Core
                 if (_performSnapshot)
                 {
                     // Return value is the offset that can be used to fix timers that should drift
-                    World.Snapshot();
+                    World.Snapshot(_snapshotPath);
+                    _performSnapshot = false;
                 }
 
                 if (_performProcessKill)
                 {
-                    DoKill(_restartOnKill);
+                    World.WaitForWriteCompletion();
+                    break;
                 }
 
-                _tickCount = 0;
-                _now = DateTime.MinValue;
-
-                if (++sample % interval == 0)
+                if (sample++ == interval)
                 {
-                    var now = Stopwatch.GetTimestamp();
+                    sample = 0;
+                    var now = GetTimestamp();
 
                     var cyclesPerSecond = frequency / (now - last);
                     _cyclesPerSecond[_cycleIndex++] = cyclesPerSecond;
@@ -609,14 +509,17 @@ public static class Core
         catch (Exception e)
         {
             CurrentDomain_UnhandledException(null, new UnhandledExceptionEventArgs(e, true));
+            return;
         }
-        finally
-        {
-            World.ExitSerializationThreads();
-        }
+
+        DoKill(_restartOnKill);
     }
 
-    internal static void RequestSnapshot() => _performSnapshot = true;
+    internal static void RequestSnapshot(string snapshotPath)
+    {
+        _performSnapshot = true;
+        _snapshotPath = snapshotPath;
+    }
 
     public static void VerifySerialization()
     {

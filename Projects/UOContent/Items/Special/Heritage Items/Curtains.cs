@@ -92,7 +92,6 @@ public partial class CurtainsDeed : BaseAddonDeed
     {
         if (IsChildOf(from.Backpack))
         {
-            from.CloseGump<InternalGump>();
             from.SendGump(new InternalGump(this));
         }
         else
@@ -109,6 +108,8 @@ public partial class CurtainsDeed : BaseAddonDeed
     private class InternalGump : Gump
     {
         private readonly CurtainsDeed _deed;
+
+        public override bool Singleton => true;
 
         public InternalGump(CurtainsDeed deed) : base(60, 36)
         {
@@ -133,7 +134,7 @@ public partial class CurtainsDeed : BaseAddonDeed
             AddHtmlLocalized(44, 71, 213, 20, 1075387, 0x7FFF); // East
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (_deed?.Deleted != false || info.ButtonID == 0)
             {

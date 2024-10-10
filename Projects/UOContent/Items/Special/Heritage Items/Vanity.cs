@@ -41,7 +41,6 @@ public partial class VanityDeed : BaseAddonContainerDeed
     {
         if (IsChildOf(from.Backpack))
         {
-            from.CloseGump<InternalGump>();
             from.SendGump(new InternalGump(this));
         }
         else
@@ -58,6 +57,8 @@ public partial class VanityDeed : BaseAddonContainerDeed
     private class InternalGump : Gump
     {
         private readonly VanityDeed _deed;
+
+        public override bool Singleton => true;
 
         public InternalGump(VanityDeed deed) : base(60, 36)
         {
@@ -82,7 +83,7 @@ public partial class VanityDeed : BaseAddonContainerDeed
             AddHtmlLocalized(44, 71, 213, 20, 1075387, 0x7FFF); // East
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (_deed?.Deleted != false || info.ButtonID == 0)
             {

@@ -1,4 +1,4 @@
-﻿using Server.Items;
+using Server.Items;
 using Server.Network;
 
 namespace Server.Gumps;
@@ -6,6 +6,8 @@ namespace Server.Gumps;
 public class DawnsMusicBoxGump : Gump
 {
     private readonly DawnsMusicBox m_Box;
+
+    public override bool Singleton => true;
 
     public DawnsMusicBoxGump(DawnsMusicBox box) : base(60, 36)
     {
@@ -66,7 +68,7 @@ public class DawnsMusicBoxGump : Gump
         AddHtmlLocalized(44, y - 2, 213, 20, 1075207, 0x7FFF); // Stop Song
     }
 
-    public override void OnResponse(NetState sender, RelayInfo info)
+    public override void OnResponse(NetState sender, in RelayInfo info)
     {
         if (m_Box?.Deleted != false)
         {

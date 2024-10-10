@@ -201,7 +201,7 @@ namespace Server.Multis
             }
         }
 
-        public static ComponentVerification Verification => m_Verification ?? (m_Verification = new ComponentVerification());
+        public static ComponentVerification Verification => m_Verification ??= new ComponentVerification();
 
         public bool IsFixture(Item item) => Fixtures.Contains(item);
 
@@ -1812,7 +1812,7 @@ namespace Server.Multis
             context.Foundation.SendInfoTo(state);
         }
 
-        public static void QueryDesignDetails(NetState state, SpanReader reader, int packetLength)
+        public static void QueryDesignDetails(NetState state, SpanReader reader)
         {
             var from = state.Mobile;
 
@@ -2146,7 +2146,7 @@ namespace Server.Multis
             AddHtmlLocalized(195, 290, 55, 20, 1011012, 32767); // CANCEL
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (info.ButtonID == 1)
             {

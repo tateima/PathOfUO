@@ -2,7 +2,7 @@ using Server.Items;
 
 namespace Server.Spells.Third
 {
-    public class TelekinesisSpell : MagerySpell, ISpellTargetingItem
+    public class TelekinesisSpell : MagerySpell, ITargetingSpell<Item>
     {
         private static readonly SpellInfo _info = new(
             "Telekinesis",
@@ -68,13 +68,11 @@ namespace Server.Spells.Third
                     }
                 }
             }
-
-            FinishSequence();
         }
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetItem(this, range: Core.ML ? 10 : 12);
+            Caster.Target = new SpellTarget<Item>(this);
         }
     }
 }

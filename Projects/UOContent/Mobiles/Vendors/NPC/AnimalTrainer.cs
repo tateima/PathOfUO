@@ -41,19 +41,19 @@ namespace Server.Mobiles
             AddItem(Utility.RandomBool() ? new QuarterStaff() : new ShepherdsCrook());
         }
 
-        public override void AddCustomContextEntries(Mobile from, List<ContextMenuEntry> list)
+        public override void AddCustomContextEntries(Mobile from, ref PooledRefList<ContextMenuEntry> list)
         {
             if (from is PlayerMobile { Alive: true } pm)
             {
-                list.Add(new StableEntry(this, from));
+                list.Add(new StableEntry());
 
                 if (pm.Stabled?.Count > 0)
                 {
-                    list.Add(new ClaimAllEntry(this, from));
+                    list.Add(new ClaimAllEntry());
                 }
             }
 
-            base.AddCustomContextEntries(from, list);
+            base.AddCustomContextEntries(from, ref list);
         }
 
         public static int GetMaxStabled(Mobile from)
@@ -101,7 +101,7 @@ namespace Server.Mobiles
             return max;
         }
 
-        private void CloseClaimList(Mobile from)
+        private static void CloseClaimList(Mobile from)
         {
             from.CloseGump<ClaimListGump>();
         }
@@ -423,18 +423,13 @@ namespace Server.Mobiles
 
         private class StableEntry : ContextMenuEntry
         {
-            private readonly Mobile m_From;
-            private readonly AnimalTrainer m_Trainer;
-
-            public StableEntry(AnimalTrainer trainer, Mobile from) : base(6126, 12)
+            public StableEntry() : base(6126, 12)
             {
-                m_Trainer = trainer;
-                m_From = from;
             }
 
-            public override void OnClick()
+            public override void OnClick(Mobile from, IEntity target)
             {
-                m_Trainer.BeginStable(m_From);
+                (target as AnimalTrainer)?.BeginStable(from);
             }
         }
 
@@ -444,13 +439,13 @@ namespace Server.Mobiles
             private readonly List<BaseCreature> m_List;
             private readonly AnimalTrainer m_Trainer;
 
+            public override bool Singleton => true;
+
             public ClaimListGump(AnimalTrainer trainer, Mobile from, List<BaseCreature> list) : base(50, 50)
             {
                 m_Trainer = trainer;
                 m_From = from;
                 m_List = list;
-
-                from.CloseGump<ClaimListGump>();
 
                 AddPage(0);
 
@@ -469,11 +464,11 @@ namespace Server.Mobiles
                     }
 
                     AddButton(15, 39 + i * 20, 10006, 10006, i + 1);
-                    AddHtml(32, 35 + i * 20, 275, 18, $"<BASEFONT COLOR=#C0C0EE>{pet.Name}</BASEFONT>");
+                    AddHtml(32, 35 + i * 20, 275, 18, pet.Name.Color(0xC0C0EE));
                 }
             }
 
-            public override void OnResponse(NetState sender, RelayInfo info)
+            public override void OnResponse(NetState sender, in RelayInfo info)
             {
                 var index = info.ButtonID - 1;
 
@@ -486,18 +481,13 @@ namespace Server.Mobiles
 
         private class ClaimAllEntry : ContextMenuEntry
         {
-            private readonly Mobile m_From;
-            private readonly AnimalTrainer m_Trainer;
-
-            public ClaimAllEntry(AnimalTrainer trainer, Mobile from) : base(6127, 12)
+            public ClaimAllEntry() : base(6127, 12)
             {
-                m_Trainer = trainer;
-                m_From = from;
             }
 
-            public override void OnClick()
+            public override void OnClick(Mobile from, IEntity target)
             {
-                m_Trainer.Claim(m_From);
+                (target as AnimalTrainer)?.Claim(from);
             }
         }
 

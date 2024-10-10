@@ -85,7 +85,6 @@ public partial class PublicMoongate : Item
             return false;
         }
 
-        m.CloseGump<MoongateGump>();
         m.SendGump(new MoongateGump(m, this));
 
         if (!m.Hidden || m.AccessLevel == AccessLevel.Player)
@@ -96,9 +95,9 @@ public partial class PublicMoongate : Item
         return true;
     }
 
-    public static void Initialize()
+    public static void Configure()
     {
-        CommandSystem.Register("MoonGen", AccessLevel.Administrator, MoonGen_OnCommand);
+        CommandSystem.Register("MoonGen", AccessLevel.Developer, MoonGen_OnCommand);
     }
 
     [Usage("MoonGen"), Description("Generates public moongates. Removes all old moongates.")]
@@ -324,6 +323,8 @@ public class MoongateGump : Gump
     private Mobile _mobile;
     private Item _moongate;
 
+    public override bool Singleton => true;
+
     public MoongateGump(Mobile mobile, Item moongate) : base(100, 100)
     {
         _mobile = mobile;
@@ -433,7 +434,7 @@ public class MoongateGump : Gump
         }
     }
 
-    public override void OnResponse(NetState state, RelayInfo info)
+    public override void OnResponse(NetState state, in RelayInfo info)
     {
         if (info.ButtonID == 0) // Cancel
         {

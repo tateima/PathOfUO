@@ -6,9 +6,10 @@ namespace Server.Guilds
 {
     public class CreateGuildGump : Gump
     {
+        public override bool Singleton => true;
+
         public CreateGuildGump(PlayerMobile pm, string guildName = "Guild Name", string guildAbbrev = "") : base(10, 10)
         {
-            pm.CloseGump<CreateGuildGump>();
             pm.CloseGump<BaseGuildGump>();
 
             AddPage(0);
@@ -42,7 +43,7 @@ namespace Server.Guilds
             AddHtmlLocalized(45, 260, 200, 30, 1062943, 0x0); // <i>Ignore Guild Invites</i>
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (sender.Mobile is not PlayerMobile { Guild: null } pm)
             {
@@ -53,14 +54,8 @@ namespace Server.Guilds
             {
                 case 1:
                     {
-                        var tName = info.GetTextEntry(5);
-                        var tAbbrev = info.GetTextEntry(6);
-
-                        var guildName = tName?.Text?.Trim() ?? "";
-                        var guildAbbrev = tAbbrev?.Text?.Trim() ?? "";
-
-                        guildName = Utility.FixHtml(guildName);
-                        guildAbbrev = Utility.FixHtml(guildAbbrev);
+                        var guildName = (info.GetTextEntry(5) ?? "").FixHtml();
+                        var guildAbbrev = (info.GetTextEntry(6) ?? "").FixHtml();
 
                         if (guildName.Length <= 0)
                         {

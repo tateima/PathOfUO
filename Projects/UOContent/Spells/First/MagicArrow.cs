@@ -5,7 +5,7 @@ using Server.Mobiles;
 
 namespace Server.Spells.First
 {
-    public class MagicArrowSpell : MagerySpell, ISpellTargetingMobile
+    public class MagicArrowSpell : MagerySpell, ITargetingSpell<Mobile>
     {
         private static readonly SpellInfo _info = new(
             "Magic Arrow",
@@ -70,13 +70,11 @@ namespace Server.Spells.First
                 source.PlaySound(0x1E5);
                 SpellHelper.Damage(this, m, damage, 0, fire, cold, 0, 0);
             }
-
-            FinishSequence();
         }
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetMobile(this, TargetFlags.Harmful, Core.ML ? 10 : 12);
+            Caster.Target = new SpellTarget<Mobile>(this, TargetFlags.Harmful);
         }
     }
 }

@@ -52,7 +52,6 @@ public partial class WoodenCoffinDeed : BaseAddonDeed
     {
         if (IsChildOf(from.Backpack))
         {
-            from.CloseGump<InternalGump>();
             from.SendGump(new InternalGump(this));
         }
         else
@@ -69,6 +68,8 @@ public partial class WoodenCoffinDeed : BaseAddonDeed
     private class InternalGump : Gump
     {
         private readonly WoodenCoffinDeed _deed;
+
+        public override bool Singleton => true;
 
         public InternalGump(WoodenCoffinDeed deed) : base(60, 36)
         {
@@ -93,7 +94,7 @@ public partial class WoodenCoffinDeed : BaseAddonDeed
             AddHtmlLocalized(44, 71, 213, 20, 1075387, 0x7FFF); // East
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (_deed?.Deleted != false || info.ButtonID == 0)
             {

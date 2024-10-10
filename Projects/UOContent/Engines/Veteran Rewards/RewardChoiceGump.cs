@@ -8,11 +8,11 @@ namespace Server.Engines.VeteranRewards
     {
         private readonly Mobile m_From;
 
+        public override bool Singleton => true;
+
         public RewardChoiceGump(Mobile from) : base(0, 0)
         {
             m_From = from;
-
-            from.CloseGump<RewardChoiceGump>();
 
             RenderBackground();
             RenderCategories();
@@ -176,7 +176,7 @@ namespace Server.Engines.VeteranRewards
             page += 1;
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             var buttonID = info.ButtonID - 1;
 

@@ -9,6 +9,8 @@ namespace Server.Engines.MLQuests.Gumps
         private readonly bool m_CloseGumps;
         private readonly PlayerMobile m_Owner;
 
+        public override bool Singleton => true;
+
         public QuestLogGump(PlayerMobile pm, bool closeGumps = true)
             : base(1046026) // Quest Log
         {
@@ -17,7 +19,6 @@ namespace Server.Engines.MLQuests.Gumps
 
             if (closeGumps)
             {
-                pm.CloseGump<QuestLogGump>();
                 pm.CloseGump<QuestLogDetailedGump>();
             }
 
@@ -63,7 +64,7 @@ namespace Server.Engines.MLQuests.Gumps
             }
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (info.ButtonID < 6)
             {

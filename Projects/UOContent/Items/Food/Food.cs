@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using ModernUO.Serialization;
+using Server.Collections;
 using Server.ContextMenus;
 using Server.Talent;
 using Server.Mobiles;
@@ -31,13 +31,13 @@ public abstract partial class Food : Item
         FillFactor = 1;
     }
 
-    public override void GetContextMenuEntries(Mobile from, List<ContextMenuEntry> list)
+    public override void GetContextMenuEntries(Mobile from, ref PooledRefList<ContextMenuEntry> list)
     {
-        base.GetContextMenuEntries(from, list);
+        base.GetContextMenuEntries(from, ref list);
 
         if (from.Alive)
         {
-            list.Add(new EatEntry(from, this));
+            list.Add(new EatEntry());
         }
     }
 

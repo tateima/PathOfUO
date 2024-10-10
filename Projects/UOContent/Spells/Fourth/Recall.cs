@@ -108,8 +108,6 @@ namespace Server.Spells.Fourth
                 Caster.MoveToWorld(loc, map);
                 Caster.PlaySound(0x1FC);
             }
-
-            FinishSequence();
         }
 
         public override void GetCastSkills(out double min, out double max)
@@ -137,6 +135,7 @@ namespace Server.Spells.Fourth
             else
             {
                 Effect(m_Entry.Location, m_Entry.Map, true);
+                FinishSequence();
             }
         }
 

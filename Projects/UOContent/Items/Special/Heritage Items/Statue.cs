@@ -42,7 +42,6 @@ public partial class StoneStatueDeed : BaseAddonDeed
     {
         if (IsChildOf(from.Backpack))
         {
-            from.CloseGump<InternalGump>();
             from.SendGump(new InternalGump(this));
         }
         else
@@ -59,6 +58,8 @@ public partial class StoneStatueDeed : BaseAddonDeed
     private class InternalGump : Gump
     {
         private readonly StoneStatueDeed _deed;
+
+        public override bool Singleton => true;
 
         public InternalGump(StoneStatueDeed deed) : base(60, 36)
         {
@@ -83,7 +84,7 @@ public partial class StoneStatueDeed : BaseAddonDeed
             AddHtmlLocalized(44, 71, 213, 20, 1075387, 0x7FFF); // East
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (_deed?.Deleted != false || info.ButtonID == 0)
             {

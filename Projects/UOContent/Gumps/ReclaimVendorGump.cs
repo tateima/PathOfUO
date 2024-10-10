@@ -10,6 +10,8 @@ namespace Server.Gumps
         private readonly BaseHouse m_House;
         private readonly List<Mobile> m_Vendors;
 
+        public override bool Singleton => true;
+
         public ReclaimVendorGump(BaseHouse house) : base(50, 50)
         {
             m_House = house;
@@ -33,7 +35,7 @@ namespace Server.Gumps
             }
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             var from = sender.Mobile;
 

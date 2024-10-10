@@ -84,12 +84,12 @@ public partial class HairRestylingDeed : Item
         private readonly HairRestylingDeed m_Deed;
         private readonly Mobile m_From;
 
+        public override bool Singleton => true;
+
         public InternalGump(Mobile from, HairRestylingDeed deed) : base(50, 50)
         {
             m_From = from;
             m_Deed = deed;
-
-            from.CloseGump<InternalGump>();
 
             AddBackground(100, 10, 400, 385, 0xA28);
 
@@ -119,7 +119,7 @@ public partial class HairRestylingDeed : Item
             }
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             if (m_From?.Alive != true)
             {

@@ -1,5 +1,5 @@
 using ModernUO.Serialization;
-using System.Collections.Generic;
+using Server.Collections;
 using Server.ContextMenus;
 using Server.Items;
 
@@ -59,7 +59,7 @@ namespace Server.Mobiles
         public override string DefaultName => "a pack llama";
 
         public override int Meat => 1;
-        public override FoodType FavoriteFood => FoodType.FruitsAndVegies | FoodType.GrainsAndHay;
+        public override FoodType FavoriteFood => FoodType.FruitsAndVeggies | FoodType.GrainsAndHay;
 
         public override bool OnBeforeDeath()
         {
@@ -110,11 +110,11 @@ namespace Server.Mobiles
             PackAnimal.TryPackOpen(this, from);
         }
 
-        public override void GetContextMenuEntries(Mobile from, List<ContextMenuEntry> list)
+        public override void GetContextMenuEntries(Mobile from, ref PooledRefList<ContextMenuEntry> list)
         {
-            base.GetContextMenuEntries(from, list);
+            base.GetContextMenuEntries(from, ref list);
 
-            PackAnimal.GetContextMenuEntries(this, from, list);
+            PackAnimal.GetContextMenuEntries(this, from, ref list);
         }
     }
 }

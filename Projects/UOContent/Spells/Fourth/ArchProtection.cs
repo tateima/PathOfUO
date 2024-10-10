@@ -6,7 +6,7 @@ using Server.Spells.Second;
 
 namespace Server.Spells.Fourth
 {
-    public class ArchProtectionSpell : MagerySpell, ISpellTargetingPoint3D
+    public class ArchProtectionSpell : MagerySpell, ITargetingSpell<IPoint3D>
     {
         private static readonly SpellInfo _info = new(
             "Arch Protection",
@@ -29,10 +29,14 @@ namespace Server.Spells.Fourth
 
         public void Target(IPoint3D p)
         {
+            if (Caster.Map == null)
+            {
+                return;
+            }
+
             if (CheckSequence())
             {
                 SpellHelper.Turn(Caster, p);
-
                 SpellHelper.GetSurfaceTop(ref p);
 
                 var loc = new Point3D(p);
@@ -40,12 +44,6 @@ namespace Server.Spells.Fourth
                 if (!Core.AOS)
                 {
                     Effects.PlaySound(loc, Caster.Map, 0x299);
-                }
-
-                if (Caster.Map == null)
-                {
-                    FinishSequence();
-                    return;
                 }
 
                 using var targets = PooledRefQueue<Mobile>.Create();
@@ -92,13 +90,11 @@ namespace Server.Spells.Fourth
                     }
                 }
             }
-
-            FinishSequence();
         }
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetPoint3D(this, range: Core.ML ? 10 : 12);
+            Caster.Target = new SpellTarget<IPoint3D>(this, allowGround: true);
         }
 
         private static void AddEntry(Mobile m, int v)
@@ -117,24 +113,16 @@ namespace Server.Spells.Fourth
 
         private class InternalTimer : Timer
         {
-            private readonly Mobile m_Owner;
+            private readonly Mobile _owner;
 
-            public InternalTimer(Mobile target, Mobile caster) : base(TimeSpan.FromSeconds(0))
-            {
-                var time = caster.Skills.Magery.Value * 1.2;
-                if (time > 144)
-                {
-                    time = 144;
-                }
+            public InternalTimer(Mobile target, Mobile caster) : base(GetDelay(caster)) => _owner = target;
 
-                Delay = TimeSpan.FromSeconds(time);
-
-                m_Owner = target;
-            }
+            private static TimeSpan GetDelay(Mobile caster) =>
+                TimeSpan.FromSeconds(Math.Min(144, caster.Skills.Magery.Value * 1.2));
 
             protected override void OnTick()
             {
-                RemoveEntry(m_Owner);
+                RemoveEntry(_owner);
             }
         }
     }

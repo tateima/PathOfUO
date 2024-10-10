@@ -4,7 +4,6 @@ using Server.HuePickers;
 using Server.Items;
 using Server.Mobiles;
 using Server.Network;
-using Server.Utilities;
 
 namespace Server.Gumps
 {
@@ -12,6 +11,8 @@ namespace Server.Gumps
     {
         private readonly PlayerVendor m_Vendor;
         private readonly VendorItem m_VI;
+
+        public override bool Singleton => true;
 
         public PlayerVendorBuyGump(PlayerVendor vendor, VendorItem vi) : base(100, 200)
         {
@@ -41,7 +42,7 @@ namespace Server.Gumps
             AddHtmlLocalized(152, 130, 100, 24, 1011036); // OKAY
         }
 
-        public override void OnResponse(NetState state, RelayInfo info)
+        public override void OnResponse(NetState state, in RelayInfo info)
         {
             var from = state.Mobile;
 
@@ -147,7 +148,7 @@ namespace Server.Gumps
             AddLabel(300, 48, 0, ((int)(days / 12.0)).ToString());
         }
 
-        public override void OnResponse(NetState state, RelayInfo info)
+        public override void OnResponse(NetState state, in RelayInfo info)
         {
             var from = state.Mobile;
 
@@ -256,7 +257,7 @@ namespace Server.Gumps
             AddHtmlLocalized(408, 161, 120, 20, 1011012, 0x7FFF); // CANCEL
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             var from = sender.Mobile;
 
@@ -498,12 +499,12 @@ namespace Server.Gumps
 
         private readonly Mobile m_Vendor;
 
+        public override bool Singleton => true;
+
         public PlayerVendorCustomizeGump(Mobile v, Mobile from) : base(30, 40)
         {
             m_Vendor = v;
             int x, y;
-
-            from.CloseGump<PlayerVendorCustomizeGump>();
 
             AddPage(0);
             AddBackground(0, 0, 585, 393, 5054);
@@ -555,7 +556,7 @@ namespace Server.Gumps
             }
         }
 
-        public override void OnResponse(NetState state, RelayInfo info)
+        public override void OnResponse(NetState state, in RelayInfo info)
         {
             if (m_Vendor.Deleted)
             {
@@ -1003,7 +1004,7 @@ namespace Server.Gumps
             AddHtmlLocalized(45, 342, 305, 18, 1060675, 0x7FFF); // CLOSE
         }
 
-        public override void OnResponse(NetState sender, RelayInfo info)
+        public override void OnResponse(NetState sender, in RelayInfo info)
         {
             var from = sender.Mobile;
 

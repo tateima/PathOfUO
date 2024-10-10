@@ -1,5 +1,4 @@
 using System;
-using Server;
 using Server.Items;
 using Server.Mobiles;
 using Server.Spells;
@@ -22,6 +21,7 @@ public class MageAI : BaseAI
     private const double HealChance = 0.10;     // 10% chance to heal at gm magery
     private const double TeleportChance = 0.05; // 5% chance to teleport at gm magery
     private const double DispelChance = 0.75;   // 75% chance to dispel at gm magery
+    private const double InvisChance = 0.50; // 50% chance to invis at gm magery
 
     private static readonly int[] m_Offsets =
     {
@@ -138,22 +138,14 @@ public class MageAI : BaseAI
         }
 
         // Summoned creatures never heal themselves.
-        if (m_Mobile.Summoned)
+        if (m_Mobile.Summoned || m_Mobile.Controlled && Core.TickCount - m_NextHealTime < 0)
         {
             return null;
         }
 
-        if (m_Mobile.Controlled)
-        {
-            if (Core.TickCount - m_NextHealTime < 0)
-            {
-                return null;
-            }
-        }
-
         if (!SmartAI)
         {
-            if (ScaleBySkill(HealChance, SkillName.Magery) < Utility.RandomDouble())
+            if (HealChance > 0 && ScaleBySkill(HealChance, SkillName.Magery) < Utility.RandomDouble())
             {
                 return null;
             }
@@ -206,7 +198,7 @@ public class MageAI : BaseAI
             {
                 RunFrom(m);
             }
-            else if (!m_Mobile.InRange(m, m_Mobile.RangeFight > 2 ? m_Mobile.RangeFight : 2) && !MoveTo(m, true, 1))
+            else if (!m_Mobile.InRange(m, Math.Max(m_Mobile.RangeFight, 2)) && !MoveTo(m, true, 1))
             {
                 OnFailedMove();
             }
@@ -232,8 +224,8 @@ public class MageAI : BaseAI
     public void OnFailedMove()
     {
         if (!m_Mobile.DisallowAllMoves && (SmartAI
-            ? Utility.Random(4) == 0
-            : ScaleBySkill(TeleportChance, SkillName.Magery) > Utility.RandomDouble()))
+                ? Utility.Random(4) == 0
+                : TeleportChance > 0 && ScaleBySkill(TeleportChance, SkillName.Magery) > Utility.RandomDouble()))
         {
             m_Mobile.Target?.Cancel(m_Mobile, TargetCancelType.Canceled);
 
@@ -365,31 +357,33 @@ public class MageAI : BaseAI
     {
         if (!SmartAI)
         {
-            return ScaleBySkill(DispelChance, SkillName.Magery) > Utility.RandomDouble()
-                ? new DispelSpell(m_Mobile)
-                : ChooseSpell(toDispel);
+            if (DispelChance > 0 && ScaleBySkill(DispelChance, SkillName.Magery) > Utility.RandomDouble())
+            {
+                return new DispelSpell(m_Mobile);
+            }
+
+            return null;
         }
 
         var spell = CheckCastHealingSpell();
 
-        if (spell == null)
+        if (spell != null)
         {
-            var distance = (int)m_Mobile.GetDistanceToSqrt(toDispel);
-            if (!m_Mobile.DisallowAllMoves && distance > 0 && Utility.Random(distance) == 0)
-            {
-                spell = new TeleportSpell(m_Mobile);
-            }
-            else if (Utility.Random(3) == 0 && !m_Mobile.InRange(toDispel, 3) && !toDispel.Paralyzed && !toDispel.Frozen)
-            {
-                spell = new ParalyzeSpell(m_Mobile);
-            }
-            else
-            {
-                spell = new DispelSpell(m_Mobile);
-            }
+            return spell;
         }
 
-        return spell;
+        var distance = (int)m_Mobile.GetDistanceToSqrt(toDispel);
+        if (!m_Mobile.DisallowAllMoves && distance > 0 && Utility.Random(distance) == 0)
+        {
+            return new TeleportSpell(m_Mobile);
+        }
+
+        if (Utility.Random(3) == 0 && !m_Mobile.InRange(toDispel, 3) && !toDispel.Paralyzed && !toDispel.Frozen)
+        {
+            return new ParalyzeSpell(m_Mobile);
+        }
+
+        return new DispelSpell(m_Mobile);
     }
 
     public virtual Spell ChooseSpell(Mobile c)
@@ -483,7 +477,7 @@ public class MageAI : BaseAI
                     }
                 case 7: // Invis ourselves
                     {
-                        if (Utility.RandomBool())
+                        if (InvisChance <= 0 || ScaleBySkill(InvisChance, SkillName.Magery) <= Utility.RandomDouble())
                         {
                             goto default;
                         }
@@ -507,73 +501,66 @@ public class MageAI : BaseAI
                         break;
                     }
             }
+        }
+        else
+        {
+            spell = CheckCastHealingSpell();
 
-            if (m_Mobile.Debug)
+            if (spell == null)
             {
-                m_Mobile.DebugSay($"Casting {spell.Name}");
-            }
-
-            return spell;
-        }
-
-        spell = CheckCastHealingSpell();
-
-        if (spell != null)
-        {
-            return spell;
-        }
-
-        switch (Utility.Random(3))
-        {
-            case 0: // Poison them
+                switch (Utility.Random(3))
                 {
-                    if (c.Poisoned)
-                    {
-                        goto case 1;
-                    }
-
-                    spell = new PoisonSpell(m_Mobile);
-                    break;
-                }
-            case 1: // Deal some damage
-                {
-                    spell = GetRandomDamageSpell();
-                    break;
-                }
-            default: // Set up a combo
-                {
-                    if (m_Mobile.Mana is > 15 and < 40)
-                    {
-                        if (c.Paralyzed && !c.Poisoned && !m_Mobile.Meditating)
+                    case 0: // Poison them
                         {
-                            if (m_Mobile.Debug)
+                            if (c.Poisoned)
                             {
-                                m_Mobile.DebugSay("I am going to meditate");
+                                goto case 1;
                             }
 
-                            m_Mobile.UseSkill(SkillName.Meditation);
+                            spell = new PoisonSpell(m_Mobile);
+                            break;
                         }
-                        else if (!c.Poisoned)
+                    case 1: // Deal some damage
                         {
-                            spell = new ParalyzeSpell(m_Mobile);
+                            spell = GetRandomDamageSpell();
+                            break;
                         }
-                    }
-                    else if (m_Mobile.Mana > 60)
-                    {
-                        if (Utility.RandomBool() && !c.Paralyzed && !c.Frozen && !c.Poisoned)
+                    default: // Set up a combo
                         {
-                            m_Combo = 0;
-                            spell = new ParalyzeSpell(m_Mobile);
-                        }
-                        else
-                        {
-                            m_Combo = 1;
-                            spell = new ExplosionSpell(m_Mobile);
-                        }
-                    }
+                            if (m_Mobile.Mana is > 15 and < 40)
+                            {
+                                if (c.Paralyzed && !c.Poisoned && !m_Mobile.Meditating)
+                                {
+                                    if (m_Mobile.Debug)
+                                    {
+                                        m_Mobile.DebugSay("I am going to meditate");
+                                    }
 
-                    break;
+                                    m_Mobile.UseSkill(SkillName.Meditation);
+                                }
+                                else if (!c.Poisoned)
+                                {
+                                    spell = new ParalyzeSpell(m_Mobile);
+                                }
+                            }
+                            else if (m_Mobile.Mana > 60)
+                            {
+                                if (Utility.RandomBool() && !c.Paralyzed && !c.Frozen && !c.Poisoned)
+                                {
+                                    m_Combo = 0;
+                                    spell = new ParalyzeSpell(m_Mobile);
+                                }
+                                else
+                                {
+                                    m_Combo = 1;
+                                    spell = new ExplosionSpell(m_Mobile);
+                                }
+                            }
+
+                            break;
+                        }
                 }
+            }
         }
 
         if (m_Mobile.Debug)
@@ -801,7 +788,7 @@ public class MageAI : BaseAI
         if (!Core.AOS && SmartAI && !m_Mobile.StunReady && m_Mobile.Skills.Wrestling.Value >= 80.0 &&
             m_Mobile.Skills.Anatomy.Value >= 80.0)
         {
-            EventSink.InvokeStunRequest(m_Mobile);
+            Fists.StunRequest(m_Mobile);
         }
 
         if (!m_Mobile.InRange(c, m_Mobile.RangePerception))
@@ -867,7 +854,7 @@ public class MageAI : BaseAI
                 m_Mobile.DebugSay("I used my abilities!");
             }
         }
-        else if (m_Mobile.Spell == null && Core.TickCount - m_NextCastTime >= 0 && m_Mobile.InRange(c, Core.ML ? 10 : 12))
+        else if (m_Mobile.Spell == null && Core.TickCount - m_NextCastTime >= 0)
         {
             // We are ready to cast a spell
             Spell spell;
@@ -889,45 +876,56 @@ public class MageAI : BaseAI
                     m_Mobile.DebugSay($"I am going to dispel {toDispel}");
                 }
 
-                spell = DoDispel(toDispel);
+                spell = DoDispel(toDispel); // May return null if dumb AI and doesn't have enough skill
             }
             else
             {
-                spell = SmartAI switch
-                {
-                    // We are doing a spell combo
-                    true when m_Combo != -1 => DoCombo(c),
-                    // They have a heal spell out
-                    true when
-                        !c.Poisoned &&
-                        c.Spell is HealSpell or GreaterHealSpell => new PoisonSpell(m_Mobile),
-                    _ => ChooseSpell(c)
-                };
+                spell = null;
             }
 
-            // Now we have a spell picked
-            // Move first before casting
+            spell ??= SmartAI switch
+            {
+                // We are doing a spell combo
+                true when m_Combo != -1 => DoCombo(c),
+                // They have a heal spell out
+                true when !c.Poisoned && c.Spell is HealSpell or GreaterHealSpell => new PoisonSpell(m_Mobile),
+                _ => ChooseSpell(c)
+            };
 
+            // Now we have a spell picked
+            var range = (spell as IRangedSpell)?.TargetRange ?? m_Mobile.RangePerception;
+
+            // Move first before casting
             if (!SmartAI || toDispel == null)
             {
                 RunTo(c);
             }
-            else if (m_Mobile.InRange(toDispel, 10))
+            else if (m_Mobile.InRange(toDispel, Math.Min(10, range)))
             {
                 RunFrom(toDispel);
             }
-            else if (!m_Mobile.InRange(toDispel, Core.ML ? 10 : 12))
+            else if (!m_Mobile.InRange(toDispel, range))
             {
                 RunTo(toDispel);
             }
 
-            spell?.Cast();
+            // After running, make sure we are still in range
+            if (spell == null || m_Mobile.InRange(c, range))
+            {
+                spell?.Cast();
 
-            m_NextCastTime = Core.TickCount + (int)GetDelay(spell).TotalMilliseconds;
+                // Even if we don't have a spell, delay the next potential cast
+                m_NextCastTime = Core.TickCount + (int)GetDelay(spell).TotalMilliseconds;
+            }
         }
         else if (m_Mobile.Spell?.IsCasting != true)
         {
             RunTo(c);
+        }
+
+        if (m_Mobile.Spell != null || !m_Mobile.InRange(c, 1) || Core.TickCount - m_Mobile.LastMoveTime > 800)
+        {
+            m_Mobile.Direction = m_Mobile.GetDirectionTo(c);
         }
 
         m_LastTarget = c;
@@ -942,7 +940,7 @@ public class MageAI : BaseAI
         {
             var map = m_Mobile.Map;
 
-            if (map == null || !m_Mobile.InRange(m_LastTargetLoc, Core.ML ? 10 : 12))
+            if (map == null || !m_Mobile.InRange(m_LastTargetLoc, m_Mobile.RangePerception))
             {
                 m_LastTarget = null;
             }
@@ -1052,7 +1050,7 @@ public class MageAI : BaseAI
             var comb = m_Mobile.Combatant;
 
             if (comb?.Deleted == false && comb.Alive && !comb.IsDeadBondedPet &&
-                m_Mobile.InRange(comb, Core.ML ? 10 : 12) && CanDispel(comb))
+                m_Mobile.InRange(comb, m_Mobile.RangePerception) && CanDispel(comb))
             {
                 active = comb;
                 activePrio = m_Mobile.GetDistanceToSqrt(comb);
@@ -1068,7 +1066,7 @@ public class MageAI : BaseAI
                 var info = aggressed[i];
                 var m = info.Defender;
 
-                if (m != comb && m.Combatant == m_Mobile && m_Mobile.InRange(m, Core.ML ? 10 : 12) && CanDispel(m))
+                if (m != comb && m.Combatant == m_Mobile && m_Mobile.InRange(m, m_Mobile.RangePerception) && CanDispel(m))
                 {
                     var prio = m_Mobile.GetDistanceToSqrt(m);
 
@@ -1090,7 +1088,7 @@ public class MageAI : BaseAI
                 var info = aggressors[i];
                 var m = info.Attacker;
 
-                if (m != comb && m.Combatant == m_Mobile && m_Mobile.InRange(m, Core.ML ? 10 : 12) && CanDispel(m))
+                if (m != comb && m.Combatant == m_Mobile && m_Mobile.InRange(m, m_Mobile.RangePerception) && CanDispel(m))
                 {
                     var prio = m_Mobile.GetDistanceToSqrt(m);
 
@@ -1125,7 +1123,7 @@ public class MageAI : BaseAI
                 actPrio = inactPrio = m_Mobile.GetDistanceToSqrt(comb);
             }
 
-            foreach (var m in m_Mobile.GetMobilesInRange(Core.ML ? 10 : 12))
+            foreach (var m in m_Mobile.GetMobilesInRange(m_Mobile.RangePerception))
             {
                 if (m != m_Mobile && CanDispel(m))
                 {
@@ -1152,8 +1150,8 @@ public class MageAI : BaseAI
     }
 
     public bool CanDispel(Mobile m) =>
-        m is BaseCreature creature && creature.Summoned && m_Mobile.CanBeHarmful(creature, false) &&
-        !creature.IsAnimatedDead;
+        m is BaseCreature creature && creature.Summoned && creature.SummonMaster != m_Mobile &&
+        m_Mobile.CanBeHarmful(creature, false) && !creature.IsAnimatedDead;
 
     private bool ProcessTarget()
     {
@@ -1164,7 +1162,7 @@ public class MageAI : BaseAI
             return false;
         }
 
-        var spellTarg = targ as ISpellTarget;
+        var spellTarg = targ as ISpellTarget<Mobile>;
 
         var isReveal = spellTarg?.Spell is RevealSpell;
         var isDispel = spellTarg?.Spell is DispelSpell;

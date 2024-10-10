@@ -1,66 +1,93 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 
-namespace Server
+namespace Server;
+
+public class ProfessionInfo
 {
-    public class ProfessionInfo
+    private static readonly ProfessionInfo[] _professions;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool VerifyProfession(int profIndex) => profIndex > 0 && profIndex < _professions.Length;
+
+    public static bool GetProfession(int profIndex, out ProfessionInfo profession)
     {
-        public static ProfessionInfo[] Professions { get; }
-
-        private static bool TryGetSkillName(string name, out SkillName skillName)
+        if (!VerifyProfession(profIndex))
         {
-            if (Enum.TryParse(name, out skillName))
-            {
-                return true;
-            }
-
-            var lowerName = name?.ToLowerInvariant().RemoveOrdinal(" ");
-
-            if (!string.IsNullOrEmpty(lowerName))
-            {
-                foreach (var so in SkillInfo.Table)
-                {
-                    if (lowerName == so.ProfessionSkillName.ToLowerInvariant())
-                    {
-                        skillName = (SkillName)so.SkillID;
-                        return true;
-                    }
-                }
-            }
-
+            profession = null;
             return false;
         }
 
-        static ProfessionInfo()
+        return (profession = _professions[profIndex]) != null;
+    }
+
+    private static bool TryGetSkillName(string name, out SkillName skillName)
+    {
+        if (Enum.TryParse(name, out skillName))
         {
-            var profs = new List<ProfessionInfo>
+            return true;
+        }
+
+        var lowerName = name?.ToLowerInvariant().RemoveOrdinal(" ");
+
+        if (!string.IsNullOrEmpty(lowerName))
+        {
+            foreach (var so in SkillInfo.Table)
             {
-                new()
+                if (lowerName == so.ProfessionSkillName.ToLowerInvariant())
                 {
-                    ID = 0, // Custom
-                    Name = "Advanced",
-                    TopLevel = false,
-                    GumpID = 5571
+                    skillName = (SkillName)so.SkillID;
+                    return true;
                 }
-            };
-
-            var file = Core.FindDataFile("prof.txt", false);
-            if (!File.Exists(file))
-            {
-                var parent = Path.Combine(Core.BaseDirectory, "Data/Professions");
-                file = Path.Combine(ExpansionInfo.GetEraFolder(parent), "prof.txt");
             }
+        }
 
+        return false;
+    }
+
+    static ProfessionInfo()
+    {
+        var file = Core.FindDataFile("prof.txt", false);
+        if (!File.Exists(file))
+        {
+            var parent = Path.Combine(Core.BaseDirectory, "Data/Professions");
+            file = Path.Combine(ExpansionInfo.GetEraFolder(parent), "prof.txt");
+        }
+
+        if (File.Exists(file))
+        {
             var maxProf = 0;
+            List<ProfessionInfo> profs = [];
 
-            if (File.Exists(file))
+            using var s = File.OpenText(file);
+
+            while (!s.EndOfStream)
             {
-                using var s = File.OpenText(file);
+                var line = s.ReadLine();
+
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+
+                line = line.Trim();
+
+                if (!line.InsensitiveStartsWith("Begin"))
+                {
+                    continue;
+                }
+
+                var prof = new ProfessionInfo();
+
+                var totalStats = 0;
+                var skillIndex = 0;
+                var totalSkill = 0;
 
                 while (!s.EndOfStream)
                 {
-                    var line = s.ReadLine();
+                    line = s.ReadLine();
 
                     if (string.IsNullOrWhiteSpace(line))
                     {
@@ -69,139 +96,144 @@ namespace Server
 
                     line = line.Trim();
 
-                    if (!line.InsensitiveStartsWith("Begin"))
+                    if (line.InsensitiveStartsWith("End"))
                     {
-                        continue;
+                        if (prof.ID > 0 && totalStats >= 80 && totalSkill >= 100)
+                        {
+                            prof.FixSkills(); // Adjust skills array in case there are fewer skills than the default 4
+                            profs.Add(prof);
+                        }
+
+                        break;
                     }
 
-                    var prof = new ProfessionInfo();
+                    var cols = line.Split('\t', StringSplitOptions.RemoveEmptyEntries);
+                    var key = cols[0].ToLowerInvariant();
+                    var value = cols[1].Trim('"');
 
-                    int stats;
-                    int valid;
-                    var skills = stats = valid = 0;
-
-                    while (!s.EndOfStream)
+                    if (key == "type" && !value.InsensitiveEquals("profession"))
                     {
-                        line = s.ReadLine();
+                        break;
+                    }
 
-                        if (string.IsNullOrWhiteSpace(line))
-                        {
-                            continue;
-                        }
-
-                        line = line.Trim();
-
-                        if (line.InsensitiveStartsWith("End"))
-                        {
-                            if (valid >= 4)
+                    switch (key)
+                    {
+                        case "truename":
                             {
-                                profs.Add(prof);
+                                prof.Name = value;
                             }
-
                             break;
-                        }
-
-                        var cols = line.Split('\t', StringSplitOptions.RemoveEmptyEntries);
-                        var key = cols[0].ToLowerInvariant();
-                        var value = cols[1].Trim('"');
-
-                        if (key == "type" && !value.InsensitiveEquals("profession"))
-                        {
-                            break;
-                        }
-
-                        switch (key)
-                        {
-                            case "truename":
-                                {
-                                    prof.Name = value;
-                                    ++valid;
-                                }
-                                break;
-                            case "nameid":
+                        case "nameid":
+                            {
                                 prof.NameID = Utility.ToInt32(value);
                                 break;
-                            case "descid":
+                            }
+                        case "descid":
+                            {
                                 prof.DescID = Utility.ToInt32(value);
                                 break;
-                            case "desc":
+                            }
+                        case "desc":
+                            {
+                                prof.ID = Utility.ToInt32(value);
+                                if (prof.ID > maxProf)
                                 {
-                                    prof.ID = Utility.ToInt32(value);
-                                    if (prof.ID > maxProf)
-                                    {
-                                        maxProf = prof.ID;
-                                    }
-
-                                    ++valid;
+                                    maxProf = prof.ID;
                                 }
-                                break;
-                            case "toplevel":
+                            }
+                            break;
+                        case "toplevel":
+                            {
                                 prof.TopLevel = Utility.ToBoolean(value);
                                 break;
-                            case "gump":
+                            }
+                        case "gump":
+                            {
                                 prof.GumpID = Utility.ToInt32(value);
                                 break;
-                            case "skill":
+                            }
+                        case "skill":
+                            {
+                                if (!TryGetSkillName(value, out var skillName))
                                 {
-                                    if (!TryGetSkillName(value, out var skillName))
-                                    {
-                                        break;
-                                    }
-
-                                    prof.Skills[skills++] = new SkillNameValue(skillName, Utility.ToInt32(cols[2]));
-
-                                    if (skills == prof.Skills.Length)
-                                    {
-                                        ++valid;
-                                    }
+                                    break;
                                 }
-                                break;
-                            case "stat":
+
+                                var skillValue = byte.Parse(cols[2]);
+                                prof.Skills[skillIndex++] = (skillName, skillValue);
+                                totalSkill += skillValue;
+                            }
+                            break;
+                        case "stat":
+                            {
+                                if (!Enum.TryParse(value, out StatType stat))
                                 {
-                                    if (!Enum.TryParse(value, out StatType stat))
-                                    {
-                                        break;
-                                    }
-
-                                    prof.Stats[stats++] = new StatNameValue(stat, Utility.ToInt32(cols[2]));
-
-                                    if (stats == prof.Stats.Length)
-                                    {
-                                        ++valid;
-                                    }
+                                    break;
                                 }
-                                break;
-                        }
+
+                                var statValue = byte.Parse(cols[2]);
+                                prof.Stats[(int)stat >> 1] = statValue;
+                                totalStats += statValue;
+                            }
+                            break;
                     }
                 }
             }
 
-            Professions = new ProfessionInfo[1 + maxProf];
+            _professions = new ProfessionInfo[maxProf + 1];
 
             foreach (var p in profs)
             {
-                Professions[p.ID] = p;
+                _professions[p.ID] = p;
             }
 
             profs.Clear();
             profs.TrimExcess();
         }
-
-        private ProfessionInfo()
+        else
         {
-            Name = string.Empty;
-
-            Skills = new SkillNameValue[4];
-            Stats = new StatNameValue[3];
+            _professions = new ProfessionInfo[1];
         }
 
-        public int ID { get; private set; }
-        public string Name { get; private set; }
-        public int NameID { get; private set; }
-        public int DescID { get; private set; }
-        public bool TopLevel { get; private set; }
-        public int GumpID { get; private set; }
-        public SkillNameValue[] Skills { get; }
-        public StatNameValue[] Stats { get; }
+        _professions[0] = new ProfessionInfo
+        {
+            Name = "Advanced Skills"
+        };
+    }
+
+    private (SkillName, byte)[] _skills;
+
+    private ProfessionInfo()
+    {
+        Name = string.Empty;
+
+        _skills = new (SkillName, byte)[4];
+        Stats = new byte[3];
+    }
+
+    public int ID { get; private set; }
+    public string Name { get; private set; }
+    public int NameID { get; private set; }
+    public int DescID { get; private set; }
+    public bool TopLevel { get; private set; }
+    public int GumpID { get; private set; }
+    public (SkillName, byte)[] Skills => _skills;
+    public byte[] Stats { get; }
+
+    public void FixSkills()
+    {
+        var index = _skills.Length - 1;
+        while (index >= 0)
+        {
+            var skill = _skills[index];
+            if (skill is not (SkillName.Alchemy, 0))
+            {
+                break;
+            }
+
+            index--;
+        }
+
+        Array.Resize(ref _skills, index + 1);
     }
 }

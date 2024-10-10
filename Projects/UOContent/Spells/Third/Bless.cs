@@ -5,7 +5,7 @@ using Server.Mobiles;
 
 namespace Server.Spells.Third
 {
-    public class BlessSpell : MagerySpell, ISpellTargetingMobile
+    public class BlessSpell : MagerySpell, ITargetingSpell<Mobile>
     {
         private static readonly SpellInfo _info = new(
             "Bless",
@@ -50,8 +50,6 @@ namespace Server.Spells.Third
 
                 BuffInfo.AddBuff(m, new BuffInfo(BuffIcon.Bless, 1075847, 1075848, length, m, args));
             }
-
-            FinishSequence();
         }
 
         public override bool CheckCast()
@@ -67,7 +65,7 @@ namespace Server.Spells.Third
 
         public override void OnCast()
         {
-            Caster.Target = new SpellTargetMobile(this, TargetFlags.Beneficial, Core.ML ? 10 : 12);
+            Caster.Target = new SpellTarget<Mobile>(this, TargetFlags.Beneficial);
         }
     }
 }
