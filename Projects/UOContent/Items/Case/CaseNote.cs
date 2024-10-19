@@ -3,7 +3,6 @@ using Server.Mobiles;
 using System.Collections.Generic;
 using Server.Gumps;
 using Server.Misc;
-using Server.Network;
 
 namespace Server.Items
 {

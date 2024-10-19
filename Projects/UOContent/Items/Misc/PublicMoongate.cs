@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using ModernUO.Serialization;
-using Server;
 using Server.Collections;
 using Server.Factions;
 using Server.Gumps;

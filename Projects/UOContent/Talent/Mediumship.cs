@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Server.Items;
 using Server.Mobiles;
-using Server.Network;
 using Server.Regions;
 
 namespace Server.Talent

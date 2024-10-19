@@ -1,7 +1,7 @@
 using Server.Talent;
 using Server.Mobiles;
 using ModernUO.Serialization;
-using Server.Network;
+
 namespace Server.Items
 {
     [SerializationGenerator(0, false)]

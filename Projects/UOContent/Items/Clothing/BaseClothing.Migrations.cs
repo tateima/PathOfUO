@@ -14,20 +14,19 @@ public partial class BaseClothing
     //     _resistances = content.Resistances ?? ResistancesDefaultValue();
     //     _maxHitPoints = content.MaxHitPoints ?? 0;
     //     _playerConstructed = content.PlayerConstructed;
-    //     _crafter = content.Crafter ?? "";
+    //     Timer.DelayCall((item, crafter) => item._crafter = crafter, this, content.Crafter);
     //     _quality = content.Quality ?? ClothingQuality.Regular;
     //     _strReq = content.StrRequirement ?? -1;
-    //     // _pockets = content.Pockets ?? "";
-    //     // _alignmentRaw = content.AlignmentRaw ?? Deity.Alignment.None.ToString();
-    //     // _pocketAmount = content.PocketAmount ?? 0;
-    //     // _talentIndex = content.TalentIndex;
-    //     // _talentLevel = content.TalentLevel ?? 0;
-    //     // _talentLevel = 0;
-    //     // _talentIndex = BaseTalent.InvalidTalentIndex;
-    //     // _pocketAmount = 0;
-    //     // _pockets = "";
-    //     // _alignmentRaw = "None";
-    //     // _temporary = false;
+    //     _pockets = content.Pockets ?? "";
+    //     _alignmentRaw = content.AlignmentRaw ?? Deity.Alignment.None.ToString();
+    //     _pocketAmount = content.PocketAmount ?? 0;
+    //     _talentIndex = content.TalentIndex;
+    //     _talentLevel = content.TalentLevel ?? 0;
+    //     _talentLevel = 0;
+    //     _talentIndex = BaseTalent.InvalidTalentIndex;
+    //     _pocketAmount = 0;
+    //     _pockets = "";
+    //     _alignmentRaw = "None";
     // }
     private void MigrateFrom(V6Content content)
     {

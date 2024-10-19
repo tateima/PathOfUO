@@ -1,8 +1,6 @@
 using System;
 using Server.Items;
-using Server.Mobiles;
 using Server.Spells;
-using Server.Spells.Eighth;
 using Server.Spells.Fifth;
 using Server.Spells.First;
 using Server.Spells.Fourth;
@@ -732,6 +730,13 @@ public class MageAI : BaseAI
     public override bool DoActionCombat()
     {
         var c = m_Mobile.Combatant;
+        if (Blindness.BlindMobile(m_Mobile)) {
+            Mobile newTarget = Blindness.GetBlindTarget(m_Mobile, 8);
+            if (newTarget != null)
+            {
+                c = newTarget;
+            }
+        }
         m_Mobile.Warmode = true;
 
         if (c?.Deleted != false || !c.Alive || c.IsDeadBondedPet || !m_Mobile.CanSee(c) ||

@@ -1,5 +1,3 @@
-using Server.Items;
-
 namespace Server.Talent
 {
     public class SwordsmanshipFocus : BaseTalent

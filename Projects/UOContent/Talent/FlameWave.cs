@@ -1,6 +1,5 @@
 using System;
 using Server.Spells;
-using Server.Network;
 using Server.Pantheon;
 using Server.Spells.Fourth;
 using Server.Targeting;
@@ -110,7 +109,7 @@ namespace Server.Talent
                             {
                                 Effects.PlaySound(loc, from.Map, 0x20C);
                                 var chaoticLoc = new Point3D(eastToWest ? targetLoc.X + j : targetLoc.X, eastToWest ? targetLoc.Y : targetLoc.Y + j, targetLoc.Z);
-                                new FireFieldSpell.FireFieldItem(itemID, chaoticLoc, from, from.Map, duration, j);
+                                new FireFieldItem(itemID, chaoticLoc, from, from.Map, duration, j);
                             }
                             targetLoc = CalculatePushbackFromAnchor(targetLoc, 1, target);
                         }

@@ -25,6 +25,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Server.Compression;
 using Server.Dungeon;
 using Server.Json;
 using Server.Logging;

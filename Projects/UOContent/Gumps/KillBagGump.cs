@@ -7,18 +7,18 @@ namespace Server.Gumps
 {
     public class KillBagMenuEntry : ContextMenuEntry
     {
-        private readonly PlayerMobile _From;
+        private readonly PlayerMobile _from;
 
         public KillBagMenuEntry(PlayerMobile from)
             : base(1116798, -1) // Creature kills
         {
-            _From = from;
+            _from = from;
         }
 
-        public override void OnClick()
+        public override void OnClick(Mobile from, IEntity target)
         {
-            _From.CloseGump<KillBagGump>();
-            _From.SendGump(new KillBagGump(_From, 1, true));
+            _from.CloseGump<KillBagGump>();
+            _from.SendGump(new KillBagGump(_from, 1, true));
         }
     }
 
@@ -81,7 +81,7 @@ namespace Server.Gumps
             }
         }
 
-        public override void OnResponse(NetState state, RelayInfo info)
+        public override void OnResponse(NetState state, in RelayInfo info)
         {
             PlayerMobile player = (PlayerMobile)state.Mobile;
             int page = 1;

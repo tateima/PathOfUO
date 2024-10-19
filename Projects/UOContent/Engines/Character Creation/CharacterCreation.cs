@@ -161,7 +161,7 @@ public static partial class CharacterCreation
     [GeneratedEvent(nameof(CharacterCreatedEvent))]
     public static partial void CharacterCreatedEvent(CharacterCreatedEventArgs e);
 
-    private static void AddBackpack(this Mobile m)
+    public static void AddBackpack(this Mobile m)
     {
         var pack = m.Backpack;
 
@@ -804,7 +804,7 @@ public static partial class CharacterCreation
         }
     }
 
-    private static void AddShirt(this Mobile m, int shirtHue)
+    public static void AddShirt(this Mobile m, int shirtHue)
     {
         var hue = Utility.ClipDyedHue(shirtHue & 0x3FFF);
         var raceFlag = m.Race.RaceFlag;
@@ -826,7 +826,7 @@ public static partial class CharacterCreation
         EquipItem(m, shirt);
     }
 
-    private static void AddPants(this Mobile m, int pantsHue)
+    public static void AddPants(this Mobile m, int pantsHue)
     {
         var hue = Utility.ClipDyedHue(pantsHue & 0x3FFF);
         var raceFlag = m.Race.RaceFlag;
@@ -850,7 +850,7 @@ public static partial class CharacterCreation
         EquipItem(m, pants);
     }
 
-    private static void AddShoes(this Mobile m)
+    public static void AddShoes(this Mobile m)
     {
         if (m.Race == Race.Elf)
         {

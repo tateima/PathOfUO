@@ -1,7 +1,6 @@
 using System;
 using Server.Talent;
 using Server.Mobiles;
-using Server.Network;
 
 namespace Server.Spells.Chivalry
 {

@@ -43,7 +43,7 @@ namespace Server.Talent
                     var potion = harmfulPotions[Utility.Random(harmfulPotions.Count)];
                     if (potion is BaseConflagrationPotion conflagrationPotion)
                     {
-                        conflagrationPotion.Users = new List<Mobile> { attacker };
+                        conflagrationPotion.Users = new HashSet<Mobile> { attacker };
                         conflagrationPotion.Explode(attacker, target.Location, target.Map);
                     }
                     else if (potion is BaseExplosionPotion explosionPotion)

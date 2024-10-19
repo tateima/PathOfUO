@@ -44,7 +44,7 @@ public class AnimatedWeaponSpell : MysticSpell, ITargetingSpell<IPoint3D>
 
             var duration = TimeSpan.FromSeconds(10 + level);
             duration *= ReagentsScale();
-            
+
             var summon = new AnimatedWeapon(Caster, level);
             BaseCreature.Summon(summon, false, Caster, new Point3D(p), 0x212, duration);
 

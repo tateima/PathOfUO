@@ -1,7 +1,5 @@
 using ModernUO.Serialization;
 using Server.Targeting;
-using Server.Talent;
-using Server.Mobiles;
 
 namespace Server.Items;
 

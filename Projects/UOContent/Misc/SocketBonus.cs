@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Server.Items;
-using Server.Network;
 using Server.Talent;
 
 namespace Server.Misc

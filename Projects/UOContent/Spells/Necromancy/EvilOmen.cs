@@ -60,7 +60,7 @@ public class EvilOmenSpell : NecromancerSpell, ITargetingSpell<Mobile>
 
             var duration = TimeSpan.FromSeconds(Caster.Skills.SpiritSpeak.Value / 12 + 1.0);
             duration *= ReagentsScale();
-            
+
             Timer.StartTimer(duration, () => EndEffect(m));
 
             HarmfulSpell(m);

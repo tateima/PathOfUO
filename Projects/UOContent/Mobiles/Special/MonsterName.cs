@@ -1,5 +1,3 @@
-using System;
-
 namespace Server.Mobiles
 {
     public static class MonsterName

@@ -22,6 +22,14 @@
       "name": "Item",
       "type": "Server.Item",
       "rule": "SerializableInterfaceMigrationRule"
+    },
+    {
+      "name": "TimeLeft",
+      "type": "int",
+      "rule": "PrimitiveTypeMigrationRule",
+      "ruleArguments": [
+        ""
+      ]
     }
   ]
 }

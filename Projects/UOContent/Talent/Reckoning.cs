@@ -1,9 +1,5 @@
 using System;
 using Server.Items;
-using Server.Mobiles;
-using Server.Network;
-using Server.Spells;
-using Server.Targeting;
 
 namespace Server.Talent
 {

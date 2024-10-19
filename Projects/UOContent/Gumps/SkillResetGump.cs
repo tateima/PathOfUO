@@ -44,7 +44,7 @@ namespace Server.Gumps
                 AddHtml(option.X, option.Y, 450, 50, $"<BASEFONT COLOR=#FFFFE5>{option.Text}</FONT>");
             }
         }
-        public override void OnResponse(NetState state, RelayInfo info)
+        public override void OnResponse(NetState state, in RelayInfo info)
         {
             PlayerMobile player = (PlayerMobile)state.Mobile;
 

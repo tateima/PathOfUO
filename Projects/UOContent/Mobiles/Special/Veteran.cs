@@ -1,7 +1,3 @@
-using System;
-using Server.Items;
-using Server.Utilities;
-
 namespace Server.Mobiles
 {
     public static class Veteran

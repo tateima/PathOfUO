@@ -46,15 +46,4 @@ public partial class ArcaneFey : BaseCreature
     public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
     public override bool InitialInnocent => true;
 
-    public override void Serialize(IGenericWriter writer)
-    {
-        base.Serialize(writer);
-        writer.Write(0);
-    }
-
-    public override void Deserialize(IGenericReader reader)
-    {
-        base.Deserialize(reader);
-        var version = reader.ReadInt();
-    }
 }

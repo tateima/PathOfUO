@@ -3,7 +3,6 @@ using Server.Items;
 using Server.Misc;
 using Server.Mobiles;
 using Server.Spells.Necromancy;
-using Server.Network;
 
 namespace Server.Spells.Fourth
 {

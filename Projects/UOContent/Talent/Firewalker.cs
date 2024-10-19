@@ -27,7 +27,7 @@ namespace Server.Talent
             {
                 var itemID = Utility.RandomBool() ? 0x398C : 0x3996;
                 Effects.PlaySound(from.Location, from.Map, 0x20C);
-                new FireFieldSpell.FireFieldItem(itemID, from.Location, from, from.Map, TimeSpan.FromSeconds(Level * 7), Utility.RandomMinMax(-1, 1));
+                new FireFieldItem(itemID, from.Location, from, from.Map, TimeSpan.FromSeconds(Level * 7), Utility.RandomMinMax(-1, 1));
             }
         }
 

@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using ModernUO.CodeGeneratedEvents;
 using System.Collections.Concurrent;
-using System.Linq;
 using Server.Accounting;
 using Server.Collections;
 using Server.ContextMenus;
 using Server.Dungeon;
 using Server.Engines.BulkOrders;
 using Server.Engines.CannedEvil;
+using Server.Engines.CharacterCreation;
 using Server.Engines.ConPVP;
 using Server.Engines.Craft;
 using Server.Engines.Help;
@@ -1778,6 +1778,14 @@ namespace Server.Mobiles
 
                 from.SendGump(new ServerLockdownNoticeGump(notice));
                 return;
+            }
+
+            if (from.Backpack == null)
+            {
+                CharacterCreation.AddBackpack(from);
+                CharacterCreation.AddShirt(from, Utility.RandomNondyedHue());
+                CharacterCreation.AddPants(from, Utility.RandomNondyedHue());
+                CharacterCreation.AddShoes(from);
             }
 
             VirtueSystem.CheckAtrophies(from);
@@ -3693,7 +3701,7 @@ namespace Server.Mobiles
             MoveToWorld(point, Map.Trammel);
             string broadcastMessage = $"{Name} has died at the hands of {LastKiller.Name}. At level {Level}, their deeds will be remembered.";
             World.Broadcast(0x22, true, broadcastMessage);
-            
+
             PlayerDeathEvent(this);
         }
 

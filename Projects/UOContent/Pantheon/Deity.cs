@@ -4,12 +4,10 @@ using System.Linq;
 using System.Reflection;
 using Server.Engines.BulkOrders;
 using Server.Engines.Craft;
-using Server.Ethics;
 using Server.Items;
 using Server.Misc;
 using Server.Mobiles;
 using Server.Talent;
-using Server.Network;
 
 namespace Server.Pantheon
 {

@@ -4,7 +4,6 @@ using Server.Collections;
 using Server.Items;
 using Server.Misc;
 using Server.Mobiles;
-using Server.Targeting;
 using Server.Talent;
 
 namespace Server.Spells.Fourth;
@@ -114,7 +113,7 @@ public partial class FireFieldItem : Item
 
         _end = Core.Now + duration;
 
-        _timer = new InternalTimer(this, TimeSpan.FromSeconds(val.Abs() * 0.2), caster.InLOS(this), canFit);
+        _timer = new InternalTimer(this, TimeSpan.FromSeconds(val.Abs() * 0.2), caster.InLOS(this), canFit, _fire, _cold, _hue);
         _timer.Start();
     }
 
@@ -130,7 +129,7 @@ public partial class FireFieldItem : Item
     [AfterDeserialization]
     private void AfterDeserialization()
     {
-        _timer = new InternalTimer(this, TimeSpan.Zero, true, true);
+        _timer = new InternalTimer(this, TimeSpan.Zero, true, true, _fire, _cold, _hue);
         _timer.Start();
     }
 

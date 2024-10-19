@@ -206,5 +206,4 @@ public class VendorAI : BaseAI
                 }
             }
         }
-    }
 }

@@ -5,7 +5,6 @@ using Server.Items;
 using Server.Misc;
 using Server.Mobiles;
 using Server.Talent;
-using Server.Targeting;
 
 namespace Server.Spells.Fifth;
 

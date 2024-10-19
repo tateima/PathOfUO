@@ -9,51 +9,51 @@ namespace Server.Gumps
 {
     public class DeityRewardEntry : ContextMenuEntry
     {
-        private readonly PlayerMobile _From;
+        private readonly PlayerMobile _from;
 
         public DeityRewardEntry(PlayerMobile from)
             : base(1116794, -1) // Seek deity reward
         {
-            _From = from;
+            _from = from;
         }
 
-        public override void OnClick()
+        public override void OnClick(Mobile from, IEntity target)
         {
 
-            _From.PlaySound(0x24A);
-            Deity.BestowReward(_From);
+            _from.PlaySound(0x24A);
+            Deity.BestowReward(_from);
         }
     }
     public class DeityFavorEntry : ContextMenuEntry
     {
-        private readonly PlayerMobile _From;
+        private readonly PlayerMobile _from;
 
         public DeityFavorEntry(PlayerMobile from)
             : base(1116793, -1) // Seek deity favor
         {
-            _From = from;
+            _from = from;
         }
 
-        public override void OnClick()
+        public override void OnClick(Mobile from, IEntity target)
         {
-            _From.PlaySound(0x24A);
-            Deity.BestowFavor(_From, _From.Alignment);
+            _from.PlaySound(0x24A);
+            Deity.BestowFavor(_from, _from.Alignment);
         }
     }
     public class CharacterSheetMenuEntry : ContextMenuEntry
     {
-        private readonly PlayerMobile _From;
+        private readonly PlayerMobile _from;
 
         public CharacterSheetMenuEntry(PlayerMobile from)
             : base(1116792, -1) // Character sheet
         {
-            _From = from;
+            _from = from;
         }
 
-        public override void OnClick()
+        public override void OnClick(Mobile from, IEntity target)
         {
-            _From.CloseGump<CharacterSheetGump>();
-            _From.SendGump(new CharacterSheetGump(_From, 1, null, true));
+            _from.CloseGump<CharacterSheetGump>();
+            _from.SendGump(new CharacterSheetGump(_from, 1, null, true));
         }
     }
 
@@ -189,8 +189,7 @@ namespace Server.Gumps
                 from.CloseGump<CharacterSheetGump>();
             }
         }
-
-        public override void OnResponse(NetState state, RelayInfo info)
+        public override void OnResponse(NetState state, in RelayInfo info)
         {
             PlayerMobile player = (PlayerMobile)state.Mobile;
 

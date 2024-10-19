@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using ModernUO.CodeGeneratedEvents;
@@ -217,7 +216,6 @@ namespace Server.Mobiles
         public static readonly TimeSpan ShoutDelay = TimeSpan.FromMinutes(1);
 
         private static readonly Type[] _eggs =
-        private static readonly Type[] m_Eggs =
         {
             typeof(FriedEggs), typeof(Eggs)
         };
@@ -517,7 +515,7 @@ namespace Server.Mobiles
                 m_Feared = value;
                 if (value)
                 {
-                    SpeedMod = CurrentSpeed * 2;
+                    MoveSpeedMod = CurrentSpeed * 2;
                 }
             }
         }
@@ -1044,7 +1042,7 @@ namespace Server.Mobiles
         public void UnFear()
         {
             Feared = false;
-            SpeedMod = 0;
+            MoveSpeedMod = 0;
         }
 
         public void Blind(int duration, string message = "* Blinded *")

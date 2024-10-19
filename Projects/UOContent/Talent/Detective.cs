@@ -1,7 +1,6 @@
 using System.Linq;
 using Server.Items;
 using Server.Mobiles;
-using Server.Network;
 
 namespace Server.Talent
 {

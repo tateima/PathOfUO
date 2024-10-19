@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Server;
 using Server.Network;
 using Server.Mobiles;
 using Server.Talent;
@@ -134,7 +133,7 @@ namespace Server.Gumps
                 }
             }
         }
-        public override void OnResponse(NetState state, RelayInfo info)
+        public override void OnResponse(NetState state, in RelayInfo info)
         {
             PlayerMobile player = (PlayerMobile)state.Mobile;
 

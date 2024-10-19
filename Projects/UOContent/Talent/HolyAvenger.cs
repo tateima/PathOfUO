@@ -1,5 +1,4 @@
 using System;
-using Server.Ethics;
 using Server.Items;
 using Server.Mobiles;
 

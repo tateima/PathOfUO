@@ -159,7 +159,7 @@ namespace Server.Gumps
             return Regex.Replace(parsed, "(\\B[A-Z])", " $1");
         }
 
-        public override void OnResponse(NetState state, RelayInfo info)
+        public override void OnResponse(NetState state, in RelayInfo info)
         {
             PlayerMobile player = (PlayerMobile)state.Mobile;
 

@@ -1,4 +1,3 @@
-using System;
 using Server.Items;
 using Server.Talent;
 using Server.Mobiles;
@@ -125,7 +124,7 @@ public abstract class NecromancerSpell : Spell
         }
         return 0;
     }
-    
+
     public override bool ConsumeReagents() => base.ConsumeReagents() || ArcaneGem.ConsumeCharges(Caster, 1);
 
     public override int GetMana() => RequiredMana;

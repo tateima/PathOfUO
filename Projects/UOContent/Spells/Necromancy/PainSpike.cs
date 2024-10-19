@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Server.Items;
 using Server.Misc;
-using Server.Mobiles;
 using Server.Targeting;
 
 namespace Server.Spells.Necromancy;
@@ -71,7 +69,7 @@ public class PainSpikeSpell : NecromancerSpell, ITargetingSpell<Mobile>
                 timer.Delay += TimeSpan.FromSeconds(2.0);
                 buffTime = timer.Next - Core.Now;
             }
-            
+
             damage *= ReagentsScale();
             DarkAffinityDamage(ref damage);
             SpellMindDamage(ref damage);

@@ -1,6 +1,7 @@
 using ModernUO.Serialization;
 using System;
 using System.Collections.Generic;
+using Server.Collections;
 using Server.ContextMenus;
 using Server.Engines.BulkOrders;
 using Server.Items;
@@ -20,7 +21,7 @@ namespace Server.Mobiles
             _blacksmith = blacksmith;
         }
 
-        public override void OnClick()
+        public override void OnClick(Mobile from, IEntity target)
         {
             Container bank = _playerMobile.FindBankNoCreate();
             _playerMobile.Target = new InternalTarget(_playerMobile, _blacksmith);
@@ -224,13 +225,13 @@ namespace Server.Mobiles
                 mobile.NextSmithBulkOrder = TimeSpan.Zero;
             }
         }
-        public override void AddCustomContextEntries(Mobile from, List<ContextMenuEntry> list)
+        public override void AddCustomContextEntries(Mobile from, ref PooledRefList<ContextMenuEntry> list)
         {
             if (from.Alive)
             {
                 list.Add(new RepairGearEntry((PlayerMobile)from, this));
             }
-            base.AddCustomContextEntries(from, list);
+            base.AddCustomContextEntries(from, ref list);
         }
     }
 }

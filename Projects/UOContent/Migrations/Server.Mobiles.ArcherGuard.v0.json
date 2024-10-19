@@ -1,11 +1,4 @@
 {
   "version": 0,
-  "type": "Server.Mobiles.ArcherGuard",
-  "properties": [
-    {
-      "name": "Focus",
-      "type": "Server.Mobile",
-      "rule": "SerializableInterfaceMigrationRule"
-    }
-  ]
+  "type": "Server.Mobiles.ArcherGuard"
 }

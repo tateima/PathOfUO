@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using Server.Gumps;
 using Server.Items;
 using Server.Mobiles;
@@ -684,7 +683,7 @@ namespace Server.Talent
 
         public virtual void SlowCreature(BaseCreature creature, int duration, bool startTimerImmediately)
         {
-            creature.SpeedMod = creature.CurrentSpeed*SlowModifier;
+            creature.MoveSpeedMod = creature.CurrentSpeed*SlowModifier;
             SlowedCreatures.Add(creature);
             if (startTimerImmediately)
             {
@@ -696,7 +695,7 @@ namespace Server.Talent
         {
             foreach (var creature in SlowedCreatures)
             {
-                creature.SpeedMod = 0;
+                creature.MoveSpeedMod = 0;
             }
         }
 

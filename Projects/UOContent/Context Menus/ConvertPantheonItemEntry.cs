@@ -9,7 +9,7 @@ namespace Server.ContextMenus
         private readonly PlayerMobile _from;
         public ConvertPantheonItemEntry(PlayerMobile from) : base(1116796, 1) => _from = from;
 
-        public override void OnClick()
+        public override void OnClick(Mobile from, IEntity target)
         {
             foreach (var mobile in _from.GetMobilesInRange(3))
             {

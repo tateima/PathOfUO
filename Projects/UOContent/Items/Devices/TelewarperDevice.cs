@@ -1,6 +1,5 @@
 using ModernUO.Serialization;
 using Server.Mobiles;
-using Server.Spells.Fourth;
 using Server.Spells.Fifth;
 using Server.Spells.Eighth;
 using Server.Spells.Third;

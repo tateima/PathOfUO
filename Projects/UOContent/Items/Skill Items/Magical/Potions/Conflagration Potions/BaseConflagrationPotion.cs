@@ -21,6 +21,12 @@ public abstract partial class BaseConflagrationPotion : BasePotion
     public override bool RequireFreeHand => false;
     public override bool IsThrowablePotion => true;
 
+    public HashSet<Mobile> Users
+    {
+        get => _users;
+        set => _users = value;
+    }
+
     public override bool CanDrink(Mobile from)
     {
         if (!base.CanDrink(from))

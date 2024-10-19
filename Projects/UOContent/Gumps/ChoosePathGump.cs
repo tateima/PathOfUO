@@ -106,7 +106,7 @@ namespace Server.Gumps
             player.SendMessage("You are already aligned to this deity choice.");
             page = 2;
         }
-        public override void OnResponse(NetState state, RelayInfo info)
+        public override void OnResponse(NetState state, in RelayInfo info)
         {
             PlayerMobile player = (PlayerMobile)state.Mobile;
 

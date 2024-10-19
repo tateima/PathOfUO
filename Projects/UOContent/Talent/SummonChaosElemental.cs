@@ -1,7 +1,6 @@
 using System;
 using Server.Mobiles;
 using Server.Spells;
-using Server.Network;
 using Server.Pantheon;
 
 namespace Server.Talent

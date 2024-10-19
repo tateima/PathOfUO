@@ -10,18 +10,18 @@ namespace Server.Gumps
     {
         public class DungeonDifficultyEntry : ContextMenuEntry
         {
-            private readonly PlayerMobile _From;
+            private readonly PlayerMobile _from;
 
             public DungeonDifficultyEntry(PlayerMobile from)
                 : base(1116799, -1) // Set Dungeon Difficulty
             {
-                _From = from;
+                _from = from;
             }
 
-            public override void OnClick()
+            public override void OnClick(Mobile from, IEntity target)
             {
-                _From.CloseGump<DungeonDifficultyGump>();
-                _From.SendGump(new DungeonDifficultyGump());
+                _from.CloseGump<DungeonDifficultyGump>();
+                _from.SendGump(new DungeonDifficultyGump());
             }
         }
         public DungeonDifficultyGump() : base(0, 0)
@@ -72,7 +72,7 @@ namespace Server.Gumps
                 AddHtml(option.X, option.Y, 250, 150, $"<BASEFONT COLOR=#FFFFE5>{option.Text}</FONT>");
             }
         }
-        public override void OnResponse(NetState state, RelayInfo info)
+        public override void OnResponse(NetState state, in RelayInfo info)
         {
             PlayerMobile player = (PlayerMobile)state.Mobile;
 

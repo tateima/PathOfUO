@@ -1,7 +1,6 @@
 using System;
 using ModernUO.Serialization;
 using Server.Engines.Craft;
-using Server.Items;
 using Server.Pantheon;
 using Server.Talent;
 

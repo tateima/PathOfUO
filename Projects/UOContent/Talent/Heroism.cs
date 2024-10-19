@@ -1,11 +1,5 @@
 using System;
-using Org.BouncyCastle.Bcpg.Sig;
-using Server.Items;
-using Server.Spells;
-using Server.Network;
 using Server.Pantheon;
-using Server.Spells.Fourth;
-using Server.Targeting;
 
 namespace Server.Talent
 {

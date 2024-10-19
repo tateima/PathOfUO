@@ -1,8 +1,6 @@
 using System;
-using System.Linq;
 using Server.Collections;
 using Server.Items;
-using Server.Mobiles;
 using Server.Targeting;
 
 namespace Server.Talent
