@@ -5207,6 +5207,11 @@ namespace Server.Mobiles
                     if (titles[i] is PlayerMobile)
                     {
                         PlayerMobile player = (PlayerMobile)titles[i];
+                        // earlier levels gain XP faster but have diminishing returns
+                        if (player.Level < 30)
+                        {
+                            percentKill += 30 - player.Level;
+                        }
                         int contributedXp = AOS.Scale(scaleXp, percentKill);
                         if (player.DeityChallengers?.Find(mobile => mobile.Serial == Serial) != null)
                         {

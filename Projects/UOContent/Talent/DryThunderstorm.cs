@@ -1,4 +1,5 @@
 using System;
+using Server.Collections;
 using Server.Mobiles;
 using Server.Spells;
 using Server.Spells.Fourth;
@@ -57,6 +58,7 @@ namespace Server.Talent
         {
             if (RemainingBolts > 0)
             {
+                using var queue = PooledRefQueue<Mobile>.Create();
                 foreach (var mobile in _mobile.GetMobilesInRange(8))
                 {
                     if (mobile == _mobile || mobile is PlayerMobile && mobile.Karma > 0 ||
@@ -65,7 +67,13 @@ namespace Server.Talent
                     {
                         continue;
                     }
+                    queue.Enqueue(mobile);
+                    break;
+                }
 
+                while (queue.Count > 0)
+                {
+                    var mobile = queue.Dequeue();
                     double damage;
                     var lightning = new LightningSpell(_mobile);
                     if (Core.AOS)
@@ -87,12 +95,9 @@ namespace Server.Talent
 
                     mobile.BoltEffect(0);
                     SpellHelper.Damage(lightning, mobile, damage, 0, 0, 0, 0, 100);
-                    lightning = null;
                     _mobile.DoHarmful(mobile);
                     RemainingBolts--;
-                    break;
                 }
-
                 Timer.StartTimer(TimeSpan.FromSeconds(Utility.Random(7, 10)), CheckStorm, out _talentTimerToken);
             }
             else

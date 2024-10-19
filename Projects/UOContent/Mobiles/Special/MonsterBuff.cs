@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Server.Collections;
 using Server.Items;
 using Server.Talent;
 
@@ -840,13 +841,20 @@ namespace Server.Mobiles
         }
         public static void CheckElementalAoe(BaseCreature owner)
         {
+            using var queue = PooledRefQueue<Mobile>.Create();
             foreach (Mobile mobile in owner.GetMobilesInRange(8))
             {
                 if (mobile != owner && owner.ControlMaster != mobile && (mobile is PlayerMobile || owner.IsEnemy(mobile)) && owner.InLOS(mobile))
                 {
-                    CheckElementalAttack(owner, mobile);
-                    mobile.RevealingAction();
+                    queue.Enqueue(mobile);
                 }
+            }
+
+            while (queue.Count > 0)
+            {
+                var mobile = queue.Dequeue();
+                CheckElementalAttack(owner, mobile);
+                mobile.RevealingAction();
             }
         }
 

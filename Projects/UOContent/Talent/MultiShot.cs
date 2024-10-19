@@ -1,4 +1,5 @@
 using System;
+using Server.Collections;
 using Server.Items;
 using Server.Mobiles;
 using Server.Targeting;
@@ -64,6 +65,7 @@ namespace Server.Talent
                 {
                     maxShots = ammoCount;
                 }
+                using var queue = PooledRefQueue<Mobile>.Create();
                 foreach (var mobile in target.GetMobilesInRange(8))
                 {
                     if (mobile == attacker || mobile is PlayerMobile && mobile.Karma > 0 ||
@@ -74,18 +76,7 @@ namespace Server.Talent
                     }
                     if (attacker.InLOS(mobile))
                     {
-                        if (bow.OnFired(attacker, mobile))
-                        {
-                            if (bow.CheckHit(attacker, mobile))
-                            {
-                                bow.OnHit(attacker, mobile, 0.5); // 50% damage otherwise its too OP
-                            }
-                            else
-                            {
-                                bow.OnMiss(attacker, mobile);
-                            }
-                        }
-
+                        queue.Enqueue(mobile);
                         numberOfShots++;
                         if (numberOfShots > maxShots)
                         {
@@ -94,6 +85,21 @@ namespace Server.Talent
                             Activated = false;
                             Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                             break;
+                        }
+                    }
+                }
+                while (queue.Count > 0)
+                {
+                    var mobile = queue.Dequeue();
+                    if (bow.OnFired(attacker, mobile))
+                    {
+                        if (bow.CheckHit(attacker, mobile))
+                        {
+                            bow.OnHit(attacker, mobile, 0.5); // 50% damage otherwise its too OP
+                        }
+                        else
+                        {
+                            bow.OnMiss(attacker, mobile);
                         }
                     }
                 }

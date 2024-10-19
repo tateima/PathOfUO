@@ -1,4 +1,5 @@
 using System;
+using Server.Collections;
 using Server.Items;
 using Server.Mobiles;
 
@@ -28,6 +29,7 @@ namespace Server.Talent
             {
                 Activated = false;
                 OnCooldown = true;
+                using var queue = PooledRefQueue<Mobile>.Create();
                 var mobiles = attacker.GetMobilesInRange(3);
                 var hitAnotherMobile = false;
                 foreach (var mobile in mobiles)
@@ -38,11 +40,17 @@ namespace Server.Talent
                     {
                         continue;
                     }
+                    queue.Enqueue(mobile);
+                    break;
+                }
 
+                while (queue.Count > 0)
+                {
+                    var mobile = queue.Dequeue();
                     hitAnotherMobile = true;
                     AlterDamage(mobile, (PlayerMobile)attacker, ref damage);
                     mobile.Damage(AOS.Scale(damage, 50 + Level * 2), attacker);
-                    break;
+                    mobile.DoHarmful(attacker);
                 }
 
                 if (!hitAnotherMobile)

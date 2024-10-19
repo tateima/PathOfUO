@@ -1,4 +1,5 @@
 using System;
+using Server.Collections;
 using Server.Items;
 using Server.Mobiles;
 
@@ -92,6 +93,7 @@ namespace Server.Talent
                     ApplyManaCost(from);
                     OnCooldown = true;
                     var success = false;
+                    using var queue = PooledRefQueue<Mobile>.Create();
                     foreach (var other in from.GetMobilesInRange(Level + 3))
                     {
                         if (other == from || !other.CanBeHarmful(from, false) ||
@@ -106,38 +108,44 @@ namespace Server.Talent
                         }
                         else
                         {
-                            success = true;
-                            var baseDamage = Level;
-                            if (sonicAffinity != null)
-                            {
-                                // increase damage further by 3 points per level of sonic affinity
-                                baseDamage += sonicAffinity.Level * 3;
-                            }
-
-                            if (instrument.Slayer != SlayerName.None)
-                            {
-                                baseDamage = SlayerDamage(baseDamage, instrument.Slayer, other);
-                            }
-
-                            if (instrument.Slayer2 != SlayerName.None)
-                            {
-                                baseDamage = SlayerDamage(baseDamage, instrument.Slayer2, other);
-                            }
-
-                            var scalar = from.Skills.Musicianship.Value / 200;
-                            AOS.Scale(baseDamage, 100 + (int)(scalar * 10));
-                            AlterDamage(other, (PlayerMobile)from, ref baseDamage);
-                            if (Core.AOS)
-                            {
-                                AOS.Damage(other, baseDamage, 0, 0, 0, 0, 100);
-                            }
-                            else
-                            {
-                                other.Damage(baseDamage, from);
-                            }
-
-                            other.FixedParticles(0x376A, 9, 32, 5007, EffectLayer.Waist);
+                            queue.Enqueue(other);
                         }
+                    }
+
+                    while (queue.Count > 0)
+                    {
+                        var other = queue.Dequeue();
+                        success = true;
+                        var baseDamage = Level;
+                        if (sonicAffinity != null)
+                        {
+                            // increase damage further by 3 points per level of sonic affinity
+                            baseDamage += sonicAffinity.Level * 3;
+                        }
+
+                        if (instrument.Slayer != SlayerName.None)
+                        {
+                            baseDamage = SlayerDamage(baseDamage, instrument.Slayer, other);
+                        }
+
+                        if (instrument.Slayer2 != SlayerName.None)
+                        {
+                            baseDamage = SlayerDamage(baseDamage, instrument.Slayer2, other);
+                        }
+
+                        var scalar = from.Skills.Musicianship.Value / 200;
+                        AOS.Scale(baseDamage, 100 + (int)(scalar * 10));
+                        AlterDamage(other, (PlayerMobile)from, ref baseDamage);
+                        if (Core.AOS)
+                        {
+                            AOS.Damage(other, baseDamage, 0, 0, 0, 0, 100);
+                        }
+                        else
+                        {
+                            other.Damage(baseDamage, from);
+                        }
+
+                        other.FixedParticles(0x376A, 9, 32, 5007, EffectLayer.Waist);
                     }
 
                     from.RevealingAction();

@@ -1,4 +1,5 @@
 using System;
+using Server.Collections;
 using Server.Items;
 using Server.Mobiles;
 
@@ -26,6 +27,7 @@ namespace Server.Talent
             {
                 Activated = false;
                 OnCooldown = true;
+                using var queue = PooledRefQueue<Mobile>.Create();
                 var mobiles = attacker.GetMobilesInRange(3);
                 foreach (var mobile in mobiles)
                 {
@@ -35,6 +37,12 @@ namespace Server.Talent
                         continue;
                     }
 
+                    queue.Enqueue(mobile);
+                }
+
+                while (queue.Count > 0)
+                {
+                    var mobile = queue.Dequeue();
                     var mobileLocation = mobile.Location;
                     var newMobileLocation = CalculatePushbackFromAnchor(mobileLocation, Level, mobile);
                     var attempts = 10;

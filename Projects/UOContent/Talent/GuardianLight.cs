@@ -1,4 +1,5 @@
 using System;
+using Server.Collections;
 using Server.Items;
 using Server.Mobiles;
 using Server.Pantheon;
@@ -80,6 +81,7 @@ namespace Server.Talent
                 player.Heal(healAmount);
                 player.FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
                 player.PlaySound(0x202);
+                using var queue = PooledRefQueue<Mobile>.Create();
                 // if defender has holy avenger, reflect heal as damage back to area
                 var holyAvenger = player.GetTalent(typeof(HolyAvenger));
                 if (holyAvenger != null)
@@ -93,7 +95,14 @@ namespace Server.Talent
                         {
                             continue;
                         }
-                        AlterDamage(mobile, player, ref healAmount);
+                        queue.Enqueue(mobile);
+                    }
+                }
+
+                while (queue.Count > 0)
+                {
+                    var mobile = queue.Dequeue();
+                    AlterDamage(mobile, player, ref healAmount);
                         mobile.Damage(healAmount, player);
                         mobile.DoHarmful(player);
                         Effects.SendLocationParticles(
@@ -110,7 +119,6 @@ namespace Server.Talent
                             9502,
                             0
                         );
-                    }
                 }
                 StartTimer();
             }
