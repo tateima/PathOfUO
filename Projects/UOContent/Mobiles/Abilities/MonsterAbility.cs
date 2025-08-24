@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using ModernUO.CodeGeneratedEvents;
 
 namespace Server.Mobiles;
 
 /// <summary>
 /// Abstract class used to build singletons for managing a specific monster ability.
 /// </summary>
-public abstract partial class MonsterAbility
+public abstract class MonsterAbility
 {
     private Dictionary<BaseCreature, long> _nextTriggerTicks;
 
@@ -18,47 +19,44 @@ public abstract partial class MonsterAbility
     public virtual TimeSpan MinTriggerCooldown => TimeSpan.Zero;
     public virtual TimeSpan MaxTriggerCooldown => TimeSpan.Zero;
 
-    // To prevent reflect from harming the monster
-    public virtual bool CanTriggerAgainstSelf => false;
-
-    public bool WillTrigger(MonsterAbilityTrigger trigger) => (AbilityTrigger & trigger) != 0;
-
     /// <summary>
-    /// Returns true if ability is not on cooldown, and the change to trigger succeeds.
+    /// Returns true if ability is not on cooldown, and the chance to trigger succeeds.
     /// </summary>
     /// <returns>Boolean indicating the ability can trigger.</returns>
     public virtual bool CanTrigger(BaseCreature source, MonsterAbilityTrigger trigger)
     {
-        if (_nextTriggerTicks?.TryGetValue(source, out var nextTrigger) == true && nextTrigger - Core.TickCount > 0)
+        if ((AbilityTrigger & trigger) == 0 || source is not { Alive: true, Deleted: false })
         {
             return false;
+        }
+
+        if (_nextTriggerTicks?.TryGetValue(source, out var nextTrigger) == true)
+        {
+            if (nextTrigger - Core.TickCount > 0)
+            {
+                return false;
+            }
+
+            _nextTriggerTicks.Remove(source);
+            if (_nextTriggerTicks.Count == 0)
+            {
+                _nextTriggerTicks = null;
+            }
         }
 
         var c = ChanceToTrigger;
 
-        if (c >= 1)
-        {
-            return true;
-        }
-
-        if (c <= 0)
-        {
-            return false;
-        }
-
-        var rnd = Utility.RandomDouble();
-
-        return c > rnd;
+        return c >= 1 || c > 0 && c > Utility.RandomDouble();
     }
 
     /// <summary>
     /// Triggers the monster's ability. Override this and call `base.Trigger(source);` to make sure
     /// the cooldown is tracked.
+    /// Note: This can fire after a monster is killed/deleted (map is null)
     /// </summary>
     public virtual void Trigger(MonsterAbilityTrigger trigger, BaseCreature source, Mobile target)
     {
-        if (!CanTriggerAgainstSelf && target == source ||
-            MinTriggerCooldown <= TimeSpan.Zero && MaxTriggerCooldown <= TimeSpan.Zero)
+        if (MinTriggerCooldown <= TimeSpan.Zero && MaxTriggerCooldown <= TimeSpan.Zero)
         {
             return;
         }
@@ -97,7 +95,23 @@ public abstract partial class MonsterAbility
     {
     }
 
-    public virtual void Move(BaseCreature creature, Direction d)
+    public virtual void Move(BaseCreature source, Direction d)
     {
+    }
+
+    [OnEvent(nameof(BaseCreature.CreatureDeathEvent))]
+    [OnEvent(nameof(BaseCreature.CreatureDeletedEvent))]
+    public static void InvalidateNextAbilityTriggers(BaseCreature source)
+    {
+        var abilities = source.GetMonsterAbilities();
+        if (abilities == null || abilities.Length == 0)
+        {
+            return;
+        }
+
+        for (var i = 0; i < abilities.Length; i++)
+        {
+            abilities[i]._nextTriggerTicks?.Remove(source);
+        }
     }
 }

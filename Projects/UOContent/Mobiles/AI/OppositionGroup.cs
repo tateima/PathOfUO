@@ -1,63 +1,55 @@
 using System;
 using Server.Mobiles;
 
-namespace Server
+namespace Server;
+
+public class OppositionGroup
 {
-    public class OppositionGroup
-    {
-        private readonly Type[][] m_Types;
+    private readonly Type[][] _types;
 
-        public OppositionGroup(Type[][] types) => m_Types = types;
+    public OppositionGroup(Type[][] types) => _types = types;
 
-        public static OppositionGroup TerathansAndOphidians { get; } = new(
-            new[]
-            {
-                new[]
-                {
-                    typeof(TerathanAvenger),
-                    typeof(TerathanDrone),
-                    typeof(TerathanMatriarch),
-                    typeof(TerathanWarrior)
-                },
-                new[]
-                {
-                    typeof(OphidianArchmage),
-                    typeof(OphidianKnight),
-                    typeof(OphidianMage),
-                    typeof(OphidianMatriarch),
-                    typeof(OphidianWarrior)
-                }
-            }
-        );
+    public static OppositionGroup TerathansAndOphidians { get; } = new(
+        [
+            [
+                typeof(TerathanAvenger),
+                typeof(TerathanDrone),
+                typeof(TerathanMatriarch),
+                typeof(TerathanWarrior)
+            ],
+            [
+                typeof(OphidianArchmage),
+                typeof(OphidianKnight),
+                typeof(OphidianMage),
+                typeof(OphidianMatriarch),
+                typeof(OphidianWarrior)
+            ]
+        ]
+    );
 
-        public static OppositionGroup SavagesAndOrcs { get; } = new(
-            new[]
-            {
-                new[]
-                {
-                    typeof(Orc),
-                    typeof(OrcBomber),
-                    typeof(OrcBrute),
-                    typeof(OrcCaptain),
-                    typeof(OrcishLord),
-                    typeof(OrcishMage),
-                    typeof(SpawnedOrcishLord)
-                },
-                new[]
-                {
-                    typeof(Savage),
-                    typeof(SavageRider),
-                    typeof(SavageRidgeback),
-                    typeof(SavageShaman)
-                }
-            }
-        );
+    public static OppositionGroup SavagesAndOrcs { get; } = new(
+        [
+            [
+                typeof(Orc),
+                typeof(OrcBomber),
+                typeof(OrcBrute),
+                typeof(OrcCaptain),
+                typeof(OrcishLord),
+                typeof(OrcishMage),
+                typeof(SpawnedOrcishLord)
+            ],
+            [
+                typeof(Savage),
+                typeof(SavageRider),
+                typeof(SavageRidgeback),
+                typeof(SavageShaman)
+            ]
+        ]
+    );
 
         public static OppositionGroup DarknessAndLight { get; } = new(
-            new[]
-            {
-                new[]
-                {
+            [
+                [
                     typeof(MageGuard),
                     typeof(NobleLord),
                     typeof(WarriorGuard),
@@ -79,8 +71,8 @@ namespace Server
                     typeof(Satyr),
                     typeof(Guardian),
                     typeof(HeadlessOne)
-                },
-                new []{
+                ],
+                [
                     typeof(DarkWisp),
                     typeof(AncientLich),
                     typeof(LichLord),
@@ -111,14 +103,12 @@ namespace Server
                     typeof(RottingCorpse),
                     typeof(SpectralArmour),
                     typeof(Lich)
-                }
-            }
+                ]
+            ]
         );
         public static OppositionGroup ChaosAndOrder { get; } = new(
-            new[]
-            {
-                new[]
-                {
+            [
+                [
                     typeof(GreaterDragon),
                     typeof(AncientWyrm),
                     typeof(DeepSeaSerpent),
@@ -148,9 +138,8 @@ namespace Server
                     typeof(IceSnake),
                     typeof(Snake),
                     typeof(LavaSnake)
-                },
-                new []
-                {
+                ],
+                [
                     typeof(BoneDemon),
                     typeof(AbysmalHorror),
                     typeof(CrystalDaemon),
@@ -181,12 +170,12 @@ namespace Server
                     typeof(StoneGargoyle),
                     typeof(GazerLarva),
                     typeof(SummonedDaemon)
-                }
-            }
+                ]
+            ]
         );
 
         public static Type[] SeaCreatures { get; } =
-        {
+        [
             typeof(Dolphin),
             typeof(SeaSerpent),
             typeof(DeepSeaSerpent),
@@ -194,10 +183,10 @@ namespace Server
             typeof(CrystalSeaSerpent),
             typeof(Kraken),
             typeof(WaterElemental)
-        };
+        ];
 
         public static Type[] LesserUndeadGroup { get; } =
-        {
+        [
             typeof(Bogle),
             typeof(Shade),
             typeof(Spectre),
@@ -217,9 +206,9 @@ namespace Server
             typeof(RottingCorpse),
             typeof(SpectralArmour),
             typeof(Lich)
-        };
+        ];
         public static Type[] ElementalGroup { get; } =
-        {
+        [
             typeof(AcidElemental),
             typeof(AirElemental),
             typeof(BloodElemental),
@@ -244,10 +233,10 @@ namespace Server
             typeof(CrystalElemental),
             typeof(VeriteElemental),
             typeof(ChaosElemental)
-        };
+        ];
 
         public static Type[] LesserAbyssalGroup { get; } =
-        {
+        [
             typeof(HellHound),
             typeof(HellSteed),
             typeof(PredatorHellCat),
@@ -266,10 +255,9 @@ namespace Server
             typeof(StoneGargoyle),
             typeof(GazerLarva),
             typeof(SummonedDaemon)
-        };
+        ];
         public static Type[] LesserReptilianGroup { get; } =
-        {
-
+        [
             typeof(SilverSerpent),
             typeof(Drake),
             typeof(OphidianArchmage),
@@ -288,10 +276,10 @@ namespace Server
             typeof(IceSnake),
             typeof(Snake),
             typeof(LavaSnake)
-        };
+        ];
 
         public static Type[] LesserHumanoidGroup { get; } =
-        {
+        [
             typeof(MageGuard),
             typeof(NobleLord),
             typeof(WarriorGuard),
@@ -306,10 +294,10 @@ namespace Server
             typeof(Satyr),
             typeof(Guardian),
             typeof(HeadlessOne)
-        };
+        ];
 
         public static Type[] AnimalGroup { get; } =
-        {
+        [
             typeof(BlackBear),
             typeof(BrownBear),
             typeof(GrizzlyBear),
@@ -357,9 +345,9 @@ namespace Server
             typeof(Cat),
             typeof(Dog),
             typeof(Rat)
-        };
+        ];
         public static Type[] ArachnidGroup { get; } =
-        {
+        [
             typeof(DreadSpider),
             typeof(TerathanAvenger),
             typeof(TerathanDrone),
@@ -368,7 +356,7 @@ namespace Server
             typeof(FrostSpider),
             typeof(GiantBlackWidow),
             typeof(GiantSpider)
-        };
+        ];
         public bool IsEnemy(object from, object target)
         {
             var fromGroup = IndexOf(from);
@@ -377,38 +365,35 @@ namespace Server
             return fromGroup != -1 && targGroup != -1 && fromGroup != targGroup;
         }
 
-        public int IndexOf(object obj)
+    public int IndexOf(object obj)
+    {
+        if (obj == null)
         {
-            if (obj == null)
-            {
-                return -1;
-            }
-
-            var type = obj.GetType();
-
-            for (var i = 0; i < m_Types.Length; ++i)
-            {
-                var group = m_Types[i];
-
-                var contains = false;
-                if (group != null)
-                {
-                    for (var j = 0; !contains && j < group.Length; ++j)
-                    {
-                        contains = group[j].IsAssignableFrom(type);
-                    }
-                }
-
-                if (contains)
-                {
-                    return i;
-                }
-            }
-
             return -1;
         }
 
-        public Type[] this[int i] => m_Types[i];
+        var type = obj.GetType();
+
+        for (var i = 0; i < _types.Length; ++i)
+        {
+            var group = _types[i];
+
+            var contains = false;
+
+            for (var j = 0; !contains && j < group.Length; ++j)
+            {
+                contains = group[j].IsAssignableFrom(type);
+            }
+
+            if (contains)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
+
+    public Type[] this[int i] => _types[i];
 }
 

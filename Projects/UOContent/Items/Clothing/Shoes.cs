@@ -26,7 +26,11 @@ namespace Server.Items
     public partial class FurBoots : BaseShoes
     {
         [Constructible]
-        public FurBoots(int hue = 0) : base(0x2307, hue) => Weight = 3.0;
+        public FurBoots(int hue = 0) : base(0x2307, hue)
+        {
+        }
+
+        public override double DefaultWeight => 3.0;
     }
 
     [Flippable(0x170b, 0x170c)]
@@ -34,7 +38,11 @@ namespace Server.Items
     public partial class Boots : BaseShoes
     {
         [Constructible]
-        public Boots(int hue = 0) : base(0x170B, hue) => Weight = 3.0;
+        public Boots(int hue = 0) : base(0x170B, hue)
+        {
+        }
+
+        public override double DefaultWeight => 3.0;
 
         public override CraftResource DefaultResource => CraftResource.RegularLeather;
     }
@@ -44,7 +52,11 @@ namespace Server.Items
     public partial class ThighBoots : BaseShoes, IArcaneEquip
     {
         [Constructible]
-        public ThighBoots(int hue = 0) : base(0x1711, hue) => Weight = 4.0;
+        public ThighBoots(int hue = 0) : base(0x1711, hue)
+        {
+        }
+
+        public override double DefaultWeight => 4.0;
 
         public override CraftResource DefaultResource => CraftResource.RegularLeather;
 
@@ -146,7 +158,11 @@ namespace Server.Items
         public Shoes() : this(0) {
         }
         [Constructible]
-        public Shoes(int hue = 0) : base(0x170F, hue) => Weight = 2.0;
+        public Shoes(int hue = 0) : base(0x170F, hue)
+        {
+        }
+
+        public override double DefaultWeight => 2.0;
 
         public override CraftResource DefaultResource => CraftResource.RegularLeather;
     }
@@ -159,7 +175,11 @@ namespace Server.Items
         public Sandals() : this(0) {
         }
         [Constructible]
-        public Sandals(int hue = 0) : base(0x170D, hue) => Weight = 1.0;
+        public Sandals(int hue = 0) : base(0x170D, hue)
+        {
+        }
+
+        public override double DefaultWeight => 1.0;
 
         public override CraftResource DefaultResource => CraftResource.RegularLeather;
 
@@ -171,7 +191,11 @@ namespace Server.Items
     public partial class NinjaTabi : BaseShoes
     {
         [Constructible]
-        public NinjaTabi(int hue = 0) : base(0x2797, hue) => Weight = 2.0;
+        public NinjaTabi(int hue = 0) : base(0x2797, hue)
+        {
+        }
+
+        public override double DefaultWeight => 2.0;
     }
 
     [Flippable(0x2796, 0x27E1)]
@@ -179,7 +203,11 @@ namespace Server.Items
     public partial class SamuraiTabi : BaseShoes
     {
         [Constructible]
-        public SamuraiTabi(int hue = 0) : base(0x2796, hue) => Weight = 2.0;
+        public SamuraiTabi(int hue = 0) : base(0x2796, hue)
+        {
+        }
+
+        public override double DefaultWeight => 2.0;
     }
 
     [Flippable(0x2796, 0x27E1)]
@@ -187,7 +215,11 @@ namespace Server.Items
     public partial class Waraji : BaseShoes
     {
         [Constructible]
-        public Waraji(int hue = 0) : base(0x2796, hue) => Weight = 2.0;
+        public Waraji(int hue = 0) : base(0x2796, hue)
+        {
+        }
+
+        public override double DefaultWeight => 2.0;
     }
 
     [Flippable(0x2FC4, 0x317A)]
@@ -195,7 +227,11 @@ namespace Server.Items
     public partial class ElvenBoots : BaseShoes
     {
         [Constructible]
-        public ElvenBoots(int hue = 0) : base(0x2FC4, hue) => Weight = 2.0;
+        public ElvenBoots(int hue = 0) : base(0x2FC4, hue)
+        {
+        }
+
+        public override double DefaultWeight => 2.0;
 
         public override CraftResource DefaultResource => CraftResource.RegularLeather;
 

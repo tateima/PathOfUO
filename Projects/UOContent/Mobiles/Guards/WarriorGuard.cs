@@ -14,7 +14,6 @@ public partial class WarriorGuard : BaseGuard
         Title = "the guard";
 
         SpeechHue = Utility.RandomDyedHue();
-
         Hue = Race.Human.RandomSkinHue();
 
         if (Female = Utility.RandomBool())
@@ -70,12 +69,12 @@ public partial class WarriorGuard : BaseGuard
 
         AddItem(weapon);
 
-        Container pack = new Backpack();
-
-        pack.Movable = false;
+        var pack = new Backpack
+        {
+            Movable = false
+        };
 
         pack.DropItem(new Gold(10, 25));
-
         AddItem(pack);
 
         Skills.Anatomy.Base = Utility.RandomMinMax(75.0, 100.0);
@@ -87,5 +86,93 @@ public partial class WarriorGuard : BaseGuard
         NextCombatTime = Core.TickCount + 500;
     }
 
-    public override Mobile Focus { get; set; }
+    [SerializableProperty(0)]
+    [CommandProperty(AccessLevel.GameMaster)]
+    public override Mobile Focus
+    {
+        get => _focus;
+        set
+        {
+            if (Deleted)
+            {
+                return;
+            }
+
+            var oldFocus = _focus;
+
+            if (oldFocus != value)
+            {
+                _focus = value;
+
+                if (value != null)
+                {
+                    AggressiveAction(value);
+                }
+
+                Combatant = value;
+
+                if (oldFocus?.Alive == false)
+                {
+                    Say("Thou hast suffered thy punishment, scoundrel.");
+                }
+
+                if (value != null)
+                {
+                    Say(500131); // Thou wilt regret thine actions, swine!
+                }
+
+                AttackTimer = null;
+                IdleTimer = null;
+
+                if (_focus != null)
+                {
+                    AttackTimer = new GuardAttackTimer(this);
+                    AttackTimer.Start();
+                }
+                else
+                {
+                    IdleTimer = new GuardIdleTimer(this);
+                }
+            }
+            else if (_focus == null && IdleTimer == null && Spawner != null)
+            {
+                IdleTimer = new GuardIdleTimer(this);
+            }
+
+            this.MarkDirty();
+        }
+    }
+
+    public override bool OnBeforeDeath()
+    {
+        if (_focus?.Alive == true)
+        {
+            new GuardAvengeTimer(_focus).Start(); // If a guard dies, three more guards will spawn
+        }
+
+        return base.OnBeforeDeath();
+    }
+
+    // public override void NonLethalAttack(Mobile target)
+    // {
+    //     if (!InRange(target, 20))
+    //     {
+    //         Focus = null;
+    //     }
+    //     else if (!InRange(target, 10) || !InLOS(target))
+    //     {
+    //         TeleportTo(this, target.Location);
+    //     }
+    //     else if (!InRange(target, 1))
+    //     {
+    //         if (!Move(GetDirectionTo(target) | Direction.Running))
+    //         {
+    //             TeleportTo(this, target.Location);
+    //         }
+    //     }
+    //     else if (!CanSee(target) && UseSkill(SkillName.DetectHidden))
+    //     {
+    //         Say("Reveal!");
+    //     }
+    // }
 }

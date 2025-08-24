@@ -385,7 +385,7 @@ namespace Server.Mobiles
                 return;
             }
 
-            from.SendGump(new BarkeeperGump(from, this));
+            from.SendGump(new BarkeeperGump(this));
         }
 
         public void Dismiss()
@@ -496,7 +496,7 @@ namespace Server.Mobiles
 
         public void BeginChangeTitle(Mobile from)
         {
-            from.SendGump(new BarkeeperTitleGump(from, this));
+            from.SendGump(new BarkeeperTitleGump(this));
         }
 
         public void EndChangeTitle(Mobile from, string title, bool vendor)
@@ -508,7 +508,7 @@ namespace Server.Mobiles
 
         public void CancelChangeTitle(Mobile from)
         {
-            from.SendGump(new BarkeeperGump(from, this));
+            from.SendGump(new BarkeeperGump(this));
         }
 
         public void BeginChangeAppearance(Mobile from)
@@ -612,458 +612,477 @@ namespace Server.Mobiles
         }
     }
 
-    public class BarkeeperTitleGump : Gump
+    public class BarkeeperTitleGump : StaticGump<BarkeeperTitleGump>
     {
-        private static readonly Entry[] m_Entries =
+        private static readonly Entry[] _entries =
         {
-            new("Alchemist"),
-            new("Animal Tamer"),
-            new("Apothecary"),
-            new("Artist"),
-            new("Baker", true),
-            new("Bard"),
-            new("Barkeep", "the barkeeper", true),
-            new("Beggar"),
-            new("Blacksmith"),
-            new("Bounty Hunter"),
-            new("Brigand"),
-            new("Butler"),
-            new("Carpenter"),
-            new("Chef", true),
-            new("Commander"),
-            new("Curator"),
-            new("Drunkard"),
-            new("Farmer"),
-            new("Fisherman"),
-            new("Gambler"),
-            new("Gypsy"),
-            new("Herald"),
-            new("Herbalist"),
-            new("Hermit"),
-            new("Innkeeper", true),
-            new("Jailor"),
-            new("Jester"),
-            new("Librarian"),
-            new("Mage"),
-            new("Mercenary"),
-            new("Merchant"),
-            new("Messenger"),
-            new("Miner"),
-            new("Monk"),
-            new("Noble"),
-            new("Paladin"),
-            new("Peasant"),
-            new("Pirate"),
-            new("Prisoner"),
-            new("Prophet"),
-            new("Ranger"),
-            new("Sage"),
-            new("Sailor"),
-            new("Scholar"),
-            new("Scribe"),
-            new("Sentry"),
-            new("Servant"),
-            new("Shepherd"),
-            new("Soothsayer"),
-            new("Stoic"),
-            new("Storyteller"),
-            new("Tailor"),
-            new("Thief"),
-            new("Tinker"),
-            new("Town Crier"),
-            new("Treasure Hunter"),
-            new("Waiter", true),
-            new("Warrior"),
-            new("Watchman"),
-            new("No Title", null)
+            new(1076083, "the alchemist"),
+            new(1077244, "the animal tamer"),
+            new(1078440, "the apothecary"),
+            new(1078441, "the artist"),
+            new(1078442, "the baker", true),
+            new(1073298, "the bard"),
+            new(1076102, "the barkeep", true),
+            new(1078443, "the beggar"),
+            new(1073297, "the blacksmith"),
+            new(1078444, "the bounty hunter"),
+            new(1078446, "the brigand"),
+            new(1078447, "the butler"),
+            new(1060774, "the carpenter"),
+            new(1078448, "the chef", true),
+            new(1078449, "the commander"),
+            new(1078450, "the curator"),
+            new(1078451, "the drunkard"),
+            new(1078452, "the farmer"),
+            new(1078453, "the fisherman"),
+            new(1078454, "the gambler"),
+            new(1078455, "the gypsy"),
+            new(1075996, "the herald"),
+            new(1076107, "the herbalist"),
+            new(1078465, "the hermit"),
+            new(1078466, "the innkeeper", true),
+            new(1078467, "the jailor"),
+            new(1078468, "the jester"),
+            new(1078469, "the librarian"),
+            new(1073292, "the mage"),
+            new(1078470, "the mercenary"),
+            new(1060775, "the merchant"),
+            new(1078472, "the messenger"),
+            new(1076093, "the miner"),
+            new(1078475, "the monk"),
+            new(1078476, "the noble"),
+            new(1073290, "the paladin"),
+            new(1078479, "the peasant"),
+            new(1078480, "the pirate"),
+            new(1078481, "the prisoner"),
+            new(1078482, "the prophet"),
+            new(1078484, "the ranger"),
+            new(1078487, "the sage"),
+            new(1078488, "the sailor"),
+            new(1078489, "the scholar"),
+            new(1060773, "the scribe"),
+            new(1078490, "the sentry"),
+            new(1060795, "the servant"),
+            new(1078491, "the shepherd"),
+            new(1078492, "the soothsayer"),
+            new(1078493, "the stoic"),
+            new(1078494, "the storyteller"),
+            new(1076134, "the tailor"),
+            new(1076096, "the thief"),
+            new(1076137, "the tinker"),
+            new(1076097, "the town crier"),
+            new(1073291, "the treasure hunter"),
+            new(1076112, "the waiter", true),
+            new(1077242, "the warrior"),
+            new(1078496, "the watchman"),
+            new(1078495, null) // No Title
         };
 
-        private readonly PlayerBarkeeper m_Barkeeper;
-        private readonly Mobile m_From;
+        private static readonly int _pageCount = (_entries.Length + 19) / 20;
+
+        private readonly PlayerBarkeeper _barkeeper;
 
         public override bool Singleton => true;
 
-        public BarkeeperTitleGump(Mobile from, PlayerBarkeeper barkeeper) : base(0, 0)
+        protected override void BuildLayout(ref StaticGumpBuilder builder)
         {
-            m_From = from;
-            m_Barkeeper = barkeeper;
+            RenderBackground(ref builder);
 
-            from.CloseGump<BarkeeperGump>();
-
-            var entries = m_Entries;
-
-            RenderBackground();
-
-            var pageCount = (entries.Length + 19) / 20;
-
-            for (var i = 0; i < pageCount; ++i)
+            for (var i = 0; i < _pageCount; ++i)
             {
-                RenderPage(entries, i);
+                RenderPage(ref builder, i);
             }
         }
 
-        private void RenderBackground()
+        public BarkeeperTitleGump(PlayerBarkeeper barkeeper) : base(0, 0) => _barkeeper = barkeeper;
+
+        private static void RenderBackground(ref StaticGumpBuilder builder)
         {
-            AddPage(0);
+            builder.AddPage();
 
-            AddBackground(30, 40, 585, 410, 5054);
+            builder.AddBackground(30, 40, 585, 410, 5054);
 
-            AddImage(30, 40, 9251);
-            AddImage(180, 40, 9251);
-            AddImage(30, 40, 9253);
-            AddImage(30, 130, 9253);
-            AddImage(598, 40, 9255);
-            AddImage(598, 130, 9255);
-            AddImage(30, 433, 9257);
-            AddImage(180, 433, 9257);
-            AddImage(30, 40, 9250);
-            AddImage(598, 40, 9252);
-            AddImage(598, 433, 9258);
-            AddImage(30, 433, 9256);
+            builder.AddImage(30, 40, 9251);
+            builder.AddImage(180, 40, 9251);
+            builder.AddImage(30, 40, 9253);
+            builder.AddImage(30, 130, 9253);
+            builder.AddImage(598, 40, 9255);
+            builder.AddImage(598, 130, 9255);
+            builder.AddImage(30, 433, 9257);
+            builder.AddImage(180, 433, 9257);
+            builder.AddImage(30, 40, 9250);
+            builder.AddImage(598, 40, 9252);
+            builder.AddImage(598, 433, 9258);
+            builder.AddImage(30, 433, 9256);
 
-            AddItem(30, 40, 6816);
-            AddItem(30, 125, 6817);
-            AddItem(30, 233, 6817);
-            AddItem(30, 341, 6817);
-            AddItem(580, 40, 6814);
-            AddItem(588, 125, 6815);
-            AddItem(588, 233, 6815);
-            AddItem(588, 341, 6815);
+            builder.AddItem(30, 40, 6816);
+            builder.AddItem(30, 125, 6817);
+            builder.AddItem(30, 233, 6817);
+            builder.AddItem(30, 341, 6817);
+            builder.AddItem(580, 40, 6814);
+            builder.AddItem(588, 125, 6815);
+            builder.AddItem(588, 233, 6815);
+            builder.AddItem(588, 341, 6815);
 
-            AddImage(560, 20, 1417);
-            AddItem(580, 44, 4033);
+            builder.AddImage(560, 20, 1417);
+            builder.AddItem(580, 44, 4033);
 
-            AddBackground(183, 25, 280, 30, 5054);
+            builder.AddBackground(183, 25, 280, 30, 5054);
 
-            AddImage(180, 25, 10460);
-            AddImage(434, 25, 10460);
+            builder.AddImage(180, 25, 10460);
+            builder.AddImage(434, 25, 10460);
 
-            AddHtml(223, 32, 200, 40, "BARKEEP CUSTOMIZATION MENU");
-            AddBackground(243, 433, 150, 30, 5054);
+            builder.AddHtmlLocalized(223, 32, 200, 40, 1078366); // BARKEEP CUSTOMIZATION MENU
+            builder.AddBackground(243, 433, 150, 30, 5054);
 
-            AddImage(240, 433, 10460);
-            AddImage(375, 433, 10460);
+            builder.AddImage(240, 433, 10460);
+            builder.AddImage(375, 433, 10460);
 
-            AddImage(80, 398, 2151);
-            AddItem(72, 406, 2543);
+            builder.AddImage(80, 398, 2151);
+            builder.AddItem(72, 406, 2543);
 
-            AddHtml(110, 412, 180, 25, "sells food and drink");
+            builder.AddHtmlLocalized(110, 412, 180, 25, 1078445); // sells food and drink
         }
 
-        private void RenderPage(Entry[] entries, int page)
+        private static void RenderPage(ref StaticGumpBuilder builder, int page)
         {
-            AddPage(1 + page);
+            var currentPage = page + 1;
+            builder.AddPage(currentPage);
 
-            AddHtml(430, 70, 180, 25, $"Page {page + 1} of {(entries.Length + 19) / 20}");
-
-            for (int count = 0, i = page * 20; count < 20 && i < entries.Length; ++count, ++i)
+            if (_pageCount == 3 && currentPage is >= 1 and <= 3)
             {
-                var entry = entries[i];
+                var pageCliloc = currentPage switch
+                {
+                    1 => 1078439, // Page 1 of 3
+                    2 => 1078464, // Page 2 of 3
+                    3 => 1078483, // Page 3 of 3
+                };
 
-                AddButton(80 + count / 10 * 260, 100 + count % 10 * 30, 4005, 4007, 2 + i);
-                AddHtml(
-                    120 + count / 10 * 260,
-                    100 + count % 10 * 30,
-                    entry.m_Vendor ? 148 : 180,
+                builder.AddHtmlLocalized(430, 70, 180, 25, pageCliloc);
+            }
+            else
+            {
+                // Page ~1_CUR~ of ~2_MAX~
+                builder.AddHtmlLocalized(430, 70, 180, 25, 1153561, $"{currentPage}\t{_pageCount}", 0x7FFF);
+            }
+
+            for (int count = 0, i = page * 20; count < 20 && i < _entries.Length; ++count, ++i)
+            {
+                var entry = _entries[i];
+
+                var xOffset = Math.DivRem(count, 10, out var yOffset);
+
+                builder.AddButton(80 + xOffset * 260, 100 + yOffset * 30, 4005, 4007, 2 + i);
+                builder.AddHtmlLocalized(
+                    120 + xOffset * 260,
+                    100 + yOffset * 30,
+                    entry.Vendor ? 148 : 180,
                     25,
-                    entry.m_Description,
+                    entry.Description,
                     true
                 );
 
-                if (entry.m_Vendor)
+                if (entry.Vendor)
                 {
-                    AddImage(270 + count / 10 * 260, 98 + count % 10 * 30, 2151);
-                    AddItem(262 + count / 10 * 260, 106 + count % 10 * 30, 2543);
+                    builder.AddImage(270 + xOffset * 260, 98 + yOffset * 30, 2151);
+                    builder.AddItem(262 + xOffset * 260, 106 + yOffset * 30, 2543);
                 }
             }
 
-            AddButton(340, 400, 4005, 4007, 0, GumpButtonType.Page, 1 + (page + 1) % ((entries.Length + 19) / 20));
-            AddHtml(380, 400, 180, 25, "More Job Titles");
+            builder.AddButton(340, 400, 4005, 4007, 0, GumpButtonType.Page, currentPage + 1 % _pageCount);
+            builder.AddHtmlLocalized(380, 400, 180, 25, 1078456); // More Job Titles
 
-            AddButton(338, 437, 4014, 4016, 1);
-            AddHtml(290, 440, 35, 40, "Back");
+            builder.AddButton(338, 437, 4014, 4016, 1);
+            builder.AddHtmlLocalized(290, 440, 35, 40, 1005007); // Back
         }
 
         public override void OnResponse(NetState sender, in RelayInfo info)
         {
+            if (_barkeeper.Deleted)
+            {
+                return;
+            }
+
             var buttonID = info.ButtonID;
 
-            if (buttonID > 0)
+            if (buttonID-- <= 0)
             {
-                --buttonID;
+                return;
+            }
 
-                if (buttonID > 0)
-                {
-                    --buttonID;
+            var from = sender.Mobile;
 
-                    if (buttonID < m_Entries.Length)
-                    {
-                        m_Barkeeper.EndChangeTitle(m_From, m_Entries[buttonID].m_Title, m_Entries[buttonID].m_Vendor);
-                    }
-                }
-                else
-                {
-                    m_Barkeeper.CancelChangeTitle(m_From);
-                }
+            if (buttonID-- <= 0)
+            {
+                _barkeeper.CancelChangeTitle(from);
+                return;
+            }
+
+            if (buttonID < _entries.Length)
+            {
+                var entry = _entries[buttonID];
+                _barkeeper.EndChangeTitle(from, entry.Title, entry.Vendor);
             }
         }
 
         private class Entry
         {
-            public readonly string m_Description;
-            public readonly string m_Title;
-            public readonly bool m_Vendor;
+            public readonly int Description;
+            public readonly string Title;
+            public readonly bool Vendor;
 
-            public Entry(string desc, bool vendor = false) : this(desc, $"the {desc.ToLower()}", vendor)
+            public Entry(int desc, string title, bool vendor = false)
             {
-            }
-
-            public Entry(string desc, string title, bool vendor = false)
-            {
-                m_Description = desc;
-                m_Title = title;
-                m_Vendor = vendor;
+                Description = desc;
+                Title = title;
+                Vendor = vendor;
             }
         }
     }
 
-    public class BarkeeperGump : Gump
+    public class BarkeeperGump : DynamicGump
     {
-        private readonly PlayerBarkeeper m_Barkeeper;
-        private readonly Mobile m_From;
+        private readonly PlayerBarkeeper _barkeeper;
 
         public override bool Singleton => true;
 
-        public BarkeeperGump(Mobile from, PlayerBarkeeper barkeeper) : base(0, 0)
+        public static void DisplayTo(Mobile from, PlayerBarkeeper barkeeper)
         {
-            m_From = from;
-            m_Barkeeper = barkeeper;
-
             from.CloseGump<BarkeeperTitleGump>();
-
-            RenderBackground();
-            RenderCategories();
-            RenderMessageManagement();
-            RenderDismissConfirmation();
-            RenderMessageManagement_Message_AddOrChange();
-            RenderMessageManagement_Message_Remove();
-            RenderMessageManagement_Tip_AddOrChange();
-            RenderMessageManagement_Tip_Remove();
-            RenderAppearanceCategories();
+            from.SendGump(new BarkeeperGump(barkeeper));
         }
 
-        public void RenderBackground()
+        public BarkeeperGump(PlayerBarkeeper barkeeper) : base(0, 0)
         {
-            AddPage(0);
-
-            AddBackground(30, 40, 585, 410, 5054);
-
-            AddImage(30, 40, 9251);
-            AddImage(180, 40, 9251);
-            AddImage(30, 40, 9253);
-            AddImage(30, 130, 9253);
-            AddImage(598, 40, 9255);
-            AddImage(598, 130, 9255);
-            AddImage(30, 433, 9257);
-            AddImage(180, 433, 9257);
-            AddImage(30, 40, 9250);
-            AddImage(598, 40, 9252);
-            AddImage(598, 433, 9258);
-            AddImage(30, 433, 9256);
-
-            AddItem(30, 40, 6816);
-            AddItem(30, 125, 6817);
-            AddItem(30, 233, 6817);
-            AddItem(30, 341, 6817);
-            AddItem(580, 40, 6814);
-            AddItem(588, 125, 6815);
-            AddItem(588, 233, 6815);
-            AddItem(588, 341, 6815);
-
-            AddBackground(183, 25, 280, 30, 5054);
-
-            AddImage(180, 25, 10460);
-            AddImage(434, 25, 10460);
-            AddImage(560, 20, 1417);
-
-            AddHtml(223, 32, 200, 40, "BARKEEP CUSTOMIZATION MENU");
-            AddBackground(243, 433, 150, 30, 5054);
-
-            AddImage(240, 433, 10460);
-            AddImage(375, 433, 10460);
+            _barkeeper = barkeeper;
         }
 
-        public void RenderCategories()
+        protected override void BuildLayout(ref DynamicGumpBuilder builder)
         {
-            AddPage(1);
-
-            AddButton(130, 120, 4005, 4007, 0, GumpButtonType.Page, 2);
-            AddHtml(170, 120, 200, 40, "Message Control");
-
-            AddButton(130, 200, 4005, 4007, 0, GumpButtonType.Page, 8);
-            AddHtml(170, 200, 200, 40, "Customize your barkeep");
-
-            AddButton(130, 280, 4005, 4007, 0, GumpButtonType.Page, 3);
-            AddHtml(170, 280, 200, 40, "Dismiss your barkeep");
-
-            AddButton(338, 437, 4014, 4016, 0);
-            AddHtml(290, 440, 35, 40, "Back");
-
-            AddItem(574, 43, 5360);
+            RenderBackground(ref builder);
+            RenderCategories(ref builder);
+            RenderMessageManagement(ref builder);
+            RenderDismissConfirmation(ref builder);
+            RenderMessageManagement_Message_AddOrChange(ref builder);
+            RenderMessageManagement_Message_Remove(ref builder);
+            RenderMessageManagement_Tip_AddOrChange(ref builder);
+            RenderMessageManagement_Tip_Remove(ref builder);
+            RenderAppearanceCategories(ref builder);
         }
 
-        public void RenderMessageManagement()
+        public static void RenderBackground(ref DynamicGumpBuilder builder)
         {
-            AddPage(2);
+            builder.AddPage();
 
-            AddButton(130, 120, 4005, 4007, 0, GumpButtonType.Page, 4);
-            AddHtml(170, 120, 380, 20, "Add or change a message and keyword");
+            builder.AddBackground(30, 40, 585, 410, 5054);
 
-            AddButton(130, 200, 4005, 4007, 0, GumpButtonType.Page, 5);
-            AddHtml(170, 200, 380, 20, "Remove a message and keyword from your barkeep");
+            builder.AddImage(30, 40, 9251);
+            builder.AddImage(180, 40, 9251);
+            builder.AddImage(30, 40, 9253);
+            builder.AddImage(30, 130, 9253);
+            builder.AddImage(598, 40, 9255);
+            builder.AddImage(598, 130, 9255);
+            builder.AddImage(30, 433, 9257);
+            builder.AddImage(180, 433, 9257);
+            builder.AddImage(30, 40, 9250);
+            builder.AddImage(598, 40, 9252);
+            builder.AddImage(598, 433, 9258);
+            builder.AddImage(30, 433, 9256);
 
-            AddButton(130, 280, 4005, 4007, 0, GumpButtonType.Page, 6);
-            AddHtml(170, 280, 380, 20, "Add or change your barkeeper's tip message");
+            builder.AddItem(30, 40, 6816);
+            builder.AddItem(30, 125, 6817);
+            builder.AddItem(30, 233, 6817);
+            builder.AddItem(30, 341, 6817);
+            builder.AddItem(580, 40, 6814);
+            builder.AddItem(588, 125, 6815);
+            builder.AddItem(588, 233, 6815);
+            builder.AddItem(588, 341, 6815);
 
-            AddButton(130, 360, 4005, 4007, 0, GumpButtonType.Page, 7);
-            AddHtml(170, 360, 380, 20, "Delete your barkeepers tip message");
+            builder.AddBackground(183, 25, 280, 30, 5054);
 
-            AddButton(338, 437, 4014, 4016, 0, GumpButtonType.Page, 1);
-            AddHtml(290, 440, 35, 40, "Back");
+            builder.AddImage(180, 25, 10460);
+            builder.AddImage(434, 25, 10460);
+            builder.AddImage(560, 20, 1417);
 
-            AddItem(580, 46, 4030);
+            builder.AddHtmlLocalized(223, 32, 200, 40, 1078366); // BARKEEP CUSTOMIZATION MENU
+            builder.AddBackground(243, 433, 150, 30, 5054);
+
+            builder.AddImage(240, 433, 10460);
+            builder.AddImage(375, 433, 10460);
         }
 
-        public void RenderDismissConfirmation()
+        public static void RenderCategories(ref DynamicGumpBuilder builder)
         {
-            AddPage(3);
+            builder.AddPage(1);
 
-            AddHtml(170, 160, 380, 20, "Are you sure you want to dismiss your barkeeper?");
+            builder.AddButton(130, 120, 4005, 4007, 0, GumpButtonType.Page, 2);
+            builder.AddHtmlLocalized(170, 120, 200, 40, 1078352); // Message Control
 
-            AddButton(205, 280, 4005, 4007, GetButtonID(0, 0));
-            AddHtml(240, 280, 100, 20, @"Yes");
+            builder.AddButton(130, 200, 4005, 4007, 0, GumpButtonType.Page, 8);
+            builder.AddHtmlLocalized(170, 200, 200, 40, 1078353); // Customize your barkeep
 
-            AddButton(395, 280, 4005, 4007, 0);
-            AddHtml(430, 280, 100, 20, "No");
+            builder.AddButton(130, 280, 4005, 4007, 0, GumpButtonType.Page, 3);
+            builder.AddHtmlLocalized(170, 280, 200, 40, 1078354); // Dismiss your barkeep
 
-            AddButton(338, 437, 4014, 4016, 0, GumpButtonType.Page, 1);
-            AddHtml(290, 440, 35, 40, "Back");
+            builder.AddButton(338, 437, 4014, 4016, 0);
+            builder.AddHtmlLocalized(290, 440, 35, 40, 1005007); // Back
 
-            AddItem(574, 43, 5360);
-            AddItem(584, 34, 6579);
+            builder.AddItem(574, 43, 5360);
         }
 
-        public void RenderMessageManagement_Message_AddOrChange()
+        public static void RenderMessageManagement(ref DynamicGumpBuilder builder)
         {
-            AddPage(4);
+            builder.AddPage(2);
 
-            AddHtml(250, 60, 500, 25, "Add or change a message");
+            builder.AddButton(130, 120, 4005, 4007, 0, GumpButtonType.Page, 4);
+            builder.AddHtmlLocalized(170, 120, 380, 20, 1078355); // Add or change a message and keyword
 
-            var rumors = m_Barkeeper.Rumors;
+            builder.AddButton(130, 200, 4005, 4007, 0, GumpButtonType.Page, 5);
+            builder.AddHtmlLocalized(170, 200, 380, 20, 1078356); // Remove a message and keyword from your barkeep
+
+            builder.AddButton(130, 280, 4005, 4007, 0, GumpButtonType.Page, 6);
+            builder.AddHtmlLocalized(170, 280, 380, 20, 1078357); // Add or change your barkeeper's tip message
+
+            builder.AddButton(130, 360, 4005, 4007, 0, GumpButtonType.Page, 7);
+            builder.AddHtmlLocalized(170, 360, 380, 20, 1078358); // Delete your barkeepers tip message
+
+            builder.AddButton(338, 437, 4014, 4016, 0, GumpButtonType.Page, 1);
+            builder.AddHtmlLocalized(290, 440, 35, 40, 1005007); // Back
+
+            builder.AddItem(580, 46, 4030);
+        }
+
+        public static void RenderDismissConfirmation(ref DynamicGumpBuilder builder)
+        {
+            builder.AddPage(3);
+
+            builder.AddHtmlLocalized(170, 160, 380, 20, 1078359); // Are you sure you want to dismiss your barkeeper?
+
+            builder.AddButton(205, 280, 4005, 4007, GetButtonID(0, 0));
+            builder.AddHtmlLocalized(240, 280, 100, 20, 1046362); // Yes
+
+            builder.AddButton(395, 280, 4005, 4007, 0);
+            builder.AddHtmlLocalized(430, 280, 100, 20, 1046363); // No
+
+            builder.AddButton(338, 437, 4014, 4016, 0, GumpButtonType.Page, 1);
+            builder.AddHtmlLocalized(290, 440, 35, 40, 1005007); // Back
+
+            builder.AddItem(574, 43, 5360);
+            builder.AddItem(584, 34, 6579);
+        }
+
+        public void RenderMessageManagement_Message_AddOrChange(ref DynamicGumpBuilder builder)
+        {
+            builder.AddPage(4);
+
+            builder.AddHtmlLocalized(250, 60, 500, 25, 1078360); // Add or change a message
+
+            var rumors = _barkeeper.Rumors;
 
             for (var i = 0; i < rumors.Length; ++i)
             {
                 var rumor = rumors[i];
 
-                AddHtml(100, 70 + i * 120, 50, 20, "Message");
-                AddHtml(100, 90 + i * 120, 450, 40, rumor == null ? "No current message" : rumor.Message, true);
-                AddHtml(100, 130 + i * 120, 50, 20, "Keyword");
-                AddHtml(100, 150 + i * 120, 450, 40, rumor == null ? "None" : rumor.Keyword, true);
+                builder.AddHtml(100, 70 + i * 120, 50, 20, "Message");
+                builder.AddHtml(100, 90 + i * 120, 450, 40, rumor == null ? "No current message" : rumor.Message, true);
+                builder.AddHtmlLocalized(100, 130 + i * 120, 50, 20, 1078361); // Keyword
+                builder.AddHtml(100, 150 + i * 120, 450, 40, rumor == null ? "None" : rumor.Keyword, true);
 
-                AddButton(60, 90 + i * 120, 4005, 4007, GetButtonID(1, i));
+                builder.AddButton(60, 90 + i * 120, 4005, 4007, GetButtonID(1, i));
             }
 
-            AddButton(338, 437, 4014, 4016, 0, GumpButtonType.Page, 2);
-            AddHtml(290, 440, 35, 40, "Back");
+            builder.AddButton(338, 437, 4014, 4016, 0, GumpButtonType.Page, 2);
+            builder.AddHtmlLocalized(290, 440, 35, 40, 1005007); // Back
 
-            AddItem(580, 46, 4030);
+            builder.AddItem(580, 46, 4030);
         }
 
-        public void RenderMessageManagement_Message_Remove()
+        public void RenderMessageManagement_Message_Remove(ref DynamicGumpBuilder builder)
         {
-            AddPage(5);
+            builder.AddPage(5);
 
-            AddHtml(190, 60, 500, 25, "Choose the message you would like to remove");
+            builder.AddHtmlLocalized(190, 60, 500, 25, 1078362); // Choose the message you would like to remove
 
-            var rumors = m_Barkeeper.Rumors;
+            var rumors = _barkeeper.Rumors;
 
             for (var i = 0; i < rumors.Length; ++i)
             {
                 var rumor = rumors[i];
 
-                AddHtml(100, 70 + i * 120, 50, 20, "Message");
-                AddHtml(100, 90 + i * 120, 450, 40, rumor == null ? "No current message" : rumor.Message, true);
-                AddHtml(100, 130 + i * 120, 50, 20, "Keyword");
-                AddHtml(100, 150 + i * 120, 450, 40, rumor == null ? "None" : rumor.Keyword, true);
+                builder.AddHtml(100, 70 + i * 120, 50, 20, "Message");
+                builder.AddHtml(100, 90 + i * 120, 450, 40, rumor == null ? "No current message" : rumor.Message, true);
+                builder.AddHtmlLocalized(100, 130 + i * 120, 50, 20, 1078361); // Keyword
+                builder.AddHtml(100, 150 + i * 120, 450, 40, rumor == null ? "None" : rumor.Keyword, true);
 
-                AddButton(60, 90 + i * 120, 4005, 4007, GetButtonID(2, i));
+                builder.AddButton(60, 90 + i * 120, 4005, 4007, GetButtonID(2, i));
             }
 
-            AddButton(338, 437, 4014, 4016, 0, GumpButtonType.Page, 2);
-            AddHtml(290, 440, 35, 40, "Back");
+            builder.AddButton(338, 437, 4014, 4016, 0, GumpButtonType.Page, 2);
+            builder.AddHtmlLocalized(290, 440, 35, 40, 1005007); // Back
 
-            AddItem(580, 46, 4030);
+            builder.AddItem(580, 46, 4030);
         }
 
-        private int GetButtonID(int type, int index) => 1 + index * 6 + type;
+        private static int GetButtonID(int type, int index) => 1 + index * 6 + type;
 
-        private void RenderMessageManagement_Tip_AddOrChange()
+        private void RenderMessageManagement_Tip_AddOrChange(ref DynamicGumpBuilder builder)
         {
-            AddPage(6);
+            builder.AddPage(6);
 
-            AddHtml(250, 95, 500, 20, "Change this tip message");
-            AddHtml(100, 190, 50, 20, "Message");
-            AddHtml(100, 210, 450, 40, m_Barkeeper.TipMessage ?? "No current message", true);
+            builder.AddHtmlLocalized(250, 95, 500, 20, 1078363); // Change this tip message
+            builder.AddHtml(100, 190, 50, 20, "Message");
+            builder.AddHtml(100, 210, 450, 40, _barkeeper.TipMessage ?? "No current message", true);
 
-            AddButton(60, 210, 4005, 4007, GetButtonID(3, 0));
+            builder.AddButton(60, 210, 4005, 4007, GetButtonID(3, 0));
 
-            AddButton(338, 437, 4014, 4016, 0, GumpButtonType.Page, 2);
-            AddHtml(290, 440, 35, 40, "Back");
+            builder.AddButton(338, 437, 4014, 4016, 0, GumpButtonType.Page, 2);
+            builder.AddHtmlLocalized(290, 440, 35, 40, 1005007); // Back
 
-            AddItem(580, 46, 4030);
+            builder.AddItem(580, 46, 4030);
         }
 
-        private void RenderMessageManagement_Tip_Remove()
+        private void RenderMessageManagement_Tip_Remove(ref DynamicGumpBuilder builder)
         {
-            AddPage(7);
+            builder.AddPage(7);
 
-            AddHtml(250, 95, 500, 20, "Remove this tip message");
-            AddHtml(100, 190, 50, 20, "Message");
-            AddHtml(100, 210, 450, 40, m_Barkeeper.TipMessage ?? "No current message", true);
+            builder.AddHtmlLocalized(250, 95, 500, 20, 1078364); // Remove this tip message
+            builder.AddHtml(100, 190, 50, 20, "Message");
+            builder.AddHtml(100, 210, 450, 40, _barkeeper.TipMessage ?? "No current message", true);
 
-            AddButton(60, 210, 4005, 4007, GetButtonID(4, 0));
+            builder.AddButton(60, 210, 4005, 4007, GetButtonID(4, 0));
 
-            AddButton(338, 437, 4014, 4016, 0, GumpButtonType.Page, 2);
-            AddHtml(290, 440, 35, 40, "Back");
+            builder.AddButton(338, 437, 4014, 4016, 0, GumpButtonType.Page, 2);
+            builder.AddHtmlLocalized(290, 440, 35, 40, 1005007); // Back
 
-            AddItem(580, 46, 4030);
+            builder.AddItem(580, 46, 4030);
         }
 
-        private void RenderAppearanceCategories()
+        private void RenderAppearanceCategories(ref DynamicGumpBuilder builder)
         {
-            AddPage(8);
+            builder.AddPage(8);
 
-            AddButton(130, 120, 4005, 4007, GetButtonID(5, 0));
-            AddHtml(170, 120, 120, 20, "Title");
+            builder.AddButton(130, 120, 4005, 4007, GetButtonID(5, 0));
+            builder.AddHtml(170, 120, 120, 20, "Title");
 
-            if (m_Barkeeper.Body != 0x340 && m_Barkeeper.Body != 0x402)
+            if ((int)_barkeeper.Body is not 0x340 and not 0x402)
             {
-                AddButton(130, 200, 4005, 4007, GetButtonID(5, 1));
-                AddHtml(170, 200, 120, 20, "Appearance");
+                builder.AddButton(130, 200, 4005, 4007, GetButtonID(5, 1));
+                builder.AddHtmlLocalized(170, 200, 120, 20, 1077829); // Appearance
 
-                AddButton(130, 280, 4005, 4007, GetButtonID(5, 2));
-                AddHtml(170, 280, 120, 20, "Male / Female");
+                builder.AddButton(130, 280, 4005, 4007, GetButtonID(5, 2));
+                builder.AddHtmlLocalized(170, 280, 120, 20, 1078365); // Male / Female
 
-                AddButton(338, 437, 4014, 4016, 0, GumpButtonType.Page, 1);
-                AddHtml(290, 440, 35, 40, "Back");
+                builder.AddButton(338, 437, 4014, 4016, 0, GumpButtonType.Page, 1);
+                builder.AddHtmlLocalized(290, 440, 35, 40, 1005007); // Back
             }
 
-            AddItem(580, 44, 4033);
+            builder.AddItem(580, 44, 4033);
         }
 
         public override void OnResponse(NetState state, in RelayInfo info)
         {
-            if (!m_Barkeeper.IsOwner(m_From))
+            var from = state.Mobile;
+            if (!_barkeeper.IsOwner(from))
             {
                 return;
             }
@@ -1075,8 +1094,7 @@ namespace Server.Mobiles
                 return;
             }
 
-            var type = index % 6;
-            index /= 6;
+            index = Math.DivRem(index, 6, out var type);
 
             switch (type)
             {
@@ -1086,7 +1104,7 @@ namespace Server.Mobiles
                         {
                             case 0: // Dismiss
                                 {
-                                    m_Barkeeper.Dismiss();
+                                    _barkeeper.Dismiss();
                                     break;
                                 }
                         }
@@ -1095,22 +1113,22 @@ namespace Server.Mobiles
                     }
                 case 1: // Change message
                     {
-                        m_Barkeeper.BeginChangeRumor(m_From, index);
+                        _barkeeper.BeginChangeRumor(from, index);
                         break;
                     }
                 case 2: // Remove message
                     {
-                        m_Barkeeper.RemoveRumor(m_From, index);
+                        _barkeeper.RemoveRumor(from, index);
                         break;
                     }
                 case 3: // Change tip
                     {
-                        m_Barkeeper.BeginChangeTip(m_From);
+                        _barkeeper.BeginChangeTip(from);
                         break;
                     }
                 case 4: // Remove tip
                     {
-                        m_Barkeeper.RemoveTip(m_From);
+                        _barkeeper.RemoveTip(from);
                         break;
                     }
                 case 5: // Appearance category selection
@@ -1118,14 +1136,20 @@ namespace Server.Mobiles
                         switch (index)
                         {
                             case 0:
-                                m_Barkeeper.BeginChangeTitle(m_From);
-                                break;
+                                {
+                                    _barkeeper.BeginChangeTitle(from);
+                                    break;
+                                }
                             case 1:
-                                m_Barkeeper.BeginChangeAppearance(m_From);
-                                break;
+                                {
+                                    _barkeeper.BeginChangeAppearance(from);
+                                    break;
+                                }
                             case 2:
-                                m_Barkeeper.ChangeGender(m_From);
-                                break;
+                                {
+                                    _barkeeper.ChangeGender(from);
+                                    break;
+                                }
                         }
 
                         break;

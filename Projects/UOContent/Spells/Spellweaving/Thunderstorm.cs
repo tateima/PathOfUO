@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Server.Collections;
+using Server.Engines.BuffIcons;
+using Server.Mobiles;
 
 namespace Server.Spells.Spellweaving
 {
@@ -79,9 +81,8 @@ namespace Server.Spells.Spellweaving
                     Timer.StartTimer(duration, () => DoExpire(m), out var timerToken);
                     _table[m] = timerToken;
 
-                    BuffInfo.AddBuff(
-                        m,
-                        new BuffInfo(BuffIcon.Thunderstorm, 1075800, duration, m, GetCastRecoveryMalus(m))
+                    (m as PlayerMobile)?.AddBuff(
+                        new BuffInfo(BuffIcon.Thunderstorm, 1075800, duration, GetCastRecoveryMalus(m))
                     );
                 }
             }
@@ -102,7 +103,7 @@ namespace Server.Spells.Spellweaving
         public static void DoExpire(Mobile m)
         {
             StopTimer(m);
-            BuffInfo.RemoveBuff(m, BuffIcon.Thunderstorm);
+            (m as PlayerMobile)?.RemoveBuff(BuffIcon.Thunderstorm);
         }
     }
 }

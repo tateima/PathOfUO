@@ -1492,7 +1492,6 @@ namespace Server.Engines.Craft
                     m_From.SendGump(
                         new QueryMakersMarkGump(
                             quality,
-                            m_From,
                             m_CraftItem,
                             m_CraftSystem,
                             m_TypeRes,

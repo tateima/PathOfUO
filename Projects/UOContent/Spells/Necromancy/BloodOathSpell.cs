@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Server.Engines.BuffIcons;
 using Server.Mobiles;
 using Server.Targeting;
 
@@ -80,14 +81,14 @@ public class BloodOathSpell : NecromancerSpell, ITargetingSpell<Mobile>
             m.FixedParticles(0x375A, 1, 17, 9919, 33, 7, EffectLayer.Waist);
             m.FixedParticles(0x3728, 1, 13, 9502, 33, 7, (EffectLayer)255);
 
-            var duration = TimeSpan.FromSeconds((GetDamageSkill(Caster) - GetResistSkill(m)) / 8 + 8);
+            var duration = TimeSpan.FromSeconds((GetDamageSkill(Caster) - GetResistSkill(m)) / 80 + 8);
             m.CheckSkill(SkillName.MagicResist, 0.0, 120.0); // Skill check for gain
             duration *= ReagentsScale();
             var timer = new ExpireTimer(Caster, m, duration);
             timer.Start();
 
-            BuffInfo.AddBuff(Caster, new BuffInfo(BuffIcon.BloodOathCaster, 1075659, duration, Caster, m.Name));
-            BuffInfo.AddBuff(m, new BuffInfo(BuffIcon.BloodOathCurse, 1075661, duration, m, Caster.Name));
+            (Caster as PlayerMobile)?.AddBuff(new BuffInfo(BuffIcon.BloodOathCaster, 1075659, duration, m.Name));
+            (m as PlayerMobile)?.AddBuff(new BuffInfo(BuffIcon.BloodOathCurse, 1075661, duration, Caster.Name));
 
             _table[m] = timer;
             HarmfulSpell(m);
@@ -101,28 +102,28 @@ public class BloodOathSpell : NecromancerSpell, ITargetingSpell<Mobile>
 
     public static bool RemoveCurse(Mobile target)
     {
-        if (_table.Remove(target, out var timer))
+        if (!_table.Remove(target, out var timer))
         {
-            var caster = timer.Caster;
-            if (_oathTable.Remove(caster))
-            {
-                caster.SendLocalizedMessage(1061620); // Your Blood Oath has been broken.
-            }
-
-            if (_oathTable.Remove(target))
-            {
-                target.SendLocalizedMessage(1061620); // Your Blood Oath has been broken.
-            }
-
-            timer.Stop();
-
-            BuffInfo.RemoveBuff(caster, BuffIcon.BloodOathCaster);
-            BuffInfo.RemoveBuff(target, BuffIcon.BloodOathCurse);
-
-            return true;
+            return false;
         }
 
-        return false;
+        var caster = timer.Caster;
+        if (_oathTable.Remove(caster))
+        {
+            caster.SendLocalizedMessage(1061620); // Your Blood Oath has been broken.
+        }
+
+        if (_oathTable.Remove(target))
+        {
+            target.SendLocalizedMessage(1061620); // Your Blood Oath has been broken.
+        }
+
+        timer.Stop();
+
+        (caster as PlayerMobile)?.RemoveBuff(BuffIcon.BloodOathCaster);
+        (target as PlayerMobile)?.RemoveBuff(BuffIcon.BloodOathCurse);
+
+        return true;
     }
 
     public static Mobile GetBloodOath(Mobile m) =>
@@ -130,8 +131,8 @@ public class BloodOathSpell : NecromancerSpell, ITargetingSpell<Mobile>
 
     private class ExpireTimer : Timer
     {
-        private Mobile _target;
-        private DateTime _end;
+        private readonly Mobile _target;
+        private readonly DateTime _end;
 
         public Mobile Caster { get; }
 
@@ -147,8 +148,7 @@ public class BloodOathSpell : NecromancerSpell, ITargetingSpell<Mobile>
 
         protected override void OnTick()
         {
-            if (Caster.Deleted || _target.Deleted || !Caster.Alive || !_target.Alive ||
-                Core.Now >= _end)
+            if (Caster.Deleted || _target.Deleted || !Caster.Alive || !_target.Alive || Core.Now >= _end)
             {
                 RemoveCurse(_target);
             }

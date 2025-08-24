@@ -229,7 +229,7 @@ namespace Server.Mobiles
 
             var total = Skills.Magery.Value + Skills.Poisoning.Value;
 
-            var dist = GetDistanceToSqrt(m);
+            var dist = this.GetDistanceToSqrt(m);
 
             if (dist >= 3.0)
             {

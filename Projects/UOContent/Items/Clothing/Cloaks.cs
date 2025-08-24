@@ -20,7 +20,11 @@ namespace Server.Items
         }
 
         [Constructible]
-        public Cloak(int hue = 0) : base(0x1515, hue) => Weight = 5.0;
+        public Cloak(int hue = 0) : base(0x1515, hue)
+        {
+        }
+
+        public override double DefaultWeight => 5.0;
 
         [EncodedInt]
         [SerializableProperty(0)]
@@ -128,11 +132,11 @@ namespace Server.Items
         [Constructible]
         public RewardCloak(int hue = 0, int labelNumber = 0) : base(0x1515, hue)
         {
-            Weight = 5.0;
             LootType = LootType.Blessed;
-
             _number = labelNumber;
         }
+
+        public override double DefaultWeight => 5.0;
 
         public override int LabelNumber => _number > 0 ? _number : base.LabelNumber;
 
@@ -194,6 +198,10 @@ namespace Server.Items
     public partial class FurCape : BaseCloak
     {
         [Constructible]
-        public FurCape(int hue = 0) : base(0x230A, hue) => Weight = 4.0;
+        public FurCape(int hue = 0) : base(0x230A, hue)
+        {
+        }
+
+        public override double DefaultWeight => 4.0;
     }
 }

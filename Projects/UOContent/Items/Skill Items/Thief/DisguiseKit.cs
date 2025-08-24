@@ -14,8 +14,14 @@ namespace Server.Items;
 [SerializationGenerator(0, false)]
 public partial class DisguiseKit : Item
 {
+    public override int LabelNumber => 1041078; // a disguise kit
+
     [Constructible]
-    public DisguiseKit() : base(0xE05) => Weight = 1.0;
+    public DisguiseKit() : base(0xE05)
+    {
+    }
+
+    public override double DefaultWeight => 1.0;
 
     public bool ValidateUse(Mobile from)
     {

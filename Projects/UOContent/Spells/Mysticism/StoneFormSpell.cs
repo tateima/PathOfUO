@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ModernUO.CodeGeneratedEvents;
+using Server.Engines.BuffIcons;
 using Server.Factions;
 using Server.Mobiles;
 using Server.Spells.Fifth;
@@ -128,14 +129,12 @@ namespace Server.Spells.Mysticism
                     var damageBonus = (int)((GetBaseSkill(Caster) + GetDamageSkill(Caster)) / 12.0);
                     var resistCap = (int)((GetBaseSkill(Caster) + GetDamageSkill(Caster)) / 48.0);
 
-                    BuffInfo.AddBuff(
-                        Caster,
+                    (Caster as PlayerMobile)?.AddBuff(
                         new BuffInfo(
                             BuffIcon.StoneForm,
                             1080145,
                             1080146,
-                            $"-10\t-2\t{offset}\t{resistCap}\t{damageBonus}",
-                            false
+                            args: $"-10\t-2\t{offset}\t{resistCap}\t{damageBonus}"
                         )
                     );
                 }
@@ -144,6 +143,7 @@ namespace Server.Spells.Mysticism
             FinishSequence();
         }
 
+        [OnEvent(nameof(PlayerMobile.PlayerDeletedEvent))]
         [OnEvent(nameof(PlayerMobile.PlayerDeathEvent))]
         public static void RemoveEffects(Mobile m)
         {
@@ -160,7 +160,7 @@ namespace Server.Spells.Mysticism
             m.BodyMod = 0;
             m.HueMod = -1;
 
-            BuffInfo.RemoveBuff(m, BuffIcon.StoneForm);
+            (m as PlayerMobile)?.RemoveBuff(BuffIcon.StoneForm);
         }
     }
 }

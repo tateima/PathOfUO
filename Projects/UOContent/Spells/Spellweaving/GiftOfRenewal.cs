@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Server.Talent;
+using Server.Engines.BuffIcons;
 using Server.Mobiles;
+using Server.Talent;
 using Server.Targeting;
 
 namespace Server.Spells.Spellweaving
@@ -87,9 +88,14 @@ namespace Server.Spells.Spellweaving
 
                     Caster.BeginAction<GiftOfRenewalSpell>();
 
-                    BuffInfo.AddBuff(
-                        m,
-                        new BuffInfo(BuffIcon.GiftOfRenewal, 1031602, 1075797, TimeSpan.FromSeconds(duration), m, hitsPerRound.ToString())
+                    (m as PlayerMobile)?.AddBuff(
+                        new BuffInfo(
+                            BuffIcon.GiftOfRenewal,
+                            1031602,
+                            1075797,
+                            TimeSpan.FromSeconds(duration),
+                            hitsPerRound.ToString()
+                        )
                     );
                 }
             }
@@ -102,7 +108,7 @@ namespace Server.Spells.Spellweaving
 
         public static bool StopEffect(Mobile m)
         {
-            BuffInfo.RemoveBuff(m, BuffIcon.GiftOfRenewal);
+            (m as PlayerMobile)?.RemoveBuff(BuffIcon.GiftOfRenewal);
 
             if (_table.Remove(m, out var timer))
             {

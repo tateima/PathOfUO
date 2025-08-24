@@ -19,6 +19,8 @@ public partial class OrderShield : BaseShield
         AlignmentRaw = Deity.Alignment.Order.ToString();
     }
 
+    public override double DefaultWeight => 7.0;
+
     public override int BasePhysicalResistance => 1;
     public override int BaseFireResistance => 0;
     public override int BaseColdResistance => 0;

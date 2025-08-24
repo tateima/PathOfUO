@@ -529,6 +529,8 @@ namespace Server.SkillHandlers
 
                             m_Creature.SetControlMaster(m_Tamer);
                             m_Creature.IsBonded = false;
+                            m_Creature.ControlTarget = m_Tamer;
+                            m_Creature.ControlOrder = OrderType.Follow;
                             ((PlayerMobile)m_Tamer)?.Leadership();
                         }
                         else

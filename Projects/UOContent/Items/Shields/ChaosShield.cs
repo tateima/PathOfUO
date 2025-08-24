@@ -19,6 +19,8 @@ public partial class ChaosShield : BaseShield
         AlignmentRaw = Deity.Alignment.Chaos.ToString();
     }
 
+    public override double DefaultWeight => 4.0;
+
     public override int BasePhysicalResistance => 1;
     public override int BaseFireResistance => 0;
     public override int BaseColdResistance => 0;

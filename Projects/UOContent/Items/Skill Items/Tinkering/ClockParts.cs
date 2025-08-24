@@ -14,7 +14,6 @@ public partial class ClockParts : Item
     {
         Stackable = true;
         Amount = amount;
-        Weight = 1.0;
     }
     public override void OnDoubleClick(Mobile from)
     {
@@ -60,4 +59,6 @@ public partial class ClockParts : Item
             }
         }
     }
+
+    public override double DefaultWeight => 1.0;
 }

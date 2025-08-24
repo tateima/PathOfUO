@@ -16,109 +16,85 @@ public class VendorAI : BaseAI
     {
     }
 
-        public override bool DoActionWander()
+    public override bool DoActionWander()
+    {
+        DebugSay("I'm fine");
+
+        if (Mobile.Combatant != null)
         {
-            if (m_Mobile.Debug)
-            {
-                m_Mobile.DebugSay("I'm fine");
-            }
+            this.DebugSayFormatted($"{Mobile.Combatant.Name} is attacking me");
 
-            if (m_Mobile.Combatant != null)
-            {
-                if (m_Mobile.Debug)
-                {
-                    m_Mobile.DebugSay($"{m_Mobile.Combatant.Name} is attacking me");
-                }
-
-            m_Mobile.Say(GetRandomGuardMessage());
+            Mobile.Say(GetRandomGuardMessage());
             Action = ActionType.Flee;
+        }
+        else if (Mobile.FocusMob != null)
+        {
+            this.DebugSayFormatted($"{Mobile.FocusMob.Name} has talked to me");
+
+            Action = ActionType.Interact;
         }
         else
         {
-            if (m_Mobile.FocusMob != null)
-            {
-                if (m_Mobile.Debug)
-                {
-                    m_Mobile.DebugSay($"{m_Mobile.FocusMob.Name} has talked to me");
-                }
+            Mobile.Warmode = false;
 
-                    Action = ActionType.Interact;
-                }
-                else
-                {
-                    m_Mobile.Warmode = false;
-
-                    base.DoActionWander();
-                }
-            }
+            base.DoActionWander();
+        }
 
             return true;
         }
 
-        public override bool DoActionInteract()
+    public override bool DoActionInteract()
+    {
+        var customer = Mobile.FocusMob;
+
+        if (Mobile.Combatant != null)
         {
-            var customer = m_Mobile.FocusMob;
+            this.DebugSayFormatted($"{Mobile.Combatant.Name} is attacking me");
 
-            if (m_Mobile.Combatant != null)
-            {
-                if (m_Mobile.Debug)
-                {
-                    m_Mobile.DebugSay($"{m_Mobile.Combatant.Name} is attacking me");
-                }
-
-            m_Mobile.Say(GetRandomGuardMessage());
+            Mobile.Say(GetRandomGuardMessage());
 
                 Action = ActionType.Flee;
 
                 return true;
             }
 
-            if (customer?.Deleted != false || customer.Map != m_Mobile.Map)
-            {
-                if (m_Mobile.Debug)
-                {
-                    m_Mobile.DebugSay("My customer have disapeared");
-                }
+        if (customer?.Deleted != false || customer.Map != Mobile.Map)
+        {
+            DebugSay("My customer has disappeared");
 
-                m_Mobile.FocusMob = null;
+            Mobile.FocusMob = null;
 
-                Action = ActionType.Wander;
-            }
-            else if (customer.InRange(m_Mobile, m_Mobile.RangeFight))
-            {
-                if (m_Mobile.Debug)
-                {
-                    m_Mobile.DebugSay($"I am with {customer.Name}");
-                }
+            Action = ActionType.Wander;
+        }
+        else if (customer.InRange(Mobile, Mobile.RangeFight))
+        {
+            this.DebugSayFormatted($"I am with {customer.Name}");
 
-                m_Mobile.Direction = m_Mobile.GetDirectionTo(customer);
-            }
-            else
-            {
-                if (m_Mobile.Debug)
-                {
-                    m_Mobile.DebugSay($"{customer.Name} is gone");
-                }
+            Mobile.Direction = Mobile.GetDirectionTo(customer);
+        }
+        else
+        {
+            this.DebugSayFormatted($"{customer.Name} is gone");
 
-                m_Mobile.FocusMob = null;
-                Action = ActionType.Wander;
-            }
+            Mobile.FocusMob = null;
+            Action = ActionType.Wander;
+        }
 
             return true;
         }
 
-        public override bool DoActionGuard()
-        {
-            m_Mobile.FocusMob = m_Mobile.Combatant;
-            return base.DoActionGuard();
-        }
+    public override bool DoActionGuard()
+    {
+        Mobile.FocusMob = Mobile.Combatant;
+        return base.DoActionGuard();
+    }
 
-        public override bool HandlesOnSpeech(Mobile from)
+    public override bool HandlesOnSpeech(Mobile from)
+    {
+        if (from.InRange(Mobile, 4))
         {
-            if (from.InRange(m_Mobile, 4))
-            {
-                return true;
-            }
+            return true;
+        }
 
             return base.HandlesOnSpeech(from);
         }
@@ -130,11 +106,11 @@ public class VendorAI : BaseAI
 
             var from = e.Mobile;
 
-            if (m_Mobile is BaseVendor vendor && from.InRange(m_Mobile, Core.AOS ? 1 : 4) && !e.Handled)
+        if (Mobile is BaseVendor vendor && from.InRange(Mobile, Core.AOS ? 1 : 4) && !e.Handled)
+        {
+            if (e.HasKeyword(0x14D)) // *vendor sell*
             {
-                if (e.HasKeyword(0x14D)) // *vendor sell*
-                {
-                    e.Handled = true;
+                e.Handled = true;
 
                     vendor.VendorSell(from);
                     vendor.FocusMob = from;
@@ -164,7 +140,7 @@ public class VendorAI : BaseAI
                                 taxCollector.ProcessGoldGain((PlayerMobile)from, taxAmount, loss);
                                 var now = DateTime.Now;
                                 vendor.NextCollectionTime = now.AddHours(3); // every 3 hours
-                                m_Mobile.SayTo(
+                                vendor.SayTo(
                                     from,
                                     loss
                                         ? $"I am sorry but I will need {taxAmount} gold pieces to fund my business"
@@ -174,7 +150,7 @@ public class VendorAI : BaseAI
                             }
                             else
                             {
-                                m_Mobile.SayTo(from, "Thou cannot afford to collect taxes right now.");
+                                vendor.SayTo(from, "Thou cannot afford to collect taxes right now.");
                             }
 
                             from.SendGump(new TaxCollectorGump(from));
@@ -182,11 +158,11 @@ public class VendorAI : BaseAI
                     }
                     else if (vendor.TaxCollectorSerial != from.Serial.ToInt32() && vendor.TaxCollectorSerial > 0)
                     {
-                        m_Mobile.SayTo(from, "I am funded by another adventurer.");
+                        vendor.SayTo(from, "I am funded by another adventurer.");
                     }
                     else if (e.Speech.ToLower().Contains("collect tax"))
                     {
-                        m_Mobile.SayTo(from, "Thou cannot collect taxes from me.");
+                        vendor.SayTo(from, "Thou cannot collect taxes from me.");
                     }
 
                     if (e.HasKeyword(0x177)) // *sell*

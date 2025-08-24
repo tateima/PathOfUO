@@ -30,6 +30,8 @@ public static class UOClient
 
     public static CUOSettings CuoSettings { get; private set; }
     public static ClientVersion ServerClientVersion { get; private set; }
+    public static ClientVersion MinRequired { get; set; }
+    public static ClientVersion MaxRequired { get; set; }
 
     public static void Load()
     {
@@ -95,7 +97,7 @@ public static class UOClient
         {
             using FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
             var buffer = GC.AllocateUninitializedArray<byte>((int)fs.Length, true);
-            fs.Read(buffer);
+            _ = fs.Read(buffer);
             // VS_VERSION_INFO (unicode)
             Span<byte> vsVersionInfo = stackalloc byte[]
             {

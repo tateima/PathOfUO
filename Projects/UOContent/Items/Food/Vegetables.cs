@@ -8,11 +8,9 @@ namespace Server.Items;
 public partial class Carrot : Food
 {
     [Constructible]
-    public Carrot(int amount = 1) : base(0xc78, amount)
-    {
-        Weight = 1.0;
-        FillFactor = 1;
-    }
+    public Carrot(int amount = 1) : base(0xc78, amount) => FillFactor = 1;
+
+    public override double DefaultWeight => 1.0;
 }
 [Flippable(0xc77, 0xc78)]
 [SerializationGenerator(0, false)]
@@ -83,11 +81,9 @@ public partial class FrozenCabbage : Food
 public partial class Cabbage : Food
 {
     [Constructible]
-    public Cabbage(int amount = 1) : base(0xc7b, amount)
-    {
-        Weight = 1.0;
-        FillFactor = 1;
-    }
+    public Cabbage(int amount = 1) : base(0xc7b, amount) => FillFactor = 1;
+
+    public override double DefaultWeight => 1.0;
 }
 
 [Flippable(0xc6d, 0xc6e)]
@@ -95,11 +91,9 @@ public partial class Cabbage : Food
 public partial class Onion : Food
 {
     [Constructible]
-    public Onion(int amount = 1) : base(0xc6d, amount)
-    {
-        Weight = 1.0;
-        FillFactor = 1;
-    }
+    public Onion(int amount = 1) : base(0xc6d, amount) => FillFactor = 1;
+
+    public override double DefaultWeight => 1.0;
 }
 
 [Flippable(0xc70, 0xc71)]
@@ -107,11 +101,9 @@ public partial class Onion : Food
 public partial class Lettuce : Food
 {
     [Constructible]
-    public Lettuce(int amount = 1) : base(0xc70, amount)
-    {
-        Weight = 1.0;
-        FillFactor = 1;
-    }
+    public Lettuce(int amount = 1) : base(0xc70, amount) => FillFactor = 1;
+
+    public override double DefaultWeight => 1.0;
 }
 
 [Flippable(0xC6A, 0xC6B)]
@@ -119,20 +111,16 @@ public partial class Lettuce : Food
 public partial class Pumpkin : Food
 {
     [Constructible]
-    public Pumpkin(int amount = 1) : base(0xC6A, amount)
-    {
-        Weight = 1.0;
-        FillFactor = 8;
-    }
+    public Pumpkin(int amount = 1) : base(0xC6A, amount) => FillFactor = 8;
+
+    public override double DefaultWeight => 1.0;
 }
 
 [SerializationGenerator(0, false)]
 public partial class SmallPumpkin : Food
 {
     [Constructible]
-    public SmallPumpkin(int amount = 1) : base(0xC6C, amount)
-    {
-        Weight = 1.0;
-        FillFactor = 8;
-    }
+    public SmallPumpkin(int amount = 1) : base(0xC6C, amount) => FillFactor = 8;
+
+    public override double DefaultWeight => 1.0;
 }

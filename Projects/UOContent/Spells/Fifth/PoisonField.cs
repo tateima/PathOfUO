@@ -29,6 +29,8 @@ public class PoisonFieldSpell : MagerySpell, ITargetingSpell<IPoint3D>
 
     public override bool RequiresReagents => true;
 
+    public int TargetRange => Core.T2A ? 15 : 18;
+
     public void Target(IPoint3D p)
     {
         if (SpellHelper.CheckTown(p, Caster) && CheckSequence())

@@ -16,6 +16,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -102,7 +103,8 @@ public static class Core
 
     private static long _tickCount;
 
-    private static DateTime _now;
+    // Make this available to unit tests for mocking
+    internal static DateTime _now;
 
     public static long TickCount => _tickCount;
 
@@ -346,11 +348,25 @@ public static class Core
         }
     }
 
+    private static readonly bool UseFastTimestampMath = Stopwatch.Frequency % 1000 == 0;
+    private static readonly ulong FrequencyInMilliseconds = (ulong)Stopwatch.Frequency / 1000;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static long GetTimestamp() => 1000L * Stopwatch.GetTimestamp() / Stopwatch.Frequency;
+    public static long GetTimestamp()
+    {
+        if (UseFastTimestampMath)
+        {
+            return (long)((ulong)Stopwatch.GetTimestamp() / FrequencyInMilliseconds);
+        }
+
+        // Fast calculation will be lossy, fallback to slower but accurate calculation
+        return (long)((UInt128)Stopwatch.GetTimestamp() * 1000 / (ulong)Stopwatch.Frequency);
+    }
 
     public static void Setup(Assembly applicationAssembly, Process process)
     {
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+
         Process = process;
         ApplicationAssembly = applicationAssembly;
         Assembly = Assembly.GetAssembly(typeof(Core));
@@ -518,8 +534,8 @@ public static class Core
 
     internal static void RequestSnapshot(string snapshotPath)
     {
-        _performSnapshot = true;
         _snapshotPath = snapshotPath;
+        _performSnapshot = true;
     }
 
     public static void VerifySerialization()

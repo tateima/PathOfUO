@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Server.Buffers;
+using Server.Text;
 
 namespace Server;
 
@@ -37,7 +38,7 @@ public static class StringHelpers
     )
     {
         size = 0;
-        if (a == null || a.Length == 0)
+        if (a == ReadOnlySpan<char>.Empty || a.Length == 0)
         {
             return;
         }
@@ -72,7 +73,7 @@ public static class StringHelpers
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string Remove(this ReadOnlySpan<char> a, ReadOnlySpan<char> b, StringComparison comparison)
     {
-        if (a == null)
+        if (a == ReadOnlySpan<char>.Empty)
         {
             return null;
         }
@@ -285,5 +286,19 @@ public static class StringHelpers
         var chars = STArrayPool<char>.Shared.Rent(str.Length);
         str.CopyTo(chars);
         return chars;
+    }
+
+    public static void AppendSpaceWithArticle(this ref ValueStringBuilder builder, string text, bool articleAn)
+    {
+        if (builder.Length != 0)
+        {
+            builder.Append(' ');
+        }
+        else
+        {
+            builder.Append(articleAn ? "an " : "a ");
+        }
+
+        builder.Append(text);
     }
 }

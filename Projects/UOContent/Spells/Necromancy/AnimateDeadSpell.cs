@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Server.Engines.Quests;
+using ModernUO.CodeGeneratedEvents;
 using Server.Engines.Quests.Necro;
 using Server.Items;
 using Server.Mobiles;
@@ -115,13 +115,9 @@ public class AnimateDeadSpell : NecromancerSpell, ITargetingSpell<Item>
         var hasReagents = HasReagents();
         if (comp?.Addon is MaabusCoffin addon)
         {
-            var pm = Caster as PlayerMobile;
-
-            var qs = pm?.Quest;
-
-            if (qs is DarkTidesQuest)
+            if (Caster is PlayerMobile { Quest : DarkTidesQuest quest })
             {
-                QuestObjective objective = qs.FindObjective<AnimateMaabusCorpseObjective>();
+                var objective = quest.FindObjective<AnimateMaabusCorpseObjective>();
 
                 if (objective?.Completed == false)
                 {
@@ -195,6 +191,7 @@ public class AnimateDeadSpell : NecromancerSpell, ITargetingSpell<Item>
         Caster.SendLocalizedMessage(1061083); // Animate what corpse?
     }
 
+    [OnEvent(nameof(PlayerMobile.PlayerDeletedEvent))]
     public static void RemoveEffects(Mobile caster)
     {
         if (_table.Remove(caster, out var list))
