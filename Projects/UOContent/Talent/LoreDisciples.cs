@@ -8,6 +8,10 @@ namespace Server.Talent
 {
     public class LoreDisciples : BaseTalent
     {
+        private List<BaseCreature> _disciples;
+        private PlayerMobile _loreSeeker;
+        private DateTime _startSummonDate;
+        private int _remainingSeconds;
         public LoreDisciples()
         {
             TalentDependencies = new[] { typeof(LoreSeeker) };
@@ -15,13 +19,19 @@ namespace Server.Talent
             DisplayName = "Lore disciples";
             Description = "Summon random humanoids to fight alongside you for 2 minutes.";
             AdditionalDetail = "These disciples will be either a Brigand, a Mage or a Healer. The raw stats of these disciples grows by 3% per level. Additionally, their skills will be improved by 2% for every point in the Lore Teacher talent.";
-            CooldownSeconds = 300;
-            ManaRequired = 40;
-            MaxLevel = 5;
+            CooldownSeconds = 600;
+            _remainingSeconds = 600;
+            HasGroupKillEffect = true;
+            HasKillEffect = true;
+            ManaRequired = 20;
+            MaxLevel = 3;
             ImageID = 158;
             GumpHeight = 75;
-            AddEndY = 90;
+            AddEndY = 115;
+            _disciples = new List<BaseCreature>();
         }
+
+        public List<Mobile> Disciples { get; set; }
 
         public override void OnUse(Mobile from)
         {
@@ -36,6 +46,7 @@ namespace Server.Talent
 
                 if (canCast)
                 {
+                    _loreSeeker = (PlayerMobile)from;
                     ApplyManaCost(from);
                     from.RevealingAction();
                     from.PublicOverheadMessage(
@@ -47,26 +58,44 @@ namespace Server.Talent
                     );
                     // its a talent, no need for animation timer, just a single animation is fine
                     from.Animate(269, 7, 1, true, false, 0);
-                    var disciples = new List<Mobile>();
                     var loreTeacher = ((PlayerMobile)from).GetTalent(typeof(LoreTeacher));
                     var loreMaster = ((PlayerMobile)from).GetTalent(typeof(LoreMaster));
-                    int level = loreTeacher?.Level > Level ? loreTeacher.Level : 0;
+                    int level = Level;
+                    if (loreTeacher != null)
+                    {
+                        level += loreTeacher.Level;
+                    }
                     int modifier = LoreSeeker.GetLoreModifier(from, level);
+                    MobilePercentagePerPoint = modifier;
                     for (var i = 0; i < Level; i++)
                     {
                         BaseCreature disciple = null;
-                        MobilePercentagePerPoint += modifier;
                         var skillIncrease = modifier * 2;
                         // lore master logic
-                        if (loreMaster is not null && Utility.Random(100) < loreMaster.Level)
+                        if (loreMaster is not null)
                         {
-                            disciple = Utility.Random(3) switch
+                            CooldownSeconds -= loreMaster.Level * 13;
+                            if (Utility.Random(100) < loreMaster.Level)
                             {
-                                1 => new WarriorGuard(2),
-                                2 => new ArcherGuard(2),
-                                3 => new MageGuard(2),
-                                _ => new NobleLord(2)
-                            };
+                                disciple = Utility.Random(3) switch
+                                {
+                                    1 => new WarriorGuard(2),
+                                    2 => new ArcherGuard(2),
+                                    3 => new MageGuard(2),
+                                    _ => new NobleLord(2)
+                                };
+                                disciple.Skills.Fencing.Base += skillIncrease;
+                                disciple.Skills.Archery.Base += skillIncrease;
+                                disciple.Skills.Macing.Base += skillIncrease;
+                                disciple.Skills.MagicResist.Base += skillIncrease;
+                                disciple.Skills.Swords.Base += skillIncrease;
+                                disciple.Skills.Tactics.Base += skillIncrease;
+                                disciple.Skills.Wrestling.Base += skillIncrease;
+                                disciple.Skills.Forensics.Base += skillIncrease;
+                                disciple.Skills.SpiritSpeak.Base += skillIncrease;
+                                disciple.Skills.EvalInt.Base += skillIncrease;
+                                disciple.Skills.Magery.Base += skillIncrease;
+                            }
                         }
                         else
                         {
@@ -76,13 +105,6 @@ namespace Server.Talent
                                 case 2:
                                 case 3:
                                     disciple = new Brigand();
-                                    disciple.Skills.Fencing.Base += skillIncrease;
-                                    disciple.Skills.Archery.Base += skillIncrease;
-                                    disciple.Skills.Macing.Base += skillIncrease;
-                                    disciple.Skills.MagicResist.Base += skillIncrease;
-                                    disciple.Skills.Swords.Base += skillIncrease;
-                                    disciple.Skills.Tactics.Base += skillIncrease;
-                                    disciple.Skills.Wrestling.Base += skillIncrease;
                                     break;
                                 case 4:
                                 case 5:
@@ -90,40 +112,51 @@ namespace Server.Talent
                                     break;
                                 case 6:
                                     disciple = new EvilHealer();
-                                    disciple.Skills.Forensics.Base += skillIncrease;
-                                    disciple.Skills.SpiritSpeak.Base += skillIncrease;
-                                    disciple.Skills.Swords.Base += skillIncrease;
                                     break;
                             }
 
                             if (disciple is EvilMage)
                             {
-                                disciple.Skills.EvalInt.Base += skillIncrease;
-                                disciple.Skills.Magery.Base += skillIncrease;
-                                disciple.Skills.MagicResist.Base += skillIncrease;
-                                disciple.Skills.Tactics.Base += skillIncrease;
-                                disciple.Skills.Wrestling.Base += skillIncrease;
+                                disciple.Title = "the mage";
+                                disciple.SpeechHue = Utility.RandomDyedHue();
+                                disciple.Hue = Race.Human.RandomSkinHue();
+
+                                if (disciple.Female == Utility.RandomBool())
+                                {
+                                    disciple.Body = 0x191;
+                                    disciple.Name = NameList.RandomName("female");
+                                }
+                                else
+                                {
+                                    disciple.Body = 0x190;
+                                    disciple.Name = NameList.RandomName("male");
+                                }
                             }
                         }
 
                         if (disciple != null)
                         {
-                            disciple = (BaseCreature)ScaleMobileStats(disciple);
-                            disciple.SetLevel();
+                            disciple.Level = Utility.RandomMinMax(_loreSeeker.Level - 2, _loreSeeker.Level + 2);
+                            if (loreMaster != null)
+                            {
+                                disciple = (BaseCreature)ScaleMobileStats(disciple);
+                            }
                             EmptyCreatureBackpack(disciple);
-                            SpellHelper.Summon(disciple, from, 0x1FE, TimeSpan.FromMinutes(2), false, false);
+                            SpellHelper.Summon(disciple, from, 0x1FE, TimeSpan.FromMinutes(4), false, false);
+                            _startSummonDate = Core.Now;
                             disciple.OverrideDispellable = true;
                             disciple.Say("I am here to serve thee!");
                             disciple.FixedParticles(0x376A, 9, 32, 0x13AF, EffectLayer.Waist);
                             disciple.PlaySound(0x1FE);
-                            disciples.Add(disciple);
+                            _disciples.Add(disciple);
                         }
                     }
 
-                    Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
+                    Timer.StartTimer(TimeSpan.FromSeconds(10), HealTick);
                     OnCooldown = true;
+                    Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                     from.SendMessage("Whom do you wish them to attack?");
-                    from.Target = new InternalTarget(disciples);
+                    from.Target = new InternalTarget(_disciples);
                 }
             }
             else
@@ -132,11 +165,83 @@ namespace Server.Talent
             }
         }
 
+        public virtual void HealTick()
+        {
+            foreach (var disciple in _disciples)
+            {
+                if (disciple is EvilHealer)
+                {
+                    if (disciple.Mana > 20 && disciple.Alive && !disciple.Deleted)
+                    {
+                        Mobile target = null;
+                        if (_loreSeeker != null && _loreSeeker.Hits < _loreSeeker.HitsMax/2)
+                        {
+                            target = _loreSeeker;
+                        } else if (disciple.Hits < disciple.HitsMax / 2)
+                        {
+                            target = disciple;
+                        }
+                        if (target is { Alive: true } && disciple.CanSee(target))
+                        {
+                            disciple.Mana -= 20;
+                            target.Heal(Utility.RandomMinMax(10, 25));
+                            target.FixedParticles(0x376A, 9, 32, 5030, EffectLayer.Waist);
+                            target.PlaySound(0x202);
+                        }
+                    }
+                    Timer.StartTimer(TimeSpan.FromSeconds(10), HealTick);
+                }
+            }
+        }
+
+        public override void CheckKillEffect(Mobile victim, Mobile killer)
+        {
+            foreach (var disciple in _disciples)
+            {
+                if (disciple.Alive && !disciple.Deleted)
+                {
+                    var expression = Utility.Random(3) switch
+                    {
+                        1 => "Glory to our master.",
+                        2 => "We shall endure all perils in this land.",
+                        3 => "All hail the true ruler of this kingdom.",
+                        _ => "I feel so powerful as a disciple."
+                    };
+                    disciple.Say(expression);
+                }
+            }
+        }
+
+        public override void CheckGroupKillEffect(Mobile victim, Mobile killer)
+        {
+            if (OnCooldown)
+            {
+                _remainingSeconds = CooldownSeconds - (int)(Core.Now - _startSummonDate).TotalSeconds;
+                if (_disciples.Count > 0)
+                {
+                    _remainingSeconds -= Level + SummonerCommandLevel(killer);
+                } else
+                {
+                    _remainingSeconds--;
+                }
+                if (_remainingSeconds <= 0)
+                {
+                    ExpireTalentCooldown();
+                    if (_talentTimerToken.Running)
+                    {
+                        _talentTimerToken.Cancel();
+                    }
+                    _remainingSeconds = CooldownSeconds;
+                }
+            }
+        }
+
+
         private class InternalTarget : Target
         {
-            private readonly List<Mobile> _disciples;
+            private readonly List<BaseCreature> _disciples;
 
-            public InternalTarget(List<Mobile> disciples) : base(
+            public InternalTarget(List<BaseCreature> disciples) : base(
                 8,
                 false,
                 TargetFlags.None

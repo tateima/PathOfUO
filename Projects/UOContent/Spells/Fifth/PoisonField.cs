@@ -27,6 +27,8 @@ public class PoisonFieldSpell : MagerySpell, ITargetingSpell<IPoint3D>
 
     public override SpellCircle Circle => SpellCircle.Fifth;
 
+    public override bool RequiresReagents => true;
+
     public void Target(IPoint3D p)
     {
         if (SpellHelper.CheckTown(p, Caster) && CheckSequence())

@@ -422,6 +422,7 @@ namespace Server.Mobiles
             int iRangeFight = 1
         )
         {
+            AttunedToPlayer = false;
             m_LastTamingAttempt = DateTime.UnixEpoch;
             m_Tier = 1.0;
             m_Level = 1;
@@ -483,6 +484,8 @@ namespace Server.Mobiles
 
         public virtual string DefaultName => null;
         public virtual string CorpseName => null;
+
+        public bool AttunedToPlayer { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster)]
         public override string Name
@@ -2650,19 +2653,29 @@ namespace Server.Mobiles
                 MonsterBuff.Convert(this, 1.0, hitsBuff, 1.0, 1.0, 1.0, 1.0, 1.00, 1.0, 1.0, 0);
             }
             base.OnBeforeSpawn(location, m);
+            InvalidateProperties();
             Shrine.CreateShrine(location, Region, GetType(), m);
         }
 
         public override ApplyPoisonResult ApplyPoison(Mobile from, Poison poison)
         {
-            if (!Alive || IsDeadPet)
-            {
-                return ApplyPoisonResult.Immune;
-            }
-
             if (EvilOmenSpell.EndEffect(this))
             {
                 poison = PoisonImpl.IncreaseLevel(poison);
+            }
+
+            if (from is PlayerMobile playerMobile && Level > playerMobile.Level)
+            {
+                poison = PoisonImpl.DecreaseLevel(poison);
+                if (Level > playerMobile.Level + 4)
+                {
+                    return ApplyPoisonResult.Immune;
+                }
+            }
+
+            if (!Alive || IsDeadPet)
+            {
+                return ApplyPoisonResult.Immune;
             }
 
             var result = base.ApplyPoison(from, poison);
@@ -3702,15 +3715,23 @@ namespace Server.Mobiles
             }
 
             bool notStackedOnMobile = true;
-            foreach (var mobile in GetMobilesInRange(0))
+            try
             {
-                if (mobile != this)
+                foreach (var mobile in GetMobilesInRange(0))
                 {
-                    notStackedOnMobile = false;
-                    Pushing = true;
-                    break;
+                    if (mobile != this)
+                    {
+                        notStackedOnMobile = false;
+                        Pushing = true;
+                        break;
+                    }
                 }
             }
+            catch (NullReferenceException)
+            {
+                // do nothing
+            }
+
 
             if (!notStackedOnMobile)
             {
@@ -4191,7 +4212,11 @@ namespace Server.Mobiles
         public override void OnCombatantChange()
         {
             base.OnCombatantChange();
-
+            if (!AttunedToPlayer && Level < 6 && Combatant is PlayerMobile playerCombatant && playerCombatant.Level < Level && !HasMonsterSpecial)
+            {
+                AlterLevels(Level - playerCombatant.Level, true, playerCombatant.Level - 2, playerCombatant.Level + 3);
+                AttunedToPlayer = true;
+            }
             Warmode = Combatant?.Deleted == false && Combatant.Alive;
 
             if (CanFly && Warmode)
@@ -4199,6 +4224,7 @@ namespace Server.Mobiles
                 Flying = false;
             }
             StartBoss();
+            InvalidateProperties();
         }
 
         protected override void OnMapChange(Map oldMap)
@@ -5297,6 +5323,13 @@ namespace Server.Mobiles
                             }
                         }
                         Deity.PointsFromExperience(player, this, deityXp);
+                        foreach (KeyValuePair<Type, BaseTalent> entry in player.Talents)
+                        {
+                            if (entry.Value.HasGroupKillEffect)
+                            {
+                                entry.Value.CheckGroupKillEffect(this, player);
+                            }
+                        }
                     }
                 }
             }
@@ -6177,7 +6210,10 @@ namespace Server.Mobiles
             if (master is PlayerMobile playerMaster)
             {
                 BaseTalent natureAffinity = playerMaster.GetTalent(typeof(NatureAffinity));
-                damage -= AOS.Scale(damage, natureAffinity.Level);
+                if (natureAffinity != null)
+                {
+                    damage -= AOS.Scale(damage, natureAffinity.Level);
+                }
             }
         }
 
@@ -6187,7 +6223,10 @@ namespace Server.Mobiles
             if (master is PlayerMobile playerMaster)
             {
                 BaseTalent natureAffinity = playerMaster.GetTalent(typeof(NatureAffinity));
-                damage += AOS.Scale(damage, natureAffinity.Level);
+                if (natureAffinity != null)
+                {
+                    damage += AOS.Scale(damage, natureAffinity.Level);
+                }
             }
         }
         private void AlterDamageFromByNatureAffinity(ref double damage)
@@ -6196,7 +6235,10 @@ namespace Server.Mobiles
             if (master is PlayerMobile playerMaster)
             {
                 BaseTalent natureAffinity = playerMaster.GetTalent(typeof(NatureAffinity));
-                damage *= 1.0 - natureAffinity.ModifySpellScalar();
+                if (natureAffinity != null)
+                {
+                    damage *= 1.0 - natureAffinity.ModifySpellScalar();
+                }
             }
         }
         private void AlterDamageToByNatureAffinity(ref double damage)
@@ -6205,7 +6247,10 @@ namespace Server.Mobiles
             if (master is PlayerMobile playerMaster)
             {
                 BaseTalent natureAffinity = playerMaster.GetTalent(typeof(NatureAffinity));
-                damage *= 1.0 + natureAffinity.ModifySpellScalar();
+                if (natureAffinity != null)
+                {
+                    damage *= 1.0 + natureAffinity.ModifySpellScalar();
+                }
             }
         }
 

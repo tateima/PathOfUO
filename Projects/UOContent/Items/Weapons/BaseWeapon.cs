@@ -581,13 +581,63 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
     [CommandProperty(AccessLevel.GameMaster)]
     public int MinDamage
     {
-        get => _minDamage == -1 ? Core.AOS ? AosMinDamage : OldMinDamage : _minDamage;
+        // get => _minDamage == -1 ? Core.AOS ? AosMinDamage : OldMinDamage : _minDamage;
+        get => _minDamage == -1 ? PathsMinDamage() : _minDamage;
         set
         {
             _minDamage = value;
             InvalidateProperties();
             this.MarkDirty();
         }
+    }
+
+    private int PathsMinDamage()
+    {
+        var maxDamage = PathsMaxDamage();
+        var minDamage = 1;
+        if (maxDamage > 8)
+        {
+            minDamage += maxDamage / 4;
+        }
+        return minDamage;
+    }
+
+    private int PathsMaxDamage()
+    {
+        var maxDamage = 4;
+        var strModifier = GetStrModifier(10);
+        if (strModifier > 1)
+        {
+            maxDamage += strModifier;
+        }
+        var dexModifier = GetDexModifier(10);
+        if (dexModifier > 1)
+        {
+            maxDamage += dexModifier;
+        }
+        var speed = Core.AOS ? AosSpeed : OldSpeed;
+        if (speed > 40)
+        {
+            maxDamage = AOS.Scale(maxDamage, 100 - speed);
+        }
+        if (maxDamage <= 4)
+        {
+            maxDamage = 4;
+        }
+        return maxDamage;
+    }
+
+
+    private int GetStrModifier(int divisor)
+    {
+        var strReq = Core.AOS ? AosStrengthReq : OldStrengthReq;
+        return (int)Math.Ceiling((double)strReq / divisor);
+    }
+
+    private int GetDexModifier(int divisor)
+    {
+        var dexReq = Core.AOS ? AosDexterityReq : OldDexterityReq;
+        return (int)Math.Ceiling((double)dexReq / divisor);
     }
 
     [SerializableFieldSaveFlag(14)]
@@ -600,7 +650,7 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
     [CommandProperty(AccessLevel.GameMaster)]
     public int MaxDamage
     {
-        get => _maxDamage == -1 ? Core.AOS ? AosMaxDamage : OldMaxDamage : _maxDamage;
+        get => _maxDamage == -1 ? PathsMaxDamage() : _maxDamage;
         set
         {
             _maxDamage = value;
@@ -2955,6 +3005,9 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
             // Passively check Anatomy for gain
             attacker.CheckSkill(SkillName.Anatomy, 0.0, attacker.Skills.Anatomy.Cap);
 
+            // Passively check Arms Lore for gain
+            attacker.CheckSkill(SkillName.ArmsLore, 0.0, attacker.Skills.ArmsLore.Cap);
+
             if (Type == WeaponType.Axe)
             {
                 // Passively check Lumberjacking for gain
@@ -2969,6 +3022,7 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
         var strengthBonus = GetBonus(attacker.Str, 0.300, 100.0, 5.00);
         var anatomyBonus = GetBonus(attacker.Skills.Anatomy.Value, 0.500, 100.0, 5.00);
         var tacticsBonus = GetBonus(attacker.Skills.Tactics.Value, 0.625, 100.0, 6.25);
+        var armsLoreBonus = GetBonus(attacker.Skills.ArmsLore.Value, 0.500, 100.0, 5.00);
         var lumberBonus = Type == WeaponType.Axe
             ? GetBonus(attacker.Skills.Lumberjacking.Value, 0.200, 100.0, 10.00)
             : 0.0;
@@ -2984,8 +3038,17 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
             }
             if (mageCombatant != null)
             {
-                // switch tactics bonus to use Evaluating Intelligence instead
-                tacticsBonus = GetBonus(attacker.Skills.EvalInt.Value, 0.625, 100.0, 6.25);
+                // switch tactics bonus to use Evaluating Intelligence instead and strength to intelligence
+                var evalIntBonus = tacticsBonus = GetBonus(attacker.Skills.EvalInt.Value, 0.625, 100.0, 6.25);
+                if (attacker.Skills.Tactics.Value > 0.0)
+                {
+                    tacticsBonus += evalIntBonus;
+                }
+                else
+                {
+                    tacticsBonus = evalIntBonus;
+                }
+                strengthBonus = GetBonus(attacker.Int, 0.300, 100.0, 5.00);
             }
         }
 
@@ -3025,7 +3088,7 @@ public abstract partial class BaseWeapon : Item, IWeapon, IFactionItem, ICraftab
             damageBonus = 100;
         }
 
-        var totalBonus = strengthBonus + anatomyBonus + tacticsBonus + lumberBonus +
+        var totalBonus = strengthBonus + anatomyBonus + tacticsBonus + lumberBonus + armsLoreBonus +
                          (damageBonus + GetDamageBonus()) / 100.0;
 
         return damage + damage * totalBonus;

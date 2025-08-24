@@ -53,7 +53,7 @@ public class SpellPlagueSpell : MysticSpell, ITargetingSpell<Mobile>
             VisualEffect(m);
 
             // Before Time of Legends, SDI was not applied to initial damage.
-            var damage = GetNewAosDamage(33, 1, 5, Core.TOL, m);
+            var damage = GetNewAosDamage(23, 1, 5, Core.TOL, m);
             SpellHelper.Damage(this, m, damage, 0, 0, 0, 0, 0);
 
             var timer = new SpellPlagueTimer(this, m);
@@ -158,7 +158,7 @@ public class SpellPlagueSpell : MysticSpell, ITargetingSpell<Mobile>
             {
                 VisualEffect(_target);
 
-                var damage = _owner.GetNewAosDamage(15 + _explosions * 3, 1, 5, false, _target);
+                var damage = _owner.GetNewAosDamage(10 + _explosions * 3, 1, 5, false, _target);
 
                 _explosions++;
                 _nextExplosion = Core.Now + TimeSpan.FromSeconds(1);

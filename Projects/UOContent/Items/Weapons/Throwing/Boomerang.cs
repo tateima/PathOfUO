@@ -17,6 +17,7 @@ public partial class Boomerang : BaseThrown
     public override WeaponAbility PrimaryAbility => WeaponAbility.MysticArc;
     public override WeaponAbility SecondaryAbility => WeaponAbility.ConcussionBlow;
     public override int AosStrengthReq => 25;
+    public override int AosDexterityReq => 20;
     public override int AosMinDamage => 11;
     public override int AosMaxDamage => 15;
     public override float MlSpeed => 2.75f;

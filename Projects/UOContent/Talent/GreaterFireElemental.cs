@@ -6,6 +6,8 @@ namespace Server.Talent
 {
     public class GreaterFireElemental : BaseTalent
     {
+        private int _remainingSeconds;
+        private DateTime _startSummonDate;
         public GreaterFireElemental()
         {
             BlockedBy = new[] { typeof(MasterOfDeath), typeof(HolyAvenger) };
@@ -16,8 +18,10 @@ namespace Server.Talent
             Description =
                 "Summon a fire lord to assist you for 2 minutes. Hits will be used if no mana is available.";
             AdditionalDetail = "The power of the fire lord increases by 15% per level.";
+            HasGroupKillEffect = true;
             ImageID = 347;
-            CooldownSeconds = 300;
+            CooldownSeconds = 600;
+            _remainingSeconds = 600;
             ManaRequired = 50;
             GumpHeight = 230;
             AddEndY = 145;
@@ -61,7 +65,7 @@ namespace Server.Talent
                         creature.Name = "a greater fire lord";
                         creature.OverrideDispellable = true;
                         creature.SetLevel();
-                        SpellHelper.Summon(creature, from, 0x217, TimeSpan.FromMinutes(2), false, false);
+                        SpellHelper.Summon(creature, from, 0x217, TimeSpan.FromMinutes(4), false, false);
                     }
                     else
                     {
@@ -69,9 +73,9 @@ namespace Server.Talent
                         creature.Name = "a greater fire lord";
                         creature.OverrideDispellable = true;
                         creature.SetLevel();
-                        SpellHelper.Summon(creature, from, 0x217, TimeSpan.FromMinutes(2), false, false);
+                        SpellHelper.Summon(creature, from, 0x217, TimeSpan.FromMinutes(4), false, false);
                     }
-
+                    _startSummonDate = DateTime.Now;
                     Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                     OnCooldown = true;
                 }
@@ -79,6 +83,24 @@ namespace Server.Talent
             else
             {
                 from.SendMessage(FailedRequirements);
+            }
+        }
+
+        public override void CheckGroupKillEffect(Mobile victim, Mobile killer)
+        {
+            if (OnCooldown)
+            {
+                _remainingSeconds = CooldownSeconds - (int)(_talentTimerToken.Next - _startSummonDate).TotalSeconds;
+                _remainingSeconds -= Level + SummonerCommandLevel(killer);
+                if (_remainingSeconds <= 0)
+                {
+                    ExpireTalentCooldown();
+                    if (_talentTimerToken.Running)
+                    {
+                        _talentTimerToken.Cancel();
+                    }
+                    _remainingSeconds = CooldownSeconds;
+                }
             }
         }
     }

@@ -33,7 +33,7 @@ namespace Server.Spells.Fourth
 
                 if (Core.AOS)
                 {
-                    damage = GetNewAosDamage(23, 1, 4, m);
+                    damage = GetNewAosDamage(20, 1, 4, m);
                 }
                 else
                 {

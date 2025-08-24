@@ -23,6 +23,7 @@ namespace Server.Items
         public override WeaponAbility SecondaryAbility => WeaponAbility.MortalStrike;
 
         public override int AosStrengthReq => 35;
+        public override int AosDexterityReq => 10;
         public override int AosMinDamage => 18;
         public override int AosMaxDamage => Core.ML ? 22 : 20;
         public override int AosSpeed => 24;

@@ -6,6 +6,8 @@ namespace Server.Talent
 {
     public class GreaterPoisonElemental : BaseTalent
     {
+        private int _remainingSeconds;
+        private DateTime _startSummonDate;
         public GreaterPoisonElemental()
         {
             TalentDependencies = new[] { typeof(WyvernAspect) };
@@ -13,7 +15,9 @@ namespace Server.Talent
             MobilePercentagePerPoint = 15;
             CanBeUsed = true;
             ManaRequired = 65;
-            CooldownSeconds = 300;
+            CooldownSeconds = 600;
+            _remainingSeconds = 600;
+            HasGroupKillEffect = true;
             Description = "Summon a poison elemental to assist you for 2 minutes.";
             ImageID = 390;
             MaxLevel = 1;
@@ -49,12 +53,13 @@ namespace Server.Talent
                         creature,
                         from,
                         0x217,
-                        TimeSpan.FromMinutes(2),
+                        TimeSpan.FromMinutes(4),
                         false,
                         false
                     ); // dont scale because they're already quite powerful
-                    Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
                     EmptyCreatureBackpack(creature);
+                    Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
+                    _startSummonDate = DateTime.Now;
                     OnCooldown = true;
                 }
                 else
@@ -67,5 +72,24 @@ namespace Server.Talent
                 from.SendMessage(FailedRequirements);
             }
         }
+
+        public override void CheckGroupKillEffect(Mobile victim, Mobile killer)
+        {
+            if (OnCooldown)
+            {
+                _remainingSeconds = CooldownSeconds - (int)(_talentTimerToken.Next - _startSummonDate).TotalSeconds;
+                _remainingSeconds -= Level + SummonerCommandLevel(killer);
+                if (_remainingSeconds <= 0)
+                {
+                    ExpireTalentCooldown();
+                    if (_talentTimerToken.Running)
+                    {
+                        _talentTimerToken.Cancel();
+                    }
+                    _remainingSeconds = CooldownSeconds;
+                }
+            }
+        }
     }
+
 }

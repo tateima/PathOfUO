@@ -138,11 +138,11 @@ public class GuardedRegion : BaseRegion
 
     public override bool OnBeginSpellCast(Mobile m, ISpell s)
     {
-        if (!IsDisabled() && !s.OnCastInTown(this))
-        {
-            m.SendLocalizedMessage(500946); // You cannot cast this in town!
-            return false;
-        }
+        // if (!IsDisabled() && !s.OnCastInTown(this))
+        // {
+        //     m.SendLocalizedMessage(500946); // You cannot cast this in town!
+        //     return false;
+        // }
 
         return base.OnBeginSpellCast(m, s);
     }

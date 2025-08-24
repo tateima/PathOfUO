@@ -22,6 +22,7 @@ namespace Server.Items
         public override WeaponAbility SecondaryAbility => WeaponAbility.MovingShot;
 
         public override int AosStrengthReq => 45;
+        public override int AosDexterityReq => 20;
         public override int AosMinDamage => Core.ML ? 13 : 15;
         public override int AosMaxDamage => 17;
         public override int AosSpeed => 25;

@@ -9,7 +9,7 @@
         <RootNamespace>Server</RootNamespace>
         <PackageId>Server</PackageId>
     </PropertyGroup>
-    <Target Name="CleanPub" AfterTargets="Clean">
+    <Target Name="CleanPub" AfterTargets="Clean">    
         <Message Text="Server: Removing distribution files..." />
         <Delete Files="..\..\Distribution\$(AssemblyName)" ContinueOnError="true" />
         <Delete Files="..\..\Distribution\$(AssemblyName).deps.json" ContinueOnError="true" />

@@ -69,7 +69,7 @@ public class NetherCycloneSpell : MysticSpell, ITargetingSpell<IPoint3D>
                     }
                 }
 
-                var damage = GetNewAosDamage(51, 1, 5, pvp);
+                var damage = GetNewAosDamage(41, 1, 5, pvp);
                 var reduction = (GetBaseSkill(Caster) + GetDamageSkill(Caster)) / 1200.0;
 
                 while (pool.Count > 0)

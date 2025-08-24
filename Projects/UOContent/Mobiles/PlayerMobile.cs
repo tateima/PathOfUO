@@ -1090,13 +1090,16 @@ namespace Server.Mobiles
         public List<BaseCreature> RangerCreatures()
         {
             List<BaseCreature> elligibleRangerCreatures = new List<BaseCreature>();
-            foreach (var follower in AllFollowers)
+            if (AllFollowers != null)
             {
-                if (follower is BaseCreature { IsStabled: false, Alive: true, Tamable: true } followerCreature)
+                foreach (var follower in AllFollowers)
                 {
-                    if (followerCreature is BaseMount { Rider: null } or not BaseMount)
+                    if (follower is BaseCreature { IsStabled: false, Alive: true, Tamable: true } followerCreature)
                     {
-                        elligibleRangerCreatures.Add(followerCreature);
+                        if (followerCreature is BaseMount { Rider: null } or not BaseMount)
+                        {
+                            elligibleRangerCreatures.Add(followerCreature);
+                        }
                     }
                 }
             }
@@ -1810,6 +1813,7 @@ namespace Server.Mobiles
                     mobile.DeityDecay();
                 }
                 mobile.RestCheck();
+                mobile.ResetCombatAlignment();
                 mobile.HungerHarmCheck(true);
                 bool showTalentBar = false;
                 foreach (KeyValuePair<Type, BaseTalent> entry in mobile.Talents)
@@ -2647,6 +2651,15 @@ namespace Server.Mobiles
                     }
                     else
                     {
+                        if (BaseTalent.IsLoreSkill(skill))
+                        {
+                            var loreSeeker = GetTalent(typeof(LoreSeeker));
+                            if (loreSeeker != null)
+                            {
+                                // reverse engineer lore seeker benefits
+                                pointValue /= 1 + loreSeeker.Level;
+                            }
+                        }
                         nonCraftPoints += pointValue;
                         if (starterValue > 0)
                         {
@@ -3936,7 +3949,7 @@ namespace Server.Mobiles
                             TypeString = typeString,
                             TimeLeft = m_ShrineTimeLeft
                         };
-                        shrine.Activate();
+                        shrine.Activate(Location);
                     }
                     goto case 40;
                 case 40:

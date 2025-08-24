@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Org.BouncyCastle.Asn1.X509.Qualified;
 using Server.Engines.BulkOrders;
 using Server.Engines.Craft;
 using Server.Items;
@@ -315,11 +316,12 @@ namespace Server.Pantheon
             List<Mobile> challengers = new List<Mobile>();
             foreach (var type in mobileTypes)
             {
-                if (CreatureAlignmentCheck(type, player.Alignment, enemy) || player.Alignment is Alignment.Charity or Alignment.Greed || allowNonAlignment && player.Alignment is Alignment.None)
+                if (CreatureAlignmentCheck(type, player.Alignment, enemy) || player.Alignment is Alignment.Charity or Alignment.Greed || allowNonAlignment
+                    && type != typeof(Dolphin) && type != typeof(SeaHorse) && type != typeof(SeaHorseFish) && type != typeof(SeaSerpent))
                 {
                     try
                     {
-                        if (Activator.CreateInstance(type) is BaseCreature creature)
+                        if (Activator.CreateInstance(type) is BaseCreature creature && creature.CanBeHarmful(player))
                         {
                             var dynamicExp = creature.DynamicExperienceValue();
                             if (

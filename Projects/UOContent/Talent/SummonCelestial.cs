@@ -9,6 +9,8 @@ namespace Server.Talent
     {
         private BaseCreature _summoned;
         private PlayerMobile _summoner;
+        private int _remainingSeconds;
+        private DateTime _startSummonDate;
         private TimerExecutionToken _healTimerToken;
         public SummonCelestial()
         {
@@ -21,7 +23,9 @@ namespace Server.Talent
                 "Summon a celestial being to assist you for 5 minutes.";
             AdditionalDetail = "The power of the celestial increases by 5% per level. Only players with light alignment can use this.";
             ImageID = 414;
-            CooldownSeconds = 300;
+            HasGroupKillEffect = true;
+            CooldownSeconds = 600;
+            _remainingSeconds = 600;
             ManaRequired = 60;
             GumpHeight = 230;
             AddEndY = 70;
@@ -59,7 +63,8 @@ namespace Server.Talent
 
                     var creature = (BaseCreature)ScaleMobile(new Celestial());
                     creature.SetLevel();
-                    SpellHelper.Summon(creature, from, 0x217, TimeSpan.FromMinutes(5), false, false);
+                    SpellHelper.Summon(creature, from, 0x217, TimeSpan.FromMinutes(6), false, false);
+                    _startSummonDate = DateTime.Now;
                     EmptyCreatureBackpack(creature);
                     _summoned = creature;
                     _summoner = (PlayerMobile)from;
@@ -90,6 +95,23 @@ namespace Server.Talent
             {
                 _summoned.Kill();
                 ExpireTimer();
+            }
+        }
+        public override void CheckGroupKillEffect(Mobile victim, Mobile killer)
+        {
+            if (OnCooldown)
+            {
+                _remainingSeconds = CooldownSeconds - (int)(_talentTimerToken.Next - _startSummonDate).TotalSeconds;
+                _remainingSeconds -= Level + SummonerCommandLevel(killer);
+                if (_remainingSeconds <= 0)
+                {
+                    ExpireTalentCooldown();
+                    if (_talentTimerToken.Running)
+                    {
+                        _talentTimerToken.Cancel();
+                    }
+                    _remainingSeconds = CooldownSeconds;
+                }
             }
         }
     }

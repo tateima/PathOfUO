@@ -13,6 +13,7 @@ namespace Server.Items
         public override WeaponAbility SecondaryAbility => WeaponAbility.ConcussionBlow;
 
         public override int AosStrengthReq => 45;
+        public override int AosDexterityReq => 10;
         public override int AosMinDamage => 14;
         public override int AosMaxDamage => 16;
         public override int AosSpeed => 32;

@@ -1,4 +1,6 @@
 using System;
+using Server.Ethics;
+using Server.Mobiles;
 using Server.Spells.Fourth;
 
 namespace Server.Talent
@@ -25,9 +27,23 @@ namespace Server.Talent
         {
             if (Activated)
             {
+                var damage = 2;
+                if (from is PlayerMobile playerMobile)
+                {
+                    var fireAffinity = playerMobile.GetTalent(typeof(FireAffinity));
+                    if (fireAffinity != null)
+                    {
+                        damage += fireAffinity.Level;
+                    }
+                    var warmth = playerMobile.GetTalent(typeof(Warmth));
+                    if (warmth != null)
+                    {
+                        damage += warmth.Level;
+                    }
+                }
                 var itemID = Utility.RandomBool() ? 0x398C : 0x3996;
                 Effects.PlaySound(from.Location, from.Map, 0x20C);
-                new FireFieldItem(itemID, from.Location, from, from.Map, TimeSpan.FromSeconds(Level * 7), Utility.RandomMinMax(-1, 1));
+                new FireFieldItem(itemID, from.Location, from, from.Map, TimeSpan.FromSeconds(Level * 7), Utility.RandomMinMax(-1, 1), damage);
             }
         }
 

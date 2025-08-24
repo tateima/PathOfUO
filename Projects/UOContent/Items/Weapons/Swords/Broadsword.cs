@@ -13,6 +13,7 @@ namespace Server.Items
         public override WeaponAbility SecondaryAbility => WeaponAbility.ArmorIgnore;
 
         public override int AosStrengthReq => 30;
+        public override int AosDexterityReq => 10;
         public override int AosMinDamage => 14;
         public override int AosMaxDamage => 15;
         public override int AosSpeed => 33;

@@ -42,7 +42,7 @@ namespace Server.Talent
 
         public void CheckDragonEffect(Mobile attacker, Mobile target)
         {
-            if (Utility.Random(100) < Level * 200)
+            if (Utility.Random(100) < Level * 2)
             {
                 Timer.StartTimer(TimeSpan.FromSeconds(1.3), () => BreathEffectCallback(attacker, target));
             }

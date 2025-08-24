@@ -23,6 +23,7 @@ namespace Server.Items
         public override WeaponAbility SecondaryAbility => WeaponAbility.Dismount;
 
         public override int AosStrengthReq => 80;
+        public override int AosDexterityReq => 20;
         public override int AosMinDamage => Core.ML ? 20 : 19;
         public override int AosMaxDamage => Core.ML ? 24 : 20;
         public override int AosSpeed => 22;

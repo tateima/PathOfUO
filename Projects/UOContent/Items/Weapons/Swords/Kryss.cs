@@ -13,6 +13,7 @@ namespace Server.Items
         public override WeaponAbility SecondaryAbility => WeaponAbility.InfectiousStrike;
 
         public override int AosStrengthReq => 10;
+        public override int AosDexterityReq => 40;
         public override int AosMinDamage => 10;
         public override int AosMaxDamage => 12;
         public override int AosSpeed => 53;

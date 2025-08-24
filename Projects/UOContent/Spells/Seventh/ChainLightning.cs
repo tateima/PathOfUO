@@ -57,7 +57,7 @@ namespace Server.Spells.Seventh
                     if (pool.Count > 0)
                     {
                         double damage = Core.AOS
-                            ? GetNewAosDamage(51, 1, 5, pvp)
+                            ? GetNewAosDamage(41, 1, 5, pvp)
                             : Utility.Random(27, 22);
 
                         if (pool.Count > 2)

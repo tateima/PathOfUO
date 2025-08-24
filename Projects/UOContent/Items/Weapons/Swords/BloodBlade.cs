@@ -14,6 +14,7 @@ namespace Server.Items
         public override WeaponAbility PrimaryAbility => WeaponAbility.BleedAttack;
         public override WeaponAbility SecondaryAbility => WeaponAbility.ParalyzingBlow;
         public override int AosStrengthReq => 10;
+        public override int AosDexterityReq => 10;
         public override int AosMinDamage => 10;
         public override int AosMaxDamage => 12;
         public override float MlSpeed => 2.00f;

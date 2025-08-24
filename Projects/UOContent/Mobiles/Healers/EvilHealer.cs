@@ -9,6 +9,13 @@ public partial class EvilHealer : BaseHealer
     public EvilHealer()
     {
         Title = "the healer";
+        SetStr(81, 205);
+        SetDex(91, 115);
+        SetInt(96, 220);
+
+        SetHits(49, 63);
+
+        SetDamage(5, 10);
 
         Karma = -10000;
 

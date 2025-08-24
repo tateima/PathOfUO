@@ -43,11 +43,11 @@ namespace Server.Spells.Third
 
                     if (Caster is PlayerMobile pm)
                     {
-                        if (pm.DuelContext?.Started != true || pm.DuelContext.Finished ||
-                            pm.DuelContext.Ruleset.GetOption("Skills", "Poisoning"))
-                        {
+                        // if (pm.DuelContext?.Started != true || pm.DuelContext.Finished ||
+                        //     pm.DuelContext.Ruleset.GetOption("Skills", "Poisoning"))
+                        // {
                             total += pm.Skills.Poisoning.Value;
-                        }
+                        // }
                         BaseTalent spellMind = pm.GetTalent(typeof(SpellMind));
                         if (spellMind != null)
                         {
@@ -107,6 +107,8 @@ namespace Server.Spells.Third
                 HarmfulSpell(m);
             }
         }
+
+        public override bool RequiresReagents => true;
 
         public override void OnCast()
         {

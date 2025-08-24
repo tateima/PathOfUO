@@ -22,7 +22,7 @@ namespace Server.Talent
             DisplayName = "Fire affinity";
             CanBeUsed = true;
             Description = "Increases damage done by fire abilities/spells.";
-            AdditionalDetail = "Each level increases damage by 2%";
+            AdditionalDetail = "Each level increases damage by 10%.";
             ImageID = 137;
             GumpHeight = 70;
             AddEndY = 65;
@@ -30,9 +30,9 @@ namespace Server.Talent
 
         public override int ModifySpellMultiplier() =>
             // 5% per level
-            Level * 2;
+            Level * 10;
 
-        public override double ModifySpellScalar() => Level / 100.0 * 2;
+        public override double ModifySpellScalar() => Level / 100.0 * 10;
 
         public override void OnUse(Mobile from)
         {

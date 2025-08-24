@@ -17,7 +17,7 @@ namespace Server.Talent
             RequiredSpell = new[] { typeof(NecromancerSpell), typeof(SpellPlagueSpell), typeof(WordOfDeathSpell), typeof(NetherCycloneSpell) };
             DisplayName = "Dark affinity";
             Description = "Enhances damage and strength of dark arts and spells. Requires 50+ Necromancy.";
-            AdditionalDetail = "Each level increases the effect by 2%. When used, increases resistances to cold by 5 points per level for 60-80 seconds. Spell weavers are not blocked on this talent.";
+            AdditionalDetail = "Each level increases the effect by 5%. When used, increases resistances to cold by 5 points per level for 60-80 seconds. Spell weavers are not blocked on this talent.";
             CooldownSeconds = 180;
             ImageID = 129;
             GumpHeight = 95;
@@ -28,7 +28,9 @@ namespace Server.Talent
 
         public override bool HasSkillRequirement(Mobile mobile) => mobile.Skills[SkillName.Necromancy].Base >= 50;
 
-        public override double ModifySpellScalar() => Level / 100.0 * 2;
+        public override double ModifySpellScalar() => Level / 100.0 * 5;
+
+        public override int ModifySpellMultiplier() => Level * 5;
 
         public override void OnUse(Mobile from)
         {

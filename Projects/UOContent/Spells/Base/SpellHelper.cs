@@ -432,6 +432,12 @@ namespace Server.Spells
 
         public static bool ValidIndirectTarget(Mobile from, Mobile to)
         {
+            if (from is PlayerMobile playerMobile && playerMobile.LevelTooLow(to))
+            {
+                from.Say("You have no chance of damaging this opponent.");
+                return false;
+            }
+
             if (from == to)
             {
                 return true;
@@ -870,11 +876,11 @@ namespace Server.Spells
 
         public static bool CheckTown(Point3D loc, Mobile caster)
         {
-            if (IsTown(loc, caster))
-            {
-                caster.SendLocalizedMessage(500946); // You cannot cast this in town!
-                return false;
-            }
+            // if (IsTown(loc, caster))
+            // {
+            //     caster.SendLocalizedMessage(500946); // You cannot cast this in town!
+            //     return false;
+            // }
 
             return true;
         }
@@ -979,6 +985,7 @@ namespace Server.Spells
                 chaos,
                 dfa
             );
+            spell.HarmfulSpell(target);
         }
 
         public static void Damage(

@@ -12,7 +12,7 @@ namespace Server.Items
         public override WeaponAbility PrimaryAbility => WeaponAbility.ShadowStrike;
         public override WeaponAbility SecondaryAbility => WeaponAbility.Dismount;
 
-        public override int AosStrengthReq => 40;
+        public override int AosStrengthReq => 30;
         public override int AosMinDamage => 11;
         public override int AosMaxDamage => 13;
         public override int AosSpeed => 44;

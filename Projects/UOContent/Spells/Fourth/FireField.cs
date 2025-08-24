@@ -50,11 +50,21 @@ public class FireFieldSpell : MagerySpell, ITargetingSpell<IPoint3D>
                 _               => TimeSpan.FromSeconds(4.0 + Caster.Skills.Magery.Value * 0.5)
             };
 
+            var damage = 2;
+            if (Core.AOS)
+            {
+                damage = GetNewAosDamage(10, 1, damage, null);
+            }
+            else
+            {
+                damage *= (int)GetDamageScalarFromTalents();
+            }
+
             for (var i = -2; i <= 2; ++i)
             {
                 var targetLoc = new Point3D(eastToWest ? loc.X + i : loc.X, eastToWest ? loc.Y : loc.Y + i, loc.Z);
 
-                new FireFieldItem(itemID, targetLoc, Caster, Caster.Map, duration, i);
+                new FireFieldItem(itemID, targetLoc, Caster, Caster.Map, duration, i, damage);
             }
         }
     }
@@ -113,7 +123,7 @@ public partial class FireFieldItem : Item
 
         _end = Core.Now + duration;
 
-        _timer = new InternalTimer(this, TimeSpan.FromSeconds(val.Abs() * 0.2), caster.InLOS(this), canFit, _fire, _cold, _hue);
+        _timer = new InternalTimer(this, TimeSpan.FromSeconds(val.Abs() * 0.2), caster.InLOS(this), canFit, _hue, _fire, _cold);
         _timer.Start();
     }
 
@@ -141,6 +151,12 @@ public partial class FireFieldItem : Item
             if (SpellHelper.CanRevealCaster(m))
             {
                 _caster.RevealingAction();
+            }
+
+            if (_caster is PlayerMobile playerCaster)
+            {
+                var dragonAspect = playerCaster.GetTalent(typeof(DragonAspect)) as DragonAspect;
+                dragonAspect?.CheckDragonEffect(_caster, m);
             }
 
             _caster.DoHarmful(m);
@@ -239,6 +255,12 @@ public partial class FireFieldItem : Item
                     return;
                 }
 
+                DragonAspect dragonAspect = new DragonAspect();
+                if (caster is PlayerMobile playerCaster)
+                {
+                    dragonAspect = playerCaster.GetTalent(typeof(DragonAspect)) as DragonAspect;
+                }
+
                 using var queue = PooledRefQueue<Mobile>.Create();
                 foreach (var m in _item.GetMobilesAt())
                 {
@@ -261,16 +283,19 @@ public partial class FireFieldItem : Item
                     caster.DoHarmful(m);
 
                     var damage = _item._damage;
-
                     if (!Core.AOS && m.CheckSkill(SkillName.MagicResist, 0.0, 30.0))
                     {
                         damage = 1;
 
                         m.SendLocalizedMessage(501783); // You feel yourself resisting magical energy.
                     }
-
                     AOS.Damage(m, caster, damage, 0, _fire, _cold, 0, 0);
                     m.PlaySound(0x208);
+
+                    if (dragonAspect?.Level > 0)
+                    {
+                        dragonAspect.CheckDragonEffect(caster, m);
+                    }
 
                     (m as BaseCreature)?.OnHarmfulSpell(caster);
                 }

@@ -16,6 +16,7 @@ namespace Server.Items
         public override WeaponAbility PrimaryAbility => WeaponAbility.CrushingBlow;
         public override WeaponAbility SecondaryAbility => WeaponAbility.Dismount;
         public override int AosStrengthReq => 35;
+        public override int AosDexterityReq => 20;
         public override int AosMinDamage => 16;
         public override int AosMaxDamage => 19;
         public override float MlSpeed => 3.50f;

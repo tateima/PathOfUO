@@ -129,7 +129,7 @@ namespace Server.Items
                     {
                         TimeLeft = 30;
                     }
-                    Activate();
+                    Activate(from.Location);
                 }
                 else
                 {
@@ -382,10 +382,7 @@ namespace Server.Items
 
         public void SpawnInvaders()
         {
-            if (Invaders?.Count == 0 || Invaders is null)
-            {
-                Invaders = Deity.FindGuardians(Player, 3, 1, true);
-            }
+            Invaders = Deity.FindGuardians(Player, 3, 1, true);
             if (Invaders.Count > 0)
             {
                 foreach (var gate in Gates)
@@ -409,7 +406,7 @@ namespace Server.Items
                             }
                         }
                         Point3D invasionPoint = new Point3D(
-                            gate.Location.X + Utility.RandomMinMax(-1, 1), gate.Y + Utility.RandomMinMax(-1, 1), gate.Z
+                            gate.Location.X, gate.Location.Y, gate.Location.Z
                         );
                         invader.MoveToWorld(invasionPoint, gate.Map);
                         Effects.PlaySound(invasionPoint, gate.Map, 0x20E);
@@ -439,7 +436,15 @@ namespace Server.Items
                 }
                 InvastionTicks++;
             }
-            Timer.StartTimer(TimeSpan.FromSeconds(Utility.RandomMinMax(30, 50)), SpawnInvaders, out _shrineEffectOverTimeToken);
+
+            if (InvastionTicks > 25)
+            {
+                RemoveShrineEffect();
+            }
+            else
+            {
+                Timer.StartTimer(TimeSpan.FromSeconds(Utility.RandomMinMax(30, 50)), SpawnInvaders, out _shrineEffectOverTimeToken);
+            }
         }
 
         public void InvasionEffect()
@@ -472,13 +477,13 @@ namespace Server.Items
             }
         }
 
-        public void StartInvasionEvent()
+        public void StartInvasionEvent(Point3D location)
         {
             Gates = new List<Moongate>();
             for (int i = 0; i < 4; i++)
             {
                 Moongate gate = new Moongate(false);
-                Point3D potentialPoint = Map.GetRandomNearbyLocation(Location, 6, 3);
+                Point3D potentialPoint = Map.GetRandomNearbyLocation(location, 6, 3);
                 Timer.StartTimer(TimeSpan.FromSeconds(Utility.RandomMinMax(3, 10)), () => SpawnGate(gate, potentialPoint));
                 Gates.Add(gate);
             }
@@ -489,7 +494,7 @@ namespace Server.Items
 
         public ShrineType GetShrineType() => (ShrineType)Enum.Parse(typeof(ShrineType), _typeString, true);
 
-        public void Activate()
+        public void Activate(Point3D playerLocation)
         {
             _activated = true;
             string message = "";
@@ -570,7 +575,7 @@ namespace Server.Items
                         break;
                     case ShrineType.Mythic:
                         CheckSetMessage(ref message, "The air around you grows energised and ominous.");
-                        StartInvasionEvent();
+                        StartInvasionEvent(playerLocation);
                         break;
                     case ShrineType.Sanguine:
                         CheckSetMessage(ref message, "You have a sudden vampiric haunt around you.");

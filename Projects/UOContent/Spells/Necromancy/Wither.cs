@@ -103,7 +103,7 @@ public class WitherSpell : NecromancerSpell
                     Caster.DoHarmful(m);
                     m.FixedParticles(0x374A, 1, 15, 9502, 97, 3, (EffectLayer)255);
 
-                    double damage = Utility.RandomMinMax(30, 35);
+                    double damage = Utility.RandomMinMax(20, 25);
 
                     damage *= 300 + m.Karma / 100.0 + GetDamageSkill(Caster) * 10;
                     damage /= 1000;

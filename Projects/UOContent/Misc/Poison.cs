@@ -50,11 +50,11 @@ namespace Server
         {
             if (Core.AOS)
             {
-                Register(new PoisonImpl("Lesser", 0, 4, 16, 7.5, 3.0, 2.25, 10, 4));
-                Register(new PoisonImpl("Regular", 1, 8, 18, 10.0, 3.0, 3.25, 10, 3));
-                Register(new PoisonImpl("Greater", 2, 12, 20, 15.0, 3.0, 4.25, 10, 2));
-                Register(new PoisonImpl("Deadly", 3, 16, 30, 30.0, 3.0, 5.25, 15, 2));
-                Register(new PoisonImpl("Lethal", 4, 20, 50, 35.0, 3.0, 5.25, 20, 2));
+                Register(new PoisonImpl("Lesser", 0, 4, 8, 6.5, 3.0, 2.25, 10, 4));
+                Register(new PoisonImpl("Regular", 1, 8, 12, 9.0, 3.0, 3.25, 10, 3));
+                Register(new PoisonImpl("Greater", 2, 12, 16, 16.0, 3.0, 4.25, 10, 2));
+                Register(new PoisonImpl("Deadly", 3, 16, 20, 20.0, 3.0, 5.25, 15, 2));
+                Register(new PoisonImpl("Lethal", 4, 20, 30, 30.0, 3.0, 5.25, 20, 2));
             }
             else
             {
@@ -71,6 +71,16 @@ namespace Server
             var newPoison = oldPoison == null ? null : GetPoison(oldPoison.Level + 1);
 
             return newPoison ?? oldPoison;
+        }
+
+        public static Poison DecreaseLevel(Poison oldPoison)
+        {
+            if (oldPoison is { Level: > 1 })
+            {
+                var newPoison = GetPoison(oldPoison.Level - 1);
+                return newPoison ?? oldPoison;
+            }
+            return oldPoison;
         }
 
         public override Timer ConstructTimer(Mobile m) => new PoisonTimer(m, this);

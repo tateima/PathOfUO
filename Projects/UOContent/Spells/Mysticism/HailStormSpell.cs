@@ -59,7 +59,7 @@ public class HailStormSpell : MysticSpell, ITargetingSpell<IPoint3D>
                     }
                 }
 
-                double damage = GetNewAosDamage(51, 1, 5, pvp);
+                double damage = GetNewAosDamage(41, 1, 5, pvp);
                 int naturePower = 0;
                 NatureAffinityPower(ref naturePower);
                 damage += (double)naturePower;

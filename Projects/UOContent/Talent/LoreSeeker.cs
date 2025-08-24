@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Server.Gumps;
+using Server.Items;
 
 namespace Server.Talent
 {
@@ -10,11 +11,13 @@ namespace Server.Talent
 
         public LoreSeeker()
         {
+            RequiredWeapon = new[] { typeof(BaseWeapon) };
             DisplayName = "Lore seeker";
-            Description = "Expose weaknesses in enemies on hit. Need 70 or above in one lore skill.";
+            Description = "Expose weaknesses in enemies on hit. Need 50 or above in one lore skill.";
             AdditionalDetail =
                 "Each point in this talent will also increase the skill gain by 1 for each skill point in any lore skill. The more lore skills you have, the greater the effect of the de-buff.";
             ImageID = 127;
+            MaxLevel = 3;
             CooldownSeconds = 30;
             GumpHeight = 85;
             AddEndY = 80;
@@ -27,7 +30,7 @@ namespace Server.Talent
             var validCount = 0;
             if (group != null)
             {
-                validCount += group.Skills.Count(skill => mobile.Skills[skill].Base >= 70);
+                validCount += group.Skills.Count(skill => mobile.Skills[skill].Base >= 50);
             }
 
             return validCount >= 1;
@@ -40,7 +43,7 @@ namespace Server.Talent
             {
                 foreach (var skillName in group.Skills)
                 {
-                    level += (int)attacker.Skills[skillName].Base / 20;
+                    level += (int)attacker.Skills[skillName].Base / 30;
                 }
             }
             return level;
@@ -58,11 +61,18 @@ namespace Server.Talent
                 var values = Enum.GetValues(typeof(ResistanceType));
                 if (values.Length > 0)
                 {
-                    var randomResistanceType = (ResistanceType)values.GetValue(Utility.Random(values.Length));
-                    ResMod = new ResistanceMod(randomResistanceType, "LoreSeeker", -(modifier * 2));
-                    target.AddResistanceMod(ResMod);
-                    _mobile = target;
-                    Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
+                    var resistanceType = values.GetValue(Utility.Random(values.Length));
+                    if (resistanceType != null)
+                    {
+                        var randomResistanceType = (ResistanceType)resistanceType;
+                        ResMod = new ResistanceMod(randomResistanceType, "LoreSeeker", -(modifier * 2));
+                        target.AddResistanceMod(ResMod);
+                        _mobile = target;
+                        _mobile.FixedParticles(0x373A, 10, 15, 5018, EffectLayer.Waist);
+                        _mobile.PlaySound(0x1EA);
+                        Timer.StartTimer(TimeSpan.FromSeconds(CooldownSeconds), ExpireTalentCooldown, out _talentTimerToken);
+                    }
+
                 }
             }
         }

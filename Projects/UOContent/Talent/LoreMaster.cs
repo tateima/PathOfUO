@@ -1,3 +1,6 @@
+using System.Linq;
+using Server.Gumps;
+
 namespace Server.Talent
 {
     public class LoreMaster : BaseTalent
@@ -12,6 +15,22 @@ namespace Server.Talent
             GumpHeight = 85;
             AddEndY = 80;
             MaxLevel = 3;
+        }
+
+        public override bool HasSkillRequirement(Mobile mobile) {
+            var group = SkillsGumpGroup.Groups.FirstOrDefault(group => group.Name == "Lore & Knowledge");
+            int numberOfMasteries = 0;
+            if (group is not null)
+            {
+                foreach (var skillName in group.Skills)
+                {
+                    if (mobile.Skills[skillName].Base >= 90)
+                    {
+                        numberOfMasteries++;
+                    }
+                }
+            }
+            return numberOfMasteries >= 3;
         }
     }
 }

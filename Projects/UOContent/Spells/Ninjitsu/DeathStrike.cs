@@ -149,7 +149,7 @@ public class DeathStrike : NinjaMove
                 var divisor = Steps >= 5 ? 30 : 80;
                 var baseDamage = ninjitsu / divisor * 10;
 
-                var maxDamage = Steps >= 5 ? 62 : 22;
+                var maxDamage = Steps >= 5 ? 52 : 17;
                 damage = Math.Clamp((int)(baseDamage + stalkingBonus), 0, maxDamage) + _damageBonus;
 
                 // Damage is physical.

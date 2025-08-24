@@ -31,7 +31,7 @@ namespace Server.Spells.Spellweaving
 
                 var skill = Caster.Skills.Spellweaving.Value;
 
-                var damage = Math.Max(11, 10 + (int)(skill / 24)) + FocusLevel;
+                var damage = Math.Max(8, 7 + (int)(skill / 24)) + FocusLevel;
 
                 var sdiBonus = AosAttributes.GetValue(Caster, AosAttribute.SpellDamage);
 

@@ -261,6 +261,7 @@ namespace Server.Mobiles
                     illusion.AlterLevels(bc.Level - 2, false, bc.Level - 2, bc.Level - 2);
                 }
                 illusion.Combatant = from;
+                illusion.Attack(from);
             }
 
             bc.PublicOverheadMessage(
@@ -500,10 +501,25 @@ namespace Server.Mobiles
             }
             if (bc.Backpack != null)
             {
+                using var queue = PooledRefQueue<Item>.Create();
                 Container.FindItemsByTypeEnumerator<Item> goldItems = bc.Backpack.FindItemsByType(typeof(Gold));
                 foreach(Item gold in goldItems)
                 {
-                    ((Gold)gold).Amount = (int)(((Gold)gold).Amount * goldBuff);
+                    var newGoldAmount = (int)(((Gold)gold).Amount * goldBuff);
+                    if (newGoldAmount < 1)
+                    {
+                        queue.Enqueue(gold);
+                    }
+                    else
+                    {
+                        ((Gold)gold).Amount = newGoldAmount;
+                    }
+                }
+
+                while (queue.Count > 0)
+                {
+                    var gold = queue.Dequeue();
+                    gold.Delete();
                 }
             }
 

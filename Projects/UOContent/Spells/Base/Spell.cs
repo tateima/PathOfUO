@@ -247,19 +247,28 @@ namespace Server.Spells
         public virtual int GetNewAosDamage(int bonus, int dice, int sides, bool playerVsPlayer, bool sdi, double scalar = 1.0)
         {
             var damage = Utility.Dice(dice, sides, bonus);
-            var multiplier = (int)(100 * ReagentsScale());
+            var reagentMultiplier = (int)(100 * ReagentsScale());
+            damage *= reagentMultiplier;
             if (Caster is PlayerMobile)
             {
+                var talentBonus = 0;
+                var talentEffectApplied = false;
                 PlayerMobile player = (PlayerMobile)Caster;
                 foreach (KeyValuePair<Type, BaseTalent> entry in player.Talents)
                 {
                     if (entry.Value.CanScaleSpellDamage(this) && entry.Value.HasSkillRequirement(Caster))
                     {
-                        multiplier += entry.Value.ModifySpellMultiplier();
+                        talentEffectApplied = true;
+                        talentBonus += AOS.Scale(damage, entry.Value.ModifySpellMultiplier());
                     }
                 }
+                if (talentBonus < 1 && talentEffectApplied)
+                {
+                    talentBonus = 1;
+                }
+                damage += talentBonus;
             }
-            damage *= multiplier;
+
             var inscribeSkill = GetInscribeFixed(Caster);
             var inscribeBonus = (inscribeSkill + 1000 * (inscribeSkill / 1000)) / 200;
             var damageBonus = inscribeBonus;
@@ -310,7 +319,6 @@ namespace Server.Spells
             {
                 foreach (Type type in Info.Reagents)
                 {
-
                     var reagents = Caster.Backpack.FindItemsByType(type);
                     hasReagents = reagents.Current != null;
                 }
@@ -342,9 +350,9 @@ namespace Server.Spells
 
         public virtual double GetResistSkill(Mobile m) => m.Skills.MagicResist.Value;
 
-        public virtual double GetDamageScalar(Mobile target)
+        public virtual double GetDamageScalarFromTalents()
         {
-            var scalar = ReagentsScale();
+            var scalar = 0.0;
             if (Caster is PlayerMobile)
             {
                 PlayerMobile player = (PlayerMobile)Caster;
@@ -352,11 +360,16 @@ namespace Server.Spells
                 {
                     if (entry.Value.CanScaleSpellDamage(this) && entry.Value.HasSkillRequirement(Caster))
                     {
-                        // add 1% for each talent point
                         scalar += entry.Value.ModifySpellScalar();
                     }
                 }
             }
+            return scalar;
+        }
+
+        public virtual double GetDamageScalar(Mobile target)
+        {
+            var scalar = ReagentsScale() + GetDamageScalarFromTalents();
             if (!Core.AOS) // EvalInt stuff for AoS is handled elsewhere
             {
                 var casterEI = Caster.Skills[DamageSkill].Value;
@@ -834,7 +847,7 @@ namespace Server.Spells
                          (baseWand.Charges <= 0 || baseWand.Parent != Caster)))
             {
                 DoFizzle();
-            } else if (RequiresReagents && !ConsumeReagents())
+            } else if (!ConsumeReagents() && RequiresReagents)
             {
                 Caster.LocalOverheadMessage(MessageType.Regular, 0x22, 502630); // More reagents are needed for this spell.
                 return false;
