@@ -817,7 +817,7 @@
     ]
   },
   {
-    "type": "Spawner",
+    "$type": "Spawner",
     "guid": "46dc4d43-91c1-4d09-a0e0-9d2e8980497e",
     "name": "Spawner (123)",
     "location": [2477, 416, 15],
