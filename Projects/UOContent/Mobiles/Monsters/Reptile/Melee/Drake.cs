@@ -68,7 +68,7 @@ namespace Server.Mobiles
 
         public override void OnBeforeSpawn(Point3D location, Map m)
         {
-            if (Utility.Random(1000) < 3 && this is not ManaDrake or PrismaticDrake)
+            if (Utility.Random(1000) < 3)
             {
                 BaseCreature creature = Utility.RandomBool() ? new ManaDrake() : new PrismaticDrake();
                 creature.MoveToWorld(location, m);

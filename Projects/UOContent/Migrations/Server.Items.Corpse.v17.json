@@ -132,6 +132,14 @@
       "ruleArguments": [
         ""
       ]
+    },
+    {
+      "name": "PreviousLife",
+      "type": "string",
+      "rule": "PrimitiveTypeMigrationRule",
+      "ruleArguments": [
+        ""
+      ]
     }
   ]
 }

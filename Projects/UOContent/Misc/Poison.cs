@@ -42,23 +42,6 @@ public class PoisonImpl : Poison
 
     public override PoisonFamily Family { get; }
 
-    public static Poison IncreaseLevel(Poison oldPoison)
-    {
-        var newPoison = oldPoison == null ? null : GetPoison(oldPoison.Level + 1);
-
-        return newPoison ?? oldPoison;
-    }
-
-    public static Poison DecreaseLevel(Poison oldPoison)
-    {
-        if (oldPoison is { Level: > 1 })
-        {
-            var newPoison = GetPoison(oldPoison.Level - 1);
-            return newPoison ?? oldPoison;
-        }
-        return oldPoison;
-    }
-
     public override Timer ConstructTimer(Mobile m) => new PoisonTimer(m, this);
 
     public class PoisonTimer : Timer

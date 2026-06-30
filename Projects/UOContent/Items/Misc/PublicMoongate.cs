@@ -481,8 +481,8 @@ public class MoongateGump : DynamicGump
 
         var entry = list.Entries[listEntry];
 
-        if (!PlanarTravel.CanPlanarTravel(_mobile)) {
-            _mobile.LocalOverheadMessage(MessageType.Regular, 0x22, false, PlanarTravel.NO_TRAVEL_MESSAGE);
+        if (!PlanarTravel.CanPlanarTravel(from)) {
+            from.LocalOverheadMessage(MessageType.Regular, 0x22, false, PlanarTravel.NO_TRAVEL_MESSAGE);
         }
         else if (!from.InRange(_moongate.GetWorldLocation(), 1) || from.Map != _moongate.Map)
         {
@@ -519,7 +519,7 @@ public class MoongateGump : DynamicGump
 
             from.MoveToWorld(entry.Location, list.Map);
 
-            PlanarTravel.NextPlanarTravel(_mobile, 1);
+            PlanarTravel.NextPlanarTravel(from, 1);
 
             Effects.PlaySound(entry.Location, list.Map, 0x1FE);
         }

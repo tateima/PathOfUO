@@ -96,19 +96,7 @@ public class DungeonLevelModHandler
         {
             NetState.FlushAll();
             var options = JsonConfig.GetOptions(new TextDefinitionConverterFactory());
-
-            var modRecords = new List<DynamicJson>(DungeonLevelMods.Count);
-            foreach (var (_, value) in DungeonLevelMods)
-            {
-                var dynamicJson = DynamicJson.Create(value.GetType());
-                value.ToJson(dynamicJson, options);
-                modRecords.Add(dynamicJson);
-            }
-            if (modRecords.Count == 0)
-            {
-                return;
-            }
-            JsonConfig.Serialize(DataPath, modRecords, options);
+            JsonConfig.Serialize(DataPath, DungeonLevelMods, options);
         }
     }
 

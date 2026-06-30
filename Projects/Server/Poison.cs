@@ -52,6 +52,10 @@ public abstract class Poison : ISpanParsable<Poison>
         oldPoison == null ? null : GetPoisonByIndex(oldPoison.Index + 1) ?? oldPoison;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Poison DecreaseLevel(Poison oldPoison) =>
+        oldPoison == null ? null : GetPoisonByIndex(oldPoison.Index - 1) ?? oldPoison;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Poison GetPoison(ReadOnlySpan<char> name) =>
         PoisonsByName.GetAlternateLookup<ReadOnlySpan<char>>().TryGetValue(name, out var poison) ? poison : null;
 

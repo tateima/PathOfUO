@@ -196,7 +196,7 @@ public partial class Corpse : Container, ICarvable
         }
     }
 
-    [SerializableField(16)]
+    [SerializableField(17)]
     [SerializedCommandProperty(AccessLevel.GameMaster)]
     private string _previousLife;
 

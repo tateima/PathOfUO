@@ -59,6 +59,67 @@
       "ruleArguments": [
         "EncodedInt"
       ]
+    },
+    {
+      "name": "SocketAmount",
+      "type": "int",
+      "usesSaveFlag": true,
+      "rule": "PrimitiveTypeMigrationRule",
+      "ruleArguments": [
+        "EncodedInt"
+      ]
+    },
+    {
+      "name": "Sockets",
+      "type": "string",
+      "usesSaveFlag": true,
+      "rule": "PrimitiveTypeMigrationRule",
+      "ruleArguments": [
+        ""
+      ]
+    },
+    {
+      "name": "Enchanted",
+      "type": "bool",
+      "usesSaveFlag": true,
+      "rule": "PrimitiveTypeMigrationRule",
+      "ruleArguments": [
+        ""
+      ]
+    },
+    {
+      "name": "AlignmentRaw",
+      "type": "string",
+      "usesSaveFlag": true,
+      "rule": "PrimitiveTypeMigrationRule",
+      "ruleArguments": [
+        ""
+      ]
+    },
+    {
+      "name": "TalentIndex",
+      "type": "int",
+      "rule": "PrimitiveTypeMigrationRule",
+      "ruleArguments": [
+        "EncodedInt"
+      ]
+    },
+    {
+      "name": "TalentLevel",
+      "type": "int",
+      "rule": "PrimitiveTypeMigrationRule",
+      "ruleArguments": [
+        "EncodedInt"
+      ]
+    },
+    {
+      "name": "Crafter",
+      "type": "string",
+      "usesSaveFlag": true,
+      "rule": "PrimitiveTypeMigrationRule",
+      "ruleArguments": [
+        ""
+      ]
     }
   ]
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text.Json;
-using Server.Json;
+using System.Text.Json.Serialization;
 
 namespace Server.Dungeon;
 
@@ -21,7 +21,6 @@ public class DungeonLevelMod
     public int Duration { get; set; }
 
     private TimerExecutionToken _timerToken;
-
     public int X1 { get; set; }
     public int X2 { get; set; }
     public int Y1 { get; set; }
@@ -29,19 +28,6 @@ public class DungeonLevelMod
 
     public DungeonLevelMod()
     {
-    }
-
-    public virtual void ToJson(DynamicJson json, JsonSerializerOptions options)
-    {
-        json.Type = GetType().Name;
-        json.SetProperty("Name", options, Name);
-        json.SetProperty("Duration", options, Duration);
-        json.SetProperty("Difficulty", options, Difficulty.ToString());
-        json.SetProperty("LocationMap", options, LocationMap.ToString());
-        json.SetProperty("X1", options, X1);
-        json.SetProperty("X2", options, X2);
-        json.SetProperty("Y1", options, Y1);
-        json.SetProperty("Y2", options, Y2);
     }
 
     public void Tick()
