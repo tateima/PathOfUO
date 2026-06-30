@@ -10,6 +10,11 @@ public partial class Silvani : BaseCreature
     {
         Body = 176;
         BaseSoundID = 0x467;
+        LevelRange = [70, 90];
+        StrPerLevel = [2, 4];
+        IntPerLevel = [2, 5];
+        DexPerLevel = [2, 5];
+        ResistancePerLevel = [1, 3];
 
         SetStr(253, 400);
         SetDex(157, 850);

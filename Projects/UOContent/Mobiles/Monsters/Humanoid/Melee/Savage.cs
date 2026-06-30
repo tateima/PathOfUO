@@ -21,20 +21,28 @@ namespace Server.Mobiles
                 Body = 183;
             }
 
-            SetStr(96, 115);
-            SetDex(86, 105);
-            SetInt(51, 65);
+            LevelRange = [5, 10];
+            StrPerLevel = [4, 5];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [7, 10];
+            ResistancePerLevel = [1, 2];
 
-            SetDamage(23, 27);
+            SetStr(25, 40);
+            SetDex(15, 25);
+            SetInt(10, 20);
+
+            SetHits(30, 76);
+
+            SetDamage(6, 8);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetSkill(SkillName.Fencing, 60.0, 82.5);
-            SetSkill(SkillName.Macing, 60.0, 82.5);
-            SetSkill(SkillName.Poisoning, 60.0, 82.5);
-            SetSkill(SkillName.MagicResist, 57.5, 80.0);
-            SetSkill(SkillName.Swords, 60.0, 82.5);
-            SetSkill(SkillName.Tactics, 60.0, 82.5);
+            SetSkill(SkillName.Fencing, 40.1, 50.0);
+            SetSkill(SkillName.Macing, 40.1, 50.0);
+            SetSkill(SkillName.Poisoning, 40.1, 50.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Swords, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
 
             Fame = 1000;
             Karma = -1000;
@@ -69,7 +77,7 @@ namespace Server.Mobiles
         public override int Meat => 1;
         public override bool AlwaysMurderer => true;
         public override bool ShowFameTitle => false;
-        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.SavagesAndOrcs };
 
         public override void GenerateLoot()
         {

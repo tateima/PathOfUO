@@ -17,6 +17,11 @@ public partial class Serado : BaseChampion
 
         Body = 249;
         Hue = 0x96C;
+        LevelRange = [80, 90];
+        StrPerLevel = [2, 5];
+        IntPerLevel = [1, 2];
+        DexPerLevel = [2, 5];
+        ResistancePerLevel = [1, 2];
 
         SetStr(1000);
         SetDex(150);

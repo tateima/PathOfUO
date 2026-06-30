@@ -35,11 +35,11 @@ namespace Server.Spells.Sixth
 
                 if (Core.AOS)
                 {
-                    damage = GetNewAosDamage(30, 1, 5, m);
+                    damage = GetNewAosDamage(0, 1, 12, m);
                 }
                 else
                 {
-                    damage = Utility.Random(24, 18);
+                    damage = Utility.Random(12, 1);
 
                     if (CheckResisted(m))
                     {

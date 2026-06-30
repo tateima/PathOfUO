@@ -13,7 +13,10 @@ namespace Server.Mobiles
             Hue = Utility.RandomSlimeHue() | 0x8000;
 
             BaseSoundID = 0x270;
-
+            LevelRange = [5, 25];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(94, 170);
             SetDex(56, 75);
             SetInt(6, 10);

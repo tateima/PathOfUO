@@ -8,10 +8,10 @@ namespace Server.Mobiles
 {
     public static class MonsterBuff
     {
-        private static readonly TimeSpan FastRegenRate = TimeSpan.FromSeconds(1);
+        private static readonly TimeSpan FastRegenRate = TimeSpan.FromSeconds(5);
         private static readonly TimeSpan CPUSaverRate = TimeSpan.FromSeconds(3);
         private static readonly TimeSpan CorruptionRate = TimeSpan.FromSeconds(7);
-        private static readonly TimeSpan ElementalDamageRate = TimeSpan.FromSeconds(8);
+        private static readonly TimeSpan ElementalDamageRate = TimeSpan.FromSeconds(10);
 
         public static readonly int CorruptionRange = 12;
 
@@ -659,6 +659,218 @@ namespace Server.Mobiles
             }
         }
 
+        public static void ApplyPhysicalResistanceConversion(BaseCreature bc, int seedOverflow)
+        {
+            if (bc.BasePhysicalResistance < 100)
+            {
+                int newPhysicalValue = bc.BasePhysicalResistance + Utility.RandomMinMax(
+                    bc.PhysicalResistancePerLevel[0],
+                    bc.PhysicalResistancePerLevel[1]
+                ) + seedOverflow;
+                if (bc.PhysicalResistanceSeed + newPhysicalValue > 100)
+                {
+                    int physicalOverflow = 100 - bc.PhysicalResistanceSeed;
+                    bc.PhysicalResistanceSeed = 100;
+                    ApplyFireResistanceConversion(bc, physicalOverflow);
+                }
+                else
+                {
+                    bc.PhysicalResistanceSeed = newPhysicalValue;
+                }
+            }
+        }
+
+        public static void ApplyFireResistanceConversion(BaseCreature bc, int seedOverflow)
+        {
+            if (bc.BaseFireResistance < 100)
+            {
+                int newFireValue = bc.BaseFireResistance + Utility.RandomMinMax(
+                    bc.FireResistancePerLevel[0],
+                    bc.FireResistancePerLevel[1]
+                ) + seedOverflow;
+                if (bc.FireResistSeed + newFireValue > 100)
+                {
+                    int fireOverflow = 100 - bc.FireResistSeed;
+                    bc.FireResistSeed = 100;
+                    ApplyEnergyResistanceConversion(bc, fireOverflow);
+                }
+                else
+                {
+                    bc.FireResistSeed = newFireValue;
+                }
+            }
+        }
+
+        public static void ApplyPoisonResistanceConversion(BaseCreature bc)
+        {
+            if (bc.BasePoisonResistance < 100)
+            {
+                int newPoisonValue = bc.BasePoisonResistance + Utility.RandomMinMax(
+                    bc.PoisonResistancePerLevel[0],
+                    bc.PoisonResistancePerLevel[1]
+                );
+                if (bc.PoisonResistSeed + newPoisonValue > 100)
+                {
+                    int poisonOverflow = 100 - bc.PoisonResistSeed;
+                    bc.PoisonResistSeed = 100;
+                    ApplyPhysicalResistanceConversion(bc, poisonOverflow);
+                }
+                else
+                {
+                    bc.PoisonResistSeed = newPoisonValue;
+                }
+            }
+        }
+        public static void ApplyEnergyResistanceConversion(BaseCreature bc, int seedOverflow)
+        {
+            if (bc.BaseEnergyResistance < 100)
+            {
+                int newEnergyValue = bc.BaseEnergyResistance + Utility.RandomMinMax(
+                    bc.EnergyResistancePerLevel[0],
+                    bc.EnergyResistancePerLevel[1]
+                ) + seedOverflow;
+                if (bc.EnergyResistSeed + newEnergyValue > 100)
+                {
+                    int energyOverflow = 100 - bc.EnergyResistSeed;
+                    bc.EnergyResistSeed = 100;
+                    ApplyColdResistanceConversion(bc, energyOverflow);
+                }
+                else
+                {
+                    bc.EnergyResistSeed = newEnergyValue;
+                }
+            }
+        }
+
+        public static void ApplyColdResistanceConversion(BaseCreature bc, int seedOverflow)
+        {
+            if (bc.BaseColdResistance < 100)
+            {
+                int newColdValue = bc.BaseColdResistance + Utility.RandomMinMax(
+                    bc.ColdResistancePerLevel[0],
+                    bc.ColdResistancePerLevel[1]
+                ) + seedOverflow;
+                if (bc.ColdResistSeed + newColdValue > 100)
+                {
+                    bc.ColdResistSeed = 100;
+                }
+                else
+                {
+                    bc.ColdResistSeed = newColdValue;
+                }
+            }
+        }
+
+
+        public static void AddLevel(BaseCreature bc, int newLevel)
+        {
+            bc.RawStr += Utility.RandomMinMax(bc.StrPerLevel[0], bc.StrPerLevel[1]);
+            if (bc.HitsMaxSeed > 0)
+            {
+                bc.HitsMaxSeed += Utility.RandomMinMax(bc.StrPerLevel[0], bc.StrPerLevel[1]);
+                bc.Hits = bc.HitsMax;
+            }
+            bc.RawDex += Utility.RandomMinMax(bc.DexPerLevel[0], bc.DexPerLevel[1]);
+            if (bc.StamMaxSeed > 0)
+            {
+                bc.StamMaxSeed += Utility.RandomMinMax(bc.DexPerLevel[0], bc.DexPerLevel[1]);
+                bc.Stam = bc.StamMax;
+            }
+            bc.RawInt += Utility.RandomMinMax(bc.IntPerLevel[0], bc.IntPerLevel[1]);
+            if (bc.ManaMaxSeed > 0)
+            {
+                bc.ManaMaxSeed += Utility.RandomMinMax(bc.IntPerLevel[0], bc.IntPerLevel[1]);
+                bc.Mana = bc.ManaMax;
+            }
+            // every 3 levels, increase resistances
+            if (newLevel % 3 == 0)
+            {
+                ApplyPhysicalResistanceConversion(bc, 0);
+                ApplyFireResistanceConversion(bc, 0);
+                ApplyPoisonResistanceConversion(bc);
+                ApplyColdResistanceConversion(bc, 0);
+                ApplyEnergyResistanceConversion(bc, 0);
+            }
+            for (var i = 0; i < bc.Skills.Length; i++)
+            {
+                var skill = bc.Skills[i];
+
+                if (skill.Base is > 0.0 and < 120.0)
+                {
+                    double skillGain = Utility.RandomMinMax(bc.SkillsPerLevel[0], bc.SkillsPerLevel[1]);
+                    skill.Base += skillGain;
+                    if (skill.Base > 120.0)
+                    {
+                        skill.Base = 120.0;
+                    }
+                }
+            }
+        }
+
+        public static void CalculateResistanceTypePerLevel(BaseCreature bc, ResistanceType resistanceType)
+        {
+            if (resistanceType is ResistanceType.Cold)
+            {
+                bc.ColdResistancePerLevel = bc.ResistancePerLevel;
+            } else if (resistanceType is ResistanceType.Poison)
+            {
+                bc.PoisonResistancePerLevel = bc.ResistancePerLevel;
+            } else if (resistanceType is ResistanceType.Energy)
+            {
+                bc.EnergyResistancePerLevel = bc.ResistancePerLevel;
+            } else if (resistanceType is ResistanceType.Fire)
+            {
+                bc.FireResistancePerLevel = bc.ResistancePerLevel;
+            }
+        }
+
+        public static void SquashMonster(BaseCreature bc)
+        {
+            ResistanceType[] resistanceTypes = [ResistanceType.Fire, ResistanceType.Energy, ResistanceType.Poison, ResistanceType.Cold];
+            // remember their two highest elemental resistances
+            int firstMax = int.MinValue;
+            int secondMax = int.MinValue;
+            ResistanceType highestResistanceType = ResistanceType.Physical;
+            ResistanceType secondHighestResistanceType = ResistanceType.Physical;
+            foreach (ResistanceType resistanceType in resistanceTypes)
+            {
+                if (bc.GetResistance(resistanceType) > firstMax)
+                {
+                    secondMax = firstMax;
+                    highestResistanceType = resistanceType;
+                    firstMax = bc.GetResistance(resistanceType);
+                }
+                else if (bc.GetResistance(resistanceType) > secondMax)
+                {
+                    secondHighestResistanceType = resistanceType;
+                    secondMax = bc.GetResistance(resistanceType);
+                }
+            }
+            CalculateResistanceTypePerLevel(bc, highestResistanceType);
+            CalculateResistanceTypePerLevel(bc, secondHighestResistanceType);
+            // global reset on all resistances
+            bc.SetResistance(ResistanceType.Physical, 5);
+            bc.SetResistance(ResistanceType.Fire, 5);
+            bc.SetResistance(ResistanceType.Cold, 5);
+            bc.SetResistance(ResistanceType.Poison, 5);
+            bc.SetResistance(ResistanceType.Energy, 5);
+            // set stats to 10
+            bc.SetStr(10);
+            bc.SetDex(10);
+            bc.SetInt(10);
+            bc.SetHits(20);
+            // baseline "high" starter skills
+            for (var i = 0; i < bc.Skills.Length; i++)
+            {
+                var skill = bc.Skills[i];
+
+                if (skill.Base > 40.0)
+                {
+                    skill.Base = 30.0;
+                }
+            }
+        }
+
         public static void RandomMonsterBuffs(BaseCreature creature, int maxBuffs)
         {
             var challengerBuffs = 0;
@@ -1015,10 +1227,9 @@ namespace Server.Mobiles
             {
                 if (!m_Owner.Deleted && m_Owner.IsRegenerative && m_Owner.Map != Map.Internal)
                 {
-                    int staticGrowth = Utility.RandomMinMax(8, 10);
-                    int dynamicGrowth = AOS.Scale(m_Owner.HitsMax, 2);
-                    m_Owner.Hits += staticGrowth > dynamicGrowth ? staticGrowth : dynamicGrowth;
-                    Delay = Interval = m_Owner.HitsMax < m_Owner.HitsMax * .75 ? FastRegenRate : CPUSaverRate;
+                    int staticGrowth = Utility.RandomMinMax(1, 3);
+                    m_Owner.Hits += staticGrowth;
+                    Delay = Interval = m_Owner.HitsMax < m_Owner.HitsMax * .75 ? FastRegenRate : ElementalDamageRate;
                 }
                 else
                 {

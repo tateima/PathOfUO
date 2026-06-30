@@ -19,31 +19,36 @@ public partial class Meraktus : BaseChampion
         Body = 263;
         BaseSoundID = 680;
         Hue = 0x835;
+        LevelRange = [75, 90];
+        StrPerLevel = [1, 7];
+        IntPerLevel = [1, 4];
+        DexPerLevel = [1, 3];
+        ResistancePerLevel = [1, 2];
 
-        SetStr(1419, 1438);
-        SetDex(309, 413);
-        SetInt(129, 131);
+        SetStr(60, 70);
+        SetDex(72, 90);
+        SetInt(50, 70);
 
-        SetHits(4100, 4200);
+        SetHits(180, 280);
 
-        SetDamage(16, 30);
+        SetDamage(4, 13);
 
         SetDamageType(ResistanceType.Physical, 100);
 
-        SetResistance(ResistanceType.Physical, 65, 90);
-        SetResistance(ResistanceType.Fire, 65, 70);
-        SetResistance(ResistanceType.Cold, 50, 60);
-        SetResistance(ResistanceType.Poison, 40, 60);
-        SetResistance(ResistanceType.Energy, 50, 55);
+        SetResistance(ResistanceType.Physical, 5, 20);
+        SetResistance(ResistanceType.Fire, 5, 10);
+        SetResistance(ResistanceType.Cold, 5, 10);
+        SetResistance(ResistanceType.Poison, 5, 20);
+        SetResistance(ResistanceType.Energy, 5, 10);
 
         // SetSkill( SkillName.Meditation, Unknown );
         // SetSkill( SkillName.EvalInt, Unknown );
         // SetSkill( SkillName.Magery, Unknown );
         // SetSkill( SkillName.Poisoning, Unknown );
         SetSkill(SkillName.Anatomy, 0);
-        SetSkill(SkillName.MagicResist, 107.0, 111.3);
-        SetSkill(SkillName.Tactics, 107.0, 117.0);
-        SetSkill(SkillName.Wrestling, 100.0, 105.0);
+        SetSkill(SkillName.MagicResist, 53.0, 63.5);
+        SetSkill(SkillName.Tactics, 53.0, 63.5);
+        SetSkill(SkillName.Wrestling, 53.0, 63.5);
 
         Fame = 70000;
         Karma = -70000;

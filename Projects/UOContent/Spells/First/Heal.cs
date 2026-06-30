@@ -64,7 +64,7 @@ namespace Server.Spells.First
                 if (Core.AOS)
                 {
                     toHeal = Caster.Skills.Magery.Value / 12;
-                    toHeal += Utility.RandomMinMax(1, 4);
+                    // toHeal += Utility.RandomMinMax(1, 4);
 
                     if (Core.SE && Caster != m)
                     {
@@ -74,7 +74,7 @@ namespace Server.Spells.First
                 else
                 {
                     toHeal = (int)(Caster.Skills.Magery.Value * 0.1);
-                    toHeal += Utility.Random(1, 5);
+                    // toHeal += Utility.Random(1, 5);
                 }
                 toHeal *= ReagentsScale();
 

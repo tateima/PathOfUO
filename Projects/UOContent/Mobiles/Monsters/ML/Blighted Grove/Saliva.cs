@@ -14,27 +14,34 @@ namespace Server.Mobiles
 
             Hue = 0x11E;
 
-            SetStr(110, 206);
-            SetDex(123, 222);
-            SetInt(80, 127);
+            LevelRange = [55, 65];
+            StrPerLevel = [2, 5];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(409, 842);
+            SetStr(96, 145);
+            SetDex(70, 100);
+            SetInt(42, 75);
 
-            SetDamage(20, 22);
+            SetHits(120, 180);
+
+            SetDamage(2, 9);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 46, 48);
-            SetResistance(ResistanceType.Fire, 32, 40);
-            SetResistance(ResistanceType.Cold, 34, 49);
-            SetResistance(ResistanceType.Poison, 40, 48);
-            SetResistance(ResistanceType.Energy, 35, 39);
+            SetResistance(ResistanceType.Physical, 5, 25);
+            SetResistance(ResistanceType.Fire, 10, 15);
+            SetResistance(ResistanceType.Cold, 10, 30);
+            SetResistance(ResistanceType.Poison, 10, 30);
+            SetResistance(ResistanceType.Energy, 10, 15);
 
-            SetSkill(SkillName.Wrestling, 106.4, 128.8);
-            SetSkill(SkillName.Tactics, 129.9, 141.0);
-            SetSkill(SkillName.MagicResist, 84.3, 105.0);
+            SetSkill(SkillName.Wrestling, 40.4, 50.1);
+            SetSkill(SkillName.Tactics, 40.4, 50.1);
+            SetSkill(SkillName.MagicResist, 40.4, 50.1);
 
-            // TODO: Fame/Karma?
+            Fame = 20000;
+            Karma = -20000;
         }
 
         public override string CorpseName => "a Saliva corpse";

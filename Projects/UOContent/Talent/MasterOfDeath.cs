@@ -94,11 +94,11 @@ namespace Server.Talent
                 var undead = RandomUndead();
                 if (undead != null)
                 {
+                    undead.LevelRange = [undead.LevelRange[0], undead.LevelRange[1]+Level];
+                    undead.SetLevel();
                     // steal level % of stats from victim -- the stronger the victim the better the summon
                     undead = TransferMobileStats(victim, undead);
-
                     EmptyCreatureBackpack(undead);
-                    undead.SetLevel();
                     SpellHelper.Summon(undead, killer, 0x1FE, TimeSpan.FromMinutes(2), false, false);
                     undead.Say("Master...");
                     Effects.PlaySound(killer.Location, killer.Map, 0x1FB);

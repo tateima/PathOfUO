@@ -7,6 +7,10 @@ namespace Server.Mobiles
         [Constructible]
         public LightSteed(string name = "a light steed") : base(name)
         {
+            LevelRange = [40, 60];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             Hue = Deity.LightHue;
             Alignment = Deity.Alignment.Light;
         }

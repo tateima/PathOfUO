@@ -12,6 +12,11 @@ namespace Server.Mobiles
         public BogThing() : base(AIType.AI_Melee)
         {
             Body = 780;
+            LevelRange = [10, 20];
+            StrPerLevel = [1, 4];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [2, 3];
 
             SetStr(801, 900);
             SetDex(46, 65);

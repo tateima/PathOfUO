@@ -12,13 +12,19 @@ namespace Server.Mobiles
             Body = 0x109;
             BaseSoundID = 0x16A;
 
-            SetStr(801, 828);
-            SetDex(102, 118);
-            SetInt(102, 120);
+            LevelRange = [65, 75];
+            StrPerLevel = [2, 7];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 4];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(1480, 1500);
+            SetStr(116, 165);
+            SetDex(50, 80);
+            SetInt(62, 110);
 
-            SetDamage(21, 26);
+            SetHits(150, 220);
+
+            SetDamage(3, 11);
 
             SetDamageType(ResistanceType.Physical, 60);
             SetDamageType(ResistanceType.Fire, 10);
@@ -26,18 +32,19 @@ namespace Server.Mobiles
             SetDamageType(ResistanceType.Poison, 10);
             SetDamageType(ResistanceType.Energy, 10);
 
-            SetResistance(ResistanceType.Physical, 65, 75);
-            SetResistance(ResistanceType.Fire, 70, 85);
-            SetResistance(ResistanceType.Cold, 25, 35);
-            SetResistance(ResistanceType.Poison, 35, 43);
-            SetResistance(ResistanceType.Energy, 36, 45);
+            SetResistance(ResistanceType.Physical, 5, 25);
+            SetResistance(ResistanceType.Fire, 10, 20);
+            SetResistance(ResistanceType.Cold, 5, 15);
+            SetResistance(ResistanceType.Poison, 10, 30);
+            SetResistance(ResistanceType.Energy, 5, 15);
 
-            SetSkill(SkillName.Wrestling, 103.5, 117.4);
-            SetSkill(SkillName.Tactics, 100.1, 109.8);
-            SetSkill(SkillName.MagicResist, 85.5, 98.5);
-            SetSkill(SkillName.Anatomy, 75.4, 79.8);
+            SetSkill(SkillName.Wrestling, 40.4, 50.1);
+            SetSkill(SkillName.Tactics, 40.4, 50.1);
+            SetSkill(SkillName.MagicResist, 40.4, 50.1);
+            SetSkill(SkillName.Anatomy, 40.4, 50.1);
 
-            // TODO: Fame/Karma
+            Fame = 20000;
+            Karma = -20000;
         }
 
         public override string CorpseName => "a hydra corpse";

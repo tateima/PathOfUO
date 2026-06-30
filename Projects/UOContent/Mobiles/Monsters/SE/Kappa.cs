@@ -12,7 +12,11 @@ namespace Server.Mobiles
         public Kappa() : base(AIType.AI_Melee)
         {
             Body = 240;
-
+            LevelRange = [22, 37];
+            StrPerLevel = [2, 5];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [3, 5];
+            ResistancePerLevel = [1, 3];
             SetStr(186, 230);
             SetDex(51, 75);
             SetInt(41, 55);

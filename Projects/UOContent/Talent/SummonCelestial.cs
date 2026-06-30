@@ -62,6 +62,7 @@ namespace Server.Talent
                     from.Animate(269, 7, 1, true, false, 0);
 
                     var creature = (BaseCreature)ScaleMobile(new Celestial());
+                    creature.LevelRange = [((PlayerMobile)from).Level, ((PlayerMobile)from).Level + Level];
                     creature.SetLevel();
                     SpellHelper.Summon(creature, from, 0x217, TimeSpan.FromMinutes(6), false, false);
                     _startSummonDate = DateTime.Now;

@@ -16,29 +16,34 @@ namespace Server.Mobiles
         {
             Body = 765;
 
-            SetStr(201, 300);
-            SetDex(71, 90);
-            SetInt(451, 500);
+            LevelRange = [59, 76];
+            StrPerLevel = [2, 3];
+            IntPerLevel = [2, 9];
+            DexPerLevel = [2, 2];
+            ResistancePerLevel = [2, 3];
 
-            SetHits(121, 180);
+            SetStr(56, 75);
+            SetDex(30, 70);
+            SetInt(92, 160);
 
-            SetDamage(4, 10);
+            SetHits(105, 190);
 
+            SetDamage(3, 7);
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 20, 30);
-            SetResistance(ResistanceType.Fire, 35, 45);
-            SetResistance(ResistanceType.Cold, 30, 40);
-            SetResistance(ResistanceType.Poison, 10, 20);
-            SetResistance(ResistanceType.Energy, 35, 45);
+            SetResistance(ResistanceType.Physical, 10, 20);
+            SetResistance(ResistanceType.Fire, 15, 25);
+            SetResistance(ResistanceType.Cold, 10, 30);
+            SetResistance(ResistanceType.Poison, 5, 10);
+            SetResistance(ResistanceType.Energy, 15, 25);
 
-            SetSkill(SkillName.Anatomy, 80.1, 90.0);
-            SetSkill(SkillName.EvalInt, 80.2, 100.0);
-            SetSkill(SkillName.Magery, 99.1, 100.0);
-            SetSkill(SkillName.Meditation, 80.2, 100.0);
-            SetSkill(SkillName.MagicResist, 140.1, 150.0);
-            SetSkill(SkillName.Tactics, 80.1, 90.0);
-            SetSkill(SkillName.Wrestling, 80.1, 90.0);
+            SetSkill(SkillName.Anatomy, 53.0, 63.5);
+            SetSkill(SkillName.EvalInt, 53.0, 63.5);
+            SetSkill(SkillName.Magery, 53.0, 63.5);
+            SetSkill(SkillName.Meditation, 53.0, 63.5);
+            SetSkill(SkillName.MagicResist, 53.0, 63.5);
+            SetSkill(SkillName.Tactics, 53.0, 63.5);
+            SetSkill(SkillName.Wrestling, 53.0, 63.5);
 
             Fame = 15000;
             Karma = -15000;

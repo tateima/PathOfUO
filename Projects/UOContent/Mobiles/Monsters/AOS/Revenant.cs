@@ -15,23 +15,28 @@ namespace Server.Mobiles
             Body = 400;
             Hue = 1;
             // TODO: Sound values?
-
+            SetSkill(SkillName.SpiritSpeak, 50.1, 55.0); // magic resist is absolute value of spiritspeak
             var scalar = caster.Skills.SpiritSpeak.Value * 0.01;
 
             m_Target = target;
             m_ExpireTime = Core.Now + duration;
+            LevelRange = [20, 40];
+            StrPerLevel = [3, 6];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 2];
+            ResistancePerLevel = [1, 2];
 
-            SetStr(200);
-            SetDex(150);
-            SetInt(150);
+            SetStr(90);
+            SetDex(50);
+            SetInt(20);
 
-            SetDamage(16, 17);
+            SetDamage(2, 12);
 
             // Bestiary says 50 phys 50 cold, animal lore says differently
             SetDamageType(ResistanceType.Physical, 100);
 
             SetSkill(SkillName.MagicResist, 100.0 * scalar); // magic resist is absolute value of spiritspeak
-            SetSkill(SkillName.Tactics, 100.0);              // always 100
+            SetSkill(SkillName.Tactics, 50.1, 55.0);
             SetSkill(
                 SkillName.Swords,
                 100.0 * scalar
@@ -40,11 +45,11 @@ namespace Server.Mobiles
 
             scalar /= 1.2;
 
-            SetResistance(ResistanceType.Physical, 40 + (int)(20 * scalar), 50 + (int)(20 * scalar));
-            SetResistance(ResistanceType.Cold, 40 + (int)(20 * scalar), 50 + (int)(20 * scalar));
-            SetResistance(ResistanceType.Fire, (int)(20 * scalar));
-            SetResistance(ResistanceType.Poison, 100);
-            SetResistance(ResistanceType.Energy, 40 + (int)(20 * scalar), 50 + (int)(20 * scalar));
+            SetResistance(ResistanceType.Physical, 10, 30);
+            SetResistance(ResistanceType.Cold, 10, 30);
+            SetResistance(ResistanceType.Fire, 5, 15);
+            SetResistance(ResistanceType.Poison, 10, 30);
+            SetResistance(ResistanceType.Energy, 10, 20);
 
             Fame = 0;
             Karma = 0;

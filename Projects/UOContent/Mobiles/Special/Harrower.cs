@@ -60,6 +60,11 @@ public partial class Harrower : BaseCreature
     {
         Instances.Add(this);
         Body = 146;
+        LevelRange = [70, 90];
+        StrPerLevel = [2, 3];
+        IntPerLevel = [2, 6];
+        DexPerLevel = [2, 3];
+        ResistancePerLevel = [3, 4];
 
         SetStr(900, 1000);
         SetDex(125, 135);

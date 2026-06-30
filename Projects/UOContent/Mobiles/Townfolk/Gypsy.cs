@@ -9,6 +9,10 @@ public partial class Gypsy : BaseCreature
     [Constructible]
     public Gypsy() : base(AIType.AI_Animal, FightMode.None)
     {
+        LevelRange = [1, 60];
+        StrPerLevel = [1, 3];
+        IntPerLevel = [1, 3];
+        DexPerLevel = [1, 3];
         InitStats(31, 41, 51);
         SetSkill(SkillName.Cooking, 65, 88);
         SetSkill(SkillName.Snooping, 65, 88);

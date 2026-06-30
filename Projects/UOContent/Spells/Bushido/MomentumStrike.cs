@@ -47,7 +47,7 @@ namespace Server.Spells.Bushido
 
             if (!defender.Alive)
             {
-                damageBonus *= 1.5;
+                damageBonus *= 1.2;
             }
 
             attacker.SendLocalizedMessage(1063171); // You transfer the momentum of your weapon into another enemy!

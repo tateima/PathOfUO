@@ -193,6 +193,10 @@ public partial class BaseEscortable : BaseCreature
     [Constructible]
     public BaseEscortable() : base(AIType.AI_Melee, FightMode.Aggressor, 22)
     {
+        LevelRange = [1, 60];
+        StrPerLevel = [1, 3];
+        IntPerLevel = [1, 3];
+        DexPerLevel = [1, 3];
         InitBody();
         InitOutfit();
 

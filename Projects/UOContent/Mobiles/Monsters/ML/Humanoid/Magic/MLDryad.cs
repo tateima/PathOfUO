@@ -17,29 +17,35 @@ namespace Server.Mobiles
             Body = 266;
             BaseSoundID = 0x57B;
 
-            SetStr(132, 149);
-            SetDex(152, 168);
-            SetInt(251, 280);
+            LevelRange = [10, 75];
+            StrPerLevel = [1, 4];
+            IntPerLevel = [2, 7];
+            DexPerLevel = [2, 5];
+            ResistancePerLevel = [1, 3];
 
-            SetHits(304, 321);
+            SetStr(56, 75);
+            SetDex(75, 95);
+            SetInt(122, 140);
 
-            SetDamage(11, 20);
+            SetHits(60, 106);
+
+            SetDamage(2, 5);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 40, 50);
-            SetResistance(ResistanceType.Fire, 15, 25);
-            SetResistance(ResistanceType.Cold, 40, 45);
-            SetResistance(ResistanceType.Poison, 30, 40);
-            SetResistance(ResistanceType.Energy, 25, 35);
+            SetResistance(ResistanceType.Physical, 5, 50);
+            SetResistance(ResistanceType.Fire, 5, 15);
+            SetResistance(ResistanceType.Cold, 10, 30);
+            SetResistance(ResistanceType.Poison, 5, 20);
+            SetResistance(ResistanceType.Energy, 5, 15);
 
-            SetSkill(SkillName.Meditation, 80.0, 90.0);
-            SetSkill(SkillName.EvalInt, 70.0, 80.0);
-            SetSkill(SkillName.Magery, 70.0, 80.0);
-            SetSkill(SkillName.Anatomy, 0);
-            SetSkill(SkillName.MagicResist, 100.0, 120.0);
-            SetSkill(SkillName.Tactics, 70.0, 80.0);
-            SetSkill(SkillName.Wrestling, 70.0, 80.0);
+            SetSkill(SkillName.Meditation, 45.4, 50.1);
+            SetSkill(SkillName.EvalInt, 45.4, 50.1);
+            SetSkill(SkillName.Magery, 45.4, 50.1);
+            SetSkill(SkillName.Anatomy, 45.4, 50.1);
+            SetSkill(SkillName.MagicResist, 45.4, 50.1);
+            SetSkill(SkillName.Tactics, 45.4, 50.1);
+            SetSkill(SkillName.Wrestling, 45.4, 50.1);
 
             Fame = 5000;
             Karma = 5000;

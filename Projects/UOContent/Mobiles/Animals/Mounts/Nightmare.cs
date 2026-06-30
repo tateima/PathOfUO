@@ -32,7 +32,10 @@ namespace Server.Mobiles
                 SetStr(496, 525);
                 ControlSlots = 2;
             }
-
+            LevelRange = [40, 60];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetDex(86, 105);
             SetInt(86, 125);
 

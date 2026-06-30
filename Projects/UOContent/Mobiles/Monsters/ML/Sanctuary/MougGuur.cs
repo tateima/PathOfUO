@@ -8,25 +8,29 @@ namespace Server.Mobiles
         [Constructible]
         public MougGuur()
         {
-            SetStr(556, 575);
-            SetDex(84, 94);
-            SetInt(59, 73);
+            LevelRange = [40, 70];
+            StrPerLevel = [1, 8];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [1, 4];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(400, 415);
-
-            SetDamage(12, 20);
+            SetStr(60, 95);
+            SetDex(30, 55);
+            SetInt(25, 30);
+            SetHits(85, 100);
+            SetDamage(1, 8);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 61, 65);
-            SetResistance(ResistanceType.Fire, 16, 19);
-            SetResistance(ResistanceType.Cold, 41, 46);
-            SetResistance(ResistanceType.Poison, 21, 24);
-            SetResistance(ResistanceType.Energy, 19, 25);
+            SetResistance(ResistanceType.Physical, 15, 20);
+            SetResistance(ResistanceType.Fire, 5, 15);
+            SetResistance(ResistanceType.Cold, 5, 10);
+            SetResistance(ResistanceType.Poison, 5, 15);
+            SetResistance(ResistanceType.Energy, 5, 15);
 
-            SetSkill(SkillName.MagicResist, 70.2, 75.0);
-            SetSkill(SkillName.Tactics, 80.8, 81.7);
-            SetSkill(SkillName.Wrestling, 93.9, 99.4);
+            SetSkill(SkillName.MagicResist, 45.2, 65.0);
+            SetSkill(SkillName.Tactics, 50.8, 61.7);
+            SetSkill(SkillName.Wrestling, 43.9, 59.4);
 
             Fame = 3000;
             Karma = -3000;

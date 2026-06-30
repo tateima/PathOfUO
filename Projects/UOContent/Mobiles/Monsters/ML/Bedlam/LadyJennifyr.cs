@@ -12,27 +12,32 @@ public partial class LadyJennifyr : SkeletalKnight
 
         Hue = 0x76D;
 
-        SetStr(208, 309);
-        SetDex(91, 118);
-        SetInt(44, 101);
+        LevelRange = [50, 60];
+        StrPerLevel = [3, 6];
+        IntPerLevel = [1, 2];
+        DexPerLevel = [3, 5];
+        ResistancePerLevel = [2, 3];
 
-        SetHits(1113, 1285);
+        SetStr(80, 175);
+        SetDex(50, 75);
+        SetInt(55, 80);
+        SetHits(95, 180);
 
-        SetDamage(15, 25);
+        SetDamage(6, 10);
 
         SetDamageType(ResistanceType.Physical, 40);
         SetDamageType(ResistanceType.Cold, 60);
 
-        SetResistance(ResistanceType.Physical, 56, 65);
-        SetResistance(ResistanceType.Fire, 41, 49);
-        SetResistance(ResistanceType.Cold, 71, 80);
-        SetResistance(ResistanceType.Poison, 41, 50);
-        SetResistance(ResistanceType.Energy, 50, 58);
+        SetResistance(ResistanceType.Physical, 5, 30);
+        SetResistance(ResistanceType.Fire, 10, 25);
+        SetResistance(ResistanceType.Cold, 10, 30);
+        SetResistance(ResistanceType.Poison, 10, 20);
+        SetResistance(ResistanceType.Energy, 10, 25);
 
-        SetSkill(SkillName.Wrestling, 127.9, 137.1);
-        SetSkill(SkillName.Tactics, 128.4, 141.9);
-        SetSkill(SkillName.MagicResist, 102.1, 119.5);
-        SetSkill(SkillName.Anatomy, 129.0, 137.5);
+        SetSkill(SkillName.Wrestling, 50.9, 65.1);
+        SetSkill(SkillName.Tactics, 50.4, 65.9);
+        SetSkill(SkillName.MagicResist, 50.1, 65.5);
+        SetSkill(SkillName.Anatomy, 50.0, 65.5);
 
         Fame = 18000;
         Karma = -18000;

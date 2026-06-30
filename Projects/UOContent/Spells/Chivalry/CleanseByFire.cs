@@ -94,7 +94,7 @@ namespace Server.Spells.Chivalry
                 Caster.PlaySound(0x208);
                 Caster.FixedParticles(0x3709, 1, 30, 9934, 0, 7, EffectLayer.Waist);
 
-                var damage = Math.Clamp(50 - ComputePowerValue(4), 13, 55);
+                var damage = Math.Clamp(25 - ComputePowerValue(4), 13, 25);
 
                 AOS.Damage(Caster, Caster, damage, 0, 100, 0, 0, 0, true);
             }

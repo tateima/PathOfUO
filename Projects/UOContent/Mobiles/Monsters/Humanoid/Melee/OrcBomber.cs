@@ -16,28 +16,32 @@ namespace Server.Mobiles
         {
             Body = 182;
             BaseSoundID = 0x45A;
+            LevelRange = [6, 11];
+            StrPerLevel = [4, 5];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [7, 10];
+            ResistancePerLevel = [1, 2];
+            SetStr(15, 30);
+            SetDex(19, 30);
+            SetInt(10, 15);
 
-            SetStr(147, 215);
-            SetDex(91, 115);
-            SetInt(61, 85);
+            SetHits(20, 56);
 
-            SetHits(95, 123);
-
-            SetDamage(1, 8);
+            SetDamage(5, 9);
 
             SetDamageType(ResistanceType.Physical, 75);
             SetDamageType(ResistanceType.Fire, 25);
 
-            SetResistance(ResistanceType.Physical, 25, 35);
-            SetResistance(ResistanceType.Fire, 30, 40);
-            SetResistance(ResistanceType.Cold, 15, 25);
-            SetResistance(ResistanceType.Poison, 15, 20);
-            SetResistance(ResistanceType.Energy, 25, 30);
+            SetResistance(ResistanceType.Physical, 15, 25);
+            SetResistance(ResistanceType.Fire, 20, 30);
+            SetResistance(ResistanceType.Cold, 5, 15);
+            SetResistance(ResistanceType.Poison, 5, 10);
+            SetResistance(ResistanceType.Energy, 5, 20);
 
-            SetSkill(SkillName.MagicResist, 70.1, 85.0);
-            SetSkill(SkillName.Swords, 60.1, 85.0);
-            SetSkill(SkillName.Tactics, 75.1, 90.0);
-            SetSkill(SkillName.Wrestling, 60.1, 85.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Swords, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
+            SetSkill(SkillName.Wrestling, 40.1, 50.0);
 
             Fame = 2500;
             Karma = -2500;
@@ -63,7 +67,7 @@ namespace Server.Mobiles
 
         public override bool CanRummageCorpses => true;
 
-        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.SavagesAndOrcs };
 
         public override void GenerateLoot()
         {

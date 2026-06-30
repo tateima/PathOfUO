@@ -76,6 +76,10 @@ namespace Server.Mobiles
 
         public BaseVendor(string title = null) : base(AIType.AI_Vendor, FightMode.None, 2)
         {
+            LevelRange = [1, 60];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             LoadSBInfo();
             Title = title;
             InitBody();

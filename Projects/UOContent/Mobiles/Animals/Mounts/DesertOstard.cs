@@ -10,6 +10,10 @@ namespace Server.Mobiles
         [Constructible]
         public DesertOstard() : base(0xD2, 0x3EA3, AIType.AI_Animal, FightMode.Aggressor)
         {
+            LevelRange = [5, 25];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             BaseSoundID = 0x270;
 
             SetStr(94, 170);

@@ -9,6 +9,10 @@ namespace Server.Mobiles
         public Parrot() : base(AIType.AI_Animal, FightMode.Aggressor)
         {
             Body = 831;
+            LevelRange = [1, 3];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             VirtualArmor = Utility.Random(0, 6);
 
             InitStats(10, Utility.Random(25, 16), 10);

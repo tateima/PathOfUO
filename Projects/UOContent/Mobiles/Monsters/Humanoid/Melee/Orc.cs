@@ -14,25 +14,30 @@ namespace Server.Mobiles
             Body = 17;
             BaseSoundID = 0x45A;
 
-            SetStr(96, 120);
-            SetDex(81, 105);
-            SetInt(36, 60);
+            LevelRange = [3, 8];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [2, 4];
+            ResistancePerLevel = [1, 2];
+            SetStr(15, 30);
+            SetDex(19, 30);
+            SetInt(10, 15);
 
-            SetHits(58, 72);
+            SetHits(20, 56);
 
             SetDamage(5, 7);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 25, 30);
-            SetResistance(ResistanceType.Fire, 20, 30);
-            SetResistance(ResistanceType.Cold, 10, 20);
-            SetResistance(ResistanceType.Poison, 10, 20);
-            SetResistance(ResistanceType.Energy, 20, 30);
+            SetResistance(ResistanceType.Physical, 15, 20);
+            SetResistance(ResistanceType.Fire, 10, 20);
+            SetResistance(ResistanceType.Cold, 5, 10);
+            SetResistance(ResistanceType.Poison, 5, 10);
+            SetResistance(ResistanceType.Energy, 10, 20);
 
-            SetSkill(SkillName.MagicResist, 50.1, 75.0);
-            SetSkill(SkillName.Tactics, 55.1, 80.0);
-            SetSkill(SkillName.Wrestling, 50.1, 70.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
+            SetSkill(SkillName.Wrestling, 40.1, 50.0);
 
             Fame = 1500;
             Karma = -1500;
@@ -75,7 +80,7 @@ namespace Server.Mobiles
         public override bool CanRummageCorpses => true;
         public override int TreasureMapLevel => 1;
         public override int Meat => 1;
-        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.SavagesAndOrcs };
 
         public override void GenerateLoot()
         {

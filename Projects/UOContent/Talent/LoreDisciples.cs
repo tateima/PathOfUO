@@ -84,6 +84,8 @@ namespace Server.Talent
                                     3 => new MageGuard(2),
                                     _ => new NobleLord(2)
                                 };
+                                disciple.LevelRange = [((PlayerMobile)from).Level - 2, ((PlayerMobile)from).Level + 2];
+                                disciple.SetLevel();
                                 disciple.Skills.Fencing.Base += skillIncrease;
                                 disciple.Skills.Archery.Base += skillIncrease;
                                 disciple.Skills.Macing.Base += skillIncrease;

@@ -150,6 +150,8 @@ namespace Server.Talent
                     modifier += inventive.Level;
                     MobilePercentagePerPoint += inventive.Level;
                 }
+                _construct.LevelRange = [((PlayerMobile)from).Level, ((PlayerMobile)from).Level + Level];
+                _construct.SetLevel();
                 _construct = (AutomatonConstruct)ScaleMobile(_construct);
                 EmptyCreatureBackpack(_construct);
                 SpellHelper.Summon(_construct, from, 0x042, TimeSpan.FromMinutes(modifier), false, false);

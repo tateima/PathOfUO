@@ -14,28 +14,33 @@ namespace Server.Mobiles
         public MeerCaptain() : base(AIType.AI_Archer, FightMode.Aggressor)
         {
             Body = 773;
+            LevelRange = [40, 60];
+            StrPerLevel = [2, 4];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [2, 4];
+            ResistancePerLevel = [1, 2];
 
-            SetStr(96, 110);
-            SetDex(186, 200);
-            SetInt(96, 110);
+            SetStr(56, 85);
+            SetDex(70, 105);
+            SetInt(22, 50);
 
-            SetHits(58, 66);
+            SetHits(125, 150);
 
-            SetDamage(5, 15);
+            SetDamage(3, 7);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 45, 55);
-            SetResistance(ResistanceType.Fire, 10, 20);
-            SetResistance(ResistanceType.Cold, 40, 50);
-            SetResistance(ResistanceType.Poison, 35, 45);
-            SetResistance(ResistanceType.Energy, 35, 45);
+            SetResistance(ResistanceType.Physical, 5, 25);
+            SetResistance(ResistanceType.Fire, 5, 10);
+            SetResistance(ResistanceType.Cold, 10, 30);
+            SetResistance(ResistanceType.Poison, 15, 25);
+            SetResistance(ResistanceType.Energy, 5, 20);
 
-            SetSkill(SkillName.Archery, 90.1, 100.0);
-            SetSkill(SkillName.MagicResist, 91.0, 100.0);
-            SetSkill(SkillName.Swords, 90.1, 100.0);
-            SetSkill(SkillName.Tactics, 91.0, 100.0);
-            SetSkill(SkillName.Wrestling, 80.9, 89.9);
+            SetSkill(SkillName.Archery, 40.0, 50.5);
+            SetSkill(SkillName.MagicResist, 40.0, 50.5);
+            SetSkill(SkillName.Swords, 40.0, 50.5);
+            SetSkill(SkillName.Tactics, 40.0, 50.5);
+            SetSkill(SkillName.Wrestling, 40.0, 50.5);
 
             Fame = 2000;
             Karma = 5000;

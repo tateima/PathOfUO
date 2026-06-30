@@ -12,32 +12,35 @@ namespace Server.Mobiles
 
             Hue = 63;
 
-            SetStr(1057, 1400);
-            SetDex(232, 560);
-            SetInt(201, 440);
+            LevelRange = [85, 95];
+            StrPerLevel = [4, 8];
+            IntPerLevel = [4, 8];
+            DexPerLevel = [4, 8];
+            SetStr(126, 175);
+            SetDex(70, 100);
+            SetInt(82, 140);
 
-            SetHits(3010, 4092);
+            SetHits(300, 500);
 
-            SetDamage(27, 34);
+            SetDamage(8, 24);
 
             SetDamageType(ResistanceType.Physical, 50);
-            SetDamageType(ResistanceType.Fire, 0);
-            SetDamageType(ResistanceType.Poison, 50);
-            SetDamageType(ResistanceType.Energy, 0);
+            SetDamageType(ResistanceType.Fire, 25);
+            SetDamageType(ResistanceType.Energy, 25);
 
-            SetResistance(ResistanceType.Physical, 65, 80);
-            SetResistance(ResistanceType.Fire, 65, 80);
-            SetResistance(ResistanceType.Cold, 50, 60);
-            SetResistance(ResistanceType.Poison, 100);
-            SetResistance(ResistanceType.Energy, 40, 50);
+            SetResistance(ResistanceType.Physical, 10, 30);
+            SetResistance(ResistanceType.Fire, 10, 30);
+            SetResistance(ResistanceType.Cold, 5, 20);
+            SetResistance(ResistanceType.Poison, 30);
+            SetResistance(ResistanceType.Energy, 10, 30);
 
-            SetSkill(SkillName.Wrestling, 111.2, 128.0);
-            SetSkill(SkillName.Tactics, 115.2, 125.2);
-            SetSkill(SkillName.MagicResist, 143.4, 170.0);
-            SetSkill(SkillName.Anatomy, 44.6, 67.0);
-            SetSkill(SkillName.Magery, 117.6, 118.8);
-            SetSkill(SkillName.EvalInt, 113.0, 128.8);
-            SetSkill(SkillName.Meditation, 41.4, 85.0);
+            SetSkill(SkillName.Anatomy, 53.0, 63.5);
+            SetSkill(SkillName.EvalInt, 53.0, 63.5);
+            SetSkill(SkillName.Magery, 53.0, 63.5);
+            SetSkill(SkillName.Meditation, 53.0, 63.5);
+            SetSkill(SkillName.MagicResist, 53.0, 63.5);
+            SetSkill(SkillName.Tactics, 53.0, 63.5);
+            SetSkill(SkillName.EvalInt, 53.0, 63.5);
             SetSkill(SkillName.Poisoning, 45.0, 50.0);
 
             Fame = 24000;

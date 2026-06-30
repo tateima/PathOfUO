@@ -13,6 +13,11 @@ namespace Server.Mobiles
         [Constructible]
         public FireBeetle() : base(0xA9, 0x3E95, AIType.AI_Melee)
         {
+            LevelRange = [20, 30];
+            StrPerLevel = [2, 3];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [2, 3];
+            ResistancePerLevel = [1, 2];
             SetStam(100);
             SetStr(300);
             SetDex(65, 100);

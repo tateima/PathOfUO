@@ -14,6 +14,11 @@ namespace Server.Mobiles
         public BakeKitsune() : base(AIType.AI_Mage)
         {
             Body = 246;
+            LevelRange = [20, 31];
+            StrPerLevel = [2, 5];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [2, 7];
+            ResistancePerLevel = [1, 2];
 
             SetStr(171, 220);
             SetDex(126, 145);

@@ -8,27 +8,32 @@ namespace Server.Mobiles
         [Constructible]
         public Chiikkaha()
         {
-            SetStr(450, 476);
-            SetDex(157, 179);
-            SetInt(251, 275);
+            LevelRange = [30, 60];
+            StrPerLevel = [3, 4];
+            IntPerLevel = [2, 4];
+            DexPerLevel = [9, 11];
+            ResistancePerLevel = [1, 2];
+            SetStr(15, 20);
+            SetDex(29, 40);
+            SetInt(14, 19);
 
-            SetHits(400, 425);
+            SetHits(35, 60);
 
-            SetDamage(10, 17);
+            SetDamage(4, 6);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 40, 45);
-            SetResistance(ResistanceType.Fire, 10, 20);
-            SetResistance(ResistanceType.Cold, 10, 20);
-            SetResistance(ResistanceType.Poison, 10, 20);
-            SetResistance(ResistanceType.Energy, 100);
+            SetResistance(ResistanceType.Physical, 5, 10);
+            SetResistance(ResistanceType.Fire, 1, 10);
+            SetResistance(ResistanceType.Cold, 1, 10);
+            SetResistance(ResistanceType.Poison, 1, 10);
+            SetResistance(ResistanceType.Energy, 1, 10);
 
-            SetSkill(SkillName.EvalInt, 70.1, 80.0);
-            SetSkill(SkillName.Magery, 70.1, 90.0);
-            SetSkill(SkillName.MagicResist, 65.1, 96.0);
-            SetSkill(SkillName.Tactics, 50.1, 75.0);
-            SetSkill(SkillName.Wrestling, 50.1, 75.0);
+            SetSkill(SkillName.EvalInt, 50.1, 60.0);
+            SetSkill(SkillName.Magery, 50.1, 60.0);
+            SetSkill(SkillName.MagicResist, 45.1, 56.0);
+            SetSkill(SkillName.Tactics, 30.1, 55.0);
+            SetSkill(SkillName.Wrestling, 40.1, 55.0);
 
             Fame = 7500;
             Karma = -7500;

@@ -40,7 +40,7 @@ namespace Server.Spells.Fifth
 
                     SpellHelper.CheckReflect((int)Circle, ref from, ref target);
 
-                    var damage = Math.Min((int)((Caster.Skills.Magery.Value + Caster.Int) / 5), 60);
+                    var damage = Math.Min((int)((Caster.Skills.Magery.Value + Caster.Int) / 25), 6);
 
                     Timer.StartTimer(TimeSpan.FromSeconds(1.0), () =>
                         {
@@ -91,7 +91,7 @@ namespace Server.Spells.Fifth
                     lowestStat = 150;
                 }
 
-                var damage = Math.Min(GetDamageScalar(m) * (highestStat - lowestStat) / 2, 45); // Many users prefer 3 or 4
+                var damage = Math.Min(GetDamageScalar(m) * (highestStat - lowestStat) / 2, 6); // Many users prefer 3 or 4
 
                 if (CheckResisted(target))
                 {

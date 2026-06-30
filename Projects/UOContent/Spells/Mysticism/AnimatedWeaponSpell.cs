@@ -40,12 +40,13 @@ public class AnimatedWeaponSpell : MysticSpell, ITargetingSpell<IPoint3D>
         }
         else if (SpellHelper.CheckTown(p, Caster) && CheckSequence())
         {
-            var level = (int)((GetBaseSkill(Caster) + GetDamageSkill(Caster)) / 2.0);
+            var level = (int)((GetBaseSkill(Caster) + GetDamageSkill(Caster)) / 3.0);
 
             var duration = TimeSpan.FromSeconds(10 + level);
             duration *= ReagentsScale();
 
             var summon = new AnimatedWeapon(Caster, level);
+            summon.SetLevel();
             BaseCreature.Summon(summon, false, Caster, new Point3D(p), 0x212, duration);
 
             summon.PlaySound(0x64A);

@@ -11,7 +11,10 @@ namespace Server.Mobiles
             Body = 52;
             Hue = Utility.RandomSnakeHue();
             BaseSoundID = 0xDB;
-
+            LevelRange = [2, 7];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(22, 34);
             SetDex(16, 25);
             SetInt(6, 10);

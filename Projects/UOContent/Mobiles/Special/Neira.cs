@@ -18,7 +18,11 @@ public partial class Neira : BaseChampion
         Title = "the necromancer";
         Body = 401;
         Hue = 0x83EC;
-
+        LevelRange = [60, 80];
+        StrPerLevel = [1, 3];
+        IntPerLevel = [4, 6];
+        DexPerLevel = [2, 4];
+        ResistancePerLevel = [1, 2];
         SetStr(305, 425);
         SetDex(72, 150);
         SetInt(505, 750);

@@ -11,7 +11,11 @@ namespace Server.Mobiles
         public RuneBeetle() : base(AIType.AI_Mage)
         {
             Body = 244;
-
+            LevelRange = [25, 45];
+            StrPerLevel = [1, 2];
+            IntPerLevel = [2, 4];
+            DexPerLevel = [1, 2];
+            ResistancePerLevel = [1, 2];
             SetStr(401, 460);
             SetDex(121, 170);
             SetInt(376, 450);

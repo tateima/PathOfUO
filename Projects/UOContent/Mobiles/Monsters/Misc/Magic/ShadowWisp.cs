@@ -12,27 +12,33 @@ namespace Server.Mobiles
             Body = 165;
             BaseSoundID = 466;
 
-            SetStr(16, 40);
-            SetDex(16, 45);
-            SetInt(11, 25);
+            LevelRange = [10, 50];
+            StrPerLevel = [1, 2];
+            IntPerLevel = [2, 9];
+            DexPerLevel = [2, 5];
+            ResistancePerLevel = [1, 3];
 
-            SetHits(10, 24);
+            SetStr(36, 65);
+            SetDex(70, 130);
+            SetInt(82, 140);
 
-            SetDamage(5, 10);
+            SetHits(50, 76);
+
+            SetDamage(3, 7);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 15, 20);
-            SetResistance(ResistanceType.Fire, 5, 10);
-            SetResistance(ResistanceType.Poison, 5, 10);
-            SetResistance(ResistanceType.Energy, 15, 20);
+            SetResistance(ResistanceType.Physical, 15, 25);
+            SetResistance(ResistanceType.Fire, 10, 20);
+            SetResistance(ResistanceType.Cold, 5, 20);
+            SetResistance(ResistanceType.Poison, 15, 30);
+            SetResistance(ResistanceType.Energy, 5, 10);
 
-            SetSkill(SkillName.EvalInt, 40.0);
-            SetSkill(SkillName.Magery, 50.0);
-            SetSkill(SkillName.Meditation, 40.0);
-            SetSkill(SkillName.MagicResist, 10.0);
-            SetSkill(SkillName.Tactics, 0.1, 15.0);
-            SetSkill(SkillName.Wrestling, 25.1, 40.0);
+            SetSkill(SkillName.EvalInt, 40.1, 50.0);
+            SetSkill(SkillName.Magery, 40.1, 50.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
+            SetSkill(SkillName.Wrestling, 40.1, 50.0);
 
             Fame = 500;
 
@@ -57,7 +63,7 @@ namespace Server.Mobiles
         public override string CorpseName => "a wisp corpse";
         public override string DefaultName => "a shadow wisp";
 
-        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight, OppositionGroup.CelestialsAndDaemons };
 
     }
 }

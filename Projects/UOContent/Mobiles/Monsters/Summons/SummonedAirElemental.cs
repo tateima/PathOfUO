@@ -14,6 +14,10 @@ namespace Server.Mobiles
 
             if (Core.AOS)
             {
+                StrPerLevel = [2, 3];
+                IntPerLevel = [1, 5];
+                DexPerLevel = [2, 4];
+                ResistancePerLevel = [1, 3];
                 SetStr(200);
                 SetDex(200);
                 SetInt(100);
@@ -76,7 +80,7 @@ namespace Server.Mobiles
         public override string DefaultName => "an air elemental";
 
         public override bool BleedImmune => true;
-        
+
         public override double DispelDifficulty => 117.5;
         public override double DispelFocus => 45.0;
 

@@ -20,7 +20,10 @@ public abstract partial class BaseMount : BaseCreature, IMount
     ) : base(aiType, fightMode, rangePerception, rangeFight)
     {
         Body = bodyID;
-
+        LevelRange = [1, 10];
+        StrPerLevel = [1, 3];
+        IntPerLevel = [1, 3];
+        DexPerLevel = [1, 3];
         InternalItem = new MountItem(this, itemID);
     }
 

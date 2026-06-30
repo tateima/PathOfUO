@@ -16,7 +16,10 @@ public partial class HordeMinionFamiliar : BaseFamiliar
     {
         Body = 776;
         BaseSoundID = 0x39D;
-
+        LevelRange = [8, 25];
+        StrPerLevel = [1, 3];
+        IntPerLevel = [1, 3];
+        DexPerLevel = [1, 3];
         SetStr(100);
         SetDex(110);
         SetInt(100);

@@ -7,7 +7,7 @@ namespace Server.Mobiles
     public partial class Golem : BaseCreature
     {
         [Constructible]
-        public Golem(bool summoned = false, double scalar = 1.0) : base(AIType.AI_Melee)
+        public Golem(bool summoned = false, double scalar = 1.0, int level = 1) : base(AIType.AI_Melee)
         {
             Body = 752;
 
@@ -16,34 +16,38 @@ namespace Server.Mobiles
                 Hue = 2101;
             }
 
-            SetStr((int)(251 * scalar), (int)(350 * scalar));
-            SetDex((int)(76 * scalar), (int)(100 * scalar));
-            SetInt((int)(101 * scalar), (int)(150 * scalar));
-
-            SetHits((int)(151 * scalar), (int)(210 * scalar));
-
-            SetDamage((int)(13 * scalar), (int)(24 * scalar));
-
-            SetDamageType(ResistanceType.Physical, 100);
-
-            SetResistance(ResistanceType.Physical, (int)(35 * scalar), (int)(55 * scalar));
-
             if (summoned)
             {
-                SetResistance(ResistanceType.Fire, (int)(50 * scalar), (int)(60 * scalar));
+                LevelRange = [level, level];
             }
             else
             {
-                SetResistance(ResistanceType.Fire, (int)(100 * scalar));
+                LevelRange = [19, 32];
             }
 
-            SetResistance(ResistanceType.Cold, (int)(10 * scalar), (int)(30 * scalar));
-            SetResistance(ResistanceType.Poison, (int)(10 * scalar), (int)(25 * scalar));
-            SetResistance(ResistanceType.Energy, (int)(30 * scalar), (int)(40 * scalar));
+            StrPerLevel = [2, 7];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [2, 5];
+            ResistancePerLevel = [1, 3];
 
-            SetSkill(SkillName.MagicResist, 150.1 * scalar, 190.0 * scalar);
-            SetSkill(SkillName.Tactics, 60.1 * scalar, 100.0 * scalar);
-            SetSkill(SkillName.Wrestling, 60.1 * scalar, 100.0 * scalar);
+            SetStr((int)(70 * scalar) , (int)(125 * scalar));
+            SetDex((int)(30 * scalar), (int)(55* scalar));
+            SetInt((int)(25 * scalar), (int)(30* scalar));
+            SetHits((int)(85 * scalar), (int)(110* scalar));
+            SetDamage((int)(2 * scalar), (int)(5* scalar));
+
+            SetDamageType(ResistanceType.Physical, 100);
+
+            SetResistance(ResistanceType.Physical, (int)(5 * scalar), (int)(25 * scalar));
+            SetResistance(ResistanceType.Fire, (int)(5 * scalar), (int)(20 * scalar));
+
+            SetResistance(ResistanceType.Cold, (int)(5 * scalar), (int)(15 * scalar));
+            SetResistance(ResistanceType.Poison, (int)(5 * scalar), (int)(15 * scalar));
+            SetResistance(ResistanceType.Energy, (int)(10 * scalar), (int)(30 * scalar));
+
+            SetSkill(SkillName.MagicResist, 40.1 * scalar, 50 * scalar);
+            SetSkill(SkillName.Tactics, 40.1 * scalar, 50.0 * scalar);
+            SetSkill(SkillName.Wrestling, 40.1 * scalar, 50.0 * scalar);
 
             if (summoned)
             {

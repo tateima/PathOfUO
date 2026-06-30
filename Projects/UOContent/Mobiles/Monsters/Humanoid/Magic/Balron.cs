@@ -12,32 +12,36 @@ namespace Server.Mobiles
             Name = NameList.RandomName("balron");
             Body = 40;
             BaseSoundID = 357;
+            LevelRange = [60, 80];
+            StrPerLevel = [3, 6];
+            IntPerLevel = [3, 6];
+            DexPerLevel = [3, 6];
+            ResistancePerLevel = [2, 4];
 
-            SetStr(986, 1185);
-            SetDex(177, 255);
-            SetInt(151, 250);
+            SetStr(126, 175);
+            SetDex(70, 100);
+            SetInt(82, 140);
 
-            SetHits(592, 711);
+            SetHits(230, 280);
 
-            SetDamage(22, 29);
+            SetDamage(4, 12);
 
             SetDamageType(ResistanceType.Physical, 50);
             SetDamageType(ResistanceType.Fire, 25);
             SetDamageType(ResistanceType.Energy, 25);
 
-            SetResistance(ResistanceType.Physical, 65, 80);
-            SetResistance(ResistanceType.Fire, 60, 80);
-            SetResistance(ResistanceType.Cold, 50, 60);
-            SetResistance(ResistanceType.Poison, 100);
-            SetResistance(ResistanceType.Energy, 40, 50);
+            SetResistance(ResistanceType.Physical, 10, 30);
+            SetResistance(ResistanceType.Fire, 10, 30);
+            SetResistance(ResistanceType.Cold, 5, 20);
+            SetResistance(ResistanceType.Poison, 30);
+            SetResistance(ResistanceType.Energy, 10, 30);
 
-            SetSkill(SkillName.Anatomy, 25.1, 50.0);
-            SetSkill(SkillName.EvalInt, 90.1, 100.0);
-            SetSkill(SkillName.Magery, 95.5, 100.0);
-            SetSkill(SkillName.Meditation, 25.1, 50.0);
-            SetSkill(SkillName.MagicResist, 100.5, 150.0);
-            SetSkill(SkillName.Tactics, 90.1, 100.0);
-            SetSkill(SkillName.Wrestling, 90.1, 100.0);
+            SetSkill(SkillName.Anatomy, 53.0, 63.5);
+            SetSkill(SkillName.EvalInt, 53.0, 63.5);
+            SetSkill(SkillName.Magery, 53.0, 63.5);
+            SetSkill(SkillName.Meditation, 53.0, 63.5);
+            SetSkill(SkillName.MagicResist, 53.0, 63.5);
+            SetSkill(SkillName.Tactics, 53.0, 63.5);
 
             Fame = 24000;
             Karma = -24000;
@@ -48,7 +52,7 @@ namespace Server.Mobiles
         }
 
         public override string CorpseName => "a balron corpse";
-        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder, OppositionGroup.CelestialsAndDaemons };
         public override bool CanRummageCorpses => true;
         public override Poison PoisonImmune => Poison.Deadly;
         public override int TreasureMapLevel => 5;

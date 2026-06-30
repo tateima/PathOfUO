@@ -22,28 +22,33 @@ namespace Server.Mobiles
                 Utility.AssignRandomFacialHair(this, HairHue);
             }
 
-            SetStr(81, 105);
-            SetDex(191, 215);
-            SetInt(126, 150);
+            LevelRange = [40, 60];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [4, 6];
+            DexPerLevel = [2, 4];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(49, 63);
+            SetStr(35, 60);
+            SetDex(25, 45);
+            SetInt(65, 100);
+            SetHits(90,120);
 
-            SetDamage(5, 10);
+            SetDamage(4, 8);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 35, 40);
-            SetResistance(ResistanceType.Fire, 30, 40);
-            SetResistance(ResistanceType.Cold, 30, 40);
-            SetResistance(ResistanceType.Poison, 30, 40);
-            SetResistance(ResistanceType.Energy, 30, 40);
+            SetResistance(ResistanceType.Physical, 15, 20);
+            SetResistance(ResistanceType.Fire, 10, 20);
+            SetResistance(ResistanceType.Cold, 10, 20);
+            SetResistance(ResistanceType.Poison, 10, 20);
+            SetResistance(ResistanceType.Energy, 10, 20);
 
-            SetSkill(SkillName.EvalInt, 80.2, 100.0);
-            SetSkill(SkillName.Magery, 95.1, 100.0);
-            SetSkill(SkillName.Meditation, 27.5, 50.0);
-            SetSkill(SkillName.MagicResist, 77.5, 100.0);
-            SetSkill(SkillName.Tactics, 65.0, 87.5);
-            SetSkill(SkillName.Wrestling, 20.3, 80.0);
+            SetSkill(SkillName.EvalInt, 45.1, 50.0);
+            SetSkill(SkillName.Magery, 45.1, 50.0);
+            SetSkill(SkillName.Meditation, 45.1, 50.0);
+            SetSkill(SkillName.MagicResist, 45.1, 50.0);
+            SetSkill(SkillName.Tactics, 45.1, 50.0);
+            SetSkill(SkillName.Wrestling, 45.1, 50.0);
 
             Fame = 10500;
             Karma = -10500;

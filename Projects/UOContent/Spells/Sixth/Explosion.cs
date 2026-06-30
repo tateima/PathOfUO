@@ -81,11 +81,11 @@ namespace Server.Spells.Sixth
 
                     if (Core.AOS)
                     {
-                        damage = _spell.GetNewAosDamage(30, 1, 5, _defender);
+                        damage = _spell.GetNewAosDamage(0, 1, 12, _defender);
                     }
                     else
                     {
-                        damage = Utility.Random(23, 22);
+                        damage = Utility.Random(12, 1);
 
                         if (_spell.CheckResisted(_target))
                         {

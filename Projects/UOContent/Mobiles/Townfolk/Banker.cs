@@ -17,6 +17,10 @@ public partial class Banker : BaseVendor
     [Constructible]
     public Banker() : base("the banker")
     {
+        LevelRange = [1, 60];
+        StrPerLevel = [1, 3];
+        IntPerLevel = [1, 3];
+        DexPerLevel = [1, 3];
     }
 
     protected override List<SBInfo> SBInfos => m_SBInfos;

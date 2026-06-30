@@ -13,6 +13,12 @@ namespace Server.Mobiles
             Hue = Race.Human.RandomSkinHue() & 0x7FFF;
             BaseSoundID = 0x39D;
 
+            LevelRange = [1, 6];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [1, 2];
+
             SetStr(26, 50);
             SetDex(36, 55);
             SetInt(16, 30);
@@ -43,7 +49,7 @@ namespace Server.Mobiles
                 4 => new RightLeg(),
                 _ => new LeftLeg()
             };
-            
+
             AddItem(bodyPart);
         }
 

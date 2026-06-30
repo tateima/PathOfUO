@@ -10,25 +10,29 @@ namespace Server.Mobiles
         public Treefellow() : base(AIType.AI_Melee, FightMode.Aggressor)
         {
             Body = 301;
+            LevelRange = [14, 28];
+            StrPerLevel = [2, 6];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [1, 2];
+            SetStr(96, 120);
+            SetDex(11, 35);
+            SetInt(26, 40);
 
-            SetStr(196, 220);
-            SetDex(31, 55);
-            SetInt(66, 90);
+            SetHits(100, 125);
 
-            SetHits(118, 132);
-
-            SetDamage(12, 16);
+            SetDamage(2, 8);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 20, 25);
-            SetResistance(ResistanceType.Cold, 50, 60);
-            SetResistance(ResistanceType.Poison, 30, 35);
-            SetResistance(ResistanceType.Energy, 20, 30);
+            SetResistance(ResistanceType.Physical, 10, 25);
+            SetResistance(ResistanceType.Cold, 10, 20);
+            SetResistance(ResistanceType.Poison, 5, 15);
+            SetResistance(ResistanceType.Energy, 10, 20);
 
             SetSkill(SkillName.MagicResist, 40.1, 55.0);
-            SetSkill(SkillName.Tactics, 65.1, 90.0);
-            SetSkill(SkillName.Wrestling, 65.1, 85.0);
+            SetSkill(SkillName.Tactics, 40.1, 55.0);
+            SetSkill(SkillName.Wrestling, 40.1, 55.0);
 
             Fame = 500;
             Karma = 1500;

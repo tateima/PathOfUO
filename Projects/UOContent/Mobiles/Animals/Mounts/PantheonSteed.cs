@@ -7,6 +7,10 @@ namespace Server.Mobiles
         [Constructible]
         public PantheonSteed(string name = "a pantheon steed")
         {
+            LevelRange = [40, 60];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(22, 150);
             SetDex(56, 175);
             SetInt(6, 10);

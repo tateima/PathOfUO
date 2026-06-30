@@ -15,6 +15,16 @@ namespace Server.Mobiles
             Race = Race.Elf;
             Hue = Race.RandomSkinHue();
 
+            LevelRange = [1, 40];
+            StrPerLevel = [4, 5];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [7, 10];
+            ResistancePerLevel = [1, 2];
+
+            SetStr(25, 40);
+            SetDex(15, 25);
+            SetInt(25, 40);
+
             if (Female = Utility.RandomBool())
             {
                 Body = 0x25E;
@@ -37,18 +47,14 @@ namespace Server.Mobiles
                 AddItem(new ShortPants(Utility.RandomNondyedHue()));
             }
 
-            SetStr(86, 100);
-            SetDex(81, 95);
-            SetInt(61, 75);
+            SetDamage(5, 6);
 
-            SetDamage(10, 23);
-
-            SetSkill(SkillName.Fencing, 66.0, 97.5);
-            SetSkill(SkillName.Macing, 65.0, 87.5);
-            SetSkill(SkillName.MagicResist, 25.0, 47.5);
-            SetSkill(SkillName.Swords, 65.0, 87.5);
-            SetSkill(SkillName.Tactics, 65.0, 87.5);
-            SetSkill(SkillName.Wrestling, 15.0, 37.5);
+            SetSkill(SkillName.Fencing, 40.1, 50.0);
+            SetSkill(SkillName.Macing, 40.1, 50.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Swords, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
+            SetSkill(SkillName.Wrestling, 40.1, 50.0);
 
             Fame = 1000;
             Karma = -1000;

@@ -6,6 +6,11 @@ namespace Server.Mobiles
         public ManaDrake()
         {
             AI = AIType.AI_Mage;
+            LevelRange = [40, 65];
+            StrPerLevel = [1, 4];
+            IntPerLevel = [1, 4];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [1, 2];
             SetInt(200, 300);
             Tamable = true;
             ControlSlots = 3;

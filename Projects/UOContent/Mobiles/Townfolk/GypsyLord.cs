@@ -7,6 +7,10 @@ namespace Server.Mobiles
         [Constructible]
         public GypsyLord()
         {
+            LevelRange = [60, 80];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             InitStats(100, 120, 90);
 
             SpeechHue = Utility.RandomDyedHue();

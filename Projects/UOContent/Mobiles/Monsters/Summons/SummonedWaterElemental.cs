@@ -10,7 +10,10 @@ namespace Server.Mobiles
         {
             Body = 16;
             BaseSoundID = 278;
-
+            StrPerLevel = [2, 3];
+            IntPerLevel = [1, 4];
+            DexPerLevel = [2, 4];
+            ResistancePerLevel = [1, 3];
             if (Core.AOS)
             {
                 SetStr(200);
@@ -73,7 +76,7 @@ namespace Server.Mobiles
         public override string DefaultName => "a water elemental";
 
         public override bool BleedImmune => true;
-        
+
         public override double DispelDifficulty => 117.5;
         public override double DispelFocus => 45.0;
     }

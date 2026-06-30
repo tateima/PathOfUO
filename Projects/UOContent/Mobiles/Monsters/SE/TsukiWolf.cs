@@ -12,7 +12,11 @@ namespace Server.Mobiles
         {
             Body = 250;
             Hue = Utility.Random(3) == 0 ? Utility.RandomNeutralHue() : 0;
-
+            LevelRange = [24, 40];
+            StrPerLevel = [2, 5];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [3, 5];
+            ResistancePerLevel = [1, 3];
             SetStr(401, 450);
             SetDex(151, 200);
             SetInt(66, 76);

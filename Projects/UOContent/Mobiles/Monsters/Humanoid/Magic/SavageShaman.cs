@@ -24,29 +24,37 @@ namespace Server.Mobiles
                 Body = 183;
             }
 
-            SetStr(126, 145);
-            SetDex(91, 110);
-            SetInt(161, 185);
+            LevelRange = [5, 15];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [2, 5];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [1, 2];
 
-            SetDamage(4, 10);
+            SetStr(25, 40);
+            SetDex(15, 25);
+            SetInt(50, 90);
+
+            SetHits(30, 76);
+
+            SetDamage(3, 6);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 30, 40);
-            SetResistance(ResistanceType.Fire, 20, 30);
-            SetResistance(ResistanceType.Cold, 20, 30);
-            SetResistance(ResistanceType.Poison, 20, 30);
-            SetResistance(ResistanceType.Energy, 40, 50);
+            SetResistance(ResistanceType.Physical, 10, 20);
+            SetResistance(ResistanceType.Fire, 10, 20);
+            SetResistance(ResistanceType.Cold, 10, 20);
+            SetResistance(ResistanceType.Poison, 10, 20);
+            SetResistance(ResistanceType.Energy, 10, 30);
 
-            SetSkill(SkillName.EvalInt, 77.5, 100.0);
-            SetSkill(SkillName.Fencing, 62.5, 85.0);
-            SetSkill(SkillName.Macing, 62.5, 85.0);
-            SetSkill(SkillName.Magery, 72.5, 95.0);
-            SetSkill(SkillName.Meditation, 77.5, 100.0);
-            SetSkill(SkillName.MagicResist, 77.5, 100.0);
-            SetSkill(SkillName.Swords, 62.5, 85.0);
-            SetSkill(SkillName.Tactics, 62.5, 85.0);
-            SetSkill(SkillName.Wrestling, 62.5, 85.0);
+            SetSkill(SkillName.EvalInt, 40.1, 50.0);
+            SetSkill(SkillName.Fencing, 40.1, 50.0);
+            SetSkill(SkillName.Macing, 40.1, 50.0);
+            SetSkill(SkillName.Magery, 40.1, 50.0);
+            SetSkill(SkillName.Meditation, 40.1, 50.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Swords, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
+            SetSkill(SkillName.Wrestling, 40.1, 50.0);
 
             Fame = 1000;
             Karma = -1000;
@@ -70,7 +78,7 @@ namespace Server.Mobiles
         public override bool AlwaysMurderer => true;
         public override bool ShowFameTitle => false;
 
-        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.SavagesAndOrcs };
 
         public override void GenerateLoot()
         {

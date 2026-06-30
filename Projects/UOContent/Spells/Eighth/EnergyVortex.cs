@@ -37,8 +37,13 @@ namespace Server.Spells.Eighth
             {
                 // TODO: Check Demo for pre-T2A.
                 var duration = Core.T2A ? TimeSpan.FromSeconds(90.0) : TimeSpan.FromSeconds(Utility.Random(80, 40));
-
-                BaseCreature.Summon(new EnergyVortex(), false, Caster, new Point3D(p), 0x212, duration);
+                var level = (int)(GetDamageSkill(Caster) / 1.5);
+                var creature = new EnergyVortex(level)
+                {
+                    LevelRange = [((PlayerMobile)Caster).Level - 2, ((PlayerMobile)Caster).Level + 2]
+                };
+                creature.SetLevel();
+                BaseCreature.Summon(creature, false, Caster, new Point3D(p), 0x212, duration);
             }
         }
 

@@ -9,7 +9,10 @@ public partial class VampireBatFamiliar : BaseFamiliar
     {
         Body = 317;
         BaseSoundID = 0x270;
-
+        LevelRange = [8, 25];
+        StrPerLevel = [1, 3];
+        IntPerLevel = [1, 3];
+        DexPerLevel = [1, 3];
         SetStr(120);
         SetDex(120);
         SetInt(100);

@@ -13,7 +13,10 @@ public partial class DarkWolfFamiliar : BaseFamiliar
         Body = 99;
         Hue = 0x901;
         BaseSoundID = 0xE5;
-
+        LevelRange = [8, 25];
+        StrPerLevel = [1, 3];
+        IntPerLevel = [1, 3];
+        DexPerLevel = [1, 3];
         SetStr(100);
         SetDex(90);
         SetInt(90);

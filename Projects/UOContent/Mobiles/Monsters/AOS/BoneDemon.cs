@@ -11,30 +11,36 @@ namespace Server.Mobiles
             Body = 308;
             BaseSoundID = 0x48D;
 
-            SetStr(1000);
-            SetDex(151, 175);
-            SetInt(171, 220);
+            LevelRange = [65, 75];
+            StrPerLevel = [4, 6];
+            IntPerLevel = [4, 6];
+            DexPerLevel = [4, 6];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(3600);
+            SetStr(126, 170);
+            SetDex(70, 100);
+            SetInt(72, 130);
 
-            SetDamage(34, 36);
+            SetHits(210, 240);
+
+            SetDamage(5, 11);
 
             SetDamageType(ResistanceType.Physical, 50);
             SetDamageType(ResistanceType.Cold, 50);
 
-            SetResistance(ResistanceType.Physical, 75);
-            SetResistance(ResistanceType.Fire, 60);
-            SetResistance(ResistanceType.Cold, 90);
-            SetResistance(ResistanceType.Poison, 100);
-            SetResistance(ResistanceType.Energy, 60);
+            SetResistance(ResistanceType.Physical, 10, 30);
+            SetResistance(ResistanceType.Fire, 10, 30);
+            SetResistance(ResistanceType.Cold, 5, 20);
+            SetResistance(ResistanceType.Poison, 30);
+            SetResistance(ResistanceType.Energy, 10, 30);
 
-            SetSkill(SkillName.DetectHidden, 80.0);
-            SetSkill(SkillName.EvalInt, 77.6, 87.5);
-            SetSkill(SkillName.Magery, 77.6, 87.5);
-            SetSkill(SkillName.Meditation, 100.0);
-            SetSkill(SkillName.MagicResist, 50.1, 75.0);
-            SetSkill(SkillName.Tactics, 100.0);
-            SetSkill(SkillName.Wrestling, 100.0);
+            SetSkill(SkillName.DetectHidden, 53.0, 63.5);
+            SetSkill(SkillName.EvalInt, 53.0, 63.5);
+            SetSkill(SkillName.Magery, 53.0, 63.5);
+            SetSkill(SkillName.Meditation, 53.0, 63.5);
+            SetSkill(SkillName.MagicResist, 53.0, 63.5);
+            SetSkill(SkillName.Tactics, 53.0, 63.5);
+            SetSkill(SkillName.Wrestling, 53.0, 63.5);
 
             Fame = 20000;
             Karma = -20000;
@@ -50,7 +56,7 @@ namespace Server.Mobiles
         public override bool AreaPeaceImmune => Core.SE;
         public override Poison PoisonImmune => Poison.Lethal;
         public override int TreasureMapLevel => 1;
-        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder, OppositionGroup.CelestialsAndDaemons };
 
         public override void GenerateLoot()
         {

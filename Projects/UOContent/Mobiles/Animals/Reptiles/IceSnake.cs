@@ -12,6 +12,10 @@ namespace Server.Mobiles
             Body = 52;
             Hue = 0x480;
             BaseSoundID = 0xDB;
+            LevelRange = [5, 12];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
 
             SetStr(42, 54);
             SetDex(36, 45);

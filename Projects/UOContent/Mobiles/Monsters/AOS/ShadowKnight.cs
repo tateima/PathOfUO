@@ -17,32 +17,37 @@ namespace Server.Mobiles
             Name = NameList.RandomName("shadow knight");
             Title = "the Shadow Knight";
             Body = 311;
+            LevelRange = [15, 30];
+            StrPerLevel = [3, 6];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [2, 3];
+            ResistancePerLevel = [1, 2];
 
-            SetStr(250);
-            SetDex(100);
-            SetInt(100);
+            SetStr(80);
+            SetDex(40);
+            SetInt(40);
 
-            SetHits(2000);
+            SetHits(100);
 
-            SetDamage(20, 30);
+            SetDamage(1, 10);
 
             SetDamageType(ResistanceType.Physical, 60);
             SetDamageType(ResistanceType.Cold, 40);
 
-            SetResistance(ResistanceType.Physical, 90);
-            SetResistance(ResistanceType.Fire, 65);
-            SetResistance(ResistanceType.Cold, 75);
-            SetResistance(ResistanceType.Poison, 75);
-            SetResistance(ResistanceType.Energy, 55);
+            SetResistance(ResistanceType.Physical, 10, 30);
+            SetResistance(ResistanceType.Fire, 5,15);
+            SetResistance(ResistanceType.Cold, 10, 30);
+            SetResistance(ResistanceType.Poison, 5,15);
+            SetResistance(ResistanceType.Energy, 5, 25);
 
-            SetSkill(SkillName.Chivalry, 120.0);
-            SetSkill(SkillName.DetectHidden, 80.0);
-            SetSkill(SkillName.EvalInt, 100.0);
-            SetSkill(SkillName.Magery, 100.0);
-            SetSkill(SkillName.Meditation, 100.0);
-            SetSkill(SkillName.MagicResist, 120.0);
-            SetSkill(SkillName.Tactics, 100.0);
-            SetSkill(SkillName.Wrestling, 100.0);
+            SetSkill(SkillName.Chivalry, 45.1, 50.0);
+            SetSkill(SkillName.DetectHidden, 45.1, 50.0);
+            SetSkill(SkillName.EvalInt, 45.1, 50.0);
+            SetSkill(SkillName.Magery, 45.1, 50.0);
+            SetSkill(SkillName.Meditation, 45.1, 50.0);
+            SetSkill(SkillName.MagicResist, 45.1, 50.0);
+            SetSkill(SkillName.Tactics, 45.1, 50.0);
+            SetSkill(SkillName.Wrestling, 45.1, 50.0);
 
             Fame = 25000;
             Karma = -25000;

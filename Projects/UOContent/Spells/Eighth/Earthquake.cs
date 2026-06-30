@@ -51,32 +51,31 @@ namespace Server.Spells.Eighth
                 {
                     var m = queue.Dequeue();
 
-                    int damage;
-
-                    if (Core.AOS)
-                    {
-                        damage = m.Hits / 2;
-
-                        if (!m.Player)
-                        {
-                            damage = Math.Clamp(damage, 15, 100);
-                        }
-
-                        damage += Utility.RandomMinMax(0, 15);
-                    }
-                    else
-                    {
-                        damage = m.Hits * 6 / 10;
-
-                        if (!m.Player && damage < 10)
-                        {
-                            damage = 10;
-                        }
-                        else if (damage > 75)
-                        {
-                            damage = 75;
-                        }
-                    }
+                    int damage = Utility.RandomMinMax(3, 12);
+                    // if (Core.AOS)
+                    // {
+                    //     damage = m.Hits / 2;
+                    //
+                    //     if (!m.Player)
+                    //     {
+                    //         damage = Math.Clamp(damage, 4, 12);
+                    //     }
+                    //
+                    //     damage += Utility.RandomMinMax(1, 10);
+                    // }
+                    // else
+                    // {
+                    //     damage = m.Hits * 6 / 10;
+                    //
+                    //     if (!m.Player && damage < 10)
+                    //     {
+                    //         damage = 1;
+                    //     }
+                    //     else if (damage > 75)
+                    //     {
+                    //         damage = 75;
+                    //     }
+                    // }
 
                     Caster.DoHarmful(m);
                     SpellHelper.Damage(TimeSpan.Zero, m, Caster, damage, 100, 0, 0, 0, 0);

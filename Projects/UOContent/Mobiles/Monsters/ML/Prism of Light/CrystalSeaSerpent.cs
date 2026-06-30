@@ -10,23 +10,27 @@ namespace Server.Mobiles
         {
             Hue = 0x47E;
 
-            SetStr(250, 450);
-            SetDex(100, 150);
-            SetInt(90, 190);
+            LevelRange = [50, 68];
+            StrPerLevel = [2, 5];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 4];
+            ResistancePerLevel = [1, 3];
 
-            SetHits(230, 330);
+            SetStr(86, 105);
+            SetDex(20, 80);
+            SetInt(32, 50);
 
-            SetDamage(10, 18);
+            SetHits(100, 230);
 
-            SetDamageType(ResistanceType.Physical, 10);
-            SetDamageType(ResistanceType.Cold, 45);
-            SetDamageType(ResistanceType.Energy, 45);
+            SetDamage(2, 7);
 
-            SetResistance(ResistanceType.Physical, 50, 70);
-            SetResistance(ResistanceType.Fire, 0);
-            SetResistance(ResistanceType.Cold, 70, 90);
-            SetResistance(ResistanceType.Poison, 20, 30);
-            SetResistance(ResistanceType.Energy, 60, 80);
+            SetDamageType(ResistanceType.Physical, 100);
+
+            SetResistance(ResistanceType.Physical, 5, 25);
+            SetResistance(ResistanceType.Fire, 5, 10);
+            SetResistance(ResistanceType.Cold, 5, 15);
+            SetResistance(ResistanceType.Poison, 5, 10);
+            SetResistance(ResistanceType.Energy, 5, 10);
         }
 
         /*

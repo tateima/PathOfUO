@@ -13,33 +13,39 @@ namespace Server.Mobiles
             Body = 313;
             BaseSoundID = 0xE0;
 
-            SetStr(301, 330);
-            SetDex(101, 110);
-            SetInt(301, 330);
+            LevelRange = [35, 45];
+            StrPerLevel = [3, 4];
+            IntPerLevel = [3, 4];
+            DexPerLevel = [3, 4];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(4000);
+            SetStr(66, 95);
+            SetDex(40, 60);
+            SetInt(42, 90);
 
-            SetDamage(22, 26);
+            SetHits(190, 220);
+
+            SetDamage(3, 7);
 
             SetDamageType(ResistanceType.Physical, 85);
             SetDamageType(ResistanceType.Poison, 15);
 
-            SetResistance(ResistanceType.Physical, 60);
-            SetResistance(ResistanceType.Fire, 60);
-            SetResistance(ResistanceType.Cold, 100);
-            SetResistance(ResistanceType.Poison, 90);
-            SetResistance(ResistanceType.Energy, 75);
+            SetResistance(ResistanceType.Physical, 10, 30);
+            SetResistance(ResistanceType.Fire, 10, 20);
+            SetResistance(ResistanceType.Cold, 5, 10);
+            SetResistance(ResistanceType.Poison, 5, 20);
+            SetResistance(ResistanceType.Energy, 10, 20);
 
-            SetSkill(SkillName.DetectHidden, 80.0);
-            SetSkill(SkillName.EvalInt, 118.1, 120.0);
-            SetSkill(SkillName.Magery, 112.6, 120.0);
-            SetSkill(SkillName.Meditation, 150.0);
-            SetSkill(SkillName.Poisoning, 120.0);
-            SetSkill(SkillName.MagicResist, 90.1, 90.9);
-            SetSkill(SkillName.Tactics, 100.0);
-            SetSkill(SkillName.Wrestling, 90.1, 90.9);
-            SetSkill(SkillName.Necromancy, 120.1, 130.0);
-            SetSkill(SkillName.SpiritSpeak, 120.1, 130.0);
+            SetSkill(SkillName.DetectHidden, 53.0, 63.5);
+            SetSkill(SkillName.EvalInt, 53.0, 63.5);
+            SetSkill(SkillName.Magery, 53.0, 63.5);
+            SetSkill(SkillName.Meditation, 53.0, 63.5);
+            SetSkill(SkillName.Poisoning, 53.0, 63.5);
+            SetSkill(SkillName.MagicResist, 53.0, 63.5);
+            SetSkill(SkillName.Tactics, 53.0, 63.5);
+            SetSkill(SkillName.Wrestling, 53.0, 63.5);
+            SetSkill(SkillName.Necromancy, 53.0, 63.5);
+            SetSkill(SkillName.SpiritSpeak, 53.0, 63.5);
 
             Fame = 22000;
             Karma = -22000;

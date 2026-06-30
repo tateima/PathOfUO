@@ -12,6 +12,11 @@ namespace Server.Mobiles
         public DeathwatchBeetle() : base(AIType.AI_Melee, Core.ML ? FightMode.Aggressor : FightMode.Closest)
         {
             Body = 242;
+            LevelRange = [10, 15];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [1, 2];
 
             SetStr(136, 160);
             SetDex(41, 52);

@@ -8,6 +8,11 @@ namespace Server.Mobiles
         public NobleLord(int maxStrength = 3) : base(AIType.AI_Melee, FightMode.Aggressor)
         {
             Title = "the noble lord";
+            LevelRange = [60, 80];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [1, 2];
             SetHumanoidStrength(maxStrength);
 
             SetSkill(SkillName.Parry, 95.0, 120.0);

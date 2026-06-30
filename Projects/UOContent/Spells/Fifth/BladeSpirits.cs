@@ -35,7 +35,10 @@ namespace Server.Spells.Fifth
             else if (SpellHelper.CheckTown(p, Caster) && CheckSequence())
             {
                 var duration = TimeSpan.FromSeconds(Core.AOS ? 120 : Utility.Random(80, 40));
-                BaseCreature.Summon(new BladeSpirits(), false, Caster, new Point3D(p), 0x212, duration);
+                var level = (int)(GetDamageSkill(Caster) / 1.5);
+                var creature = new BladeSpirits(level);
+                creature.SetLevel();
+                BaseCreature.Summon(creature, false, Caster, new Point3D(p), 0x212, duration);
             }
         }
 

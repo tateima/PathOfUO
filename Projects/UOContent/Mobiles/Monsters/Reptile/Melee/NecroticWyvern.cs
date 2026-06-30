@@ -5,6 +5,11 @@ namespace Server.Mobiles
         [Constructible]
         public NecroticWyvern()
         {
+            LevelRange = [40, 65];
+            StrPerLevel = [1, 5];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [1, 6];
+            ResistancePerLevel = [1, 2];
             Tamable = true;
             ControlSlots = 3;
             MinTameSkill = 84.3;

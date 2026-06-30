@@ -14,6 +14,11 @@ namespace Server.Mobiles
             Female = Utility.RandomBool();
 
             Body = Female ? 0x191 : 0x190;
+            LevelRange = [1, 40];
+            StrPerLevel = [2, 4];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [2, 3];
+            ResistancePerLevel = [1, 2];
 
             SetHits(251, 350);
 

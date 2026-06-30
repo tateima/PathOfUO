@@ -11,6 +11,11 @@ public abstract partial class BaseGuard : BaseCreature
 {
     public BaseGuard() : base(AIType.AI_Melee, FightMode.None)
     {
+        LevelRange = [1, 80];
+        StrPerLevel = [1, 3];
+        IntPerLevel = [1, 3];
+        DexPerLevel = [1, 3];
+        ResistancePerLevel = [1, 2];
     }
     public override bool HandlesOnSpeech(Mobile from) => true;
     public static bool GuardsInstantKill { get; private set; }

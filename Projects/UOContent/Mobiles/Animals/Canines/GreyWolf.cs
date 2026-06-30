@@ -11,7 +11,10 @@ namespace Server.Mobiles
         {
             Body = Utility.RandomList(25, 27);
             BaseSoundID = 0xE5;
-
+            LevelRange = [2, 15];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(56, 80);
             SetDex(56, 75);
             SetInt(31, 55);

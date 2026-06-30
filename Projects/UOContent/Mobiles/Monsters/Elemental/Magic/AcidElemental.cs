@@ -12,30 +12,34 @@ namespace Server.Mobiles
             Body = 0x9E;
             BaseSoundID = 278;
 
-            SetStr(326, 355);
-            SetDex(66, 85);
-            SetInt(271, 295);
+            LevelRange = [27, 39];
+            StrPerLevel = [2, 7];
+            IntPerLevel = [1, 4];
+            DexPerLevel = [2, 5];
+            ResistancePerLevel = [1, 3];
 
-            SetHits(196, 213);
-
-            SetDamage(9, 15);
+            SetStr(50, 135);
+            SetDex(20, 75);
+            SetInt(15, 80);
+            SetHits(95, 150);
+            SetDamage(2, 9);
 
             SetDamageType(ResistanceType.Physical, 25);
             SetDamageType(ResistanceType.Fire, 50);
             SetDamageType(ResistanceType.Energy, 25);
 
-            SetResistance(ResistanceType.Physical, 45, 55);
-            SetResistance(ResistanceType.Fire, 40, 50);
-            SetResistance(ResistanceType.Cold, 20, 30);
-            SetResistance(ResistanceType.Poison, 10, 20);
-            SetResistance(ResistanceType.Energy, 30, 40);
+            SetResistance(ResistanceType.Physical, 15, 25);
+            SetResistance(ResistanceType.Fire, 10, 20);
+            SetResistance(ResistanceType.Cold, 5, 10);
+            SetResistance(ResistanceType.Poison, 1, 10);
+            SetResistance(ResistanceType.Energy, 10, 20);
 
-            SetSkill(SkillName.Anatomy, 30.3, 60.0);
-            SetSkill(SkillName.EvalInt, 70.1, 85.0);
-            SetSkill(SkillName.Magery, 70.1, 85.0);
-            SetSkill(SkillName.MagicResist, 60.1, 75.0);
-            SetSkill(SkillName.Tactics, 80.1, 90.0);
-            SetSkill(SkillName.Wrestling, 70.1, 90.0);
+            SetSkill(SkillName.Anatomy, 40.1, 50.0);
+            SetSkill(SkillName.EvalInt, 40.1, 50.0);
+            SetSkill(SkillName.Magery, 40.1, 50.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
+            SetSkill(SkillName.Wrestling, 40.1, 50.0);
 
             Fame = 10000;
             Karma = -10000;

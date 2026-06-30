@@ -17,6 +17,11 @@ namespace Server.Mobiles
             Name = m_Names.RandomElement();
             Body = 86;
             BaseSoundID = 634;
+            LevelRange = [25, 40];
+            StrPerLevel = [1, 4];
+            IntPerLevel = [1, 1];
+            DexPerLevel = [1, 4];
+            ResistancePerLevel = [1, 2];
 
             SetStr(150, 320);
             SetDex(94, 190);

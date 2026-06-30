@@ -24,7 +24,10 @@ namespace Server.Mobiles
         )
         {
             BaseSoundID = 0xA8;
-
+            LevelRange = [20, 40];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             InitStats(Utility.Random(300, 100), 125, 60);
 
             SetStr(400);

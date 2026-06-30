@@ -12,28 +12,33 @@ namespace Server.Mobiles
             Body = 0x2F2;
             BaseSoundID = 0x174;
 
-            SetStr(760, 850);
-            SetDex(102, 150);
-            SetInt(152, 200);
+            LevelRange = [10, 20];
+            StrPerLevel = [3, 7];
+            IntPerLevel = [4, 7];
+            DexPerLevel = [3, 8];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(482, 485);
+            SetStr(70, 100);
+            SetDex(20, 65);
+            SetInt(25, 70);
+            SetHits(75, 100);
 
-            SetDamage(7, 14);
+            SetDamage(2, 5);
 
-            SetResistance(ResistanceType.Physical, 40, 60);
-            SetResistance(ResistanceType.Fire, 50, 60);
-            SetResistance(ResistanceType.Cold, 20, 30);
-            SetResistance(ResistanceType.Poison, 25, 35);
-            SetResistance(ResistanceType.Energy, 15, 25);
+            SetResistance(ResistanceType.Physical, 10, 30);
+            SetResistance(ResistanceType.Fire, 10, 30);
+            SetResistance(ResistanceType.Cold, 5, 10);
+            SetResistance(ResistanceType.Poison, 5, 15);
+            SetResistance(ResistanceType.Energy, 5, 15);
 
-            SetSkill(SkillName.MagicResist, 120.1, 130.0);
-            SetSkill(SkillName.Tactics, 70.1, 80.0);
-            SetSkill(SkillName.Wrestling, 80.1, 90.0);
-            SetSkill(SkillName.Swords, 80.1, 90.0);
-            SetSkill(SkillName.Anatomy, 70.1, 80.0);
-            SetSkill(SkillName.Magery, 80.1, 90.0);
-            SetSkill(SkillName.EvalInt, 70.3, 100.0);
-            SetSkill(SkillName.Meditation, 70.3, 100.0);
+            SetSkill(SkillName.MagicResist, 45.1, 55.0);
+            SetSkill(SkillName.Tactics, 45.1, 55.0);
+            SetSkill(SkillName.Wrestling, 45.1, 55.0);
+            SetSkill(SkillName.Swords, 45.1, 55.0);
+            SetSkill(SkillName.Anatomy, 45.1, 55.0);
+            SetSkill(SkillName.Magery, 45.1, 55.0);
+            SetSkill(SkillName.EvalInt, 45.1, 55.0);
+            SetSkill(SkillName.Meditation, 45.1, 55.0);
 
             Fame = 5000;
             Karma = -5000;

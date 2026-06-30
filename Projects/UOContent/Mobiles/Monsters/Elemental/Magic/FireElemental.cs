@@ -12,28 +12,33 @@ namespace Server.Mobiles
             Body = 15;
             BaseSoundID = 838;
 
-            SetStr(126, 155);
-            SetDex(166, 185);
-            SetInt(101, 125);
+            LevelRange = [16, 35];
+            StrPerLevel = [2, 4];
+            IntPerLevel = [1, 4];
+            DexPerLevel = [1, 4];
+            ResistancePerLevel = [1, 3];
 
-            SetHits(76, 93);
+            SetStr(50, 155);
+            SetDex(30, 55);
+            SetInt(55, 70);
+            SetHits(85, 120);
 
-            SetDamage(7, 9);
+            SetDamage(4, 7);
 
             SetDamageType(ResistanceType.Physical, 25);
             SetDamageType(ResistanceType.Fire, 75);
 
-            SetResistance(ResistanceType.Physical, 35, 45);
-            SetResistance(ResistanceType.Fire, 60, 80);
+            SetResistance(ResistanceType.Physical, 15, 25);
+            SetResistance(ResistanceType.Fire, 20, 30);
             SetResistance(ResistanceType.Cold, 5, 10);
-            SetResistance(ResistanceType.Poison, 30, 40);
-            SetResistance(ResistanceType.Energy, 30, 40);
+            SetResistance(ResistanceType.Poison, 5, 20);
+            SetResistance(ResistanceType.Energy, 5, 20);
 
-            SetSkill(SkillName.EvalInt, 60.1, 75.0);
-            SetSkill(SkillName.Magery, 60.1, 75.0);
-            SetSkill(SkillName.MagicResist, 75.2, 105.0);
-            SetSkill(SkillName.Tactics, 80.1, 100.0);
-            SetSkill(SkillName.Wrestling, 70.1, 100.0);
+            SetSkill(SkillName.EvalInt, 30.1, 60.0);
+            SetSkill(SkillName.Magery, 30.1, 60.0);
+            SetSkill(SkillName.MagicResist, 30.1, 60.0);
+            SetSkill(SkillName.Tactics, 30.1, 60.0);
+            SetSkill(SkillName.Wrestling, 30.1, 60.0);
 
             Fame = 4500;
             Karma = -4500;
@@ -49,7 +54,7 @@ namespace Server.Mobiles
         public override string DefaultName => "a fire elemental";
 
         public override bool BleedImmune => true;
-        
+
         public override int TreasureMapLevel => 2;
 
         public override void GenerateLoot()

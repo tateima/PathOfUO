@@ -11,30 +11,35 @@ namespace Server.Mobiles
         public JukaWarrior() : base(AIType.AI_Melee)
         {
             Body = 764;
+            LevelRange = [54, 74];
+            StrPerLevel = [2, 6];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [2, 5];
+            ResistancePerLevel = [1, 2];
 
-            SetStr(251, 350);
-            SetDex(61, 80);
-            SetInt(101, 150);
+            SetStr(86, 105);
+            SetDex(50, 80);
+            SetInt(12, 70);
 
-            SetHits(151, 210);
+            SetHits(155, 200);
 
-            SetDamage(7, 9);
+            SetDamage(5, 8);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 40, 50);
-            SetResistance(ResistanceType.Fire, 30, 40);
-            SetResistance(ResistanceType.Cold, 25, 35);
-            SetResistance(ResistanceType.Poison, 10, 20);
-            SetResistance(ResistanceType.Energy, 10, 20);
+            SetResistance(ResistanceType.Physical, 10, 30);
+            SetResistance(ResistanceType.Fire, 10, 20);
+            SetResistance(ResistanceType.Cold, 5, 15);
+            SetResistance(ResistanceType.Poison, 10, 15);
+            SetResistance(ResistanceType.Energy, 5, 10);
 
-            SetSkill(SkillName.Anatomy, 80.1, 90.0);
-            SetSkill(SkillName.Fencing, 80.1, 90.0);
-            SetSkill(SkillName.Macing, 80.1, 90.0);
-            SetSkill(SkillName.MagicResist, 120.1, 130.0);
-            SetSkill(SkillName.Swords, 80.1, 90.0);
-            SetSkill(SkillName.Tactics, 80.1, 90.0);
-            SetSkill(SkillName.Wrestling, 80.1, 90.0);
+            SetSkill(SkillName.Anatomy, 53.0, 63.5);
+            SetSkill(SkillName.Fencing, 53.0, 63.5);
+            SetSkill(SkillName.Macing, 53.0, 63.5);
+            SetSkill(SkillName.MagicResist, 53.0, 63.5);
+            SetSkill(SkillName.Swords, 53.0, 63.5);
+            SetSkill(SkillName.Tactics, 53.0, 63.5);
+            SetSkill(SkillName.Wrestling, 53.0, 63.5);
 
             Fame = 10000;
             Karma = -10000;

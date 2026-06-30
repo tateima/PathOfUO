@@ -17,13 +17,19 @@ namespace Server.Mobiles
             Name = NameList.RandomName("ethereal warrior");
             Body = 123;
 
-            SetStr(586, 785);
-            SetDex(177, 255);
-            SetInt(351, 450);
+            LevelRange = [60, 80];
+            StrPerLevel = [4, 6];
+            IntPerLevel = [4, 6];
+            DexPerLevel = [4, 6];
+            ResistancePerLevel = [2, 4];
 
-            SetHits(352, 471);
+            SetStr(86, 115);
+            SetDex(80, 120);
+            SetInt(92, 170);
 
-            SetDamage(13, 19);
+            SetHits(200, 230);
+
+            SetDamage(4, 12);
 
             SetDamageType(ResistanceType.Physical, 100);
 
@@ -52,7 +58,7 @@ namespace Server.Mobiles
 
         public override int TreasureMapLevel => Core.AOS ? 5 : 0;
 
-        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight, OppositionGroup.CelestialsAndDaemons };
 
         public override int Feathers => 100;
 

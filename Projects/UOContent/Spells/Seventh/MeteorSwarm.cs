@@ -62,8 +62,8 @@ namespace Server.Spells.Seventh
                     }
 
                     double damage = Core.AOS
-                        ? GetNewAosDamage(31, 1, 5, playerVsPlayer)
-                        : Utility.Random(27, 22);
+                        ? GetNewAosDamage(0, 1, 12, playerVsPlayer)
+                        : Utility.Random(12, 1);
                     int fire = 100;
                     int cold = 0;
                     int hue = 0;

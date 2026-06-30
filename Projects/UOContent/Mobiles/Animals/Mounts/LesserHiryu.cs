@@ -13,7 +13,10 @@ namespace Server.Mobiles
         public LesserHiryu() : base(243, 0x3E94, AIType.AI_Melee)
         {
             Hue = GetHue();
-
+            LevelRange = [20, 40];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(301, 410);
             SetDex(171, 270);
             SetInt(301, 325);

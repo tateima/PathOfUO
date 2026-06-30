@@ -9,6 +9,11 @@ public partial class Artist : BaseCreature
     [Constructible]
     public Artist() : base(AIType.AI_Animal, FightMode.None)
     {
+        LevelRange = [1, 60];
+        StrPerLevel = [1, 3];
+        IntPerLevel = [1, 3];
+        DexPerLevel = [1, 3];
+        ResistancePerLevel = [1, 2];
         InitStats(31, 41, 51);
         SetSkill(SkillName.Healing, 36, 68);
 

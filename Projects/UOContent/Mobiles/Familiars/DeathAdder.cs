@@ -10,7 +10,10 @@ public partial class DeathAdder : BaseFamiliar
         Body = 0x15;
         Hue = 0x455;
         BaseSoundID = 219;
-
+        LevelRange = [8, 25];
+        StrPerLevel = [1, 3];
+        IntPerLevel = [1, 3];
+        DexPerLevel = [1, 3];
         SetStr(70);
         SetDex(150);
         SetInt(100);

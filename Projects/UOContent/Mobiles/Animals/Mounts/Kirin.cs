@@ -13,7 +13,10 @@ namespace Server.Mobiles
         public Kirin() : base(132, 0x3EAD, AIType.AI_Mage, FightMode.Aggressor)
         {
             BaseSoundID = 0x3C5;
-
+            LevelRange = [5, 25];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(296, 325);
             SetDex(86, 105);
             SetInt(186, 225);

@@ -8,6 +8,10 @@ namespace Server.Mobiles
         [Constructible]
         public Jwilson() : base(AIType.AI_Melee)
         {
+            LevelRange = [4, 8];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             Hue = Utility.RandomList(0x89C, 0x8A2, 0x8A8, 0x8AE);
             Body = 0x33;
             VirtualArmor = 8;

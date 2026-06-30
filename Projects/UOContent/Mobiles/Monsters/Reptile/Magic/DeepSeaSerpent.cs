@@ -11,6 +11,11 @@ namespace Server.Mobiles
         {
             Body = 150;
             BaseSoundID = 447;
+            LevelRange = [10, 40];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [1, 2];
 
             Hue = Utility.Random(0x8A0, 5);
 

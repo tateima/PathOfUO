@@ -13,24 +13,28 @@ namespace Server.Mobiles
 
             Hue = Utility.RandomSlimeHue();
 
-            SetStr(22, 34);
+            LevelRange = [2, 7];
+            StrPerLevel = [1, 2];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 2];
+            ResistancePerLevel = [1, 2];
+            SetStr(18, 20);
             SetDex(16, 21);
             SetInt(16, 20);
 
-            SetHits(15, 19);
+            SetHits(13, 17);
 
-            SetDamage(1, 5);
+            SetDamage(1, 3);
 
             SetDamageType(ResistanceType.Physical, 100);
 
             SetResistance(ResistanceType.Physical, 5, 10);
             SetResistance(ResistanceType.Poison, 15, 20);
 
-            SetSkill(SkillName.Poisoning, 36.0, 49.1);
-            SetSkill(SkillName.Anatomy, 0);
-            SetSkill(SkillName.MagicResist, 15.9, 18.9);
-            SetSkill(SkillName.Tactics, 24.6, 26.1);
-            SetSkill(SkillName.Wrestling, 24.9, 26.1);
+            SetSkill(SkillName.Poisoning, 30.1, 50.0);
+            SetSkill(SkillName.MagicResist, 15.1, 20.0);
+            SetSkill(SkillName.Tactics, 19.3, 34.0);
+            SetSkill(SkillName.Wrestling, 19.3, 34.0);
 
             Fame = 300;
             Karma = -300;

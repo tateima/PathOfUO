@@ -10,7 +10,10 @@ namespace Server.Mobiles
         public GreatHart() : base(AIType.AI_Animal, FightMode.Aggressor)
         {
             Body = 0xEA;
-
+            LevelRange = [7, 14];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(41, 71);
             SetDex(47, 77);
             SetInt(27, 57);

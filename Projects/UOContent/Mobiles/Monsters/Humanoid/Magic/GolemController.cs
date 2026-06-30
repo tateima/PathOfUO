@@ -20,28 +20,32 @@ namespace Server.Mobiles
             AddArcane(new LeatherGloves());
             AddArcane(new Cloak());
 
-            SetStr(126, 150);
-            SetDex(96, 120);
-            SetInt(151, 175);
+            LevelRange = [10, 60];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [4, 9];
+            DexPerLevel = [2, 4];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(76, 90);
+            SetStr(25, 40);
+            SetDex(15, 25);
+            SetInt(55, 80);
 
-            SetDamage(6, 12);
+            SetDamage(2, 6);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 30, 40);
-            SetResistance(ResistanceType.Fire, 25, 35);
-            SetResistance(ResistanceType.Cold, 35, 45);
-            SetResistance(ResistanceType.Poison, 5, 15);
-            SetResistance(ResistanceType.Energy, 15, 25);
+            SetResistance(ResistanceType.Physical, 10, 25);
+            SetResistance(ResistanceType.Fire, 15, 15);
+            SetResistance(ResistanceType.Cold, 5, 25);
+            SetResistance(ResistanceType.Poison, 1, 5);
+            SetResistance(ResistanceType.Energy, 1, 5);
 
-            SetSkill(SkillName.EvalInt, 95.1, 100.0);
-            SetSkill(SkillName.Magery, 95.1, 100.0);
-            SetSkill(SkillName.Meditation, 95.1, 100.0);
-            SetSkill(SkillName.MagicResist, 102.5, 125.0);
-            SetSkill(SkillName.Tactics, 65.0, 87.5);
-            SetSkill(SkillName.Wrestling, 65.0, 87.5);
+            SetSkill(SkillName.EvalInt, 40.0, 50.5);
+            SetSkill(SkillName.Magery, 40.0, 50.5);
+            SetSkill(SkillName.Meditation, 40.0, 50.5);
+            SetSkill(SkillName.MagicResist, 40.0, 50.5);
+            SetSkill(SkillName.Tactics, 40.0, 50.5);
+            SetSkill(SkillName.Wrestling, 40.0, 50.5);
 
             Fame = 4000;
             Karma = -4000;

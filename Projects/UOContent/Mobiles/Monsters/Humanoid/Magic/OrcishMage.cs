@@ -13,47 +13,33 @@ namespace Server.Mobiles
         {
             Body = 140;
             BaseSoundID = 0x45A;
-            IsShaman = Utility.Random(100) < 10;
-            int resistanceBuffs = 0;
-            int skillBuffs = 0;
-            int fameBuff = 0;
-            SetDex(91, 115);
-            SetStr(116, 150);
-            if (IsShaman)
-            {
-                Hue = 0x322;
-                SetInt(181, 1055);
-                SetHits(170, 190);
-                SetDamageType(ResistanceType.Cold, 100);
-                SetSkill(SkillName.Magery, 90.1, 95.5);
-                resistanceBuffs = 20;
-                skillBuffs = 10;
-                fameBuff = 4000;
-                SetDamage(3, 6);
-                PackItem(new BagOfReagents());
-            }
-            else
-            {
-                SetInt(161, 185);
-                SetHits(70, 90);
-                SetDamageType(ResistanceType.Physical, 100);
-                SetSkill(SkillName.Magery, 60.1, 72.5);
-                SetDamage(4, 14);
-            }
 
-            SetResistance(ResistanceType.Physical, 25, 35 + resistanceBuffs);
-            SetResistance(ResistanceType.Fire, 30, 40 + resistanceBuffs);
-            SetResistance(ResistanceType.Cold, 20, 30 + resistanceBuffs);
-            SetResistance(ResistanceType.Poison, 30, 40 + resistanceBuffs);
-            SetResistance(ResistanceType.Energy, 30, 40 + resistanceBuffs);
+            LevelRange = [5, 12];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [2, 5];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [1, 2];
+            SetStr(20, 40);
+            SetDex(19, 30);
+            SetInt(50, 90);
+            SetHits(50, 86);
+            SetDamage(2, 4);
+            SetDamageType(ResistanceType.Physical, 100);
+            SetSkill(SkillName.Magery, 40.1, 50.0);
 
-            SetSkill(SkillName.EvalInt, 60.1 + skillBuffs, 72.5 + skillBuffs);
-            SetSkill(SkillName.MagicResist, 60.1 + skillBuffs, 75.0 + skillBuffs);
-            SetSkill(SkillName.Tactics, 50.1 + skillBuffs, 65.0 + skillBuffs);
-            SetSkill(SkillName.Wrestling, 40.1 + skillBuffs, 50.0 + skillBuffs);
+            SetResistance(ResistanceType.Physical, 5, 25);
+            SetResistance(ResistanceType.Fire, 10, 20);
+            SetResistance(ResistanceType.Cold, 10, 20);
+            SetResistance(ResistanceType.Poison, 10, 20);
+            SetResistance(ResistanceType.Energy, 10, 20);
 
-            Fame = 3000 + fameBuff;
-            Karma = -3000 - fameBuff;
+            SetSkill(SkillName.EvalInt, 40.1, 50.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
+            SetSkill(SkillName.Wrestling, 40.1, 50.0);
+
+            Fame = 3000;
+            Karma = -3000;
 
             VirtualArmor = 30;
 
@@ -74,7 +60,7 @@ namespace Server.Mobiles
         public override int TreasureMapLevel => 1;
         public override int Meat => 1;
 
-        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.SavagesAndOrcs };
 
         public override void GenerateLoot()
         {

@@ -11,6 +11,11 @@ namespace Server.Mobiles
         {
             Body = 103;
             BaseSoundID = 362;
+            LevelRange = [60, 65];
+            StrPerLevel = [2, 4];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [2, 2];
 
             SetStr(111, 140);
             SetDex(201, 220);
@@ -38,6 +43,7 @@ namespace Server.Mobiles
 
             Fame = 15000;
             Karma = 15000;
+            Tamable = false;
 
             VirtualArmor = 36;
 

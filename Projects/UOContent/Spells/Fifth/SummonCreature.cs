@@ -69,7 +69,8 @@ namespace Server.Spells.Fifth
                 try
                 {
                     var creature = m_Types.RandomElement().CreateInstance<BaseCreature>();
-
+                    creature.LevelRange = [((PlayerMobile)Caster).Level, ((PlayerMobile)Caster).Level];
+                    creature.SetLevel();
                     // creature.ControlSlots = 2;
 
                     var duration = Core.Expansion switch

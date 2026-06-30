@@ -16,7 +16,12 @@ public partial class Barracoon : BaseChampion
         Title = "the piper";
         Body = 0x190;
         Hue = 0x83EC;
-
+        LevelRange = [50, 70];
+        StrPerLevel = [2, 4];
+        IntPerLevel = [2, 4];
+        DexPerLevel = [2, 5];
+        ResistancePerLevel = [1, 3];
+        
         SetStr(305, 425);
         SetDex(72, 150);
         SetInt(505, 750);

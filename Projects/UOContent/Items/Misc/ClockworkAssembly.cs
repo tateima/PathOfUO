@@ -87,8 +87,8 @@ public partial class ClockworkAssembly : Item
             from.SendLocalizedMessage(_requiredPartsClilocs[res]);
             return;
         }
-
-        var g = new Golem(true, scalar);
+        var level = (int)(tinkerSkill / 1.5);
+        var g = new Golem(true, scalar, level);
 
         if (g.SetControlMaster(from))
         {

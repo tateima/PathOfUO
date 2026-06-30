@@ -10,6 +10,10 @@ namespace Server.Mobiles
         {
             Body = 14;
             BaseSoundID = 268;
+            StrPerLevel = [2, 5];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [2, 5];
+            ResistancePerLevel = [1, 3];
 
             if (Core.AOS)
             {
@@ -33,7 +37,7 @@ namespace Server.Mobiles
                 SetSkill(SkillName.Tactics, 100.0);
                 SetSkill(SkillName.Wrestling, 90.0);
             }
-            else 
+            else
             {
                 SetStr(126, 155);
                 SetDex(66, 85);
@@ -66,7 +70,7 @@ namespace Server.Mobiles
         public override string DefaultName => "an earth elemental";
 
         public override bool BleedImmune => true;
-        
+
         public override double DispelDifficulty => 117.5;
         public override double DispelFocus => 45.0;
     }

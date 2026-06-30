@@ -12,6 +12,11 @@ namespace Server.Mobiles
             IsParagon = true;
 
             Hue = 0x8FD;
+            LevelRange = [70, 80];
+            StrPerLevel = [4, 10];
+            IntPerLevel = [3, 5];
+            DexPerLevel = [3, 5];
+            ResistancePerLevel = [2, 4];
 
             SetStr(845, 871);
             SetDex(121, 134);
@@ -19,7 +24,7 @@ namespace Server.Mobiles
 
             SetHits(7470, 7540);
 
-            SetDamage(26, 31);
+            SetDamage(5, 14);
 
             SetDamageType(ResistanceType.Physical, 60);
             SetDamageType(ResistanceType.Fire, 10);
@@ -38,7 +43,8 @@ namespace Server.Mobiles
             SetSkill(SkillName.MagicResist, 102.9, 119.0);
             SetSkill(SkillName.Anatomy, 91.8, 94.3);
 
-            // TODO: Fame/Karma
+            Fame = 27000;
+            Karma = -27000;
         }
 
         public override string CorpseName => "an Abscess corpse";

@@ -10,32 +10,36 @@ namespace Server.Mobiles
         {
             Body = 259;
 
-            SetStr(451, 500);
-            SetDex(201, 250);
-            SetInt(801, 850);
+            LevelRange = [35, 45];
+            StrPerLevel = [4, 7];
+            IntPerLevel = [4, 5];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [2, 3];
+            SetStr(45, 70);
+            SetDex(39, 40);
+            SetInt(70, 95);
 
-            SetHits(1500);
-            SetStam(150);
+            SetHits(50, 86);
 
-            SetDamage(16, 19);
+            SetDamage(5, 7);
 
             SetDamageType(ResistanceType.Physical, 30);
             SetDamageType(ResistanceType.Fire, 70);
 
-            SetResistance(ResistanceType.Physical, 35, 55);
-            SetResistance(ResistanceType.Fire, 20, 65);
-            SetResistance(ResistanceType.Cold, 55, 80);
-            SetResistance(ResistanceType.Poison, 20, 35);
-            SetResistance(ResistanceType.Energy, 60, 80);
+            SetResistance(ResistanceType.Physical, 5, 25);
+            SetResistance(ResistanceType.Fire, 10, 25);
+            SetResistance(ResistanceType.Cold, 5, 20);
+            SetResistance(ResistanceType.Poison, 10, 15);
+            SetResistance(ResistanceType.Energy, 10, 25);
 
-            SetSkill(SkillName.Meditation, 77.7, 84.0);
-            SetSkill(SkillName.EvalInt, 72.2, 79.6);
-            SetSkill(SkillName.Magery, 83.7, 89.6);
+            SetSkill(SkillName.Meditation, 40.4, 50.1);
+            SetSkill(SkillName.EvalInt, 40.4, 50.1);
+            SetSkill(SkillName.Magery, 40.4, 50.1);
             SetSkill(SkillName.Poisoning, 0);
-            SetSkill(SkillName.Anatomy, 0);
-            SetSkill(SkillName.MagicResist, 80.2, 87.3);
-            SetSkill(SkillName.Tactics, 104.5, 105.1);
-            SetSkill(SkillName.Wrestling, 105.1, 109.4);
+            SetSkill(SkillName.Anatomy, 40.4, 50.1);
+            SetSkill(SkillName.MagicResist, 40.4, 50.1);
+            SetSkill(SkillName.Tactics, 40.4, 50.1);
+            SetSkill(SkillName.Wrestling, 40.4, 50.1);
 
             Fame = 3700;   // Guessed
             Karma = -3700; // Guessed

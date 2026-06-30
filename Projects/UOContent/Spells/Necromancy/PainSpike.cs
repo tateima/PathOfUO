@@ -55,7 +55,7 @@ public class PainSpikeSpell : NecromancerSpell, ITargetingSpell<Mobile>
             m.FixedParticles(0x37C4, 1, 8, 9502, 39, 4, EffectLayer.Head);
             m.PlaySound(0x210);
 
-            var damage = Math.Max((GetDamageSkill(Caster) - GetResistSkill(m)) / 10 + (m.Player ? 18 : 30), 1);
+            var damage = Math.Max((GetDamageSkill(Caster) - GetResistSkill(m)) / 10, 1);
             m.CheckSkill(SkillName.MagicResist, 0.0, 120.0); // Skill check for gain
 
             var buffTime = TimeSpan.FromSeconds(10.0);

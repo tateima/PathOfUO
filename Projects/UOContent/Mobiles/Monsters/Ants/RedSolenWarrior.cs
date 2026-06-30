@@ -14,27 +14,32 @@ namespace Server.Mobiles
         {
             Body = 782;
             BaseSoundID = 959;
+            LevelRange = [13, 25];
+            StrPerLevel = [2, 5];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [4, 9];
+            ResistancePerLevel = [1, 2];
+            SetStr(56, 85);
+            SetDex(50, 99);
+            SetInt(21, 45);
 
-            SetStr(196, 220);
-            SetDex(101, 125);
-            SetInt(36, 60);
+            SetHits(52, 89);
+            SetMana(0);
 
-            SetHits(96, 107);
-
-            SetDamage(5, 15);
+            SetDamage(2, 8);
 
             SetDamageType(ResistanceType.Physical, 80);
             SetDamageType(ResistanceType.Poison, 20);
 
-            SetResistance(ResistanceType.Physical, 20, 35);
-            SetResistance(ResistanceType.Fire, 20, 35);
-            SetResistance(ResistanceType.Cold, 10, 25);
-            SetResistance(ResistanceType.Poison, 20, 35);
+            SetResistance(ResistanceType.Physical, 5, 25);
+            SetResistance(ResistanceType.Fire, 5, 20);
+            SetResistance(ResistanceType.Cold, 5, 20);
+            SetResistance(ResistanceType.Poison, 5, 15);
             SetResistance(ResistanceType.Energy, 10, 25);
 
-            SetSkill(SkillName.MagicResist, 60.0);
-            SetSkill(SkillName.Tactics, 80.0);
-            SetSkill(SkillName.Wrestling, 80.0);
+            SetSkill(SkillName.MagicResist, 45.0, 50.0);
+            SetSkill(SkillName.Tactics, 45.0, 50.0);
+            SetSkill(SkillName.Wrestling, 45.0, 50.0);
 
             Fame = 3000;
             Karma = -3000;

@@ -10,7 +10,10 @@ namespace Server.Mobiles
         {
             Body = Utility.RandomList(0xE8, 0xE9);
             BaseSoundID = 0x64;
-
+            LevelRange = [2, 15];
+            StrPerLevel = [1, 4];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             if (Utility.RandomBool())
             {
                 Hue = 0x901;

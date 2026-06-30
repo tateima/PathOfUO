@@ -13,7 +13,10 @@ namespace Server.Mobiles
             Hue = Race.Human.RandomHairHue() | 0x8000;
 
             BaseSoundID = 0x275;
-
+            LevelRange = [15, 35];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(94, 170);
             SetDex(96, 115);
             SetInt(6, 10);

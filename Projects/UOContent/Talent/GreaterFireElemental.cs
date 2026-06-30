@@ -62,6 +62,7 @@ namespace Server.Talent
                     if (Core.AOS)
                     {
                         var creature = (BaseCreature)ScaleMobile(new SummonedFireElemental());
+                        creature.LevelRange = [((PlayerMobile)from).Level, ((PlayerMobile)from).Level + Level];
                         creature.Name = "a greater fire lord";
                         creature.OverrideDispellable = true;
                         creature.SetLevel();
@@ -70,6 +71,7 @@ namespace Server.Talent
                     else
                     {
                         var creature = (BaseCreature)ScaleMobile(new FireElemental());
+                        creature.LevelRange = [((PlayerMobile)from).Level, ((PlayerMobile)from).Level + Level];
                         creature.Name = "a greater fire lord";
                         creature.OverrideDispellable = true;
                         creature.SetLevel();

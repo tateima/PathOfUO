@@ -13,6 +13,11 @@ namespace Server.Mobiles
             Hue = Race.Human.RandomSkinHue();
             Female = Utility.RandomBool();
             Body = Female ? 0x191 : 0x190;
+            LevelRange = [25, 40];
+            StrPerLevel = [2, 4];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [2, 3];
+            ResistancePerLevel = [2, 3];
 
             SetStr(326, 375);
             SetDex(31, 45);

@@ -6,7 +6,15 @@ namespace Server.Mobiles;
 public partial class ServantOfSemidar : BaseCreature
 {
     [Constructible]
-    public ServantOfSemidar() : base(AIType.AI_Melee, FightMode.None) => Body = 0x26;
+    public ServantOfSemidar() : base(AIType.AI_Melee, FightMode.None)
+    {
+        Body = 0x26;
+        LevelRange = [1, 5];
+        StrPerLevel = [2, 5];
+        IntPerLevel = [1, 2];
+        DexPerLevel = [2, 5];
+        ResistancePerLevel = [1, 2];
+    }
 
     public override string DefaultName => "a Servant of Semidar";
 

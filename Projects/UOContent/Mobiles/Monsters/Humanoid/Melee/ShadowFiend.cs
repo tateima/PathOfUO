@@ -19,23 +19,29 @@ namespace Server.Mobiles
             backpack.Movable = false;
             AddItem(backpack);
 
+            LevelRange = [4, 8];
+            StrPerLevel = [3, 4];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [9, 12];
+            ResistancePerLevel = [2, 3];
+
             SetStr(46, 55);
-            SetDex(121, 130);
+            SetDex(30, 80);
             SetInt(46, 55);
 
             SetHits(28, 33);
             SetStam(46, 55);
 
-            SetDamage(10, 22);
+            SetDamage(4, 6);
 
             SetDamageType(ResistanceType.Physical, 20);
             SetDamageType(ResistanceType.Cold, 80);
 
-            SetResistance(ResistanceType.Physical, 20, 25);
-            SetResistance(ResistanceType.Fire, 20, 25);
-            SetResistance(ResistanceType.Cold, 40, 45);
-            SetResistance(ResistanceType.Poison, 60, 70);
-            SetResistance(ResistanceType.Energy, 5, 10);
+            SetResistance(ResistanceType.Physical, 10, 15);
+            SetResistance(ResistanceType.Fire, 10, 15);
+            SetResistance(ResistanceType.Cold, 10, 25);
+            SetResistance(ResistanceType.Poison, 30, 40);
+            SetResistance(ResistanceType.Energy, 1, 5);
 
             SetSkill(SkillName.MagicResist, 20.1, 30.0);
             SetSkill(SkillName.Tactics, 20.1, 30.0);

@@ -57,12 +57,12 @@ namespace Server.Spells.Chivalry
             {
                 SpellHelper.Turn(Caster, m);
 
-                /* Heals the target for 7 to 39 points of damage.
+                /* Heals the target for 3 to 8 points of damage.
                  * The caster's Karma affects the amount of damage healed.
                  */
 
                 // TODO: Should caps be applied?
-                var toHeal = Math.Clamp(ComputePowerValue(6) + Utility.RandomMinMax(0, 2), 7, 39);
+                var toHeal = Math.Clamp(ComputePowerValue(10) + Utility.RandomMinMax(0, 2), 3, 8);
 
                 if (CheckLightAffinity())
                 {

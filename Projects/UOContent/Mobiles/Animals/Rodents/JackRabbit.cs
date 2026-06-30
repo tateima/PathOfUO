@@ -11,7 +11,10 @@ namespace Server.Mobiles
         {
             Body = 0xCD;
             Hue = 0x1BB;
-
+            LevelRange = [1, 3];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(15);
             SetDex(25);
             SetInt(5);

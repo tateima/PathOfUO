@@ -11,28 +11,40 @@ namespace Server.Mobiles
         {
             Body = 768;
 
-            SetStr(301, 400);
-            SetDex(51, 70);
-            SetInt(51, 100);
+            LevelRange = [15, 20];
+            StrPerLevel = [2, 5];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [3, 10];
+            ResistancePerLevel = [1, 3];
 
-            SetHits(181, 240);
-
-            SetDamage(12, 19);
+            SetStr(120, 185);
+            SetDex(50, 75);
+            SetInt(35, 50);
+            SetHits(105, 125);
+            SetDamage(5, 10);
+            //
+            // SetStr(301, 400);
+            // SetDex(51, 70);
+            // SetInt(51, 100);
+            //
+            // SetHits(181, 240);
+            //
+            // SetDamage(12, 19);
 
             SetDamageType(ResistanceType.Physical, 50);
             SetDamageType(ResistanceType.Fire, 25);
             SetDamageType(ResistanceType.Energy, 25);
 
-            SetResistance(ResistanceType.Physical, 65, 75);
-            SetResistance(ResistanceType.Fire, 35, 45);
-            SetResistance(ResistanceType.Cold, 35, 45);
-            SetResistance(ResistanceType.Poison, 15, 25);
-            SetResistance(ResistanceType.Energy, 10, 20);
+            SetResistance(ResistanceType.Physical, 25, 35);
+            SetResistance(ResistanceType.Fire, 5, 25);
+            SetResistance(ResistanceType.Cold, 5, 25);
+            SetResistance(ResistanceType.Poison, 5, 15);
+            SetResistance(ResistanceType.Energy, 5, 10);
 
-            SetSkill(SkillName.Anatomy, 90.1, 100.0);
-            SetSkill(SkillName.MagicResist, 140.1, 150.0);
-            SetSkill(SkillName.Tactics, 90.1, 100.0);
-            SetSkill(SkillName.Wrestling, 90.1, 100.0);
+            SetSkill(SkillName.Anatomy, 40.1, 50.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
+            SetSkill(SkillName.Wrestling, 40.1, 50.0);
 
             Fame = 12000;
             Karma = -12000;

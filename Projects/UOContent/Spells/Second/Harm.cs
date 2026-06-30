@@ -33,11 +33,11 @@ namespace Server.Spells.Second
 
                 if (Core.AOS)
                 {
-                    damage = GetNewAosDamage(17, 1, 5, m);
+                    damage = GetNewAosDamage(0, 1, 5, m);
                 }
                 else
                 {
-                    damage = Utility.Random(1, 15);
+                    damage = Utility.Random(1, 3);
 
                     if (CheckResisted(m))
                     {

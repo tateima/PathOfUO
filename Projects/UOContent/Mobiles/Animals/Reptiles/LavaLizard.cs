@@ -13,7 +13,10 @@ namespace Server.Mobiles
             Body = 0xCE;
             Hue = Utility.RandomList(0x647, 0x650, 0x659, 0x662, 0x66B, 0x674);
             BaseSoundID = 0x5A;
-
+            LevelRange = [20, 30];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(126, 150);
             SetDex(56, 75);
             SetInt(11, 20);

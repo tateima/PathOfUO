@@ -15,6 +15,11 @@ namespace Server.Mobiles
             // May not be OSI accurate; mostly copied from krakens
             Body = 77;
             BaseSoundID = 353;
+            LevelRange = [65, 75];
+            StrPerLevel = [2, 5];
+            IntPerLevel = [1, 4];
+            DexPerLevel = [2, 5];
+            ResistancePerLevel = [1, 2];
 
             Hue = 0x481;
 

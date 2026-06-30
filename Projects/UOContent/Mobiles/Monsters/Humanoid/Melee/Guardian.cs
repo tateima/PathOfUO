@@ -59,11 +59,17 @@ namespace Server.Mobiles
             PackItem(new Arrow(250));
             PackGold(250, 500);
 
-            Skills.Anatomy.Base = 120.0;
-            Skills.Tactics.Base = 120.0;
-            Skills.Archery.Base = 120.0;
-            Skills.MagicResist.Base = 120.0;
-            Skills.DetectHidden.Base = 100.0;
+            LevelRange = [1, 60];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [1, 2];
+
+            Skills.Anatomy.Base = 40.0;
+            Skills.Tactics.Base = 40.0;
+            Skills.Archery.Base = 40.0;
+            Skills.MagicResist.Base = 40.0;
+            Skills.DetectHidden.Base = 40.0;
         }
         public override bool InitialInnocent => false;
         public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };

@@ -18,7 +18,11 @@ public partial class HarrowerTentacles : BaseCreature
     {
         _harrower = harrower;
         Body = 129;
-
+        LevelRange = [50, 60];
+        StrPerLevel = [1, 3];
+        IntPerLevel = [1, 2];
+        DexPerLevel = [1, 5];
+        ResistancePerLevel = [1, 2];
         SetStr(901, 1000);
         SetDex(126, 140);
         SetInt(1001, 1200);

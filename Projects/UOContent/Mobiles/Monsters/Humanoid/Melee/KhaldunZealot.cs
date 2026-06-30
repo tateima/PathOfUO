@@ -13,28 +13,32 @@ namespace Server.Mobiles
             Title = "the Knight";
             Hue = 0;
 
-            SetStr(351, 400);
-            SetDex(151, 165);
-            SetInt(76, 100);
+            LevelRange = [8, 13];
+            StrPerLevel = [2, 6];
+            IntPerLevel = [2, 4];
+            DexPerLevel = [3, 7];
+            ResistancePerLevel = [2, 3];
 
-            SetHits(448, 470);
-
-            SetDamage(15, 25);
+            SetStr(90, 155);
+            SetDex(30, 45);
+            SetInt(45, 60);
+            SetHits(75, 95);
+            SetDamage(5, 10);
 
             SetDamageType(ResistanceType.Physical, 75);
             SetDamageType(ResistanceType.Cold, 25);
 
-            SetResistance(ResistanceType.Physical, 35, 45);
-            SetResistance(ResistanceType.Fire, 25, 30);
-            SetResistance(ResistanceType.Cold, 50, 60);
-            SetResistance(ResistanceType.Poison, 25, 35);
-            SetResistance(ResistanceType.Energy, 25, 35);
+            SetResistance(ResistanceType.Physical, 15, 25);
+            SetResistance(ResistanceType.Fire, 5, 10);
+            SetResistance(ResistanceType.Cold, 20, 40);
+            SetResistance(ResistanceType.Poison, 5, 15);
+            SetResistance(ResistanceType.Energy, 5, 15);
 
-            SetSkill(SkillName.Wrestling, 70.1, 80.0);
-            SetSkill(SkillName.Swords, 120.1, 130.0);
-            SetSkill(SkillName.Anatomy, 120.1, 130.0);
-            SetSkill(SkillName.MagicResist, 90.1, 100.0);
-            SetSkill(SkillName.Tactics, 90.1, 100.0);
+            SetSkill(SkillName.Wrestling, 40.1, 50.0);
+            SetSkill(SkillName.Swords, 40.1, 50.0);
+            SetSkill(SkillName.Anatomy, 40.1, 50.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
 
             Fame = 10000;
             Karma = -10000;

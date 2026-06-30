@@ -11,27 +11,32 @@ namespace Server.Mobiles
         {
             Body = 189;
             BaseSoundID = 0x45A;
+            LevelRange = [6, 11];
+            StrPerLevel = [4, 5];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [7, 10];
+            ResistancePerLevel = [1, 2];
 
-            SetStr(767, 945);
-            SetDex(66, 75);
-            SetInt(46, 70);
+            SetStr(25, 35);
+            SetDex(19, 35);
+            SetInt(10, 15);
 
-            SetHits(476, 552);
+            SetHits(30, 66);
 
-            SetDamage(20, 25);
+            SetDamage(6, 8);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 45, 55);
-            SetResistance(ResistanceType.Fire, 40, 50);
-            SetResistance(ResistanceType.Cold, 25, 35);
-            SetResistance(ResistanceType.Poison, 25, 35);
-            SetResistance(ResistanceType.Energy, 25, 35);
+            SetResistance(ResistanceType.Physical, 11, 25);
+            SetResistance(ResistanceType.Fire, 10, 20);
+            SetResistance(ResistanceType.Cold, 5, 15);
+            SetResistance(ResistanceType.Poison, 5, 15);
+            SetResistance(ResistanceType.Energy, 5, 15);
 
-            SetSkill(SkillName.Macing, 90.1, 100.0);
-            SetSkill(SkillName.MagicResist, 125.1, 140.0);
-            SetSkill(SkillName.Tactics, 90.1, 100.0);
-            SetSkill(SkillName.Wrestling, 90.1, 100.0);
+            SetSkill(SkillName.Macing, 40.1, 50.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
+            SetSkill(SkillName.Wrestling, 40.1, 50.0);
 
             Fame = 15000;
             Karma = -15000;
@@ -62,7 +67,7 @@ namespace Server.Mobiles
         public override Poison PoisonImmune => Poison.Lethal;
         public override int Meat => 2;
 
-        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.SavagesAndOrcs };
 
         public override bool CanRummageCorpses => true;
         public override bool AutoDispel => true;

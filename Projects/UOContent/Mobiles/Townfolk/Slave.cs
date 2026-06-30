@@ -9,6 +9,10 @@ namespace Server.Mobiles
         [Constructible]
         public Slave() : base(AIType.AI_Animal, FightMode.None, 10, 1)
         {
+            LevelRange = [1, 60];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             Title = "the slave";
             InitStats(31, 41, 51);
             SpeechHue = Utility.RandomDyedHue();

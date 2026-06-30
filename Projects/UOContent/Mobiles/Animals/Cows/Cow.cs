@@ -18,6 +18,10 @@ namespace Server.Mobiles
         [Constructible]
         public Cow() : base(AIType.AI_Animal, FightMode.Aggressor)
         {
+            LevelRange = [2, 10];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             Body = Utility.RandomList(0xD8, 0xE7);
             BaseSoundID = 0x78;
 

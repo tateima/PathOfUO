@@ -12,14 +12,18 @@ namespace Server.Mobiles
             BaseSoundID = 456;
 
             Hue = Utility.RandomSlimeHue();
-
-            SetStr(22, 34);
+            LevelRange = [2, 7];
+            StrPerLevel = [1, 2];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 2];
+            ResistancePerLevel = [1, 2];
+            SetStr(18, 20);
             SetDex(16, 21);
             SetInt(16, 20);
 
-            SetHits(15, 19);
+            SetHits(13, 17);
 
-            SetDamage(1, 5);
+            SetDamage(1, 3);
 
             SetDamageType(ResistanceType.Physical, 100);
 

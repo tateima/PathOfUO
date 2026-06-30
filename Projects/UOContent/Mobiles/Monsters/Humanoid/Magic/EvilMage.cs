@@ -23,26 +23,31 @@ namespace Server.Mobiles
                 Utility.AssignRandomFacialHair(this, HairHue);
             }
 
-            SetStr(81, 205);
-            SetDex(91, 115);
-            SetInt(96, 220);
+            LevelRange = [18, 38];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [2, 4];
+            DexPerLevel = [2, 4];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(49, 63);
+            SetStr(25, 50);
+            SetDex(25, 35);
+            SetInt(45, 90);
+            SetHits(90, 100);
 
-            SetDamage(5, 10);
+            SetDamage(3, 6);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 15, 20);
+            SetResistance(ResistanceType.Physical, 5, 10);
             SetResistance(ResistanceType.Fire, 5, 10);
             SetResistance(ResistanceType.Poison, 5, 10);
             SetResistance(ResistanceType.Energy, 5, 10);
 
-            SetSkill(SkillName.EvalInt, 75.1, 100.0);
-            SetSkill(SkillName.Magery, 75.1, 100.0);
-            SetSkill(SkillName.MagicResist, 75.0, 97.5);
-            SetSkill(SkillName.Tactics, 65.0, 87.5);
-            SetSkill(SkillName.Wrestling, 20.2, 60.0);
+            SetSkill(SkillName.EvalInt, 40.1, 50.0);
+            SetSkill(SkillName.Magery, 40.1, 50.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
+            SetSkill(SkillName.Wrestling, 40.1, 50.0);
 
             Fame = 2500;
             Karma = -2500;

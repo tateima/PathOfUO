@@ -11,30 +11,35 @@ namespace Server.Mobiles
         {
             Body = 0x7B;
             Hue = 0x47E;
+            LevelRange = [55, 75];
+            StrPerLevel = [3, 6];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [2, 5];
+            ResistancePerLevel = [1, 3];
 
-            SetStr(550, 850);
-            SetDex(190, 250);
-            SetInt(350, 450);
+            SetStr(106, 145);
+            SetDex(20, 70);
+            SetInt(52, 70);
 
-            SetHits(350, 550);
+            SetHits(150, 330);
 
-            SetDamage(13, 19);
+            SetDamage(2, 9);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 80, 90);
-            SetResistance(ResistanceType.Fire, 40, 50);
-            SetResistance(ResistanceType.Cold, 40, 50);
-            SetResistance(ResistanceType.Poison, 40, 50);
-            SetResistance(ResistanceType.Energy, 40, 50);
+            SetResistance(ResistanceType.Physical, 15, 25);
+            SetResistance(ResistanceType.Fire, 10, 15);
+            SetResistance(ResistanceType.Cold, 10, 25);
+            SetResistance(ResistanceType.Poison, 5, 10);
+            SetResistance(ResistanceType.Energy, 5, 10);
 
-            SetSkill(SkillName.Anatomy, 50.0, 75.0);
-            SetSkill(SkillName.EvalInt, 90.0, 100.0);
-            SetSkill(SkillName.Magery, 100.0, 100.0);
-            SetSkill(SkillName.Meditation, 90.0, 100.0);
-            SetSkill(SkillName.MagicResist, 90.0, 100.0);
-            SetSkill(SkillName.Tactics, 90.0, 100.0);
-            SetSkill(SkillName.Wrestling, 90.0, 100.0);
+            SetSkill(SkillName.Anatomy, 50.0, 60.5);
+            SetSkill(SkillName.EvalInt, 50.0, 60.5);
+            SetSkill(SkillName.Magery, 50.0, 60.5);
+            SetSkill(SkillName.Meditation, 50.0, 60.5);
+            SetSkill(SkillName.MagicResist, 50.0, 60.5);
+            SetSkill(SkillName.Tactics, 50.0, 60.5);
+            SetSkill(SkillName.Wrestling, 50.0, 60.5);
 
             Fame = 17000;
             Karma = -17000;

@@ -13,7 +13,11 @@ public partial class Mephitis : BaseChampion
     {
         Body = 173;
         BaseSoundID = 0x183;
-
+        LevelRange = [70, 90];
+        StrPerLevel = [2, 5];
+        IntPerLevel = [2, 3];
+        DexPerLevel = [2, 5];
+        ResistancePerLevel = [1, 2];
         SetStr(505, 1000);
         SetDex(102, 300);
         SetInt(402, 600);

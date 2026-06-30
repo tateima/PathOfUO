@@ -65,7 +65,7 @@ public class EagleStrikeSpell : MysticSpell, ITargetingSpell<Mobile>
             return;
         }
 
-        double damage = GetNewAosDamage(19, 1, 5, to);
+        double damage = GetNewAosDamage(0, 1, 5, to);
 
         int naturePower = 0;
         NatureAffinityPower(ref naturePower);

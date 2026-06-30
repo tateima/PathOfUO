@@ -12,29 +12,34 @@ namespace Server.Mobiles
             Name = NameList.RandomName("impaler");
             Body = 306;
             BaseSoundID = 0x2A7;
+            LevelRange = [10, 20];
+            StrPerLevel = [2, 5];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [2, 3];
+            ResistancePerLevel = [1, 2];
 
-            SetStr(190);
-            SetDex(45);
-            SetInt(190);
+            SetStr(44, 70);
+            SetDex(20, 45);
+            SetInt(20, 30);
 
-            SetHits(5000);
+            SetHits(100, 130);
 
-            SetDamage(31, 35);
+            SetDamage(3, 8);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 90);
-            SetResistance(ResistanceType.Fire, 60);
-            SetResistance(ResistanceType.Cold, 75);
-            SetResistance(ResistanceType.Poison, 60);
-            SetResistance(ResistanceType.Energy, 100);
+            SetResistance(ResistanceType.Physical, 10, 30);
+            SetResistance(ResistanceType.Fire, 5, 15);
+            SetResistance(ResistanceType.Cold, 20, 30);
+            SetResistance(ResistanceType.Poison, 20, 30);
+            SetResistance(ResistanceType.Energy, 5, 15);
 
-            SetSkill(SkillName.DetectHidden, 80.0);
-            SetSkill(SkillName.Meditation, 120.0);
-            SetSkill(SkillName.Poisoning, 160.0);
-            SetSkill(SkillName.MagicResist, 100.0);
-            SetSkill(SkillName.Tactics, 100.0);
-            SetSkill(SkillName.Wrestling, 80.0);
+            SetSkill(SkillName.DetectHidden, 40.1, 50.0);
+            SetSkill(SkillName.Meditation, 40.1, 50.0);
+            SetSkill(SkillName.Poisoning, 50.1, 60.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
+            SetSkill(SkillName.Wrestling, 40.1, 50.0);
 
             Fame = 24000;
             Karma = -24000;

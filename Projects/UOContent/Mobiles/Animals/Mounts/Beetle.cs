@@ -13,6 +13,10 @@ namespace Server.Mobiles
         [Constructible]
         public Beetle() : base( 0x317, 0x3EBC, AIType.AI_Melee)
         {
+            LevelRange = [20, 40];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(300);
             SetDex(100);
             SetInt(500);

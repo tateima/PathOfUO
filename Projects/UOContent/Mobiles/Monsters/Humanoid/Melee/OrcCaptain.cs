@@ -14,25 +14,31 @@ namespace Server.Mobiles
             Body = 7;
             BaseSoundID = 0x45A;
 
-            SetStr(111, 145);
-            SetDex(101, 135);
-            SetInt(86, 110);
+            LevelRange = [8, 13];
+            StrPerLevel = [4, 5];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [7, 10];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(67, 87);
+            SetStr(25, 45);
+            SetDex(19, 45);
+            SetInt(10, 15);
 
-            SetDamage(5, 15);
+            SetHits(30, 66);
+
+            SetDamage(6, 8);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 30, 35);
-            SetResistance(ResistanceType.Fire, 10, 20);
-            SetResistance(ResistanceType.Cold, 15, 25);
-            SetResistance(ResistanceType.Poison, 5, 10);
-            SetResistance(ResistanceType.Energy, 5, 10);
+            SetResistance(ResistanceType.Physical, 20, 25);
+            SetResistance(ResistanceType.Fire, 5, 10);
+            SetResistance(ResistanceType.Cold, 5, 15);
+            SetResistance(ResistanceType.Poison, 1, 3);
+            SetResistance(ResistanceType.Energy, 1, 3);
 
-            SetSkill(SkillName.MagicResist, 70.1, 85.0);
-            SetSkill(SkillName.Swords, 70.1, 95.0);
-            SetSkill(SkillName.Tactics, 85.1, 100.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Swords, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
 
             Fame = 2500;
             Karma = -2500;
@@ -65,7 +71,7 @@ namespace Server.Mobiles
         public override bool CanRummageCorpses => true;
         public override int Meat => 1;
 
-        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.DarknessAndLight };
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.SavagesAndOrcs };
 
         public override void OnDeath(Container c)
         {

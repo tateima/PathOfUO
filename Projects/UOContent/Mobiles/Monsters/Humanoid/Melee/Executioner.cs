@@ -25,29 +25,34 @@ namespace Server.Mobiles
                 Name = NameList.RandomName("male");
                 AddItem(new ShortPants(Utility.RandomRedHue()));
             }
+            LevelRange = [24, 29];
+            StrPerLevel = [1, 6];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [3, 5];
+            ResistancePerLevel = [1, 3];
 
-            SetStr(386, 400);
-            SetDex(151, 165);
-            SetInt(161, 175);
-
-            SetDamage(8, 10);
+            SetStr(100, 135);
+            SetDex(40, 65);
+            SetInt(15, 40);
+            SetHits(85, 120);
+            SetDamage(6, 9);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 35, 45);
-            SetResistance(ResistanceType.Fire, 25, 30);
-            SetResistance(ResistanceType.Cold, 25, 30);
-            SetResistance(ResistanceType.Poison, 10, 20);
-            SetResistance(ResistanceType.Energy, 10, 20);
+            SetResistance(ResistanceType.Physical, 15, 25);
+            SetResistance(ResistanceType.Fire, 5, 15);
+            SetResistance(ResistanceType.Cold, 5, 20);
+            SetResistance(ResistanceType.Poison, 5, 10);
+            SetResistance(ResistanceType.Energy, 5, 10);
 
-            SetSkill(SkillName.Anatomy, 125.0);
-            SetSkill(SkillName.Fencing, 46.0, 77.5);
-            SetSkill(SkillName.Macing, 35.0, 57.5);
-            SetSkill(SkillName.Poisoning, 60.0, 82.5);
-            SetSkill(SkillName.MagicResist, 83.5, 92.5);
-            SetSkill(SkillName.Swords, 125.0);
-            SetSkill(SkillName.Tactics, 125.0);
-            SetSkill(SkillName.Lumberjacking, 125.0);
+            SetSkill(SkillName.Anatomy, 40.1, 50.0);
+            SetSkill(SkillName.Fencing, 40.1, 50.0);
+            SetSkill(SkillName.Macing, 40.1, 50.0);
+            SetSkill(SkillName.Poisoning, 40.1, 50.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Swords, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
+            SetSkill(SkillName.Lumberjacking, 40.1, 50.0);
 
             Fame = 5000;
             Karma = -5000;

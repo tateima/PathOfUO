@@ -23,26 +23,30 @@ namespace Server.Mobiles
             weapon.Movable = false;
             AddItem(weapon);
 
-            SetStr(91, 100);
-            SetDex(86, 95);
-            SetInt(61, 70);
+            LevelRange = [10, 30];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [5, 7];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(91, 120);
+            SetStr(55, 90);
+            SetDex(45, 75);
+            SetInt(55, 90);
 
-            SetDamage(5, 13);
+            SetDamage(2, 8);
 
-            SetResistance(ResistanceType.Physical, 15, 25);
-            SetResistance(ResistanceType.Fire, 5, 10);
-            SetResistance(ResistanceType.Cold, 25, 35);
-            SetResistance(ResistanceType.Poison, 5, 10);
-            SetResistance(ResistanceType.Energy, 5, 10);
+            SetResistance(ResistanceType.Physical, 5, 15);
+            SetResistance(ResistanceType.Fire, 0, 5);
+            SetResistance(ResistanceType.Cold, 1, 5);
+            SetResistance(ResistanceType.Poison, 0, 5);
+            SetResistance(ResistanceType.Energy, 15, 25);
 
-            SetSkill(SkillName.Fencing, 46.0, 77.5);
-            SetSkill(SkillName.Macing, 35.0, 57.5);
-            SetSkill(SkillName.MagicResist, 53.5, 62.5);
-            SetSkill(SkillName.Swords, 55.0, 77.5);
-            SetSkill(SkillName.Tactics, 60.0, 82.5);
-            SetSkill(SkillName.Poisoning, 60.0, 82.5);
+            SetSkill(SkillName.Fencing, 40.0, 50.5);
+            SetSkill(SkillName.Macing, 40.0, 50.5);
+            SetSkill(SkillName.MagicResist, 40.0, 50.5);
+            SetSkill(SkillName.Swords, 40.0, 50.5);
+            SetSkill(SkillName.Tactics, 40.0, 50.5);
+            SetSkill(SkillName.Poisoning, 40.0, 50.5);
 
             Fame = 1000;
             Karma = -2000;

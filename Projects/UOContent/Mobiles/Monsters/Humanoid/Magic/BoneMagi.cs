@@ -12,30 +12,34 @@ namespace Server.Mobiles
         {
             Body = 148;
             BaseSoundID = 451;
+            LevelRange = [7, 22];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [1, 2];
+            ResistancePerLevel = [2, 3];
+            SetStr(20, 60);
+            SetDex(10, 45);
+            SetInt(45, 90);
+            SetHits(75, 90);
+            SetStam(46, 75);
 
-            SetStr(76, 100);
-            SetDex(56, 75);
-            SetInt(186, 210);
-
-            SetHits(46, 60);
-
-            SetDamage(3, 7);
+            SetDamage(3, 6);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 35, 40);
-            SetResistance(ResistanceType.Fire, 20, 30);
-            SetResistance(ResistanceType.Cold, 50, 60);
-            SetResistance(ResistanceType.Poison, 20, 30);
-            SetResistance(ResistanceType.Energy, 30, 40);
+            SetResistance(ResistanceType.Physical, 15, 20);
+            SetResistance(ResistanceType.Fire, 6, 10);
+            SetResistance(ResistanceType.Cold, 20, 30);
+            SetResistance(ResistanceType.Poison, 5, 10);
+            SetResistance(ResistanceType.Energy, 6, 20);
 
-            SetSkill(SkillName.EvalInt, 60.1, 70.0);
-            SetSkill(SkillName.Magery, 60.1, 70.0);
-            SetSkill(SkillName.MagicResist, 55.1, 70.0);
-            SetSkill(SkillName.Tactics, 45.1, 60.0);
-            SetSkill(SkillName.Wrestling, 45.1, 55.0);
-            SetSkill(SkillName.Necromancy, 89, 99.1);
-            SetSkill(SkillName.SpiritSpeak, 90.0, 99.0);
+            SetSkill(SkillName.EvalInt, 45.1, 50.0);
+            SetSkill(SkillName.Magery, 45.1, 50.0);
+            SetSkill(SkillName.MagicResist, 45.1, 50.0);
+            SetSkill(SkillName.Tactics, 45.1, 50.0);
+            SetSkill(SkillName.Wrestling, 45.1, 50.0);
+            SetSkill(SkillName.Necromancy, 45.1, 50.0);
+            SetSkill(SkillName.SpiritSpeak, 45.1, 50.0);
 
             Fame = 3000;
             Karma = -3000;

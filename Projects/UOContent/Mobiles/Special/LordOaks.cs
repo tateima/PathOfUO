@@ -18,6 +18,11 @@ public partial class LordOaks : BaseChampion
     public LordOaks() : base(AIType.AI_Mage, FightMode.Aggressor)
     {
         Body = 175;
+        LevelRange = [70, 90];
+        StrPerLevel = [3, 5];
+        IntPerLevel = [2, 3];
+        DexPerLevel = [2, 5];
+        ResistancePerLevel = [1, 3];
         SetStr(403, 850);
         SetDex(101, 150);
         SetInt(503, 800);

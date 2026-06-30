@@ -17,14 +17,19 @@ namespace Server.Mobiles
             Body = 318;
             BaseSoundID = 0x165;
 
-            SetStr(500);
-            SetDex(100);
-            SetInt(1000);
+            LevelRange = [45, 55];
+            StrPerLevel = [4, 5];
+            IntPerLevel = [4, 5];
+            DexPerLevel = [4, 5];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(30000);
-            SetMana(5000);
+            SetStr(86, 135);
+            SetDex(50, 70);
+            SetInt(52, 100);
 
-            SetDamage(17, 21);
+            SetHits(290, 320);
+
+            SetDamage(4, 8);
 
             SetDamageType(ResistanceType.Physical, 20);
             SetDamageType(ResistanceType.Fire, 20);
@@ -32,29 +37,29 @@ namespace Server.Mobiles
             SetDamageType(ResistanceType.Poison, 20);
             SetDamageType(ResistanceType.Energy, 20);
 
-            SetResistance(ResistanceType.Physical, 30);
-            SetResistance(ResistanceType.Fire, 30);
-            SetResistance(ResistanceType.Cold, 30);
-            SetResistance(ResistanceType.Poison, 30);
-            SetResistance(ResistanceType.Energy, 30);
+            SetResistance(ResistanceType.Physical, 10, 30);
+            SetResistance(ResistanceType.Fire, 10, 20);
+            SetResistance(ResistanceType.Cold, 5, 20);
+            SetResistance(ResistanceType.Poison, 5, 30);
+            SetResistance(ResistanceType.Energy, 10, 30);
 
-            SetSkill(SkillName.Necromancy, 120, 120.0);
-            SetSkill(SkillName.SpiritSpeak, 120.0, 120.0);
+            SetSkill(SkillName.Necromancy, 53.0, 63.5);
+            SetSkill(SkillName.SpiritSpeak, 53.0, 63.5);
 
-            SetSkill(SkillName.DetectHidden, 80.0);
-            SetSkill(SkillName.EvalInt, 100.0);
-            SetSkill(SkillName.Magery, 100.0);
-            SetSkill(SkillName.Meditation, 120.0);
-            SetSkill(SkillName.MagicResist, 150.0);
-            SetSkill(SkillName.Tactics, 100.0);
-            SetSkill(SkillName.Wrestling, 120.0);
+            SetSkill(SkillName.DetectHidden, 53.0, 63.5);
+            SetSkill(SkillName.EvalInt, 53.0, 63.5);
+            SetSkill(SkillName.Magery, 53.0, 63.5);
+            SetSkill(SkillName.Meditation, 53.0, 63.5);
+            SetSkill(SkillName.MagicResist, 53.0, 63.5);
+            SetSkill(SkillName.Tactics, 53.0, 63.5);
+            SetSkill(SkillName.Wrestling, 53.0, 63.5);
 
             Fame = 28000;
             Karma = -28000;
 
             VirtualArmor = 64;
         }
-        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder, OppositionGroup.CelestialsAndDaemons };
 
         public override string CorpseName => "a demon knight corpse";
         public override bool IgnoreYoungProtection => Core.ML;

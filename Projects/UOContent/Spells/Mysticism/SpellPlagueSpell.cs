@@ -54,7 +54,7 @@ public class SpellPlagueSpell : MysticSpell, ITargetingSpell<Mobile>
             VisualEffect(m);
 
             // Before Time of Legends, SDI was not applied to initial damage.
-            var damage = GetNewAosDamage(23, 1, 5, Core.TOL, m);
+            var damage = GetNewAosDamage(0, 1, 10, Core.TOL, m);
             SpellHelper.Damage(this, m, damage, 0, 0, 0, 0, 0);
 
             var timer = new SpellPlagueTimer(this, m);

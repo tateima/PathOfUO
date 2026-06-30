@@ -207,7 +207,8 @@ public class SummonFamiliarGump : DynamicGump
             try
             {
                 var bc = entry.Type.CreateInstance<BaseCreature>();
-
+                bc.LevelRange = [((PlayerMobile)_from).Level - 2, ((PlayerMobile)_from).Level + 2];
+                bc.SetLevel();
                 // TODO: Is this right?
                 bc.Skills.MagicResist.Base = _from.Skills.MagicResist.Base;
                 if (_darkAffinity != null)

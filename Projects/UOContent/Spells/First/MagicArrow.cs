@@ -45,11 +45,11 @@ namespace Server.Spells.First
 
                 if (Core.AOS)
                 {
-                    damage = GetNewAosDamage(10, 1, 4, m);
+                    damage = GetNewAosDamage(0, 1, 4, m);
                 }
                 else
                 {
-                    damage = Utility.Random(4, 4);
+                    damage = Utility.Random(4, 1);
 
                     if (CheckResisted(m))
                     {

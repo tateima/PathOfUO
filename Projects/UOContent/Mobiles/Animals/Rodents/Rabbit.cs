@@ -9,7 +9,10 @@ namespace Server.Mobiles
         public Rabbit() : base(AIType.AI_Animal, FightMode.Aggressor)
         {
             Body = 205;
-
+            LevelRange = [1, 3];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             if (Utility.RandomBool())
             {
                 Hue = Utility.RandomAnimalHue();

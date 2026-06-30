@@ -10,6 +10,10 @@ namespace Server.Mobiles
         [Constructible]
         public ScaledSwampDragon() : base(0x31F, 0x3EBE, AIType.AI_Melee, FightMode.Aggressor)
         {
+            LevelRange = [20, 40];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(201, 300);
             SetDex(66, 85);
             SetInt(61, 100);

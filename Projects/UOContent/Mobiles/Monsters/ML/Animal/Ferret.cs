@@ -21,25 +21,32 @@ namespace Server.Mobiles
         {
             Body = 0x117;
 
-            SetStr(41, 48);
-            SetDex(55);
-            SetInt(75);
+            LevelRange = [2, 4];
+            StrPerLevel = [1, 2];
+            IntPerLevel = [3, 4];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(45, 50);
+            SetStr(16, 20);
+            SetDex(36, 48);
+            SetInt(6, 14);
 
-            SetDamage(7, 9);
+            SetHits(4, 6);
+            SetMana(0);
+
+            SetDamage(2, 3);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 45, 50);
-            SetResistance(ResistanceType.Fire, 10, 14);
-            SetResistance(ResistanceType.Cold, 30, 40);
-            SetResistance(ResistanceType.Poison, 21, 25);
-            SetResistance(ResistanceType.Energy, 20, 25);
+            SetResistance(ResistanceType.Physical, 5, 20);
+            SetResistance(ResistanceType.Fire, 5, 10);
+            SetResistance(ResistanceType.Cold, 5, 20);
+            SetResistance(ResistanceType.Poison, 5, 15);
+            SetResistance(ResistanceType.Energy, 10, 15);
 
-            SetSkill(SkillName.MagicResist, 4.0);
-            SetSkill(SkillName.Tactics, 4.0);
-            SetSkill(SkillName.Wrestling, 4.0);
+            SetSkill(SkillName.MagicResist, 4.0, 30.0);
+            SetSkill(SkillName.Tactics, 4.0, 30.0);
+            SetSkill(SkillName.Wrestling, 4.0, 30.0);
 
             Tamable = true;
             ControlSlots = 1;

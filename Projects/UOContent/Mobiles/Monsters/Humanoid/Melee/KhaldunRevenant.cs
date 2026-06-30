@@ -23,28 +23,41 @@ namespace Server.Mobiles
             m_Target = target;
             m_ExpireTime = Core.Now + TimeSpan.FromMinutes(10.0);
 
-            SetStr(401, 500);
-            SetDex(296, 315);
-            SetInt(101, 200);
+            LevelRange = [10, 15];
+            StrPerLevel = [2, 7];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [3, 8];
+            ResistancePerLevel = [3, 4];
 
-            SetHits(241, 300);
-            SetStam(242, 280);
+            SetStr(100, 165);
+            SetDex(40, 65);
+            SetInt(45, 60);
+            SetHits(85, 115);
+            SetStam(100, 200);
+            SetDamage(6, 12);
 
-            SetDamage(20, 30);
+            // SetStr(401, 500);
+            // SetDex(296, 315);
+            // SetInt(101, 200);
+            //
+            // SetHits(241, 300);
+            // SetStam(242, 280);
+            //
+            // SetDamage(20, 30);
 
             SetDamageType(ResistanceType.Physical, 50);
             SetDamageType(ResistanceType.Cold, 50);
 
-            SetSkill(SkillName.MagicResist, 100.1, 150.0);
-            SetSkill(SkillName.Tactics, 90.1, 100.0);
-            SetSkill(SkillName.Swords, 140.1, 150.0);
-            SetSkill(SkillName.Wrestling, 90.1, 100.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
+            SetSkill(SkillName.Swords, 40.1, 50.0);
+            SetSkill(SkillName.Wrestling, 40.1, 50.0);
 
-            SetResistance(ResistanceType.Physical, 55, 65);
-            SetResistance(ResistanceType.Fire, 30, 40);
-            SetResistance(ResistanceType.Cold, 60, 70);
-            SetResistance(ResistanceType.Poison, 20, 30);
-            SetResistance(ResistanceType.Energy, 20, 30);
+            SetResistance(ResistanceType.Physical, 25, 35);
+            SetResistance(ResistanceType.Fire, 10, 20);
+            SetResistance(ResistanceType.Cold, 20, 35);
+            SetResistance(ResistanceType.Poison, 5, 15);
+            SetResistance(ResistanceType.Energy, 5, 15);
 
             Fame = 0;
             Karma = 0;

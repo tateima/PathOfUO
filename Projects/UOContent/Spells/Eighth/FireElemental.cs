@@ -51,13 +51,19 @@ namespace Server.Spells.Eighth
                     _ => TimeSpan.FromSeconds(4 * Math.Max(5, Caster.Skills.Magery.Value)),
                 };
 
+                var creature = new SummonedFireElemental
+                {
+                    LevelRange = [((PlayerMobile)Caster).Level, ((PlayerMobile)Caster).Level]
+                };
+                creature.SetLevel();
+
                 if (Core.AOS)
                 {
-                    SpellHelper.Summon((BaseCreature)CheckFireAffinity(new SummonedFireElemental()), Caster, 0x217, duration, false, false);
+                    SpellHelper.Summon((BaseCreature)CheckFireAffinity(creature), Caster, 0x217, duration, false, false);
                 }
                 else
                 {
-                    SpellHelper.Summon((BaseCreature)CheckFireAffinity(new FireElemental()), Caster, 0x217, duration, false, false);
+                    SpellHelper.Summon((BaseCreature)CheckFireAffinity(creature), Caster, 0x217, duration, false, false);
                 }
             }
 

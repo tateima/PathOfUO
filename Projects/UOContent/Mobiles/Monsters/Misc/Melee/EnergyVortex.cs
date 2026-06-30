@@ -8,7 +8,7 @@ namespace Server.Mobiles
     public partial class EnergyVortex : BaseCreature
     {
         [Constructible]
-        public EnergyVortex() : base(AIType.AI_Melee)
+        public EnergyVortex(int level) : base(AIType.AI_Melee)
         {
             if (Core.SE && Utility.Random(500) == 0) // Per OSI FoF, it's a 1/500 chance.
             {
@@ -20,29 +20,67 @@ namespace Server.Mobiles
             {
                 Body = 164;
             }
+            StrPerLevel = [2, 4];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [2, 4];
+            ResistancePerLevel = [1, 2];
+            LevelRange = [level, level];
+            SetStr(50);
+            SetDex(50);
+            SetInt(30);
 
-            SetStr(200);
-            SetDex(200);
-            SetInt(100);
-
-            SetHits(Core.SE ? 140 : 70);
-            SetStam(250);
+            SetHits(60);
+            SetStam(50);
             SetMana(0);
 
-            SetDamage(14, 17);
-
+            if (level >= 80)
+            {
+                SetDamage(5, 10);
+            }
+            else if (level >= 70)
+            {
+                SetDamage(4, 9);
+            }
+            else if (level >= 60)
+            {
+                SetDamage(3 ,8);
+            }
+            else if (level >= 50)
+            {
+                SetDamage(2, 7);
+            }
+            else if (level >= 40)
+            {
+                SetDamage(2, 6);
+            }
+            else if (level >= 30)
+            {
+                SetDamage(2, 5);
+            }
+            else if (level >= 20)
+            {
+                SetDamage(2, 4);
+            }
+            else if (level >= 10)
+            {
+                SetDamage(2, 3);
+            }
+            else
+            {
+                SetDamage(1, 2);
+            }
             SetDamageType(ResistanceType.Physical, 0);
             SetDamageType(ResistanceType.Energy, 100);
 
-            SetResistance(ResistanceType.Physical, 60, 70);
-            SetResistance(ResistanceType.Fire, 40, 50);
-            SetResistance(ResistanceType.Cold, 40, 50);
-            SetResistance(ResistanceType.Poison, 40, 50);
-            SetResistance(ResistanceType.Energy, 90, 100);
+            SetResistance(ResistanceType.Physical, 5, 30);
+            SetResistance(ResistanceType.Fire, 5, 20);
+            SetResistance(ResistanceType.Cold, 5, 20);
+            SetResistance(ResistanceType.Poison, 5, 20);
+            SetResistance(ResistanceType.Energy, 10, 30);
 
-            SetSkill(SkillName.MagicResist, 99.9);
-            SetSkill(SkillName.Tactics, 100.0);
-            SetSkill(SkillName.Wrestling, 120.0);
+            SetSkill(SkillName.MagicResist, 40.0, 50.0);
+            SetSkill(SkillName.Tactics, 40.0, 50.0);
+            SetSkill(SkillName.Wrestling, 40.0, 50.0);
 
             Fame = 0;
             Karma = 0;

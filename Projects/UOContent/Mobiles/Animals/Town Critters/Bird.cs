@@ -30,7 +30,10 @@ namespace Server.Mobiles
             BaseSoundID = 0x1B;
 
             VirtualArmor = Utility.RandomMinMax(0, 6);
-
+            LevelRange = [1, 3];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(10);
             SetDex(25, 35);
             SetInt(10);

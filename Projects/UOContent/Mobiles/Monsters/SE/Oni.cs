@@ -10,7 +10,11 @@ namespace Server.Mobiles
         public Oni() : base(AIType.AI_Mage)
         {
             Body = 241;
-
+            LevelRange = [31, 46];
+            StrPerLevel = [2, 5];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [3, 4];
+            ResistancePerLevel = [3, 4];
             SetStr(801, 910);
             SetDex(151, 300);
             SetInt(171, 195);

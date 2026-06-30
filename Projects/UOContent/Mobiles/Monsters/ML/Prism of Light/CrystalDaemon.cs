@@ -13,30 +13,36 @@ namespace Server.Mobiles
             Hue = 0x3E8;
             BaseSoundID = 0x47D;
 
-            SetStr(140, 200);
-            SetDex(120, 150);
-            SetInt(800, 850);
+            LevelRange = [40, 60];
+            StrPerLevel = [4, 6];
+            IntPerLevel = [3, 3];
+            DexPerLevel = [3, 5];
+            ResistancePerLevel = [1, 3];
 
-            SetHits(200, 220);
+            SetStr(76, 95);
+            SetDex(50, 100);
+            SetInt(52, 90);
 
-            SetDamage(16, 20);
+            SetHits(91, 110);
+
+            SetDamage(3, 8);
+
+            SetResistance(ResistanceType.Physical, 15, 25);
+            SetResistance(ResistanceType.Fire, 10, 15);
+            SetResistance(ResistanceType.Cold, 10, 25);
+            SetResistance(ResistanceType.Poison, 5, 10);
+            SetResistance(ResistanceType.Energy, 5, 10);
+
+            SetSkill(SkillName.EvalInt, 50.0, 60.5);
+            SetSkill(SkillName.Magery, 50.0, 60.5);
+            SetSkill(SkillName.MagicResist, 50.0, 60.5);
+            SetSkill(SkillName.Tactics, 50.0, 60.5);
+            SetSkill(SkillName.Wrestling, 50.0, 60.5);
+            SetSkill(SkillName.Meditation, 50.0, 60.0);
 
             SetDamageType(ResistanceType.Physical, 0);
             SetDamageType(ResistanceType.Cold, 40);
             SetDamageType(ResistanceType.Energy, 60);
-
-            SetResistance(ResistanceType.Physical, 20, 40);
-            SetResistance(ResistanceType.Fire, 0, 20);
-            SetResistance(ResistanceType.Cold, 60, 80);
-            SetResistance(ResistanceType.Poison, 20, 40);
-            SetResistance(ResistanceType.Energy, 65, 75);
-
-            SetSkill(SkillName.Wrestling, 60.0, 80.0);
-            SetSkill(SkillName.Tactics, 70.0, 80.0);
-            SetSkill(SkillName.MagicResist, 100.0, 110.0);
-            SetSkill(SkillName.Magery, 120.0, 130.0);
-            SetSkill(SkillName.EvalInt, 100.0, 110.0);
-            SetSkill(SkillName.Meditation, 100.0, 110.0);
 
             Fame = 15000;
             Karma = -15000;

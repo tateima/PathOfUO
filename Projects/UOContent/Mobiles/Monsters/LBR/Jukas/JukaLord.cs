@@ -11,29 +11,34 @@ namespace Server.Mobiles
         {
             Body = 766;
 
-            SetStr(401, 500);
-            SetDex(81, 100);
-            SetInt(151, 200);
+            LevelRange = [63, 78];
+            StrPerLevel = [2, 5];
+            IntPerLevel = [2, 5];
+            DexPerLevel = [2, 5];
+            ResistancePerLevel = [2, 3];
 
-            SetHits(241, 300);
+            SetStr(86, 105);
+            SetDex(90, 120);
+            SetInt(72, 90);
 
-            SetDamage(10, 12);
+            SetHits(190, 230);
+            SetDamage(5, 11);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 40, 50);
-            SetResistance(ResistanceType.Fire, 45, 50);
-            SetResistance(ResistanceType.Cold, 40, 50);
-            SetResistance(ResistanceType.Poison, 20, 25);
-            SetResistance(ResistanceType.Energy, 40, 50);
+            SetResistance(ResistanceType.Physical, 5, 30);
+            SetResistance(ResistanceType.Fire, 15, 20);
+            SetResistance(ResistanceType.Cold, 5, 20);
+            SetResistance(ResistanceType.Poison, 5, 15);
+            SetResistance(ResistanceType.Energy, 10, 30);
 
-            SetSkill(SkillName.Anatomy, 90.1, 100.0);
-            SetSkill(SkillName.Archery, 95.1, 100.0);
-            SetSkill(SkillName.Healing, 80.1, 100.0);
-            SetSkill(SkillName.MagicResist, 120.1, 130.0);
-            SetSkill(SkillName.Swords, 90.1, 100.0);
-            SetSkill(SkillName.Tactics, 95.1, 100.0);
-            SetSkill(SkillName.Wrestling, 90.1, 100.0);
+            SetSkill(SkillName.Anatomy, 53.0, 63.5);
+            SetSkill(SkillName.Archery, 53.0, 63.5);
+            SetSkill(SkillName.Healing, 53.0, 63.5);
+            SetSkill(SkillName.MagicResist, 53.0, 63.5);
+            SetSkill(SkillName.Swords, 53.0, 63.5);
+            SetSkill(SkillName.Tactics, 53.0, 63.5);
+            SetSkill(SkillName.Wrestling, 53.0, 63.5);
 
             Fame = 15000;
             Karma = -15000;

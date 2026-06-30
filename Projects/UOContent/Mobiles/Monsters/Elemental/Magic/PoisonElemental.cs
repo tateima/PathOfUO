@@ -12,30 +12,34 @@ namespace Server.Mobiles
             Body = 162;
             BaseSoundID = 263;
 
-            SetStr(426, 515);
-            SetDex(166, 185);
-            SetInt(361, 435);
+            LevelRange = [27, 39];
+            StrPerLevel = [2, 7];
+            IntPerLevel = [1, 4];
+            DexPerLevel = [2, 5];
+            ResistancePerLevel = [1, 3];
 
-            SetHits(256, 309);
-
-            SetDamage(12, 18);
+            SetStr(50, 135);
+            SetDex(20, 75);
+            SetInt(15, 80);
+            SetHits(95, 150);
+            SetDamage(2, 9);
 
             SetDamageType(ResistanceType.Physical, 10);
             SetDamageType(ResistanceType.Poison, 90);
 
-            SetResistance(ResistanceType.Physical, 60, 70);
-            SetResistance(ResistanceType.Fire, 20, 30);
-            SetResistance(ResistanceType.Cold, 20, 30);
-            SetResistance(ResistanceType.Poison, 100);
-            SetResistance(ResistanceType.Energy, 40, 50);
+            SetResistance(ResistanceType.Physical, 10, 30);
+            SetResistance(ResistanceType.Fire, 10, 20);
+            SetResistance(ResistanceType.Cold, 10, 20);
+            SetResistance(ResistanceType.Poison, 50);
+            SetResistance(ResistanceType.Energy, 10, 20);
 
-            SetSkill(SkillName.EvalInt, 80.1, 95.0);
-            SetSkill(SkillName.Magery, 80.1, 95.0);
-            SetSkill(SkillName.Meditation, 80.2, 120.0);
-            SetSkill(SkillName.Poisoning, 90.1, 100.0);
-            SetSkill(SkillName.MagicResist, 85.2, 115.0);
-            SetSkill(SkillName.Tactics, 80.1, 100.0);
-            SetSkill(SkillName.Wrestling, 70.1, 90.0);
+            SetSkill(SkillName.EvalInt, 40.1, 50.0);
+            SetSkill(SkillName.Magery, 40.1, 50.0);
+            SetSkill(SkillName.Meditation, 40.1, 50.0);
+            SetSkill(SkillName.Poisoning, 60.1, 70.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
+            SetSkill(SkillName.Wrestling, 40.1, 50.0);
 
             Fame = 12500;
             Karma = -12500;

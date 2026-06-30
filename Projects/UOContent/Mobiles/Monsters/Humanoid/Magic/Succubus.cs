@@ -11,29 +11,34 @@ namespace Server.Mobiles
             Body = 149;
             BaseSoundID = 0x4B0;
 
-            SetStr(488, 620);
-            SetDex(121, 170);
-            SetInt(498, 657);
+            LevelRange = [25, 50];
+            StrPerLevel = [1, 4];
+            IntPerLevel = [1, 5];
+            DexPerLevel = [1, 2];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(312, 353);
+            SetStr(50, 80);
+            SetDex(20, 35);
+            SetInt(50, 100);
+            SetHits(70, 80);
+            SetDamage(1, 5);
 
-            SetDamage(18, 28);
 
             SetDamageType(ResistanceType.Physical, 75);
             SetDamageType(ResistanceType.Energy, 25);
 
-            SetResistance(ResistanceType.Physical, 80, 90);
-            SetResistance(ResistanceType.Fire, 70, 80);
-            SetResistance(ResistanceType.Cold, 40, 50);
-            SetResistance(ResistanceType.Poison, 50, 60);
-            SetResistance(ResistanceType.Energy, 50, 60);
+            SetResistance(ResistanceType.Physical, 20, 30);
+            SetResistance(ResistanceType.Fire, 20, 30);
+            SetResistance(ResistanceType.Cold, 5, 10);
+            SetResistance(ResistanceType.Poison, 10, 20);
+            SetResistance(ResistanceType.Energy, 20, 30);
 
-            SetSkill(SkillName.EvalInt, 90.1, 100.0);
-            SetSkill(SkillName.Magery, 99.1, 100.0);
-            SetSkill(SkillName.Meditation, 90.1, 100.0);
-            SetSkill(SkillName.MagicResist, 100.5, 150.0);
-            SetSkill(SkillName.Tactics, 80.1, 90.0);
-            SetSkill(SkillName.Wrestling, 80.1, 90.0);
+            SetSkill(SkillName.EvalInt, 50.0, 60.5);
+            SetSkill(SkillName.Magery, 50.0, 60.5);
+            SetSkill(SkillName.Meditation, 50.0, 60.5);
+            SetSkill(SkillName.MagicResist, 50.0, 60.5);
+            SetSkill(SkillName.Tactics, 50.0, 60.5);
+            SetSkill(SkillName.Wrestling, 50.0, 60.5);
 
             Fame = 24000;
             Karma = -24000;
@@ -41,7 +46,7 @@ namespace Server.Mobiles
             VirtualArmor = 80;
         }
 
-        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder };
+        public override OppositionGroup[] OppositionGroups => new[] { OppositionGroup.ChaosAndOrder, OppositionGroup.CelestialsAndDaemons };
         public override string CorpseName => "a succubus corpse";
         public override string DefaultName => "a succubus";
 

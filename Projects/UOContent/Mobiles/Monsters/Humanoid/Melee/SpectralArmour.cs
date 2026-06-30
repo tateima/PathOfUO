@@ -16,27 +16,32 @@ namespace Server.Mobiles
             AddItem(new ChainCoif { Hue = 0x835 });
             AddItem(new PlateGloves { Hue = 0x835 });
 
-            SetStr(101, 110);
-            SetDex(101, 110);
-            SetInt(101, 110);
+            LevelRange = [7, 12];
+            StrPerLevel = [2, 4];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [3, 4];
+            ResistancePerLevel = [2, 3];
 
-            SetHits(178, 201);
-            SetStam(191, 200);
+            SetStr(40, 70);
+            SetDex(30, 55);
+            SetInt(15, 40);
+            SetHits(65, 90);
+            SetStam(95, 115);
 
-            SetDamage(10, 22);
+            SetDamage(6, 7);
 
             SetDamageType(ResistanceType.Physical, 75);
             SetDamageType(ResistanceType.Cold, 25);
 
-            SetResistance(ResistanceType.Physical, 35, 45);
-            SetResistance(ResistanceType.Fire, 20, 30);
-            SetResistance(ResistanceType.Cold, 30, 40);
-            SetResistance(ResistanceType.Poison, 20, 30);
-            SetResistance(ResistanceType.Energy, 20, 30);
+            SetResistance(ResistanceType.Physical, 15, 25);
+            SetResistance(ResistanceType.Fire, 5, 10);
+            SetResistance(ResistanceType.Cold, 10, 20);
+            SetResistance(ResistanceType.Poison, 5, 10);
+            SetResistance(ResistanceType.Energy, 5, 10);
 
-            SetSkill(SkillName.Wrestling, 75.1, 100.0);
-            SetSkill(SkillName.Tactics, 90.1, 100.0);
-            SetSkill(SkillName.MagicResist, 90.1, 100);
+            SetSkill(SkillName.Wrestling, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
 
             VirtualArmor = 40;
             Fame = 7000;

@@ -9,6 +9,10 @@ public partial class Actor : BaseCreature
     [Constructible]
     public Actor() : base(AIType.AI_Animal, FightMode.None)
     {
+        LevelRange = [1, 60];
+        StrPerLevel = [1, 3];
+        IntPerLevel = [1, 3];
+        DexPerLevel = [1, 3];
         InitStats(31, 41, 51);
 
         SetSpeed(0.2, 0.4);

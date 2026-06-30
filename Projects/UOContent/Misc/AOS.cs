@@ -49,6 +49,19 @@ namespace Server
             int nrgy, int chaos = 0, int direct = 0, bool keepAlive = false, bool archer = false, bool deathStrike = false
         )
         {
+            // roll 20 nat?
+            // var roll = Utility.RandomMinMax(1, 20);
+            // if (roll == 20)
+            // {
+            //     damage += Utility.Random(damage);
+            // } else if (roll == 1)
+            // {
+            //     damage -= Utility.Random(damage);
+            //     if (damage < 0)
+            //     {
+            //         damage = 0;
+            //     }
+            // }
             if (m?.Deleted != false || !m.Alive || damage <= 0)
             {
                 return 0;

@@ -11,6 +11,11 @@ public partial class DarkGuardian : BaseCreature
     {
         Body = 78;
         BaseSoundID = 0x3E9;
+        LevelRange = [40, 60];
+        StrPerLevel = [1, 3];
+        IntPerLevel = [4, 6];
+        DexPerLevel = [2, 4];
+        ResistancePerLevel = [1, 2];
 
         SetStr(125, 150);
         SetDex(100, 120);

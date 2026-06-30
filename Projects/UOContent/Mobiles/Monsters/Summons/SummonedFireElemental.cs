@@ -11,7 +11,10 @@ namespace Server.Mobiles
         {
             Body = 15;
             BaseSoundID = 838;
-
+            StrPerLevel = [2, 4];
+            IntPerLevel = [1, 4];
+            DexPerLevel = [1, 4];
+            ResistancePerLevel = [1, 3];
             if (Core.AOS)
             {
                 SetStr(200);

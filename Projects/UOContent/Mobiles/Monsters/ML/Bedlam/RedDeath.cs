@@ -17,28 +17,34 @@ namespace Server.Mobiles
             AI = AIType.AI_Melee;
             FightMode = FightMode.Closest;
 
-            SetStr(319, 324);
-            SetDex(241, 244);
-            SetInt(242, 255);
+            LevelRange = [50, 60];
+            StrPerLevel = [2, 5];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(1540, 1605);
+            SetStr(196, 225);
+            SetDex(30, 50);
+            SetInt(50, 80);
 
-            SetDamage(25, 29);
+            SetHits(250, 320);
+
+            SetDamage(3, 7);
 
             SetDamageType(ResistanceType.Physical, 25);
             SetDamageType(ResistanceType.Fire, 75);
             SetDamageType(ResistanceType.Cold, 0);
 
-            SetResistance(ResistanceType.Physical, 60, 70);
-            SetResistance(ResistanceType.Fire, 90);
+            SetResistance(ResistanceType.Physical, 5, 30);
+            SetResistance(ResistanceType.Fire, 20, 25);
             SetResistance(ResistanceType.Cold, 0);
-            SetResistance(ResistanceType.Poison, 100);
-            SetResistance(ResistanceType.Energy, 0);
+            SetResistance(ResistanceType.Poison, 10, 25);
+            SetResistance(ResistanceType.Energy, 20, 25);
 
-            SetSkill(SkillName.Wrestling, 121.4, 143.7);
-            SetSkill(SkillName.Tactics, 120.9, 142.2);
-            SetSkill(SkillName.MagicResist, 120.1, 142.3);
-            SetSkill(SkillName.Anatomy, 120.2, 144.0);
+            SetSkill(SkillName.Wrestling, 50.9, 65.1);
+            SetSkill(SkillName.Tactics, 50.9, 65.1);
+            SetSkill(SkillName.MagicResist, 50.9, 65.1);
+            SetSkill(SkillName.Anatomy, 50.9, 65.1);
 
             Fame = 28000;
             Karma = -28000;

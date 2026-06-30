@@ -13,7 +13,11 @@ public partial class Semidar : BaseChampion
     {
         Body = 174;
         BaseSoundID = 0x4B0;
-
+        LevelRange = [70, 80];
+        StrPerLevel = [2, 4];
+        IntPerLevel = [3, 5];
+        DexPerLevel = [1, 2];
+        ResistancePerLevel = [2, 3];
         SetStr(502, 600);
         SetDex(102, 200);
         SetInt(601, 750);

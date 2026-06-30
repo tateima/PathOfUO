@@ -11,6 +11,11 @@ namespace Server.Mobiles
         {
             Body = 77;
             BaseSoundID = 353;
+            LevelRange = [45, 60];
+            StrPerLevel = [1, 4];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [1, 2];
 
             SetStr(756, 780);
             SetDex(226, 245);

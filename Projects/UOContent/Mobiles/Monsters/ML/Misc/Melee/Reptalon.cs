@@ -13,28 +13,32 @@ namespace Server.Mobiles
         {
             BaseSoundID = 0x16A;
 
-            SetStr(1001, 1025);
-            SetDex(152, 164);
-            SetInt(251, 289);
+            LevelRange = [55, 65];
+            StrPerLevel = [4, 5];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [2, 3];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(833, 931);
+            SetStr(136, 165);
+            SetDex(50, 80);
+            SetInt(52, 80);
 
-            SetDamage(21, 28);
+            SetHits(160, 220);
 
             SetDamageType(ResistanceType.Physical, 0);
             SetDamageType(ResistanceType.Poison, 25);
             SetDamageType(ResistanceType.Energy, 75);
 
-            SetResistance(ResistanceType.Physical, 53, 64);
-            SetResistance(ResistanceType.Fire, 35, 45);
-            SetResistance(ResistanceType.Cold, 36, 45);
-            SetResistance(ResistanceType.Poison, 52, 63);
-            SetResistance(ResistanceType.Energy, 71, 83);
+            SetResistance(ResistanceType.Physical, 5, 25);
+            SetResistance(ResistanceType.Fire, 5, 20);
+            SetResistance(ResistanceType.Cold, 15, 30);
+            SetResistance(ResistanceType.Poison, 10, 30);
+            SetResistance(ResistanceType.Energy, 10, 15);
 
-            SetSkill(SkillName.Wrestling, 101.5, 118.2);
-            SetSkill(SkillName.Tactics, 101.7, 108.2);
-            SetSkill(SkillName.MagicResist, 76.4, 89.9);
-            SetSkill(SkillName.Anatomy, 56.4, 59.7);
+            SetSkill(SkillName.Wrestling, 45.4, 50.1);
+            SetSkill(SkillName.Tactics, 45.4, 50.1);
+            SetSkill(SkillName.MagicResist, 45.4, 50.1);
+            SetSkill(SkillName.Anatomy, 45.4, 50.1);
 
             Tamable = true;
             ControlSlots = 4;

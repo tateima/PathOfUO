@@ -12,7 +12,10 @@ namespace Server.Mobiles
             Body = 0xC9;
             Hue = Utility.RandomAnimalHue();
             BaseSoundID = 0x69;
-
+            LevelRange = [1, 3];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(9);
             SetDex(35);
             SetInt(5);

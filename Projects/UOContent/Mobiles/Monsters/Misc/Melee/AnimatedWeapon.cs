@@ -10,62 +10,70 @@ namespace Server.Mobiles
         public AnimatedWeapon(Mobile caster, int level) : base(AIType.AI_Melee)
         {
             Body = 692;
-
-            SetStr(10 + level);
-            SetDex(10 + level);
+            StrPerLevel = [2, 4];
+            IntPerLevel = [1, 1];
+            DexPerLevel = [1, 2];
+            ResistancePerLevel = [1, 2];
+            LevelRange = [level, level];
+            SetStr(10);
+            SetDex(10);
             SetInt(10);
 
-            SetHits(20 + level * 3 / 2);
-            SetStam(10 + level);
+            SetHits(20);
+            SetStam(10);
             SetMana(0);
 
-            if (level >= 120)
+            if (level >= 80)
             {
-                SetDamage(14, 18);
+                SetDamage(5, 11);
             }
-            else if (level >= 105)
+            else if (level >= 70)
             {
-                SetDamage(13, 17);
-            }
-            else if (level >= 90)
-            {
-                SetDamage(12, 15);
-            }
-            else if (level >= 75)
-            {
-                SetDamage(11, 14);
+                SetDamage(4, 10);
             }
             else if (level >= 60)
             {
-                SetDamage(10, 12);
+                SetDamage(3, 9);
             }
-            else if (level >= 45)
+            else if (level >= 50)
             {
-                SetDamage(9, 11);
+                SetDamage(2, 8);
+            }
+            else if (level >= 40)
+            {
+                SetDamage(1, 7);
             }
             else if (level >= 30)
             {
-                SetDamage(8, 9);
+                SetDamage(1, 6);
+            }
+            else if (level >= 20)
+            {
+                SetDamage(1, 5);
+            }
+            else if (level >= 10)
+            {
+                SetDamage(1, 4);
             }
             else
             {
-                SetDamage(7, 8);
+                SetDamage(1, 3);
             }
 
             SetDamageType(ResistanceType.Physical, 60);
             SetDamageType(ResistanceType.Poison, 20);
             SetDamageType(ResistanceType.Energy, 20);
 
-            SetResistance(ResistanceType.Physical, 40, 50);
-            SetResistance(ResistanceType.Fire, 30, 40);
-            SetResistance(ResistanceType.Cold, 30, 40);
-            SetResistance(ResistanceType.Poison, 100);
-            SetResistance(ResistanceType.Energy, 20, 30);
+            SetResistance(ResistanceType.Physical, 6, 25);
+            SetResistance(ResistanceType.Fire, 10, 20);
+            SetResistance(ResistanceType.Cold, 10, 30);
+            SetResistance(ResistanceType.Poison, 10, 15);
+            SetResistance(ResistanceType.Energy, 5, 15);
 
-            SetSkill(SkillName.MagicResist, level);
-            SetSkill(SkillName.Wrestling, level);
-            SetSkill(SkillName.Anatomy, caster.Skills.Anatomy.Value / 2);
-            SetSkill(SkillName.Tactics, caster.Skills.Tactics.Value / 2);
+            SetSkill(SkillName.MagicResist, 40.0, 50.0);
+            SetSkill(SkillName.Wrestling, 40.0, 50.0);
+            SetSkill(SkillName.Anatomy, 40.0, 50.0);
+            SetSkill(SkillName.Tactics, 40.0, 50.0);
 
             Fame = 0;
             Karma = 0;

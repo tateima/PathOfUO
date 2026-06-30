@@ -10,7 +10,11 @@ namespace Server.Mobiles
         public RevenantLion() : base(AIType.AI_Mage)
         {
             Body = 251;
-
+            LevelRange = [25, 32];
+            StrPerLevel = [1, 5];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [3, 4];
+            ResistancePerLevel = [1, 3];
             SetStr(276, 325);
             SetDex(156, 175);
             SetInt(76, 105);

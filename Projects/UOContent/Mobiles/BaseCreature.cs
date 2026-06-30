@@ -175,7 +175,7 @@ namespace Server.Mobiles
 
         public const int ShoutRange = 8;
 
-        public const int MaximumCreatureLevel = 80;
+        public const int MaximumCreatureLevel = 95;
         public const int MinMaxCreatureLevel = 72;
 
         private static readonly Type[] m_AnimateDeadTypes =
@@ -373,6 +373,17 @@ namespace Server.Mobiles
         private bool m_SoulFeeder;
 
         private int m_Level;
+        private int[] m_LevelRange;
+        private int[] m_strPerlevel;
+        private int[] m_dexPerlevel;
+        private int[] m_intPerLevel;
+        private double[] m_skillsPerLevel;
+        private int[] m_physicalResistancePerLevel;
+        private int[] m_fireResistancePerLevel;
+        private int[] m_resistancePerLevel;
+        private int[] m_coldResistancePerLevel;
+        private int[] m_poisonResistancePerLevel;
+        private int[] m_energyResistancePerLevel;
         private double m_Tier;
         private int m_PhysicalResistance;
         private int m_PoisonResistance;
@@ -403,6 +414,17 @@ namespace Server.Mobiles
             m_LastTamingAttempt = DateTime.UnixEpoch;
             m_Tier = 1.0;
             m_Level = 1;
+            m_LevelRange = [1,1];
+            m_dexPerlevel = [0,0];
+            m_strPerlevel = [0,0];
+            m_intPerLevel = [0,0];
+            m_skillsPerLevel = [0.25, 1.25];
+            m_resistancePerLevel = [1, 2];
+            m_fireResistancePerLevel = [0, 0];
+            m_coldResistancePerLevel = [0, 0];
+            m_energyResistancePerLevel = [0, 0];
+            m_poisonResistancePerLevel = [0, 0];
+            m_physicalResistancePerLevel = [0, 0];
             LevelExperience = 0;
             m_InDungeon = false;
             m_Loyalty = MaxLoyalty; // Wonderfully Happy
@@ -664,6 +686,124 @@ namespace Server.Mobiles
                 InvalidateProperties();
             }
         }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int[] LevelRange
+        {
+            get => m_LevelRange;
+            set
+            {
+                m_LevelRange = value;
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int[] StrPerLevel
+        {
+            get => m_strPerlevel;
+            set
+            {
+                m_strPerlevel = value;
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int[] IntPerLevel
+        {
+            get => m_intPerLevel;
+            set
+            {
+                m_intPerLevel = value;
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int[] DexPerLevel
+        {
+            get => m_dexPerlevel;
+            set
+            {
+                m_dexPerlevel = value;
+                InvalidateProperties();
+            }
+        }
+        [CommandProperty(AccessLevel.GameMaster)]
+        public double[] SkillsPerLevel
+        {
+            get => m_skillsPerLevel;
+            set
+            {
+                m_skillsPerLevel = value;
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int[] ResistancePerLevel
+        {
+            get => m_resistancePerLevel;
+            set
+            {
+                m_resistancePerLevel = value;
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int[] FireResistancePerLevel
+        {
+            get => m_fireResistancePerLevel;
+            set
+            {
+                m_fireResistancePerLevel = value;
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int[] PhysicalResistancePerLevel
+        {
+            get => m_physicalResistancePerLevel;
+            set
+            {
+                m_physicalResistancePerLevel = value;
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int[] EnergyResistancePerLevel
+        {
+            get => m_energyResistancePerLevel;
+            set
+            {
+                m_energyResistancePerLevel = value;
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int[] PoisonResistancePerLevel
+        {
+            get => m_poisonResistancePerLevel;
+            set
+            {
+                m_poisonResistancePerLevel = value;
+                InvalidateProperties();
+            }
+        }
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int[] ColdResistancePerLevel
+        {
+            get => m_coldResistancePerLevel;
+            set
+            {
+                m_coldResistancePerLevel = value;
+                InvalidateProperties();
+            }
+        }
+
 
         [CommandProperty(AccessLevel.GameMaster)]
         public int TamedExperience
@@ -1632,7 +1772,7 @@ namespace Server.Mobiles
         public virtual TimeSpan BondingDelay => TimeSpan.FromDays(7.0);
         public virtual TimeSpan BondingAbandonDelay => TimeSpan.FromDays(1.0);
 
-        public override bool CanRegenHits => !IsDeadPet && !Summoned && base.CanRegenHits;
+        public override bool CanRegenHits => Combatant == null && !IsDeadPet && !Summoned && base.CanRegenHits;
         public override bool CanRegenStam => !IsParagon && !IsDeadPet && base.CanRegenStam;
         public override bool CanRegenMana => !IsDeadPet && base.CanRegenMana;
 
@@ -2327,7 +2467,7 @@ namespace Server.Mobiles
                     MonsterBuff.MinionKarmaBuff,
                     MonsterBuff.MinionDamageBuff
                 );
-                if (DynamicExperienceValue() >= 475) // skeleton strength and up
+                if (Level >= 6)
                 {
                     int dungeonChance = 20;
                     bool eligibleHard =
@@ -2407,38 +2547,48 @@ namespace Server.Mobiles
         }
         public void SetLevel()
         {
+            Level = Utility.RandomMinMax(LevelRange[0], LevelRange[1]);
+            MonsterBuff.SquashMonster(this);
+            // apply level affixes
+            var level = 1;
+            while (level < Level)
+            {
+                MonsterBuff.AddLevel(this, level);
+                level++;
+            }
+
             // 5608 = balron tier 11.??
             // 4385 = poison elemental tier 8.76
             // 1171 = harpy tier 2.34
-            int baseXp = (int)DynamicExperienceValue() + ExperienceValue;
-            Tier = baseXp / 500.00;
-            // level range caps at 80 levels, and there are 12 tiers divided into groups of 500
-            double levelRangePerTier = Math.Floor(80.00 / 11.00);
-            int midLevel = (int)(Tier * levelRangePerTier);
-            MinLevel = midLevel - 5;
-            if (MinLevel <= 1)
-            {
-                MinLevel = 2;
-            }
-            MaxLevel = midLevel + 5;
-            if (MaxLevel > MaximumCreatureLevel)
-            {
-                ExperienceValue += (MaxLevel - MaximumCreatureLevel) * 250;
-                MaxLevel = MaximumCreatureLevel;
-                MinLevel = MinMaxCreatureLevel;
-                midLevel = MinMaxCreatureLevel + 4;
-            }
-            Level = Utility.RandomMinMax(MinLevel, MaxLevel);
-            if (Utility.Random(1000) <= 1)
-            {
-                // experienced version of creature
-                Level += Utility.RandomMinMax(1, 3);
-            }
-            double scale = 1.00;
-            scale += Level <= midLevel ? 0 : (Level - midLevel) * 5 / 100.00;
-            SetHits(Hits + Utility.RandomMinMax(MinLevel, Level));
-            VirtualArmorMod += Level <= midLevel ? 0 : Level - midLevel;
-            MonsterBuff.Convert(this, scale, scale, scale, scale, scale, scale, 1.00, scale, scale, 0);
+            // int baseXp = (int)DynamicExperienceValue() + ExperienceValue;
+            // Tier = baseXp / 500.00;
+            // // level range caps at 80 levels, and there are 12 tiers divided into groups of 500
+            // double levelRangePerTier = Math.Floor(80.00 / 11.00);
+            // int midLevel = (int)(Tier * levelRangePerTier);
+            // MinLevel = midLevel - 5;
+            // if (MinLevel <= 1)
+            // {
+            //     MinLevel = 2;
+            // }
+            // MaxLevel = midLevel + 5;
+            // if (MaxLevel > MaximumCreatureLevel)
+            // {
+            //     ExperienceValue += (MaxLevel - MaximumCreatureLevel) * 250;
+            //     MaxLevel = MaximumCreatureLevel;
+            //     MinLevel = MinMaxCreatureLevel;
+            //     midLevel = MinMaxCreatureLevel + 4;
+            // }
+            // Level = Utility.RandomMinMax(MinLevel, MaxLevel);
+            // if (Utility.Random(1000) <= 1)
+            // {
+            //     // experienced version of creature
+            //     Level += Utility.RandomMinMax(1, 3);
+            // }
+            // double scale = 1.00;
+            // scale += Level <= midLevel ? 0 : (Level - midLevel) * 5 / 100.00;
+            // SetHits(Hits + Utility.RandomMinMax(MinLevel, Level));
+            // VirtualArmorMod += Level <= midLevel ? 0 : Level - midLevel;
+            // MonsterBuff.Convert(this, scale, scale, scale, scale, scale, scale, 1.00, scale, scale, 0);
         }
 
         public void AlterCreatureDungeonLevel(int minLevel, int minMaxLevel, int maxLevel)
@@ -4359,13 +4509,37 @@ namespace Server.Mobiles
                     list.Add(1114057, $"Taming requirement: {MinTameSkill.ToString()}"); // ~1_val~
                     list.Add(1114057, $"Control slots: {ControlSlots.ToString()}");      // ~1_val~
                 }
-                list.Add(1114057, $"Level range: {(MinLevel - 1 < 1 ? 1 : MinLevel).ToString()} - {MaxLevel.ToString()}");   // ~1_val~
+
+                if (LevelRange != null)
+                {
+                    list.Add(1114057, $"Level range: {LevelRange[0].ToString()} - {LevelRange[1].ToString()}");   // ~1_val~
+                }
                 list.Add(1114057, $"XP: {FinalExperience().ToString()}"); // ~1_val~
             }
 
-            list.Add(1114057, $"Mana: {Mana.ToString()}/{ManaMax.ToString()}"); // ~1_val~
-            list.Add(1114057, $"Hits: {Hits.ToString()}/{HitsMax.ToString()}"); // ~1_val~
-            list.Add(1114057, $"Stamina: {Stam.ToString()}/{StamMax.ToString()}"); // ~1_val~
+            list.Add(1114057, $"Mana: {Mana.ToString()}/{ManaMax.ToString()}");      // ~1_val~
+            list.Add(1114057, $"Hits: {Hits.ToString()}/{HitsMax.ToString()}");      // ~1_val~
+            list.Add(1114057, $"Stamina: {Stam.ToString()}/{StamMax.ToString()}");   // ~1_val~
+            if (BasePhysicalResistance > 0)
+            {
+                list.Add(1114057, $"Physical Res: {BasePhysicalResistance.ToString()}%"); // ~1_val~
+            }
+            if (BaseColdResistance > 0)
+            {
+                list.Add(1114057, $"Cold Res: {BaseColdResistance.ToString()}");         // ~1_val~
+            }
+            if (BaseFireResistance > 0)
+            {
+                list.Add(1114057, $"Fire Res: {BaseFireResistance.ToString()}");         // ~1_val~
+            }
+            if (BaseEnergyResistance > 0)
+            {
+                list.Add(1114057, $"Energy Res: {BaseEnergyResistance.ToString()}");         // ~1_val~
+            }
+            if (BasePoisonResistance > 0)
+            {
+                list.Add(1114057, $"Poison Res: {BasePoisonResistance.ToString()}");         // ~1_val~
+            }
 
             if (IsSoulFeeder)
             {
@@ -4945,18 +5119,19 @@ namespace Server.Mobiles
 
         public double DynamicExperienceValue()
         {
-            var xp = (RawStr > RawDex && RawStr > RawInt ? RawStr * 1.8 : RawStr) + (RawDex > RawStr && RawDex > RawInt ? RawDex * 1.8 : RawDex) + (RawInt > RawStr && RawInt > RawDex ? RawInt * 1.8 : RawInt);
+            var xp = RawStr * 2.0 + RawDex * 2.0 + RawInt * 2.0;
+            xp += Level * 25;
 
-            xp += (m_PhysicalResistance > 45 ? m_PhysicalResistance * 1.6 : m_PhysicalResistance);
-            xp += (m_FireResistance > 45 ? m_FireResistance * 1.6 : m_FireResistance);
-            xp += (m_ColdResistance > 45 ? m_ColdResistance * 1.6 : m_ColdResistance);
-            xp += (m_PoisonResistance > 45 ? m_PoisonResistance * 1.6 : m_PoisonResistance);
-            xp += (m_EnergyResistance > 45 ? m_EnergyResistance * 1.6 : m_EnergyResistance);
+            xp += (m_PhysicalResistance > 45 ? m_PhysicalResistance * 1.8 : m_PhysicalResistance);
+            xp += (m_FireResistance > 45 ? m_FireResistance * 1.8 : m_FireResistance);
+            xp += (m_ColdResistance > 45 ? m_ColdResistance * 1.8 : m_ColdResistance);
+            xp += (m_PoisonResistance > 45 ? m_PoisonResistance * 1.8 : m_PoisonResistance);
+            xp += (m_EnergyResistance > 45 ? m_EnergyResistance * 1.8 : m_EnergyResistance);
 
             xp += SkillsTotal / 10.0;
 
-            xp += m_DamageMax * 4.5;
-            xp += m_DamageMin * 4.5;
+            xp += m_DamageMax * 5.0;
+            xp += m_DamageMin * 5.0;
 
             xp += VirtualArmor * 2.5;
 
@@ -4986,17 +5161,18 @@ namespace Server.Mobiles
                 xp += AOS.Scale(HitsMax, 33);
             }
 
-            if (this is VampireBat || this is VampireBatFamiliar)
-            {
-                xp += 100;
-            }
-
-            xp += BaseInstrument.GetPoisonLevel(this) * 33;
-
-            if (BaseInstrument.IsPoisonImmune(this) && xp >= 1200)
-            {
-                xp += PoisonImmune.Level * 33;
-            }
+            //
+            // if (this is VampireBat || this is VampireBatFamiliar)
+            // {
+            //     xp += 100;
+            // }
+            //
+            // xp += BaseInstrument.GetPoisonLevel(this) * 33;
+            //
+            // if (BaseInstrument.IsPoisonImmune(this) && xp >= 1200)
+            // {
+            //     xp += PoisonImmune.Level * 33;
+            // }
 
             if (xp > 10000)
             {
@@ -6381,18 +6557,26 @@ namespace Server.Mobiles
 
         public int CalculateDamageFromLevels(int defenderLevel, int attackerLevel, int damage, bool attackingPlayer)
         {
-            if (attackerLevel > defenderLevel + 2)
+            if (attackerLevel > 80)
             {
-                damage += AOS.Scale(damage, (attackerLevel - defenderLevel) * 10);
+                attackerLevel = 80;
+            }
+
+            if (defenderLevel > 80)
+            {
+                defenderLevel = 80;
+            }
+            if (attackerLevel > defenderLevel + 5)
+            {
+                damage += (attackerLevel - defenderLevel) / 5;
                 if (CheckCriticalStrike(defenderLevel, attackerLevel))
                 {
                     BaseTalent.CriticalStrike(Combatant, this, ref damage);
                 }
             }
-            if (defenderLevel > attackerLevel)
+            if (defenderLevel > attackerLevel + 5)
             {
-                // 7 levels differential, so at 7 levels its 70% less damage
-                damage -= AOS.Scale(damage, (defenderLevel - attackerLevel) * 10);
+                damage -= (defenderLevel - attackerLevel) / 5;
             }
 
             if (!attackingPlayer)
@@ -7026,6 +7210,7 @@ namespace Server.Mobiles
 
         public void SetResistance(ResistanceType type, int val)
         {
+
             switch (type)
             {
                 case ResistanceType.Physical:

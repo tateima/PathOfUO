@@ -62,8 +62,8 @@ namespace Server.Spells.Fourth
 
                 // Algorithm: (40% of magery) + (1-10)
 
-                var toHeal = (int)(Caster.Skills.Magery.Value * 0.4);
-                toHeal += Utility.Random(1, 10);
+                var toHeal = (int)(Caster.Skills.Magery.Value * 0.2);
+                // toHeal += Utility.Random(1, 10);
                 toHeal = (int)(toHeal * ReagentsScale());
 
                 if (Caster is PlayerMobile player)

@@ -10,7 +10,10 @@ namespace Server.Mobiles
         public Gaman() : base(AIType.AI_Animal, FightMode.Aggressor)
         {
             Body = 248;
-
+            LevelRange = [18, 35];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(146, 175);
             SetDex(111, 150);
             SetInt(46, 60);

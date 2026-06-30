@@ -13,22 +13,26 @@ namespace Server.Mobiles
         {
             Body = 0x3CA;
             Hue = 0x453;
-
+            LevelRange = [1, 6];
+            StrPerLevel = [1, 2];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [3, 4];
+            ResistancePerLevel = [1, 2];
             SetStr(26, 40);
             SetDex(26, 40);
             SetInt(26, 40);
 
             SetHits(16, 24);
 
-            SetDamage(1, 10);
+            SetDamage(1, 6);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 15, 25);
+            SetResistance(ResistanceType.Physical, 5, 15);
             SetResistance(ResistanceType.Fire, 5, 15);
-            SetResistance(ResistanceType.Cold, 25, 40);
+            SetResistance(ResistanceType.Cold, 5, 30);
             SetResistance(ResistanceType.Poison, 5, 10);
-            SetResistance(ResistanceType.Energy, 10, 20);
+            SetResistance(ResistanceType.Energy, 5, 15);
 
             SetSkill(SkillName.MagicResist, 20.1, 30.0);
             SetSkill(SkillName.Swords, 20.1, 30.0);

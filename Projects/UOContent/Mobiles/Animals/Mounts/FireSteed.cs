@@ -11,6 +11,10 @@ namespace Server.Mobiles
         [Constructible]
         public FireSteed() : base(0xBE, 0x3E9E, AIType.AI_Melee)
         {
+            LevelRange = [40, 60];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             BaseSoundID = 0xA8;
 
             SetStr(376, 400);

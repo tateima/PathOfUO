@@ -48,8 +48,12 @@ namespace Server.Spells.Eighth
                     // T2A -> Current
                     _ => TimeSpan.FromSeconds(4 * Math.Max(5, Caster.Skills.Magery.Value)),
                 };
-
-                SpellHelper.Summon(new SummonedEarthElemental(), Caster, 0x217, duration, false, false);
+                var creature = new SummonedEarthElemental
+                {
+                    LevelRange = [((PlayerMobile)Caster).Level, ((PlayerMobile)Caster).Level]
+                };
+                creature.SetLevel();
+                SpellHelper.Summon(creature, Caster, 0x217, duration, false, false);
             }
 
             FinishSequence();

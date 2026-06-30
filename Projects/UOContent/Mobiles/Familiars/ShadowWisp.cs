@@ -13,6 +13,11 @@ public partial class ShadowWispFamiliar : BaseFamiliar
         Body = 165;
         Hue = 0x901;
         BaseSoundID = 466;
+        LevelRange = [10, 50];
+        StrPerLevel = [1, 2];
+        IntPerLevel = [2, 4];
+        DexPerLevel = [2, 3];
+        ResistancePerLevel = [1, 3];
 
         SetStr(50);
         SetDex(60);

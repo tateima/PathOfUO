@@ -12,20 +12,21 @@ namespace Server.Mobiles
         {
             Body = 205;
             Hue = 0x480;
+            LevelRange = [1, 15];
+            StrPerLevel = [1, 2];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [1, 2];
 
-            SetStr(15);
-            SetDex(2000);
-            SetInt(1000);
-
-            SetHits(2000);
-            SetStam(500);
-            SetMana(0);
-
-            SetDamage(1);
+            SetStr(20, 65);
+            SetDex(20, 45);
+            SetInt(15, 20);
+            SetHits(35, 60);
+            SetDamage(2, 4);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetSkill(SkillName.MagicResist, 200.0);
+            SetSkill(SkillName.MagicResist, 30.0);
             SetSkill(SkillName.Tactics, 5.0);
             SetSkill(SkillName.Wrestling, 5.0);
 

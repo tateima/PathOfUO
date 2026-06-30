@@ -11,7 +11,10 @@ namespace Server.Mobiles
         public Ridgeback() : base(187, 0x3EBA, AIType.AI_Animal, FightMode.Aggressor)
         {
             BaseSoundID = 0x3F3;
-
+            LevelRange = [15, 35];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(58, 100);
             SetDex(56, 75);
             SetInt(16, 30);

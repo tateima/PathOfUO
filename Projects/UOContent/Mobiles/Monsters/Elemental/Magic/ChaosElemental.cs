@@ -12,13 +12,17 @@ namespace Server.Mobiles
             BaseSoundID = 768;
             Hue = Deity.ChaosHue;
 
-            SetStr(426, 565);
-            SetDex(166, 235);
-            SetInt(361, 485);
+            LevelRange = [25, 42];
+            StrPerLevel = [2, 6];
+            IntPerLevel = [1, 6];
+            DexPerLevel = [2, 6];
+            ResistancePerLevel = [1, 3];
 
-            SetHits(256, 359);
-
-            SetDamage(12, 20);
+            SetStr(60, 125);
+            SetDex(30, 65);
+            SetInt(25, 70);
+            SetHits(85, 140);
+            SetDamage(3, 8);
 
             SetDamageType(ResistanceType.Physical, 25);
             SetDamageType(ResistanceType.Fire, 25);
@@ -26,18 +30,18 @@ namespace Server.Mobiles
             SetDamageType(ResistanceType.Poison, 25);
             SetDamageType(ResistanceType.Energy, 25);
 
-            SetResistance(ResistanceType.Physical, 30, 70);
-            SetResistance(ResistanceType.Fire, 30, 70);
-            SetResistance(ResistanceType.Cold, 30, 70);
-            SetResistance(ResistanceType.Poison, 100, 100);
-            SetResistance(ResistanceType.Energy, 30, 70);
+            SetResistance(ResistanceType.Physical,  Utility.RandomMinMax(1, 10),  Utility.RandomMinMax(10, 30));
+            SetResistance(ResistanceType.Fire,  Utility.RandomMinMax(1, 10),  Utility.RandomMinMax(10, 20));
+            SetResistance(ResistanceType.Cold,  Utility.RandomMinMax(1, 10),  Utility.RandomMinMax(10, 20));
+            SetResistance(ResistanceType.Poison,  Utility.RandomMinMax(1, 20),  Utility.RandomMinMax(20, 30));
+            SetResistance(ResistanceType.Energy,  Utility.RandomMinMax(1, 10),  Utility.RandomMinMax(10, 20));
 
-            SetSkill(SkillName.EvalInt, 80.1, 95.0);
-            SetSkill(SkillName.Magery, 80.1, 95.0);
-            SetSkill(SkillName.Meditation, 80.2, 120.0);
-            SetSkill(SkillName.MagicResist, 85.2, 115.0);
-            SetSkill(SkillName.Tactics, 80.1, 100.0);
-            SetSkill(SkillName.Wrestling, 70.1, 90.0);
+            SetSkill(SkillName.EvalInt, 45.1, 55.0);
+            SetSkill(SkillName.Magery, 45.1, 55.0);
+            SetSkill(SkillName.Meditation, 45.1, 55.0);
+            SetSkill(SkillName.MagicResist, 45.1, 55.0);
+            SetSkill(SkillName.Tactics, 45.1, 55.0);
+            SetSkill(SkillName.Wrestling, 45.1, 55.0);
 
             Fame = 12500;
             Karma = -12500;

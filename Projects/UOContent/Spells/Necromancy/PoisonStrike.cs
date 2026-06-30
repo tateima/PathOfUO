@@ -58,7 +58,7 @@ public class PoisonStrikeSpell : NecromancerSpell, ITargetingSpell<Mobile>
                 );
                 Effects.PlaySound(m.Location, m.Map, 0x229);
 
-                var damage = Utility.RandomMinMax(Core.ML ? 32 : 36, 40) * ((300 + GetDamageSkill(Caster) * 9) / 1000);
+                var damage = Utility.RandomMinMax(1, 4) * ((300 + GetDamageSkill(Caster) * 9) / 1000);
                 damage *= ReagentsScale();
 
                 DarkAffinityDamage(ref damage);

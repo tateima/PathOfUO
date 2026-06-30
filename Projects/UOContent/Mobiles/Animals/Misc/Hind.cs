@@ -9,7 +9,10 @@ namespace Server.Mobiles
         public Hind() : base(AIType.AI_Animal, FightMode.Aggressor)
         {
             Body = 0xED;
-
+            LevelRange = [1, 7];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(21, 51);
             SetDex(47, 77);
             SetInt(17, 47);

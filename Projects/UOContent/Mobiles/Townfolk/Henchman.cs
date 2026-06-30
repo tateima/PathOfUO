@@ -9,7 +9,10 @@ namespace Server.Mobiles
             : base(AIType.AI_Melee, FightMode.None, 10, 1)
         {
             SpeechHue = Utility.RandomDyedHue();
-
+            LevelRange = [1, 60];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(125, 150);
             SetDex(81, 95);
             SetInt(61, 75);

@@ -12,6 +12,11 @@ namespace Server.Mobiles
             Name = NameList.RandomName("lizardman");
             Body = Utility.RandomList(35, 36);
             BaseSoundID = 417;
+            LevelRange = [4, 9];
+            StrPerLevel = [2, 6];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [3, 7];
+            ResistancePerLevel = [1, 2];
 
             SetStr(96, 120);
             SetDex(86, 105);

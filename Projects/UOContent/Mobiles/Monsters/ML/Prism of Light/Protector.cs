@@ -18,26 +18,31 @@ namespace Server.Mobiles
 
             Title = "the mystic llamaherder";
 
-            SetStr(700, 800);
-            SetDex(100, 150);
-            SetInt(50, 75);
+            LevelRange = [57, 77];
+            StrPerLevel = [3, 6];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [2, 5];
+            ResistancePerLevel = [1, 3];
 
-            SetHits(350, 450);
+            SetStr(96, 125);
+            SetDex(30, 80);
+            SetInt(32, 80);
 
-            SetDamage(6, 12);
+            SetHits(100, 350);
+
+            SetDamage(3, 10);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 30, 40);
-            SetResistance(ResistanceType.Fire, 20, 30);
-            SetResistance(ResistanceType.Cold, 35, 40);
-            SetResistance(ResistanceType.Poison, 30, 40);
-            SetResistance(ResistanceType.Energy, 30, 40);
+            SetResistance(ResistanceType.Physical, 10, 20);
+            SetResistance(ResistanceType.Fire, 5, 20);
+            SetResistance(ResistanceType.Cold, 15, 20);
+            SetResistance(ResistanceType.Poison, 10, 20);
+            SetResistance(ResistanceType.Energy, 10, 15);
 
-            SetSkill(SkillName.Wrestling, 70.0, 100.0);
-            SetSkill(SkillName.Tactics, 80.0, 100.0);
-            SetSkill(SkillName.MagicResist, 50.0, 70.0);
-            SetSkill(SkillName.Anatomy, 70.0, 100.0);
+            SetSkill(SkillName.Wrestling, 40.0, 60.5);
+            SetSkill(SkillName.MagicResist, 40.0, 60.5);
+            SetSkill(SkillName.Anatomy, 40.0, 60.5);
 
             Fame = 10000;
             Karma = -10000;

@@ -23,30 +23,34 @@ namespace Server.Mobiles
             {
                 Hue = Utility.RandomList(0x97A, 0x978, 0x901, 0x8AC, 0x5A7, 0x527);
             }
+            LevelRange = [10, 30];
+            StrPerLevel = [2, 3];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [1, 2];
+            SetStr(196, 225);
+            SetDex(30, 50);
+            SetInt(50, 80);
 
-            SetStr(1200, 1225);
-            SetDex(150, 170);
-            SetInt(250, 285);
+            SetHits(250, 320);
 
-            SetHits(1010, 1275);
-
-            SetDamage(21, 28);
+            SetDamage(3, 7);
 
             SetDamageType(ResistanceType.Physical, 0);
             SetDamageType(ResistanceType.Cold, 50);
             SetDamageType(ResistanceType.Energy, 50);
 
-            SetResistance(ResistanceType.Physical, 50, 65);
-            SetResistance(ResistanceType.Fire, 25, 45);
-            SetResistance(ResistanceType.Cold, 70, 85);
-            SetResistance(ResistanceType.Poison, 30, 50);
-            SetResistance(ResistanceType.Energy, 70, 85);
+            SetResistance(ResistanceType.Physical, 5, 25);
+            SetResistance(ResistanceType.Fire, 5, 15);
+            SetResistance(ResistanceType.Cold, 10, 30);
+            SetResistance(ResistanceType.Poison, 10, 20);
+            SetResistance(ResistanceType.Energy, 10, 25);
 
-            SetSkill(SkillName.Wrestling, 90.1, 96.8);
-            SetSkill(SkillName.Tactics, 90.3, 99.3);
-            SetSkill(SkillName.MagicResist, 75.3, 90.0);
-            SetSkill(SkillName.Anatomy, 65.5, 69.4);
-            SetSkill(SkillName.Healing, 72.2, 98.9);
+            SetSkill(SkillName.Wrestling, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Anatomy, 40.1, 50.0);
+            SetSkill(SkillName.Healing, 40.1, 50.0);
 
             Fame = 5000;  // Guessing here
             Karma = 5000; // Guessing here

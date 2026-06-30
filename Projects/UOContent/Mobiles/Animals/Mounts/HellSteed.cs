@@ -10,6 +10,10 @@ namespace Server.Mobiles
         [Constructible]
         public HellSteed() : base(793, 0x3EBB, AIType.AI_Animal, FightMode.Aggressor)
         {
+            LevelRange = [40, 60];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStats(this);
         }
 

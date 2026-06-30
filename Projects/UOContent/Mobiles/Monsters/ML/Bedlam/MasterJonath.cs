@@ -12,29 +12,33 @@ namespace Server.Mobiles
 
             Hue = 0x455;
 
-            SetStr(109, 131);
-            SetDex(98, 110);
-            SetInt(232, 259);
+            LevelRange = [50, 60];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [2, 7];
+            DexPerLevel = [1, 2];
+            ResistancePerLevel = [2, 3];
+            SetStr(40, 80);
+            SetDex(10, 45);
+            SetInt(90, 175);
+            SetHits(75, 90);
 
-            SetHits(766, 920);
-
-            SetDamage(10, 15);
+            SetDamage(3, 6);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 55, 60);
-            SetResistance(ResistanceType.Fire, 43, 49);
-            SetResistance(ResistanceType.Cold, 45, 80);
-            SetResistance(ResistanceType.Poison, 41, 45);
-            SetResistance(ResistanceType.Energy, 54, 55);
+            SetResistance(ResistanceType.Physical, 5, 25);
+            SetResistance(ResistanceType.Fire, 15, 25);
+            SetResistance(ResistanceType.Cold, 15, 25);
+            SetResistance(ResistanceType.Poison, 15, 25);
+            SetResistance(ResistanceType.Energy, 15, 25);
 
-            SetSkill(SkillName.Wrestling, 80.5, 88.6);
-            SetSkill(SkillName.Tactics, 88.5, 95.1);
-            SetSkill(SkillName.MagicResist, 102.7, 102.9);
-            SetSkill(SkillName.Magery, 100.0, 106.6);
-            SetSkill(SkillName.EvalInt, 99.6, 106.9);
-            SetSkill(SkillName.Necromancy, 100.0, 106.6);
-            SetSkill(SkillName.SpiritSpeak, 99.6, 106.9);
+            SetSkill(SkillName.Wrestling, 50.9, 65.1);
+            SetSkill(SkillName.Tactics, 50.9, 65.1);
+            SetSkill(SkillName.MagicResist, 50.9, 65.1);
+            SetSkill(SkillName.Magery, 50.9, 65.1);
+            SetSkill(SkillName.EvalInt, 50.9, 65.1);
+            SetSkill(SkillName.Necromancy, 50.9, 65.1);
+            SetSkill(SkillName.SpiritSpeak, 50.9, 65.1);
 
             Fame = 18000;
             Karma = -18000;

@@ -16,26 +16,30 @@ namespace Server.Mobiles
             Hue = 0xE0;
 
             AI = AIType.AI_Melee;
+            LevelRange = [35, 55];
+            StrPerLevel = [1, 2];
+            IntPerLevel = [2, 4];
+            DexPerLevel = [3, 4];
+            ResistancePerLevel = [1, 3];
+            SetStr(20, 50);
+            SetDex(40, 60);
+            SetInt(20, 50);
 
-            SetStr(100, 150);
-            SetDex(400, 500);
-            SetInt(80, 90);
+            SetHits(55, 80);
 
-            SetHits(1500, 2000);
-
-            SetDamage(20, 30);
+            SetDamage(3, 9);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 75, 90);
-            SetResistance(ResistanceType.Fire, 60, 77);
-            SetResistance(ResistanceType.Cold, 70, 85);
-            SetResistance(ResistanceType.Poison, 55, 85);
-            SetResistance(ResistanceType.Energy, 50, 60);
+            SetResistance(ResistanceType.Physical, 5, 20);
+            SetResistance(ResistanceType.Fire, 5, 20);
+            SetResistance(ResistanceType.Cold, 5, 10);
+            SetResistance(ResistanceType.Poison, 5, 20);
+            SetResistance(ResistanceType.Energy, 5, 10);
 
-            SetSkill(SkillName.Wrestling, 120.0, 140.0);
-            SetSkill(SkillName.Tactics, 120.0, 140.0);
-            SetSkill(SkillName.MagicResist, 95.0, 105.0);
+            SetSkill(SkillName.Wrestling,  45.1, 50.0);
+            SetSkill(SkillName.Tactics,  45.1, 50.0);
+            SetSkill(SkillName.MagicResist,  45.1, 50.0);
 
             Fame = 18000;
             Karma = 0;

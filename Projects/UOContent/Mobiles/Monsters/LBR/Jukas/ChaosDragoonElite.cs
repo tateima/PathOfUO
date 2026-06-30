@@ -14,30 +14,36 @@ namespace Server.Mobiles
 
             SetSpeed(0.15, 0.4);
 
-            SetStr(276, 350);
-            SetDex(66, 90);
-            SetInt(126, 150);
+            LevelRange = [63, 78];
+            StrPerLevel = [3, 4];
+            IntPerLevel = [3, 4];
+            DexPerLevel = [3, 4];
+            ResistancePerLevel = [2, 3];
 
-            SetHits(276, 350);
+            SetStr(96, 125);
+            SetDex(70, 90);
+            SetInt(82, 110);
 
-            SetDamage(29, 34);
+            SetHits(230, 280);
+
+            SetDamage(6, 10);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            /*SetResistance(ResistanceType.Physical, 45, 55);
-            SetResistance(ResistanceType.Fire, 15, 25);
-            SetResistance(ResistanceType.Cold, 50);
-            SetResistance(ResistanceType.Poison, 25, 35);
-            SetResistance(ResistanceType.Energy, 25, 35);*/
+            SetResistance(ResistanceType.Physical, 5, 35);
+            SetResistance(ResistanceType.Fire, 5, 15);
+            SetResistance(ResistanceType.Cold, 10, 30);
+            SetResistance(ResistanceType.Poison, 5, 15);
+            SetResistance(ResistanceType.Energy, 15, 25);
 
-            SetSkill(SkillName.Tactics, 80.1, 100.0);
-            SetSkill(SkillName.MagicResist, 100.1, 110.0);
-            SetSkill(SkillName.Anatomy, 80.1, 100.0);
-            SetSkill(SkillName.Magery, 85.1, 100.0);
-            SetSkill(SkillName.EvalInt, 85.1, 100.0);
-            SetSkill(SkillName.Swords, 72.5, 95.0);
-            SetSkill(SkillName.Fencing, 85.1, 100);
-            SetSkill(SkillName.Macing, 85.1, 100);
+            SetSkill(SkillName.Tactics, 53.0, 63.5);
+            SetSkill(SkillName.MagicResist, 53.0, 63.5);
+            SetSkill(SkillName.Anatomy, 53.0, 63.5);
+            SetSkill(SkillName.Magery, 53.0, 63.5);
+            SetSkill(SkillName.EvalInt, 53.0, 63.5);
+            SetSkill(SkillName.Swords, 53.0, 63.5);
+            SetSkill(SkillName.Fencing, 53.0, 63.5);
+            SetSkill(SkillName.Macing, 53.0, 63.5);
 
             Fame = 8000;
             Karma = -8000;

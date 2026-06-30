@@ -10,6 +10,10 @@ public partial class Samurai : BaseCreature
     public Samurai() : base(AIType.AI_Melee, FightMode.Aggressor)
     {
         Title = "the samurai";
+        LevelRange = [1, 60];
+        StrPerLevel = [1, 3];
+        IntPerLevel = [1, 3];
+        DexPerLevel = [1, 3];
 
         SetHumanoidStrength();
 

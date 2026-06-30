@@ -14,32 +14,38 @@ namespace Server.Mobiles
 
             SetSpeed(0.15, 0.4);
 
-            SetStr(176, 225);
-            SetDex(81, 95);
-            SetInt(61, 85);
+            LevelRange = [45, 65];
+            StrPerLevel = [2, 3];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [2, 3];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(176, 225);
+            SetStr(76, 105);
+            SetDex(40, 70);
+            SetInt(72, 90);
 
-            SetDamage(24, 26);
+            SetHits(130, 180);
+
+            SetDamage(4, 8);
 
             SetDamageType(ResistanceType.Physical, 25);
             SetDamageType(ResistanceType.Fire, 25);
             SetDamageType(ResistanceType.Cold, 25);
             SetDamageType(ResistanceType.Energy, 25);
 
-            // SetResistance( ResistanceType.Physical, 25, 38 );
-            // SetResistance( ResistanceType.Fire, 25, 38 );
-            // SetResistance( ResistanceType.Cold, 25, 38 );
-            // SetResistance( ResistanceType.Poison, 25, 38 );
-            // SetResistance( ResistanceType.Energy, 25, 38 );
+            SetResistance(ResistanceType.Physical, 5, 35);
+            SetResistance(ResistanceType.Fire, 5, 15);
+            SetResistance(ResistanceType.Cold, 5, 10);
+            SetResistance(ResistanceType.Poison, 5, 15);
+            SetResistance(ResistanceType.Energy, 5, 15);
 
-            SetSkill(SkillName.Fencing, 77.6, 92.5);
-            SetSkill(SkillName.Healing, 60.3, 90.0);
-            SetSkill(SkillName.Macing, 77.6, 92.5);
-            SetSkill(SkillName.Anatomy, 77.6, 87.5);
-            SetSkill(SkillName.MagicResist, 77.6, 97.5);
-            SetSkill(SkillName.Swords, 77.6, 92.5);
-            SetSkill(SkillName.Tactics, 77.6, 87.5);
+            SetSkill(SkillName.Fencing, 48.0, 58.5);
+            SetSkill(SkillName.Healing, 48.0, 58.5);
+            SetSkill(SkillName.Macing, 48.0, 58.5);
+            SetSkill(SkillName.Anatomy, 48.0, 58.5);
+            SetSkill(SkillName.MagicResist, 48.0, 58.5);
+            SetSkill(SkillName.Swords, 48.0, 58.5);
+            SetSkill(SkillName.Tactics, 48.0, 58.5);
 
             Fame = 5000;
             Karma = -5000;

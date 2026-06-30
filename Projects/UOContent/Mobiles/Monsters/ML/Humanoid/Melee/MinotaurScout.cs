@@ -11,30 +11,34 @@ namespace Server.Mobiles
         {
             Body = 281;
 
-            SetStr(353, 375);
-            SetDex(111, 130);
-            SetInt(34, 50);
+            LevelRange = [30, 40];
+            StrPerLevel = [2, 8];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [4, 6];
+            ResistancePerLevel = [1, 3];
 
-            SetHits(354, 383);
-
-            SetDamage(11, 20);
+            SetStr(60, 135);
+            SetDex(70, 135);
+            SetInt(25, 50);
+            SetHits(75, 135);
+            SetDamage(2, 6);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 55, 65);
-            SetResistance(ResistanceType.Fire, 25, 35);
-            SetResistance(ResistanceType.Cold, 30, 40);
-            SetResistance(ResistanceType.Poison, 30, 40);
-            SetResistance(ResistanceType.Energy, 30, 40);
+            SetResistance(ResistanceType.Physical, 5, 25);
+            SetResistance(ResistanceType.Fire, 10, 30);
+            SetResistance(ResistanceType.Cold, 5, 10);
+            SetResistance(ResistanceType.Poison, 5, 20);
+            SetResistance(ResistanceType.Energy, 10, 25);
 
             // SetSkill( SkillName.Meditation, Unknown );
             // SetSkill( SkillName.EvalInt, Unknown );
             // SetSkill( SkillName.Magery, Unknown );
             // SetSkill( SkillName.Poisoning, Unknown );
-            SetSkill(SkillName.Anatomy, 0);
-            SetSkill(SkillName.MagicResist, 60.6, 67.5);
-            SetSkill(SkillName.Tactics, 86.9, 103.6);
-            SetSkill(SkillName.Wrestling, 85.6, 104.5);
+            SetSkill(SkillName.Anatomy, 45.4, 50.1);
+            SetSkill(SkillName.MagicResist, 45.4, 50.1);
+            SetSkill(SkillName.Tactics, 45.4, 50.1);
+            SetSkill(SkillName.Wrestling, 45.4, 50.1);
 
             Fame = 5000;
             Karma = -5000;

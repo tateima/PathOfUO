@@ -13,7 +13,10 @@ namespace Server.Mobiles
         public Unicorn() : base(0x7A, 0x3EB4, AIType.AI_Mage, FightMode.Aggressor)
         {
             BaseSoundID = 0x4BC;
-
+            LevelRange = [40, 60];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 3];
+            DexPerLevel = [1, 3];
             SetStr(296, 325);
             SetDex(96, 115);
             SetInt(186, 225);

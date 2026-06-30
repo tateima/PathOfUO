@@ -46,6 +46,25 @@ public class OppositionGroup
             ]
         ]
     );
+        public static OppositionGroup CelestialsAndDaemons { get; } = new(
+            [
+                [
+                    typeof(Celestial),
+                    typeof(EtherealWarrior),
+                    typeof(Wisp)
+                ],
+                [
+                    typeof(DarkWisp),
+                    typeof(ShadowWisp),
+                    typeof(Daemon),
+                    typeof(Succubus),
+                    typeof(Balron),
+                    typeof(ArcaneDaemon),
+                    typeof(BoneDemon),
+                    typeof(DemonKnight)
+                ]
+            ]
+        );
 
         public static OppositionGroup DarknessAndLight { get; } = new(
             [

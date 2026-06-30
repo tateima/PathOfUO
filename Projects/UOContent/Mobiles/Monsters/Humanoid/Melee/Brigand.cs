@@ -28,11 +28,18 @@ namespace Server.Mobiles
                 AddItem(new ShortPants(Utility.RandomNeutralHue()));
             }
 
-            SetStr(106, 250);
+            LevelRange = [1, 40];
+            StrPerLevel = [2, 4];
+            IntPerLevel = [2, 3];
+            DexPerLevel = [2, 3];
+            ResistancePerLevel = [1, 2];
+
+            SetStr(25, 40);
+            SetDex(15, 25);
+            SetInt(25, 40);
             if (IsArcher)
             {
-                SetSkill(SkillName.Archery, 65.0, 87.5);
-                SetDex(101, 125);
+                SetSkill(SkillName.Archery, 40.0, 50.5);
                 AddItem(
                     Utility.Random(2) switch
                     {
@@ -45,8 +52,7 @@ namespace Server.Mobiles
             }
             else
             {
-                SetSkill(SkillName.Swords, 65.0, 87.5);
-                SetDex(81, 95);
+                SetSkill(SkillName.Swords, 40.0, 50.5);
                 AddItem(
                     Utility.Random(7) switch
                     {
@@ -60,14 +66,12 @@ namespace Server.Mobiles
                     }
                 );
             }
-            SetInt(61, 75);
+            SetDamage(5, 6);
 
-            SetDamage(10, 23);
-
-            SetSkill(SkillName.Fencing, 66.0, 97.5);
-            SetSkill(SkillName.Macing, 65.0, 87.5);
+            SetSkill(SkillName.Fencing, 40.0, 50.5);
+            SetSkill(SkillName.Macing, 40.0, 50.5);
             SetSkill(SkillName.MagicResist, 25.0, 47.5);
-            SetSkill(SkillName.Tactics, 65.0, 87.5);
+            SetSkill(SkillName.Tactics, 40.0, 50.5);
             SetSkill(SkillName.Wrestling, 15.0, 37.5);
 
             Fame = 1000;

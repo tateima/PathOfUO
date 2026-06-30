@@ -10,29 +10,34 @@ namespace Server.Mobiles
         public FleshRenderer() : base(AIType.AI_Melee)
         {
             Body = 315;
+            LevelRange = [25, 45];
+            StrPerLevel = [2, 6];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [2, 6];
+            ResistancePerLevel = [1, 2];
 
-            SetStr(401, 460);
-            SetDex(201, 210);
-            SetInt(221, 260);
+            SetStr(96, 125);
+            SetDex(70, 100);
+            SetInt(52, 90);
 
-            SetHits(4500);
+            SetHits(150, 180);
 
-            SetDamage(16, 20);
+            SetDamage(3, 10);
 
             SetDamageType(ResistanceType.Physical, 80);
             SetDamageType(ResistanceType.Poison, 20);
 
-            SetResistance(ResistanceType.Physical, 80, 90);
-            SetResistance(ResistanceType.Fire, 50, 60);
-            SetResistance(ResistanceType.Cold, 50, 60);
-            SetResistance(ResistanceType.Poison, 100);
-            SetResistance(ResistanceType.Energy, 70, 80);
+            SetResistance(ResistanceType.Physical, 10, 30);
+            SetResistance(ResistanceType.Fire, 5, 20);
+            SetResistance(ResistanceType.Cold, 15, 25);
+            SetResistance(ResistanceType.Poison, 30, 50);
+            SetResistance(ResistanceType.Energy, 15, 25);
 
-            SetSkill(SkillName.DetectHidden, 80.0);
-            SetSkill(SkillName.MagicResist, 155.1, 160.0);
-            SetSkill(SkillName.Meditation, 100.0);
-            SetSkill(SkillName.Tactics, 100.0);
-            SetSkill(SkillName.Wrestling, 90.1, 100.0);
+            SetSkill(SkillName.DetectHidden, 53.0, 63.5);
+            SetSkill(SkillName.MagicResist, 53.0, 63.5);
+            SetSkill(SkillName.Meditation, 53.0, 63.5);
+            SetSkill(SkillName.Tactics, 53.0, 63.5);
+            SetSkill(SkillName.Wrestling, 53.0, 63.5);
 
             Fame = 23000;
             Karma = -23000;

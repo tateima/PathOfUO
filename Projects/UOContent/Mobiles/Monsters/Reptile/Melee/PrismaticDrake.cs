@@ -8,6 +8,11 @@ namespace Server.Mobiles
         [Constructible]
         public PrismaticDrake()
         {
+            LevelRange = [52, 68];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 6];
+            DexPerLevel = [1, 5];
+            ResistancePerLevel = [1, 2];
             SetHits(300, 358);
             Tamable = true;
             ControlSlots = 3;

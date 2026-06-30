@@ -13,7 +13,11 @@ namespace Server.Mobiles
         public Yamandon() : base(AIType.AI_Melee)
         {
             Body = 249;
-
+            LevelRange = [40, 65];
+            StrPerLevel = [2, 5];
+            IntPerLevel = [1, 2];
+            DexPerLevel = [2, 5];
+            ResistancePerLevel = [1, 2];
             SetStr(786, 930);
             SetDex(251, 365);
             SetInt(101, 115);

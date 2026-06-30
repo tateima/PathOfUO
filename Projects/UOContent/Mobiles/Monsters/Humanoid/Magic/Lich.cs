@@ -12,32 +12,36 @@ namespace Server.Mobiles
             Body = 24;
             BaseSoundID = 0x3E9;
 
-            SetStr(171, 200);
-            SetDex(126, 145);
-            SetInt(276, 305);
+            LevelRange = [18, 38];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 5];
+            DexPerLevel = [1, 3];
+            ResistancePerLevel = [2, 3];
 
-            SetHits(103, 120);
-
-            SetDamage(24, 26);
+            SetStr(30, 50);
+            SetDex(10, 25);
+            SetInt(50, 100);
+            SetHits(70, 80);
+            SetDamage(1, 5);
 
             SetDamageType(ResistanceType.Physical, 10);
             SetDamageType(ResistanceType.Cold, 40);
             SetDamageType(ResistanceType.Energy, 50);
 
-            SetResistance(ResistanceType.Physical, 40, 60);
-            SetResistance(ResistanceType.Fire, 20, 30);
-            SetResistance(ResistanceType.Cold, 50, 60);
-            SetResistance(ResistanceType.Poison, 55, 65);
-            SetResistance(ResistanceType.Energy, 40, 50);
+            SetResistance(ResistanceType.Physical, 5, 20);
+            SetResistance(ResistanceType.Fire, 5, 10);
+            SetResistance(ResistanceType.Cold, 5, 10);
+            SetResistance(ResistanceType.Poison, 5, 20);
+            SetResistance(ResistanceType.Energy, 5, 10);
 
-            SetSkill(SkillName.Necromancy, 89, 99.1);
-            SetSkill(SkillName.SpiritSpeak, 90.0, 99.0);
+            SetSkill(SkillName.Necromancy, 40.1, 50.0);
+            SetSkill(SkillName.SpiritSpeak, 40.1, 50.0);
 
-            SetSkill(SkillName.EvalInt, 100.0);
-            SetSkill(SkillName.Magery, 70.1, 80.0);
-            SetSkill(SkillName.Meditation, 85.1, 95.0);
-            SetSkill(SkillName.MagicResist, 80.1, 100.0);
-            SetSkill(SkillName.Tactics, 70.1, 90.0);
+            SetSkill(SkillName.EvalInt, 40.1, 50.0);
+            SetSkill(SkillName.Magery, 40.1, 50.0);
+            SetSkill(SkillName.Meditation, 40.1, 50.0);
+            SetSkill(SkillName.MagicResist, 40.1, 50.0);
+            SetSkill(SkillName.Tactics, 40.1, 50.0);
 
             Fame = 8000;
             Karma = -8000;

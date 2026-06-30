@@ -17,30 +17,36 @@ namespace Server.Mobiles
             BaseSoundID = 679;
             Hue = 0x455;
 
-            SetStr(1751, 1950);
-            SetDex(251, 450);
-            SetInt(801, 1000);
+            LevelRange = [75, 90];
+            StrPerLevel = [1, 3];
+            IntPerLevel = [1, 4];
+            DexPerLevel = [1, 7];
+            ResistancePerLevel = [1, 2];
 
-            SetHits(7500);
+            SetStr(60, 70);
+            SetDex(72, 90);
+            SetInt(50, 70);
 
-            SetDamage(19, 24);
+            SetHits(180, 280);
+
+            SetDamage(3, 10);
 
             SetDamageType(ResistanceType.Physical, 100);
 
-            SetResistance(ResistanceType.Physical, 65, 75);
-            SetResistance(ResistanceType.Fire, 45, 55);
-            SetResistance(ResistanceType.Cold, 50, 60);
-            SetResistance(ResistanceType.Poison, 50, 60);
-            SetResistance(ResistanceType.Energy, 50, 60);
+            SetResistance(ResistanceType.Physical, 5, 10);
+            SetResistance(ResistanceType.Fire, 5, 20);
+            SetResistance(ResistanceType.Cold, 5, 10);
+            SetResistance(ResistanceType.Poison, 5, 20);
+            SetResistance(ResistanceType.Energy, 5, 10);
 
             SetSkill(SkillName.EvalInt, 0);    // Per Stratics?!?
             SetSkill(SkillName.Magery, 0);     // Per Stratics?!?
             SetSkill(SkillName.Meditation, 0); // Per Stratics?!?
-            SetSkill(SkillName.Anatomy, 95.1, 115.0);
-            SetSkill(SkillName.Archery, 95.1, 100.0);
-            SetSkill(SkillName.MagicResist, 50.3, 80.0);
-            SetSkill(SkillName.Tactics, 90.1, 100.0);
-            SetSkill(SkillName.Wrestling, 95.1, 100.0);
+            SetSkill(SkillName.Anatomy, 53.0, 63.5);
+            SetSkill(SkillName.Archery, 53.0, 63.5);
+            SetSkill(SkillName.MagicResist, 53.0, 63.5);
+            SetSkill(SkillName.Tactics, 53.0, 63.5);
+            SetSkill(SkillName.Wrestling, 53.0, 63.5);
 
             Fame = 50000;
             Karma = 50000;

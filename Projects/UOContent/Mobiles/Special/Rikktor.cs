@@ -13,7 +13,11 @@ public partial class Rikktor : BaseChampion
     public Rikktor() : base(AIType.AI_Melee)
     {
         Body = 172;
-
+        LevelRange = [80, 90];
+        StrPerLevel = [3, 6];
+        IntPerLevel = [3, 6];
+        DexPerLevel = [2, 3];
+        ResistancePerLevel = [2, 3];
         SetStr(701, 900);
         SetDex(201, 350);
         SetInt(51, 100);

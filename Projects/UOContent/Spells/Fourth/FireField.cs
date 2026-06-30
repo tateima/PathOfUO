@@ -52,10 +52,10 @@ public class FireFieldSpell : MagerySpell, ITargetingSpell<IPoint3D>
                 _               => TimeSpan.FromSeconds(4.0 + Caster.Skills.Magery.Value * 0.5)
             };
 
-            var damage = 2;
+            var damage = 4;
             if (Core.AOS)
             {
-                damage = GetNewAosDamage(10, 1, damage, null);
+                damage = GetNewAosDamage(0, 1, damage, null);
             }
             else
             {

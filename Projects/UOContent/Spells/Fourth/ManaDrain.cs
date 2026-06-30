@@ -38,7 +38,7 @@ namespace Server.Spells.Fourth
 
                 if (Core.AOS)
                 {
-                    var toDrain = Math.Clamp(40 + (int)(GetDamageSkill(Caster) - GetResistSkill(m)), 0, m.Mana);
+                    var toDrain = Math.Clamp(20 + (int)(GetDamageSkill(Caster) - GetResistSkill(m)), 0, m.Mana);
 
                     if (_table.Contains(m))
                     {

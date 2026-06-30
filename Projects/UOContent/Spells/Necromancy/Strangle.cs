@@ -89,13 +89,13 @@ public class StrangleSpell : NecromancerSpell, ITargetingSpell<Mobile>
             // MaxCount = 4 -> 5 + (4 + 3 + 2 + 1)
             // MaxCount > 4 -> 5 + (for each count, Ceiling((1.0 + 5 * count) / power) not to exceed 5)
             var totalLength = power % 5 == 0
-                ? 3 * power + 5
-                : 3 * power + 3;
+                ? 1 * power + 3
+                : 1 * power + 1;
 
             var duration = TimeSpan.FromSeconds(totalLength);
             duration *= ReagentsScale();
             var minDamage = 4;
-            var maxDamage = ((int)power + 1) * 3;
+            var maxDamage = (int)power * 3;
             if (!HasReagents())
             {
                 minDamage = 2;
