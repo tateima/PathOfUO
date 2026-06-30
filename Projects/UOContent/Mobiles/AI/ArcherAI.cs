@@ -1,4 +1,3 @@
-using System;
 using Server.Items;
 
 namespace Server.Mobiles;
@@ -8,6 +7,9 @@ public class ArcherAI : BaseAI
     public ArcherAI(BaseCreature m) : base(m)
     {
     }
+
+    public override double FleeHealthThreshold => 0.2; // 20% is default
+    public override double FleeChance => 0.1; // 10% is default
 
     public override bool DoActionWander()
     {
@@ -41,13 +43,7 @@ public class ArcherAI : BaseAI
             return true;
         }
 
-        if (Core.TickCount - Mobile.LastMoveTime > 1000 && !WalkMobileRange(
-                combatant,
-                1,
-                true,
-                Mobile.RangeFight,
-                Mobile.Weapon.MaxRange
-            ))
+        if (!WalkMobileRange(combatant, 1, false, Mobile.RangeFight, Mobile.Weapon.MaxRange))
         {
             this.DebugSayFormatted($"I am still not in range of {combatant.Name}");
 
@@ -79,18 +75,6 @@ public class ArcherAI : BaseAI
         {
             Action = ActionType.Flee;
             return true;
-        }
-
-        // At 20% we should check if we must leave
-        if (Mobile.Combatant != null && Mobile.Hits < Mobile.HitsMax * 20 / 100 && Mobile.CanFlee)
-        {
-            // 10% to flee + the diff of hits
-            var fleeChance = 10 + Math.Max(0, Mobile.Combatant.Hits - Mobile.Hits);
-
-            if (Utility.Random(0, 100) > fleeChance)
-            {
-                Action = ActionType.Flee;
-            }
         }
 
         return true;

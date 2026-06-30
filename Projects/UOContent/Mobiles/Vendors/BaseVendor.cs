@@ -12,6 +12,7 @@ using Server.Mobiles;
 using Server.Network;
 using Server.Regions;
 using Server.Logging;
+using Server.Systems.FeatureFlags;
 using Server.Talent;
 
 namespace Server.Mobiles
@@ -59,7 +60,7 @@ namespace Server.Mobiles
             // See SBAnimalTrainer for an example
             _enableVendorBuyOPL = ServerConfiguration.GetSetting("opl.enableForVendorBuy", true);
 
-            _vendorInvulnerable = ServerConfiguration.GetSetting("vendor.isInvulnerable", false);
+            _vendorInvulnerable = ServerConfiguration.GetSetting("vendor.isInvulnerable", Core.LBR);
         }
 
         public static void Initialize()
@@ -115,7 +116,7 @@ namespace Server.Mobiles
 
         public virtual NpcGuild NpcGuild => NpcGuild.None;
 
-        public override bool IsInvulnerable => Core.LBR || _vendorInvulnerable;
+        public override bool IsInvulnerable => _vendorInvulnerable;
 
         public virtual DateTime NextTrickOrTreat { get; set; }
 
@@ -590,7 +591,7 @@ namespace Server.Mobiles
 
                 seller.PlaySound(0x0037); // Gold dropping sound
 
-                if (SupportsBulkOrders(seller))
+                if (ContentFeatureFlags.BulkOrders && SupportsBulkOrders(seller))
                 {
                     var bulkOrder = CreateBulkOrder(seller, false);
 
@@ -885,13 +886,14 @@ namespace Server.Mobiles
 
         public virtual void VendorBuy(Mobile from)
         {
-            if (!IsActiveSeller)
+            if (!IsActiveSeller || !from.CheckAlive())
             {
                 return;
             }
 
-            if (!from.CheckAlive())
+            if (!ContentFeatureFlags.VendorPurchase)
             {
+                from.SendMessage(0x22, "Vendor purchases are temporarily disabled.");
                 return;
             }
 
@@ -1056,13 +1058,14 @@ namespace Server.Mobiles
 
         public virtual void VendorSell(Mobile from)
         {
-            if (!IsActiveBuyer)
+            if (!IsActiveBuyer || !from.CheckAlive())
             {
                 return;
             }
 
-            if (!from.CheckAlive())
+            if (!ContentFeatureFlags.VendorSell)
             {
+                from.SendMessage(0x22, "Vendor sales are temporarily disabled.");
                 return;
             }
 
@@ -1123,7 +1126,7 @@ namespace Server.Mobiles
             var smallBod = dropped as SmallBOD;
             var largeBod = dropped as LargeBOD;
 
-            if (!(smallBod != null || largeBod != null))
+            if (!ContentFeatureFlags.BulkOrders || !(smallBod != null || largeBod != null))
             {
                 return base.OnDragDrop(from, dropped);
             }
@@ -1243,7 +1246,7 @@ namespace Server.Mobiles
                 return false;
             }
 
-            long totalCostLong = (long)totalCost + bii.Price * amount;
+            var totalCostLong = (long)totalCost + bii.Price * amount;
 
             if (totalCostLong > int.MaxValue)
             {
@@ -1459,17 +1462,17 @@ namespace Server.Mobiles
         {
             if (from.Alive && IsActiveVendor)
             {
-                if (SupportsBulkOrders(from))
+                if (ContentFeatureFlags.BulkOrders && SupportsBulkOrders(from))
                 {
                     list.Add(new BulkOrderInfoEntry());
                 }
 
-                if (IsActiveSeller)
+                if (ContentFeatureFlags.VendorPurchase && IsActiveSeller)
                 {
                     list.Add(new VendorBuyEntry(CheckVendorAccess(from)));
                 }
 
-                if (IsActiveBuyer)
+                if (ContentFeatureFlags.VendorSell && IsActiveBuyer)
                 {
                     list.Add(new VendorSellEntry(CheckVendorAccess(from)));
                 }
@@ -1534,7 +1537,7 @@ namespace Server.Mobiles
 
             public override void OnClick(Mobile from, IEntity target)
             {
-                if (target is not BaseVendor vendor || !vendor.SupportsBulkOrders(from))
+                if (!ContentFeatureFlags.BulkOrders || target is not BaseVendor vendor || !vendor.SupportsBulkOrders(from))
                 {
                     return;
                 }

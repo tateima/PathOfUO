@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Server.Accounting;
+using Server.Text;
 using Server.Gumps;
 using Server.Network;
 
@@ -46,7 +46,7 @@ namespace Server.Engines.Help
                 10,
                 280,
                 20,
-                $"SPEECH LOG - {playerName} (<i>{playerAccount.FixHtmlFormattable()}</i>)".Center(0xA0A0FF)
+                Html.Center($"SPEECH LOG - {playerName} (<i>{playerAccount.FixHtmlFormattable()}</i>)", 0xA0A0FF)
             );
 
             var lastPage = (log.Count - 1) / MaxEntriesPerPage;
@@ -62,7 +62,7 @@ namespace Server.Engines.Help
                 var max = log.Count - (lastPage - page) * MaxEntriesPerPage;
                 var min = Math.Max(max - MaxEntriesPerPage, 0);
 
-                var builder = new StringBuilder();
+                using var builder = ValueStringBuilder.Create();
 
                 for (var i = min; i < max; i++)
                 {

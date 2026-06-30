@@ -509,7 +509,7 @@ namespace Server.Spells
             }
 
             return bcTarg?.Controlled == false && bcTarg.InitialInnocent ||
-                   Notoriety.Compute(from, to) != Notoriety.Innocent || from.Kills >= 5;
+                   Notoriety.Compute(from, to) != Notoriety.Innocent || from.Murderer;
         }
 
         public static void Summon(
@@ -900,16 +900,25 @@ namespace Server.Spells
 
             if (target.MagicDamageAbsorb > 0)
             {
-                ++circle;
-
-                target.MagicDamageAbsorb -= circle;
-
-                // This order isn't very intuitive, but you have to nullify reflect before target gets switched
-                reflect = target.MagicDamageAbsorb >= 0;
-                if (target.MagicDamageAbsorb <= 0)
+                if (!Core.UOR)
                 {
+                    // T2A: single-use reflection, consumed immediately
                     target.MagicDamageAbsorb = 0;
-                    DefensiveSpell.Nullify(target);
+                    reflect = true;
+                }
+                else
+                {
+                    ++circle;
+
+                    target.MagicDamageAbsorb -= circle;
+
+                    // This order isn't very intuitive, but you have to nullify reflect before target gets switched
+                    reflect = target.MagicDamageAbsorb >= 0;
+                    if (target.MagicDamageAbsorb <= 0)
+                    {
+                        target.MagicDamageAbsorb = 0;
+                        DefensiveSpell.Nullify(target);
+                    }
                 }
             }
 
@@ -1057,7 +1066,7 @@ namespace Server.Spells
 
                 bcTarget?.AlterSpellDamageFrom(from, ref dmg);
 
-                if (Feint.GetDamageReduction(from, target, out int feintReduction))
+                if (Feint.GetDamageReduction(from, target, out var feintReduction))
                 {
                     // example: 35 damage * 50 / 100 = 17 damage
                     dmg -= dmg * feintReduction / 100;

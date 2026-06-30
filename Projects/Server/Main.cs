@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2024 - ModernUO Development Team                       *
+ * Copyright 2019-2026 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: Main.cs                                                         *
  *                                                                       *
@@ -101,9 +101,8 @@ public static class Core
 
     private static long _firstTick;
 
-    private static long _tickCount;
-
-    // Make this available to unit tests for mocking
+    // Make these available to unit tests for mocking
+    internal static long _tickCount;
     internal static DateTime _now;
 
     public static long TickCount => _tickCount;
@@ -112,12 +111,13 @@ public static class Core
 
     public static long Uptime => TickCount - _firstTick;
 
-    private static long _cycleIndex;
-    private static readonly double[] _cyclesPerSecond = new double[128];
+    private static double _currentCPS;
+    private static double _averageCPS;
+    private static bool _cpsInitialized;
 
-    public static double CyclesPerSecond => _cyclesPerSecond[_cycleIndex];
+    public static double CyclesPerSecond => _currentCPS;
 
-    public static double AverageCPS => _cyclesPerSecond.Average();
+    public static double AverageCPS => _averageCPS;
 
     public static string BaseDirectory
     {
@@ -340,7 +340,7 @@ public static class Core
         World.WaitForWriteCompletion();
         World.ExitSerializationThreads();
         PingServer.Shutdown();
-        TcpServer.Shutdown();
+        NetState.Shutdown();
 
         if (!_crashed)
         {
@@ -397,7 +397,7 @@ public static class Core
         Utility.PopColor();
 
         Utility.PushColor(ConsoleColor.DarkGray);
-        Console.WriteLine(@"Copyright 2019-2023 ModernUO Development Team
+        Console.WriteLine(@"Copyright 2019-2026 ModernUO Development Team
                 This program comes with ABSOLUTELY NO WARRANTY;
                 This is free software, and you are welcome to redistribute it under certain conditions.
 
@@ -414,8 +414,6 @@ public static class Core
 
         ServerConfiguration.Load();
 
-        logger.Information("Running on {Framework}", RuntimeInformation.FrameworkDescription);
-
         var assemblyPath = Path.Join(BaseDirectory, AssembliesConfiguration);
 
         // Load UOContent.dll
@@ -431,6 +429,14 @@ public static class Core
         }
 
         AssemblyHandler.LoadAssemblies(assemblyFiles);
+
+        // First-boot interactive setup. Runs after assemblies are loaded (so content can
+        // register prompts) but before any Serilog output, so console prompts are not
+        // interleaved with the async console sink. Handlers self-gate on first-boot state
+        // (e.g. "is my setting already present?").
+        AssemblyHandler.Invoke("ConfigurePrompts");
+
+        logger.Information("Running on {Framework}", RuntimeInformation.FrameworkDescription);
 
         VerifySerialization();
 
@@ -449,7 +455,7 @@ public static class Core
 
         AssemblyHandler.Invoke("Initialize");
 
-        TcpServer.Start();
+        NetState.Start();
         PingServer.Start();
         EventSink.InvokeServerStarted();
         RunEventLoop();
@@ -459,18 +465,12 @@ public static class Core
     {
         try
         {
-#if DEBUG
-            const bool idleCPU = true;
-#else
-            var idleCPU = ServerConfiguration.GetOrUpdateSetting("core.enableIdleCPU", false);
-#endif
-
-            var cycleCount = _cyclesPerSecond.Length;
-            long last = _tickCount;
+            var lastRaw = Stopwatch.GetTimestamp();
             const int interval = 100;
             double frequency = Stopwatch.Frequency * interval;
+            const double alpha = 2.0 / 129; // EMA smoothing (≈128-sample window)
 
-            int sample = 0;
+            var sample = 0;
 
             while (!Closing)
             {
@@ -505,20 +505,26 @@ public static class Core
                 if (sample++ == interval)
                 {
                     sample = 0;
-                    var now = GetTimestamp();
+                    var nowRaw = Stopwatch.GetTimestamp();
 
-                    var cyclesPerSecond = frequency / (now - last);
-                    _cyclesPerSecond[_cycleIndex++] = cyclesPerSecond;
-                    if (_cycleIndex == cycleCount)
+                    _currentCPS = frequency / (nowRaw - lastRaw);
+
+                    if (!_cpsInitialized)
                     {
-                        _cycleIndex = 0;
+                        _averageCPS = _currentCPS;
+                        _cpsInitialized = true;
+                    }
+                    else
+                    {
+                        _averageCPS += alpha * (_currentCPS - _averageCPS);
                     }
 
-                    last = now;
+                    lastRaw = nowRaw;
 
-                    if (idleCPU && cyclesPerSecond > 125)
+                    var sleepMs = (int)Timer.MillisecondsUntilNextTick(_tickCount);
+                    if (sleepMs >= 2)
                     {
-                        Thread.Sleep(2);
+                        NetState.WaitForCompletion(sleepMs - 1);
                     }
                 }
             }

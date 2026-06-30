@@ -102,7 +102,7 @@ namespace Server.Mobiles
                 return;
             }
 
-            double scalar = queue.Count switch
+            var scalar = queue.Count switch
             {
                 1 => 0.75,
                 2 => 0.50,

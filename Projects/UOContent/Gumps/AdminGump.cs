@@ -60,7 +60,7 @@ namespace Server.Gumps
         private const int RedHue = 0x20;
 
         private static readonly string[] m_AccessLevelStrings =
-        {
+        [
             "Player",
             "Counselor",
             "Game Master",
@@ -68,7 +68,7 @@ namespace Server.Gumps
             "Administrator",
             "Developer",
             "Owner"
-        };
+        ];
 
         private readonly Mobile m_From;
         private readonly List<object> m_List;
@@ -704,7 +704,7 @@ namespace Server.Gumps
                     }
                 case AdminGumpPage.Accounts:
                     {
-                        m_List ??= new List<object>();
+                        m_List ??= [];
 
                         var rads = state as List<Account>;
 
@@ -1036,7 +1036,7 @@ namespace Server.Gumps
 
                         for (int i = 0, index = listPage * 6; i < 6 && index >= 0 && index < m_List.Count; ++i, ++index)
                         {
-                            AddHtml(18, 243 + i * 22, 114, 20, m_List[index].ToString().Color(LabelColor32));
+                            AddHtml(18, 243 + i * 22, 114, 20, Html.Color($"{m_List[index]}", LabelColor32));
                             AddButton(130, 242 + i * 22, 0xFA2, 0xFA4, GetButtonID(8, index));
                             AddButton(160, 242 + i * 22, 0xFA8, 0xFAA, GetButtonID(9, index));
                             AddButton(190, 242 + i * 22, 0xFB1, 0xFB3, GetButtonID(10, index));
@@ -1120,12 +1120,7 @@ namespace Server.Gumps
                             }
 
                             var c = a.Comments[i];
-                            sb.Append('[');
-                            sb.Append(c.AddedBy);
-                            sb.Append(" on ");
-                            sb.Append(c.LastModified.ToString());
-                            sb.Append("]<BR>");
-                            sb.Append(c.Content);
+                            sb.Append($"[{c.AddedBy} on {c.LastModified}]<BR>{c.Content}");
                         }
 
                         AddHtml(20, 180, 380, 190, sb.ToString(), true, true);
@@ -1160,9 +1155,7 @@ namespace Server.Gumps
 
                             var tag = a.Tags[i];
 
-                            sb.Append(tag.Name);
-                            sb.Append(" = ");
-                            sb.Append(tag.Value);
+                            sb.Append($"{tag.Name} = {tag.Value}");
                         }
 
                         AddHtml(20, 180, 380, 190, sb.ToString(), true, true);
@@ -1238,7 +1231,7 @@ namespace Server.Gumps
                             break;
                         }
 
-                        AddHtml(10, 125, 400, 20, firewallEntry.ToString().Center(LabelColor32));
+                        AddHtml(10, 125, 400, 20, Html.Center($"{firewallEntry}", LabelColor32));
 
                         AddButtonLabeled(20, 150, GetButtonID(6, 3), "Remove");
 
@@ -1420,7 +1413,7 @@ namespace Server.Gumps
                     }
                 default:
                     {
-                        if (m.Kills >= 5)
+                        if (m.Murderer)
                         {
                             return 0x21;
                         }
@@ -1508,7 +1501,7 @@ namespace Server.Gumps
                     // If we don't have a list, create one
                     if (!acctExists)
                     {
-                        accts = new List<Account>();
+                        accts = [];
                     }
 
                     accts.Add(acct);
@@ -1837,7 +1830,7 @@ namespace Server.Gumps
                     --AccountHandler.IPTable[ips[0]];
                 }
 
-                a.LoginIPs = Array.Empty<IPAddress>();
+                a.LoginIPs = [];
 
                 notice = "All addresses in the list have been removed.";
             }
@@ -2780,7 +2773,7 @@ namespace Server.Gumps
                                     }
                                     else
                                     {
-                                        results = new List<IAccount>();
+                                        results = [];
                                         foreach (var acct in Accounts.GetAccounts())
                                         {
                                             if (acct.Username.InsensitiveContains(match))
@@ -3993,31 +3986,37 @@ namespace Server.Gumps
             if (Core.SA && availableMaps.Includes(MapSelectionFlags.TerMur))
             {
                 InvokeCommand("GenerateSpawners Data/Spawns/post-uoml/termur/**.json");
+                InvokeCommand("GenerateSpawners Data/Spawns/shared/termur/**.json");
             }
 
             if (availableMaps.Includes(MapSelectionFlags.Malas))
             {
                 InvokeCommand($"GenerateSpawners Data/Spawns/{folder}/malas/**.json");
+                InvokeCommand("GenerateSpawners Data/Spawns/shared/malas/**.json");
             }
 
             if (availableMaps.Includes(MapSelectionFlags.Tokuno))
             {
                 InvokeCommand($"GenerateSpawners Data/Spawns/{folder}/tokuno/**.json");
+                InvokeCommand("GenerateSpawners Data/Spawns/shared/tokuno/**.json");
             }
 
             if (availableMaps.Includes(MapSelectionFlags.Ilshenar))
             {
                 InvokeCommand($"GenerateSpawners Data/Spawns/{folder}/ilshenar/**.json");
+                InvokeCommand("GenerateSpawners Data/Spawns/shared/ilshenar/**.json");
             }
 
             if (availableMaps.Includes(MapSelectionFlags.Trammel))
             {
                 InvokeCommand($"GenerateSpawners Data/Spawns/{folder}/trammel/**.json");
+                InvokeCommand("GenerateSpawners Data/Spawns/shared/trammel/**.json");
             }
 
             if (availableMaps.Includes(MapSelectionFlags.Felucca))
             {
                 InvokeCommand($"GenerateSpawners Data/Spawns/{folder}/felucca/**.json");
+                InvokeCommand("GenerateSpawners Data/Spawns/shared/felucca/**.json");
             }
         }
 
@@ -4103,15 +4102,15 @@ namespace Server.Gumps
             {
                 if (x is not KeyValuePair<IPAddress, List<Account>> a)
                 {
-                    return -1;
+                    return 1;
                 }
 
                 if (y is not KeyValuePair<IPAddress, List<Account>> b)
                 {
-                    return 1;
+                    return -1;
                 }
 
-                return a.Value.Count - b.Value.Count;
+                return b.Value.Count - a.Value.Count;
             }
         }
 

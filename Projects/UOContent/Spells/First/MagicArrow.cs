@@ -66,7 +66,7 @@ namespace Server.Spells.First
                 {
                     BaseTalent.ApplyFrostFireEffect(player, ref fire, ref cold, ref hue, m);
                 }
-                source.MovingParticles(m, 0x36D4, 5, 0, false, false, hue, 0, 3006, 0, 0, 0);
+                source.MovingParticles(m, 0x36E4, 5, 0, false, false, hue, 0, 3006, 0, 0, EffectLayer.RightHand, 0);
                 source.PlaySound(0x1E5);
                 SpellHelper.Damage(this, m, damage, 0, fire, cold, 0, 0);
             }

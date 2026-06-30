@@ -251,7 +251,7 @@ public abstract partial class BaseWeapon
 
     [SerializableFieldSaveFlag(30)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool ShouldSerializeEngravedText() => string.IsNullOrEmpty(_engravedText);
+    private bool ShouldSerializeEngravedText() => !string.IsNullOrEmpty(_engravedText);
 
     private FactionItem m_FactionState;
     private SkillMod m_SkillMod, m_MageMod;
@@ -1935,7 +1935,7 @@ public abstract partial class BaseWeapon
         {
             var positionChance = Utility.RandomDouble();
 
-            Item armorItem = positionChance switch
+            var armorItem = positionChance switch
             {
                 < 0.07 => defender.NeckArmor,
                 < 0.14 => defender.HandArmor,
@@ -1977,7 +1977,7 @@ public abstract partial class BaseWeapon
 
         var chance = Utility.RandomDouble();
 
-        Item armorItem = chance switch
+        var armorItem = chance switch
         {
             < 0.07 => defender.NeckArmor,
             < 0.14 => defender.HandArmor,
@@ -1996,7 +1996,7 @@ public abstract partial class BaseWeapon
 
         if (virtualArmor > 0)
         {
-            double scalar = chance switch
+            var scalar = chance switch
             {
                 < 0.14 => 0.07,
                 < 0.28 => 0.14,
@@ -3113,7 +3113,7 @@ public abstract partial class BaseWeapon
             // Passively check Anatomy for gain
             attacker.CheckSkill(SkillName.Anatomy, 0.0, attacker.Skills.Anatomy.Cap);
 
-            if (Type == WeaponType.Axe)
+            if (Core.UOR && Type == WeaponType.Axe)
             {
                 // Passively check Lumberjacking for gain
                 attacker.CheckSkill(SkillName.Lumberjacking, 0.0, 100.0);
@@ -3134,27 +3134,27 @@ public abstract partial class BaseWeapon
 
         /* Compute anatomy modifier
          * : 1% bonus for every 5 points of anatomy
-         * : +10% bonus at Grandmaster or higher
+         * : +10% bonus at Grandmaster or higher (UOTD+)
          */
         var anatomyValue = attacker.Skills.Anatomy.Value;
         modifiers += anatomyValue / 5.0 / 100.0;
 
-        if (anatomyValue >= 100.0)
+        if (Core.UOTD && anatomyValue >= 100.0)
         {
             modifiers += 0.1;
         }
 
-        /* Compute lumberjacking bonus
+        /* Compute lumberjacking bonus (UOR+)
          * : 1% bonus for every 5 points of lumberjacking
-         * : +10% bonus at Grandmaster or higher
+         * : +10% bonus at Grandmaster or higher (UOTD+)
          */
-        if (Type == WeaponType.Axe)
+        if (Core.UOR && Type == WeaponType.Axe)
         {
             var lumberValue = attacker.Skills.Lumberjacking.Value;
 
             modifiers += lumberValue / 5.0 / 100.0;
 
-            if (lumberValue >= 100.0)
+            if (Core.UOTD && lumberValue >= 100.0)
             {
                 modifiers += 0.1;
             }
@@ -4020,7 +4020,7 @@ public abstract partial class BaseWeapon
 
         if (isMagicItem)
         {
-            var builder = ValueStringBuilder.Create(128);
+            var builder = new ValueStringBuilder(stackalloc char[160]);
 
             var durabilityText = DurabilityText(out var articleAnDurability);
             if (durabilityText != null)

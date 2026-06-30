@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2023 - ModernUO Development Team                       *
+ * Copyright 2019-2026 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: SpanWriter.cs                                                   *
  *                                                                       *
@@ -14,7 +14,6 @@
  *************************************************************************/
 
 using System.Buffers.Binary;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -56,14 +55,14 @@ public ref struct SpanWriter
     public Span<byte> RawBuffer => _buffer;
 
     /**
-         * Converts the writer to a Span<byte> using a SpanOwner.
-         * If the buffer was stackalloc, it will be copied to a rented buffer.
-         * Otherwise the existing rented buffer is used.
-         *
-         * Note:
-         * Do not use the SpanWriter after calling this method.
-         * This method will effectively dispose of the SpanWriter and is therefore considered terminal.
-         */
+     * Converts the writer to a Span<byte> using a SpanOwner.
+     * If the buffer was stackalloc, it will be copied to a rented buffer.
+     * Otherwise the existing rented buffer is used.
+     *
+     * Note:
+     * Do not use the SpanWriter after calling this method.
+     * This method will effectively dispose of the SpanWriter and is therefore considered terminal.
+     */
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SpanOwner ToSpan()
     {
@@ -117,11 +116,11 @@ public ref struct SpanWriter
     private void Grow(int additionalCapacity)
     {
         var newSize = Math.Max(BytesWritten + additionalCapacity, _buffer.Length * 2);
-        byte[] poolArray = STArrayPool<byte>.Shared.Rent(newSize);
+        var poolArray = STArrayPool<byte>.Shared.Rent(newSize);
 
         _buffer[..BytesWritten].CopyTo(poolArray);
 
-        byte[] toReturn = _arrayToReturnToPool;
+        var toReturn = _arrayToReturnToPool;
         _buffer = _arrayToReturnToPool = poolArray;
         if (toReturn != null)
         {
@@ -136,7 +135,7 @@ public ref struct SpanWriter
         {
             if (!_resize)
             {
-                throw new OutOfMemoryException();
+                throw new InvalidOperationException("Buffer is full and resizing is disabled.");
             }
 
             Grow(count);
@@ -151,7 +150,7 @@ public ref struct SpanWriter
         {
             if (!_resize)
             {
-                throw new OutOfMemoryException();
+                throw new InvalidOperationException("Buffer is full and resizing is disabled.");
             }
 
             Grow(capacity - BytesWritten);
@@ -274,8 +273,7 @@ public ref struct SpanWriter
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void WriteAscii(char chr) => Write((byte)chr);
 
-    public void WriteAscii(
-        ref RawInterpolatedStringHandler handler)
+    public void WriteAscii(ref RawInterpolatedStringHandler handler)
     {
         Write(handler.Text, Encoding.ASCII);
         handler.Clear();
@@ -290,9 +288,22 @@ public ref struct SpanWriter
         handler.Clear();
     }
 
-    public void Write(
-        Encoding encoding,
+    public void WriteLatin1(ref RawInterpolatedStringHandler handler)
+    {
+        Write(handler.Text, Encoding.Latin1);
+        handler.Clear();
+    }
+
+    public void WriteLatin1(
+        IFormatProvider? formatProvider,
+        [InterpolatedStringHandlerArgument("formatProvider")]
         ref RawInterpolatedStringHandler handler)
+    {
+        Write(handler.Text, Encoding.Latin1);
+        handler.Clear();
+    }
+
+    public void Write(Encoding encoding, ref RawInterpolatedStringHandler handler)
     {
         Write(handler.Text, encoding);
         handler.Clear();
@@ -341,53 +352,66 @@ public ref struct SpanWriter
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteLittleUni(string value) => Write(value, TextEncoding.UnicodeLE);
+    public void WriteLittleUni(ReadOnlySpan<char> value) => Write(value, TextEncoding.UnicodeLE);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteLittleUniNull(string value)
+    public void WriteLittleUniNull(ReadOnlySpan<char> value)
     {
         Write(value, TextEncoding.UnicodeLE);
         Write((ushort)0);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteLittleUni(string value, int fixedLength) => Write(value, TextEncoding.UnicodeLE, fixedLength);
+    public void WriteLittleUni(ReadOnlySpan<char> value, int fixedLength) => Write(value, TextEncoding.UnicodeLE, fixedLength);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteBigUni(string value) => Write(value, TextEncoding.Unicode);
+    public void WriteBigUni(ReadOnlySpan<char> value) => Write(value, TextEncoding.Unicode);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteBigUniNull(string value)
+    public void WriteBigUniNull(ReadOnlySpan<char> value)
     {
         Write(value, TextEncoding.Unicode);
         Write((ushort)0); // '\0'
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteBigUni(string value, int fixedLength) => Write(value, TextEncoding.Unicode, fixedLength);
+    public void WriteBigUni(ReadOnlySpan<char> value, int fixedLength) => Write(value, TextEncoding.Unicode, fixedLength);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteUTF8(string value) => Write(value, TextEncoding.UTF8);
+    public void WriteUTF8(ReadOnlySpan<char> value) => Write(value, TextEncoding.UTF8);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteUTF8Null(string value)
+    public void WriteUTF8Null(ReadOnlySpan<char> value)
     {
         Write(value, TextEncoding.UTF8);
         Write((byte)0); // '\0'
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteAscii(string value) => Write(value, Encoding.ASCII);
+    public void WriteAscii(ReadOnlySpan<char> value) => Write(value, Encoding.ASCII);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteAsciiNull(string value)
+    public void WriteAsciiNull(ReadOnlySpan<char> value)
     {
         Write(value, Encoding.ASCII);
         Write((byte)0); // '\0'
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void WriteAscii(string value, int fixedLength) => Write(value, Encoding.ASCII, fixedLength);
+    public void WriteAscii(ReadOnlySpan<char> value, int fixedLength) => Write(value, Encoding.ASCII, fixedLength);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void WriteLatin1(ReadOnlySpan<char> value) => Write(value, Encoding.Latin1);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void WriteLatin1(ReadOnlySpan<char> value, int fixedLength) => Write(value, Encoding.Latin1, fixedLength);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void WriteLatin1Null(ReadOnlySpan<char> value)
+    {
+        Write(value, Encoding.Latin1);
+        Write((byte)0); // '\0'
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Clear(int count)
@@ -400,46 +424,25 @@ public ref struct SpanWriter
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int Seek(int offset, SeekOrigin origin)
     {
-        Debug.Assert(
-            origin != SeekOrigin.End || _resize || offset <= 0,
-            "Attempting to seek to a position beyond capacity using SeekOrigin.End without resize"
-        );
-
-        Debug.Assert(
-            origin != SeekOrigin.End || offset >= -_buffer.Length,
-
-            "Attempting to seek to a negative position using SeekOrigin.End"
-        );
-
-        Debug.Assert(
-            origin != SeekOrigin.Begin || offset >= 0,
-            "Attempting to seek to a negative position using SeekOrigin.Begin"
-        );
-
-        Debug.Assert(
-            origin != SeekOrigin.Begin || _resize || offset <= _buffer.Length,
-            "Attempting to seek to a position beyond the capacity using SeekOrigin.Begin without resize"
-        );
-
-        Debug.Assert(
-            origin != SeekOrigin.Current || _position + offset >= 0,
-            "Attempting to seek to a negative position using SeekOrigin.Current"
-        );
-
-        Debug.Assert(
-            origin != SeekOrigin.Current || _resize || _position + offset <= _buffer.Length,
-            "Attempting to seek to a position beyond the capacity using SeekOrigin.Current without resize"
-        );
-
-        var newPosition = Math.Max(0, origin switch
+        var newPosition = origin switch
         {
             SeekOrigin.Current => _position + offset,
             SeekOrigin.End     => BytesWritten + offset,
             _                  => offset // Begin
-        });
+        };
+
+        if (newPosition < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(offset), "Seek operation would result in a negative position.");
+        }
 
         if (newPosition > _buffer.Length)
         {
+            if (!_resize)
+            {
+                throw new InvalidOperationException($"Cannot seek to position {newPosition} beyond buffer capacity {_buffer.Length} when resizing is disabled.");
+            }
+
             Grow(newPosition - _buffer.Length + 1);
         }
 
@@ -449,7 +452,7 @@ public ref struct SpanWriter
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Dispose()
     {
-        byte[] toReturn = _arrayToReturnToPool;
+        var toReturn = _arrayToReturnToPool;
         this = default; // for safety, to avoid using pooled array if this instance is erroneously appended to again
         if (toReturn != null)
         {
@@ -478,7 +481,7 @@ public ref struct SpanWriter
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
-            byte[] toReturn = _arrayToReturnToPool;
+            var toReturn = _arrayToReturnToPool;
             this = default;
             if (_length > 0)
             {

@@ -176,7 +176,7 @@ public partial class BaseQuiver : Container, ICraftable, IAosItem
             return false;
         }
 
-        Item ammo = Ammo;
+        var ammo = Ammo;
 
         return ammo?.Deleted == false && ammo.Amount + item.Amount <= _capacity;
     }

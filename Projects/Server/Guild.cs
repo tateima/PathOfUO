@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2024 - ModernUO Development Team                       *
+ * Copyright 2019-2026 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: Guild.cs                                                        *
  *                                                                       *
@@ -62,7 +62,7 @@ public abstract class BaseGuild : ISerializable
 
     public abstract void OnDelete(Mobile mob);
 
-    public static BaseGuild FindByName(string name)
+    public static BaseGuild FindByName(ReadOnlySpan<char> name)
     {
         foreach (var g in World.Guilds.Values)
         {
@@ -75,7 +75,7 @@ public abstract class BaseGuild : ISerializable
         return null;
     }
 
-    public static BaseGuild FindByAbbrev(string abbr)
+    public static BaseGuild FindByAbbrev(ReadOnlySpan<char> abbr)
     {
         foreach (var g in World.Guilds.Values)
         {
@@ -88,19 +88,29 @@ public abstract class BaseGuild : ISerializable
         return null;
     }
 
-    public static HashSet<BaseGuild> Search(string find)
+    public static HashSet<BaseGuild> Search(ReadOnlySpan<char> find)
     {
-        var words = find.ToLower().Split(' ');
         var results = new HashSet<BaseGuild>();
+        find = find.Trim();
+        if (find.IsEmpty)
+        {
+            return results;
+        }
 
         foreach (var g in World.Guilds.Values)
         {
-            var name = g.Name;
+            var name = g.Name.AsSpan();
 
-            bool all = true;
-            foreach (var t in words)
+            var all = true;
+            foreach (var wordRange in find.Split(' '))
             {
-                if (name.InsensitiveIndexOf(t) == -1)
+                var word = find[wordRange];
+                if (word.IsEmpty)
+                {
+                    continue;
+                }
+
+                if (name.InsensitiveContains(word))
                 {
                     all = false;
                     break;

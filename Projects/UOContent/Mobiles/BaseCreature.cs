@@ -1403,6 +1403,8 @@ namespace Server.Mobiles
 
         public virtual bool AlwaysMurderer => false;
 
+        public override bool Murderer => AlwaysMurderer || base.Murderer;
+
         public virtual bool AlwaysAttackable => false;
 
         [CommandProperty(AccessLevel.GameMaster)]
@@ -1647,9 +1649,10 @@ namespace Server.Mobiles
             get => m_ControlOrder;
             set
             {
+                var previous = m_ControlOrder;
                 m_ControlOrder = value;
 
-                AIObject?.OnCurrentOrderChanged();
+                AIObject?.OnCurrentOrderChanged(previous);
 
                 InvalidateProperties();
 
@@ -1988,6 +1991,8 @@ namespace Server.Mobiles
 
         public virtual MonsterAbility[] GetMonsterAbilities() => null;
 
+        private MonsterAbilityTrigger _activeTriggers;
+
         public virtual MonsterAbility GetAbility(MonsterAbilityType type)
         {
             var abilities = GetMonsterAbilities();
@@ -2044,6 +2049,11 @@ namespace Server.Mobiles
 
         public virtual bool TriggerAbility(MonsterAbilityTrigger trigger, Mobile defender)
         {
+            if ((_activeTriggers & trigger) != 0)
+            {
+                return false;
+            }
+
             var abilities = GetMonsterAbilities();
 
             if (abilities == null)
@@ -2051,18 +2061,26 @@ namespace Server.Mobiles
                 return false;
             }
 
-            var triggered = false;
-            for (var i = 0; i < abilities.Length; i++)
+            _activeTriggers |= trigger;
+            try
             {
-                var ability = abilities[i];
-                if (ability.CanTrigger(this, trigger))
+                var triggered = false;
+                for (var i = 0; i < abilities.Length; i++)
                 {
-                    ability.Trigger(trigger, this, defender);
-                    triggered = true;
+                    var ability = abilities[i];
+                    if (ability.CanTrigger(this, trigger))
+                    {
+                        ability.Trigger(trigger, this, defender);
+                        triggered = true;
+                    }
                 }
-            }
 
-            return triggered;
+                return triggered;
+            }
+            finally
+            {
+                _activeTriggers &= ~trigger;
+            }
         }
 
         public virtual void TriggerAbilityMove(MonsterAbilityTrigger trigger, Mobile defender, Direction d)
@@ -2392,6 +2410,10 @@ namespace Server.Mobiles
                 }
             }
 
+            // Blood oath reflects the original damage the attacker dealt, before other modifiers.
+            var hasBloodOath = from != null && BloodOathSpell.GetBloodOath(from) == this;
+            var reflectedDamage = hasBloodOath ? amount : 0;
+
             if (Core.AOS && !Summoned && Controlled && Utility.RandomDouble() < 0.2)
             {
                 amount = (int)(amount * BonusPetDamageScalar);
@@ -2413,13 +2435,23 @@ namespace Server.Mobiles
                 amount = (int)(amount * modifier);
             }
 
-            if (from != null && BloodOathSpell.GetBloodOath(from) == this)
+            if (hasBloodOath)
             {
-                amount = (int)(amount * 1.1);
-                from.Damage(amount, from);
+                amount = (int)(amount * 1.2);
             }
 
             base.Damage(amount, from, informMount);
+
+            // If the blood oath caster will die then damage is not reflected back to the attacker.
+            if (hasBloodOath && Alive && !Deleted && !IsDeadBondedPet)
+            {
+                // Reflect the original damage back to the attacker, attributed to the caster.
+                // The caster is a creature, so the Publish 48 (SA+) resist mitigation applies.
+                from.Damage(
+                    BloodOathSpell.ComputeReflectedDamage(reflectedDamage, from.Skills.MagicResist.Value, Core.SA),
+                    this
+                );
+            }
 
             if (IsReflective)
             {
@@ -2906,16 +2938,9 @@ namespace Server.Mobiles
 
             ReceivedHonorContext?.OnTargetDamaged(from, amount);
 
-            if (!willKill)
+            if (!willKill && CanBeDistracted && ControlOrder == OrderType.Follow)
             {
-                if (CanBeDistracted && ControlOrder == OrderType.Follow)
-                {
-                    CheckDistracted(from);
-                }
-            }
-            else if (from is PlayerMobile mobile)
-            {
-                Timer.StartTimer(TimeSpan.FromSeconds(10), mobile.RecoverAmmo);
+                CheckDistracted(from);
             }
 
             if (IsIllusionist && Utility.Random(100) < Utility.RandomMinMax(5, 20) && from is not null)
@@ -3769,7 +3794,7 @@ namespace Server.Mobiles
 
         public void ChangeAIType(AIType newAI)
         {
-            AIObject?._timer.Stop();
+            AIObject?.AITimer.Stop();
 
             if (ForcedAI != null)
             {
@@ -3920,7 +3945,7 @@ namespace Server.Mobiles
         {
             if (AIObject != null)
             {
-                AIObject._timer?.Stop();
+                AIObject.AITimer?.Stop();
                 AIObject = null;
             }
 
@@ -4252,19 +4277,7 @@ namespace Server.Mobiles
 
             if (Body.IsHuman)
             {
-                switch (Utility.Random(2))
-                {
-                    case 0:
-                        {
-                            CheckedAnimate(5, 5, 1, true, true, 1);
-                            break;
-                        }
-                    case 1:
-                        {
-                            CheckedAnimate(6, 5, 1, true, false, 1);
-                            break;
-                        }
-                }
+                CheckedAnimate(Utility.RandomBool() ? 5 : 6, 5, 1, true, false, 1);
             }
             else if (Body.IsAnimal)
             {
@@ -4289,19 +4302,7 @@ namespace Server.Mobiles
             }
             else if (Body.IsMonster)
             {
-                switch (Utility.Random(2))
-                {
-                    case 0:
-                        {
-                            CheckedAnimate(17, 5, 1, true, false, 1);
-                            break;
-                        }
-                    case 1:
-                        {
-                            CheckedAnimate(18, 5, 1, true, false, 1);
-                            break;
-                        }
-                }
+                CheckedAnimate(Utility.RandomBool() ? 17 : 18, 5, 1, true, false, 1);
             }
 
             PlaySound(GetIdleSound());
@@ -4371,7 +4372,7 @@ namespace Server.Mobiles
 
         public override void OnMovement(Mobile m, Point3D oldLocation)
         {
-            if (AcquireOnApproach && !Controlled && !Summoned && FightMode != FightMode.Aggressor)
+            if (AcquireOnApproach && !Controlled && !Summoned && !BardPacified && FightMode != FightMode.Aggressor)
             {
                 if (InRange(m.Location, AcquireOnApproachRange) && !InRange(oldLocation, AcquireOnApproachRange) &&
                     CanBeHarmful(m) && IsEnemy(m))
@@ -4386,13 +4387,11 @@ namespace Server.Mobiles
                 ForceReacquire();
             }
 
-            var speechType = SpeechType;
-
-            speechType?.OnMovement(this, m, oldLocation);
+            SpeechType?.OnMovement(this, m, oldLocation);
 
             /* Begin notice sound */
             if ((!m.Hidden || m.AccessLevel == AccessLevel.Player) && m.Player && FightMode != FightMode.Aggressor &&
-                FightMode != FightMode.None && Combatant == null && !Controlled && !Summoned &&
+                FightMode != FightMode.None && Combatant == null && !Controlled && !Summoned && !BardPacified &&
                 InRange(m.Location, 18) && !InRange(oldLocation, 18))
             {
                 if (Body.IsMonster)
@@ -4414,7 +4413,7 @@ namespace Server.Mobiles
                 return;
             }
 
-            if (!Body.IsHuman || Kills >= 5 || AlwaysMurderer || AlwaysAttackable || m.Kills < 5 ||
+            if (!Body.IsHuman || Murderer || AlwaysAttackable || !m.Murderer ||
                 !m.InRange(Location, 12) || !m.Alive)
             {
                 return;
@@ -4945,7 +4944,7 @@ namespace Server.Mobiles
 
                 var topDamage = rights[0].m_Damage;
 
-                int minDamage = hitsMax switch
+                var minDamage = hitsMax switch
                 {
                     >= 3000 => topDamage / 16,
                     >= 1000 => topDamage / 8,
@@ -5264,20 +5263,13 @@ namespace Server.Mobiles
 
             if (!Summoned && !NoKillAwards)
             {
-                var totalFame = Fame / 100;
-                var totalKarma = -Karma / 100;
-
-                if (Map == Map.Felucca)
-                {
-                    totalFame += totalFame / 10 * 3;
-                    totalKarma += totalKarma / 10 * 3;
-                }
+                var (totalFame, totalKarma) = Titles.ComputeKillAwards(this, Map);
 
                 var list = GetLootingRights(DamageEntries, HitsMax);
-                var titles = new List<Mobile>();
-                var damage = new List<int>();
-                var fame = new List<int>();
-                var karma = new List<int>();
+                using var titles = PooledRefList<Mobile>.Create();
+                var fame = PooledRefList<int>.Create();
+                var damage =  PooledRefList<int>.Create();
+                var karma = PooledRefList<int>.Create();
 
                 var givenQuestKill = false;
                 var givenFactionKill = false;
@@ -5292,9 +5284,19 @@ namespace Server.Mobiles
                         continue;
                     }
 
-                    var party = Engines.PartySystem.Party.Get(ds.m_Mobile);
+                    if (!Core.UOR)
+                    {
+                        var killer = LastKiller is BaseCreature bc ? bc.GetDamageMaster(this) : LastKiller;
 
-                    if (party != null)
+                        if (ds.m_Mobile == killer)
+                        {
+                            // If the titles system gets feature flagged, it will be supported
+                            titles.Add(ds.m_Mobile);
+                            fame.Add(totalFame);
+                            karma.Add(totalKarma);
+                        }
+                    }
+                    else if (Engines.PartySystem.Party.Get(ds.m_Mobile) is { } party)
                     {
                         var divedFame = totalFame / party.Members.Count;
                         var divedKarma = totalKarma / party.Members.Count;
@@ -5481,6 +5483,9 @@ namespace Server.Mobiles
                         }
                     }
                 }
+
+                fame.Dispose();
+                karma.Dispose();
             }
 
             if (LastKiller is PlayerMobile playerThatKilled)
@@ -5792,7 +5797,7 @@ namespace Server.Mobiles
 
             if (ReturnsToHome && IsSpawnerBound() && !InRange(Home, RangeHome))
             {
-                if (Combatant == null && Warmode == false && Utility.RandomDouble() < .10) /* some throttling */
+                if (Combatant == null && !Warmode && Utility.RandomDouble() < .10) /* some throttling */
                 {
                     m_FailedReturnHome = !Move(GetDirectionTo(Home.X, Home.Y)) ? m_FailedReturnHome + 1 : 0;
 
@@ -6040,13 +6045,15 @@ namespace Server.Mobiles
 
             IsDeadPet = false;
 
-            Span<byte> buffer = stackalloc byte[OutgoingMobilePackets.BondedStatusPacketLength].InitializePacket();
+            var buffer = stackalloc byte[OutgoingMobilePackets.BondedStatusPacketLength].InitializePacket();
             OutgoingMobilePackets.CreateBondedStatus(buffer, Serial, false);
             Effects.SendPacket(Location, Map, buffer);
 
             SendIncomingPacket();
 
             OnAfterResurrect();
+
+            AIObject?.Activate();
 
             var owner = ControlMaster;
 
@@ -6099,7 +6106,7 @@ namespace Server.Mobiles
             {
                 SetLocation(Home, true);
 
-                if (!Map.GetSector(X, Y).Active)
+                if (PlayerRangeSensitive && !Map.GetSector(X, Y).Active)
                 {
                     AIObject?.Deactivate();
                 }
@@ -6743,7 +6750,7 @@ namespace Server.Mobiles
 
             if (amount > 0)
             {
-                int stamGain = dropped switch
+                var stamGain = dropped switch
                 {
                     Gold => amount - 50,
                     _    => amount * 15 - 50
@@ -6764,7 +6771,7 @@ namespace Server.Mobiles
                 else if (m_Loyalty < MaxLoyalty)
                 {
                     // Calculate the loyalty increase
-                    int loyaltyIncrease = Utility.CoinFlips(amount, MaxLoyaltyIncrease) * 10;
+                    var loyaltyIncrease = Utility.CoinFlips(amount, MaxLoyaltyIncrease) * 10;
 
                     if (loyaltyIncrease > 0)  // Only update if there's an actual increase
                     {
@@ -7384,25 +7391,28 @@ namespace Server.Mobiles
 
         public virtual void DropBackpack()
         {
-            if (Backpack?.Items.Count > 0)
+            var backpack = Backpack;
+            if (!(backpack?.Items.Count > 0))
             {
-                var b = new CreatureBackpack(Name);
+                return;
+            }
 
-                var list = new List<Item>(Backpack.Items);
-                foreach (var item in list)
-                {
-                    b.DropItem(item);
-                }
+            var b = new CreatureBackpack(Name);
+            using var queue = backpack.EnumerateItems();
 
-                var house = BaseHouse.FindHouseAt(this);
-                if (house != null)
-                {
-                    b.MoveToWorld(house.BanLocation, house.Map);
-                }
-                else
-                {
-                    b.MoveToWorld(Location, Map);
-                }
+            while (queue.Count > 0)
+            {
+                b.DropItem(queue.Dequeue());
+            }
+
+            var house = BaseHouse.FindHouseAt(this);
+            if (house != null)
+            {
+                b.MoveToWorld(house.BanLocation, house.Map);
+            }
+            else
+            {
+                b.MoveToWorld(Location, Map);
             }
         }
 
@@ -7894,6 +7904,8 @@ namespace Server.Mobiles
 
         public virtual void HealStart(Mobile patient)
         {
+            StopHeal();
+
             var onSelf = patient == this;
 
             // DoBeneficial( patient );
@@ -7920,12 +7932,13 @@ namespace Server.Mobiles
                 return;
             }
 
-            var onSelf = patient == this;
-
-            if (!patient.Alive)
+            if (!InRange(patient, HealStartRange))
             {
+                return;
             }
-            else if (patient.Poisoned)
+
+            var onSelf = patient == this;
+            if (patient.Poisoned)
             {
                 var poisonLevel = patient.Poison.Level;
 

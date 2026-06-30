@@ -53,7 +53,7 @@ public class GateTravelSpell : MagerySpell, IRecallSpell
         {
             mobile.SendLocalizedMessage(1049543); // You decide against traveling to Felucca while you are still young.
         }
-        else if (Caster.Kills >= 5 && map != Map.Felucca)
+        else if (Caster.Murderer && map != Map.Felucca)
         {
             Caster.SendLocalizedMessage(1019004); // You are not allowed to travel there.
         }
@@ -171,6 +171,8 @@ public partial class GateTravelMoongate : Moongate
         Timer.StartTimer(TimeSpan.FromSeconds(Core.T2A ? 30.0 : 10.0), Delete);
     }
 
+    public override bool SkipSerialization => true;
+
     [CommandProperty(AccessLevel.GameMaster)]
     public Moongate LinkedGate { get; set; }
 
@@ -200,11 +202,5 @@ public partial class GateTravelMoongate : Moongate
         TargetMap = targetMap;
 
         base.UseGate(m);
-    }
-
-    [AfterDeserialization(false)]
-    private void AfterDeserialization()
-    {
-        Delete();
     }
 }

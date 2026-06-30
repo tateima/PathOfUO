@@ -1,3 +1,4 @@
+
 using System;
 using Server.Items;
 using Server.Spells;
@@ -20,6 +21,9 @@ public class MageAI : BaseAI
     private const double TeleportChance = 0.05; // 5% chance to teleport at gm magery
     private const double DispelChance = 0.75;   // 75% chance to dispel at gm magery
     private const double InvisChance = 0.50; // 50% chance to invis at gm magery
+
+    public override double FleeHealthThreshold => 0.2; // 20% is default
+    public override double FleeChance => 0.1; // 10% is default
 
     private static readonly int[] Offsets =
     [
@@ -172,7 +176,7 @@ public class MageAI : BaseAI
     {
         if (!SmartAI)
         {
-            if (!MoveTo(m, true, Mobile.RangeFight))
+            if (!MoveTo(m, false, Mobile.RangeFight))
             {
                 OnFailedMove();
             }
@@ -186,14 +190,14 @@ public class MageAI : BaseAI
             {
                 RunFrom(m);
             }
-            else if (!Mobile.InRange(m, Math.Max(Mobile.RangeFight, 2)) && !MoveTo(m, true, 1))
+            else if (!Mobile.InRange(m, Math.Max(Mobile.RangeFight, 2)) && !MoveTo(m, false, 1))
             {
                 OnFailedMove();
             }
         }
         else if (!Mobile.InRange(m, Mobile.RangeFight))
         {
-            if (!MoveTo(m, true, 1))
+            if (!MoveTo(m, false, 1))
             {
                 OnFailedMove();
             }
@@ -765,21 +769,6 @@ public class MageAI : BaseAI
             }
         }
 
-        if (!Mobile.Controlled && !Mobile.Summoned && Mobile.CanFlee && Mobile.Hits < Mobile.HitsMax * 20 / 100)
-        {
-            // We are low on health, should we flee?
-            // (10 + diff)% chance to flee
-            var fleeChance = 10 + Math.Max(0, c.Hits - Mobile.Hits);
-
-            if (Utility.Random(0, 100) > fleeChance)
-            {
-                this.DebugSayFormatted($"I am going to flee from {c.Name}");
-
-                Action = ActionType.Flee;
-                return true;
-            }
-        }
-
         if (CheckSummon())
         {
             return true;
@@ -796,6 +785,14 @@ public class MageAI : BaseAI
         }
         else if (Mobile.Spell == null && Core.TickCount - _nextCastTime >= 0)
         {
+            if (Mobile.Controlled && c == Mobile)
+            {
+                DebugSay("I should not attack myself!");
+                Mobile.Combatant = null;
+                Action = ActionType.Guard;
+                return true;
+            }
+
             // We are ready to cast a spell
             Spell spell;
             var toDispel = FindDispelTarget(true);
@@ -913,37 +910,6 @@ public class MageAI : BaseAI
             }
 
             base.DoActionGuard();
-        }
-
-        return true;
-    }
-
-    public override bool DoActionFlee()
-    {
-        if ((Mobile.Mana > 20 || Mobile.Mana == Mobile.ManaMax) && Mobile.Hits > Mobile.HitsMax / 2)
-        {
-            DebugSay("I am stronger now, my guard is up");
-
-            Action = ActionType.Guard;
-        }
-        else if (AcquireFocusMob(Mobile.RangePerception, Mobile.FightMode, false, false, true))
-        {
-            this.DebugSayFormatted($"I am scared of {Mobile.FocusMob.Name}");
-
-            RunFrom(Mobile.FocusMob);
-            Mobile.FocusMob = null;
-
-            if (Mobile.Poisoned && Utility.Random(0, 5) == 0)
-            {
-                new CureSpell(Mobile).Cast();
-            }
-        }
-        else
-        {
-            DebugSay("Area seems clear, but my guard is up");
-
-            Action = ActionType.Guard;
-            Mobile.Warmode = true;
         }
 
         return true;

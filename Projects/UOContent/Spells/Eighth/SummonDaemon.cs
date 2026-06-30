@@ -1,4 +1,5 @@
 using System;
+using Server.Misc;
 using Server.Mobiles;
 
 namespace Server.Spells.Eighth
@@ -54,7 +55,9 @@ namespace Server.Spells.Eighth
                     LevelRange = [((PlayerMobile)Caster).Level, ((PlayerMobile)Caster).Level]
                 };
                 creature.SetLevel();
-                SpellHelper.Summon(creature, Caster, 0x216, duration, false, false);
+                SpellHelper.Summon(new SummonedDaemon(), Caster, 0x216, duration, false, false);
+
+                Titles.AwardKarma(Caster, -70, true);
             }
 
             FinishSequence();

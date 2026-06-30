@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2023 - ModernUO Development Team                       *
+ * Copyright 2019-2026 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: IncomingPlayerPackets.cs                                        *
  *                                                                       *
@@ -223,7 +223,7 @@ public static class IncomingPlayerPackets
         var serial = reader.ReadUInt32();
         var prompt = reader.ReadInt32();
         var type = reader.ReadInt32();
-        var text = reader.ReadAsciiSafe();
+        var text = reader.ReadLatin1Safe();
 
         if (text.Length > 128)
         {
@@ -287,30 +287,32 @@ public static class IncomingPlayerPackets
     public static void MenuResponse(NetState state, SpanReader reader)
     {
         var serial = reader.ReadUInt32();
-        int menuID = reader.ReadInt16(); // unused in our implementation
+        int menuID = reader.ReadInt16();
         int index = reader.ReadInt16();
         int itemID = reader.ReadInt16();
         int hue = reader.ReadInt16();
 
         index -= 1; // convert from 1-based to 0-based
 
-        foreach (var menu in state.Menus)
+        for (var i = 0; i < state.Menus.Count; i++)
         {
-            if (menu.Serial == serial)
+            var menu = state.Menus[i];
+            if ((uint)menu.Serial != serial)
             {
-                state.RemoveMenu(menu);
-
-                if (index >= 0 && index < menu.EntryLength)
-                {
-                    menu.OnResponse(state, index);
-                }
-                else
-                {
-                    menu.OnCancel(state);
-                }
-
-                break;
+                continue;
             }
+
+            state.RemoveMenu(menu);
+
+            if (index >= 0 && index < menu.EntryLength)
+            {
+                menu.OnResponse(state, index);
+            }
+            else
+            {
+                menu.OnCancel(state);
+            }
+            break;
         }
     }
 
@@ -360,7 +362,7 @@ public static class IncomingPlayerPackets
 
         from.SendEverything();
 
-        state.Sequence = 0;
+        state.ResetMovementState();
     }
 
     public static void PingReq(NetState state, SpanReader reader)

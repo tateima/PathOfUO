@@ -978,7 +978,7 @@ namespace Server.Items
 
         public int ComputeStatReq(StatType type)
         {
-            int v = type switch
+            var v = type switch
             {
                 StatType.Str => StrRequirement,
                 StatType.Dex => DexRequirement,
@@ -2017,7 +2017,7 @@ namespace Server.Items
 
             if (isMagicItem)
             {
-                var builder = ValueStringBuilder.Create(128);
+                var builder = new ValueStringBuilder(stackalloc char[128]);
 
                 var durabilityText = DurabilityText(out var articleAnDurability);
                 if (durabilityText != null)

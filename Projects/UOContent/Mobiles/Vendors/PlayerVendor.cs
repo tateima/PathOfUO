@@ -9,6 +9,7 @@ using Server.Items;
 using Server.Misc;
 using Server.Multis;
 using Server.Prompts;
+using Server.Systems.FeatureFlags;
 using Server.Targeting;
 
 namespace Server.Mobiles;
@@ -703,13 +704,13 @@ public partial class PlayerVendor : Mobile
         {
             gumps.Close<NewPlayerVendorCustomizeGump>();
             gumps.Close<NewPlayerVendorOwnerGump>();
-            gumps.Send(new NewPlayerVendorOwnerGump(this));
+            NewPlayerVendorOwnerGump.DisplayTo(to, this);
         }
         else
         {
             gumps.Close<PlayerVendorCustomizeGump>();
             gumps.Close<PlayerVendorOwnerGump>();
-            gumps.Send(new PlayerVendorOwnerGump(this));
+            PlayerVendorOwnerGump.DisplayTo(to, this);
         }
     }
 
@@ -727,6 +728,12 @@ public partial class PlayerVendor : Mobile
     {
         if (item.RootParent is not PlayerVendor vendor || !vendor.CanInteractWith(from, false))
         {
+            return;
+        }
+
+        if (!ContentFeatureFlags.PlayerVendors && from.AccessLevel < AccessLevel.Administrator)
+        {
+            from.SendMessage(0x22, "Player vendor transactions are temporarily disabled.");
             return;
         }
 
@@ -752,7 +759,7 @@ public partial class PlayerVendor : Mobile
         }
         else
         {
-            from.SendGump(new PlayerVendorBuyGump(vendor, vi));
+            PlayerVendorBuyGump.DisplayTo(from, vendor, vi);
         }
     }
 
@@ -1273,7 +1280,7 @@ public partial class PlayerVendor : Mobile
 
             from.SendLocalizedMessage(1062496); // Your vendor has been renamed.
 
-            from.SendGump(new NewPlayerVendorOwnerGump(m_Vendor));
+            NewPlayerVendorOwnerGump.DisplayTo(from, m_Vendor);
         }
     }
 
@@ -1300,7 +1307,7 @@ public partial class PlayerVendor : Mobile
 
             m_Vendor.ShopName = name.FixHtml();
 
-            from.SendGump(new NewPlayerVendorOwnerGump(m_Vendor));
+            NewPlayerVendorOwnerGump.DisplayTo(from, m_Vendor);
         }
     }
 }

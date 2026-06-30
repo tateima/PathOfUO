@@ -370,7 +370,7 @@ public partial class CharacterStatue : Mobile, IRewardItem
         }
 
         ProcessDelta();
-        Span<byte> animPacket = stackalloc byte[CharacterStatuePackets.StatueAnimationPacketLength].InitializePacket();
+        var animPacket = stackalloc byte[CharacterStatuePackets.StatueAnimationPacketLength].InitializePacket();
 
         foreach (var state in Map.GetClientsInRange(Location))
         {
@@ -592,7 +592,7 @@ public class CharacterStatueTarget : Target
             _maker.Delete();
             statue.Sculpt(from);
 
-            from.SendGump(new CharacterStatueGump(_maker, statue, from), true);
+            CharacterStatueGump.DisplayTo(from, _maker, statue);
             return;
         }
 

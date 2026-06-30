@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.IO;
 using System.Collections.Generic;
 using Server.Collections;
@@ -57,8 +58,51 @@ public class AddonGenerator
         }
         """;
 
-    // TODO: .NET 9 - Use search values
-    // private static SearchValues<string> _templatePlaceholders = SearchValues.Create("{serverItemsNamespace}", "{namespace}", "{name}", "{components}");
+    private static readonly SearchValues<string> _templatePlaceholders = SearchValues.Create(["{serverItemsNamespace}", "{namespace}", "{name}", "{components}"], StringComparison.Ordinal);
+
+    private static string ExpandTemplate(
+        ReadOnlySpan<char> serverItemsNamespace,
+        ReadOnlySpan<char> ns,
+        ReadOnlySpan<char> name,
+        ReadOnlySpan<char> components
+    )
+    {
+        using var output = ValueStringBuilder.Create();
+
+        var remaining = _template.AsSpan();
+
+        int index;
+        while ((index = remaining.IndexOfAny(_templatePlaceholders)) >= 0)
+        {
+            output.Append(remaining[..index]);
+
+            var placeholder = remaining[index..];
+            if (placeholder.StartsWith("{serverItemsNamespace}"))
+            {
+                output.Append(serverItemsNamespace);
+                remaining = placeholder["{serverItemsNamespace}".Length..];
+            }
+            else if (placeholder.StartsWith("{namespace}"))
+            {
+                output.Append(ns);
+                remaining = placeholder["{namespace}".Length..];
+            }
+            else if (placeholder.StartsWith("{name}"))
+            {
+                output.Append(name);
+                remaining = placeholder["{name}".Length..];
+            }
+            else // {components}
+            {
+                output.Append(components);
+                remaining = placeholder["{components}".Length..];
+            }
+        }
+
+        output.Append(remaining);
+
+        return output.ToString();
+    }
 
     public static void Configure()
     {
@@ -113,41 +157,41 @@ public class AddonGenerator
             (start.Y, end.Y) = (end.Y, start.Y);
         }
 
-        Point2D startPoint2D = new Point2D(start.X, start.Y);
-        Point2D endPoint2D = new Point2D(end.X, end.Y);
-        Rectangle2D bounds = new Rectangle2D(startPoint2D, endPoint2D);
+        var startPoint2D = new Point2D(start.X, start.Y);
+        var endPoint2D = new Point2D(end.X, end.Y);
+        var bounds = new Rectangle2D(startPoint2D, endPoint2D);
 
-        string name = pickerState.Name;
-        string ns = pickerState.Namespace;
-        bool items = pickerState.Items;
-        bool statics = pickerState.Statics;
-        bool range = pickerState.Range;
-        sbyte min = pickerState.Min;
-        sbyte max = pickerState.Max;
+        var name = pickerState.Name;
+        var ns = pickerState.Namespace;
+        var items = pickerState.Items;
+        var statics = pickerState.Statics;
+        var range = pickerState.Range;
+        var min = pickerState.Min;
+        var max = pickerState.Max;
 
         // Get center
-        Point3D center = new Point3D();
+        var center = new Point3D();
         center.Z = 127;
 
-        int x1 = bounds.End.X;
-        int y1 = bounds.End.Y;
-        int x2 = bounds.Start.X;
-        int y2 = bounds.Start.Y;
+        var x1 = bounds.End.X;
+        var y1 = bounds.End.Y;
+        var x2 = bounds.Start.X;
+        var y2 = bounds.Start.Y;
 
-        Dictionary<Point2D, List<StaticTile>> tiles = new Dictionary<Point2D, List<StaticTile>>();
+        var tiles = new Dictionary<Point2D, List<StaticTile>>();
 
         if (statics)
         {
-            for (int x = start.X; x <= end.X; x++)
+            for (var x = start.X; x <= end.X; x++)
             {
-                for (int y = start.Y; y <= end.Y; y++)
+                for (var y = start.Y; y <= end.Y; y++)
                 {
-                    TileMatrix tileMatrix = map.Tiles;
+                    var tileMatrix = map.Tiles;
                     List<StaticTile> list = [];
 
                     if (items)
                     {
-                        foreach (Item item in map.GetItemsAt(x, y))
+                        foreach (var item in map.GetItemsAt(x, y))
                         {
                             if (range && item.Z >= min && item.Z <= max)
                             {
@@ -174,7 +218,7 @@ public class AddonGenerator
 
         using var target = PooledRefList<Item>.Create();
 
-        foreach (Static s in map.GetItemsInBounds<Static>(bounds))
+        foreach (var s in map.GetItemsInBounds<Static>(bounds))
         {
             if (!range || s.Z >= min && s.Z <= max)
             {
@@ -189,7 +233,7 @@ public class AddonGenerator
         }
 
         // Get correct bounds
-        foreach (Item item in target)
+        foreach (var item in target)
         {
             if (item.Z < center.Z)
             {
@@ -202,11 +246,11 @@ public class AddonGenerator
             y2 = Math.Max(y2, item.Y);
         }
 
-        foreach (Point2D p in tiles.Keys)
+        foreach (var p in tiles.Keys)
         {
-            List<StaticTile> list = tiles[p];
+            var list = tiles[p];
 
-            foreach (StaticTile t in list)
+            foreach (var t in list)
             {
                 if (t.Z < center.Z)
                 {
@@ -225,27 +269,27 @@ public class AddonGenerator
 
         using var sb = ValueStringBuilder.Create();
 
-        foreach (Point2D p in tiles.Keys)
+        foreach (var p in tiles.Keys)
         {
-            List<StaticTile> list = tiles[p];
+            var list = tiles[p];
 
-            int xOffset = p.X - center.X;
-            int yOffset = p.Y - center.Y;
+            var xOffset = p.X - center.X;
+            var yOffset = p.Y - center.Y;
 
-            foreach (StaticTile t in list)
+            foreach (var t in list)
             {
-                int zOffset = t.Z - center.Z;
-                int id = t.ID - 16384;
+                var zOffset = t.Z - center.Z;
+                var id = t.ID - 16384;
 
                     sb.Append($"            AddComponent(new AddonComponent({id}), {xOffset}, {yOffset}, {zOffset});\n");
             }
         }
 
-        foreach (Item item in target)
+        foreach (var item in target)
         {
-            int xOffset = item.X - center.X;
-            int yOffset = item.Y - center.Y;
-            int zOffset = item.Z - center.Z;
+            var xOffset = item.X - center.X;
+            var yOffset = item.Y - center.Y;
+            var zOffset = item.Z - center.Z;
 
             var light = (item.ItemData.Flags & TileFlag.LightSource) == TileFlag.LightSource ? item.Light : LightType.Empty;
             var hue = item.Hue;
@@ -275,13 +319,13 @@ public class AddonGenerator
             sb.Append("            )\n");
         }
 
-        string output = _template.Replace("{name}", name);
-        output = output.Replace("{namespace}", ns);
-        output = output.Replace("{components}", sb.ToString());
+        // Only pull in Server.Items when the generated addon lives in a different namespace.
+        var serverItemsNamespace = ns == "Server.Items" ? "" : "\nusing Server.Items;";
+        var output = ExpandTemplate(serverItemsNamespace, ns, name, sb.AsSpan());
 
         var path = Path.Combine(_outputDirectory, $"{name}Addon.cs");
 
-        string folder = Path.GetDirectoryName(path);
+        var folder = Path.GetDirectoryName(path);
         PathUtility.EnsureDirectory(folder);
 
         using var writer = new StreamWriter(path, false);
@@ -374,13 +418,13 @@ public class AddonGenerator
 
             var fail = !_state.Items && !_state.Statics;
 
-            if (!sbyte.TryParse(info.GetTextEntry(2), out sbyte min))
+            if (!sbyte.TryParse(info.GetTextEntry(2), out var min))
             {
                 min = sbyte.MinValue;
                 fail = true;
             }
 
-            if (!sbyte.TryParse(info.GetTextEntry(3), out sbyte max))
+            if (!sbyte.TryParse(info.GetTextEntry(3), out var max))
             {
                 max = sbyte.MaxValue;
                 fail = true;

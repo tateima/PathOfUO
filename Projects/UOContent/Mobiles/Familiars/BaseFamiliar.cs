@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using ModernUO.Serialization;
 using Server.Collections;
 using Server.ContextMenus;
@@ -93,7 +92,7 @@ public abstract partial class BaseFamiliar : BaseCreature
             Hidden = m_LastHidden = master.Hidden;
         }
 
-        if (AIObject?.WalkMobileRange(master, 5, true, 1, 1) == true)
+        if (AIObject?.WalkMobileRange(master, 5, false, 1, 1) == true)
         {
             Warmode = master.Warmode;
             Combatant = master.Combatant;
@@ -151,14 +150,15 @@ public abstract partial class BaseFamiliar : BaseCreature
         var map = Map;
         var pack = Backpack;
 
-        if (map != null && map != Map.Internal && pack != null)
+        if (map == null || map == Map.Internal || pack == null)
         {
-            var list = new List<Item>(pack.Items);
+            return;
+        }
 
-            for (var i = 0; i < list.Count; ++i)
-            {
-                list[i].MoveToWorld(Location, map);
-            }
+        using var queue = pack.EnumerateItems();
+        while (queue.Count > 0)
+        {
+            queue.Dequeue().MoveToWorld(Location, map);
         }
     }
 

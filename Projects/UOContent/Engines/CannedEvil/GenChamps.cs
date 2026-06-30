@@ -1,6 +1,6 @@
 /*************************************************************************
  * ModernUO                                                              *
- * Copyright 2019-2023 - ModernUO Development Team                       *
+ * Copyright 2019-2026 - ModernUO Development Team                       *
  * Email: hi@modernuo.com                                                *
  * File: GenChamps.cs                                                    *
  *                                                                       *
@@ -14,7 +14,7 @@
  *************************************************************************/
 
 using System;
-using System.Collections.Generic;
+using Server.Collections;
 using Server.Logging;
 
 namespace Server.Engines.CannedEvil;
@@ -67,18 +67,18 @@ public static class ChampionGenerator
         */
 
         //We assume that all champion spawns are generated here.
-        List<ChampionSpawn> spawns = [];
-        foreach (Item item in World.Items.Values)
+        using var spawns = PooledRefQueue<IEntity>.Create();
+        foreach (var item in World.Items.Values)
         {
             if (item is ChampionSpawn spawn)
             {
-                spawns.Add(spawn);
+                spawns.Enqueue(spawn);
             }
         }
 
-        for (int i = spawns.Count - 1; i >= 0; i--)
+        while (spawns.Count > 0)
         {
-            spawns[i].Delete();
+            spawns.Dequeue().Delete();
         }
 
         Process(DungeonLocations);
@@ -89,9 +89,9 @@ public static class ChampionGenerator
 
     private static void Process(ChampionEntry[] entries)
     {
-        for (int i = 0; i < entries.Length; i++)
+        for (var i = 0; i < entries.Length; i++)
         {
-            ChampionEntry entry = entries[i];
+            var entry = entries[i];
 
             try
             {

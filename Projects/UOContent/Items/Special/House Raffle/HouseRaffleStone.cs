@@ -207,7 +207,7 @@ public partial class HouseRaffleStone : Item
 
     public override bool DisplayWeight => false;
 
-    public static void CheckEnd_OnTick()
+    private static void CheckEnd_OnTick()
     {
         foreach (var stone in _allStones)
         {
@@ -217,12 +217,11 @@ public partial class HouseRaffleStone : Item
 
     private static void AddRaffleStone(HouseRaffleStone stone)
     {
-        _allStones ??= new HashSet<HouseRaffleStone>();
-        _allStones.Add(stone);
+        _allStones ??= [];
 
-        if (_allStones.Count == 1)
+        if (_allStones.Add(stone) && _allStones.Count == 1)
         {
-            Timer.DelayCall(TimeSpan.FromMinutes(1.0), TimeSpan.FromMinutes(1.0), CheckEnd_OnTick);
+            _allStonesTimer = Timer.DelayCall(TimeSpan.FromMinutes(1.0), TimeSpan.FromMinutes(1.0), CheckEnd_OnTick);
         }
     }
 
@@ -305,11 +304,11 @@ public partial class HouseRaffleStone : Item
 
     public static string FormatLocation(Point3D loc, Map map, bool displayMap)
     {
-        using var result = ValueStringBuilder.Create();
+        using var result = new ValueStringBuilder(stackalloc char[48]);
 
         var xLong = 0;
         var yLat = 0;
-        int xMins = 0;
+        var xMins = 0;
         var yMins = 0;
         bool xEast = false, ySouth = false;
 
@@ -638,7 +637,7 @@ public partial class HouseRaffleStone : Item
         {
             if (from.AccessLevel >= AccessLevel.Seer && target is HouseRaffleStone { Deleted: false } stone)
             {
-                from.SendGump(new HouseRaffleManagementGump(stone));
+                HouseRaffleManagementGump.DisplayTo(from, stone);
             }
         }
     }
@@ -647,10 +646,9 @@ public partial class HouseRaffleStone : Item
     {
         public override int Header => 1150470; // CONFIRM TICKET PURCHASE
         public override int HeaderColor => 0x7F00;
-        public override int ContentColor => 0xFFFFFF;
+        public override string ContentColor => "#FFFFFF";
         public override int Width => 420;
         public override int Height => 280;
-
         public override string Content { get; }
 
         public ConfirmTicketPurchaseGump(Rectangle2D bounds, Point3D center, Map map, int price, Action<bool> callback) : base(callback)

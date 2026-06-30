@@ -118,8 +118,7 @@ public abstract partial class DoneQuestCollector : BaseCreature, IRaceChanger
         }
         else
         {
-            var conversation = new List<TextDefinition>();
-            conversation.AddRange(Incomplete);
+            List<TextDefinition> conversation = [..Incomplete];
 
             var context = MLQuestSystem.GetContext(pm);
 
@@ -307,7 +306,7 @@ public partial class Darius : DoneQuestCollector
 
     public override void OnComplete(PlayerMobile from)
     {
-        from.SendGump(new RaceChangeConfirmGump(this, from, Race.Elf));
+        RaceChangeConfirmGump.DisplayTo(from, this, Race.Elf);
     }
 }
 
@@ -383,6 +382,6 @@ public partial class Nedrick : DoneQuestCollector
 
     public override void OnComplete(PlayerMobile from)
     {
-        from.SendGump(new RaceChangeConfirmGump(this, from, Race.Human));
+        RaceChangeConfirmGump.DisplayTo(from, this, Race.Human);
     }
 }

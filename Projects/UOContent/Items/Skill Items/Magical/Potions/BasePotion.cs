@@ -37,7 +37,8 @@ public enum PotionEffect
     ConfusionBlastGreater,
     Invisibility,
     Parasitic,
-    Darkglow
+    Darkglow,
+    FlintsPungentBrew
 }
 
 [SerializationGenerator(2, false)]
@@ -87,7 +88,8 @@ public abstract partial class BasePotion : Item, ICraftable, ICommodity
                     return 1;
                 }
 
-                foreach (var keg in pack.EnumerateItemsByType<PotionKeg>())
+                using var queue = pack.EnumerateItemsByType<PotionKeg>();
+                foreach (var keg in queue)
                 {
                     if (keg.Held is <= 0 or >= 100)
                     {

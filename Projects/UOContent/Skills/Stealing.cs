@@ -5,6 +5,7 @@ using Server.Engines.ConPVP;
 using Server.Engines.Stealables;
 using Server.Factions;
 using Server.Items;
+using Server.Misc;
 using Server.Mobiles;
 using Server.Pantheon;
 using Server.Spells;
@@ -205,8 +206,10 @@ public static class Stealing
                     if (sig.LastMonolith?.Sigil != null)
                     {
                         sig.LastMonolith.Sigil = null;
-                        sig.LastStolen = Core.Now;
                     }
+
+                    sig.LastStolen = Core.Now;
+
                     ((PlayerMobile)_thief).NonCraftExperience += Utility.RandomMinMax(200, 300);
                     Deity.RewardPoints((PlayerMobile)_thief,
                         new[]
@@ -218,6 +221,7 @@ public static class Stealing
                             Deity.Alignment.Greed,
                             Deity.Alignment.Charity
                         });
+
                     return sig;
                 }
             }
@@ -383,6 +387,8 @@ public static class Stealing
                 _thief.SendLocalizedMessage(502710); // You can't steal that!
             }
 
+            Titles.AwardKarma(from, -50, true);
+
             var mobRoot = root as Mobile;
 
             if (stolen != null)
@@ -437,8 +443,8 @@ public static class Stealing
             const int SkillCooldown = 10000;    // 10s
 
             // Calculate how much time has passed since the targeter was opened
-            int ticksSinceTargeter = (int)(Core.TickCount - (from.NextSkillTime - TargeterCooldown));
-            int remainingCooldown = Math.Max(0, SkillCooldown - ticksSinceTargeter);
+            var ticksSinceTargeter = (int)(Core.TickCount - (from.NextSkillTime - TargeterCooldown));
+            var remainingCooldown = Math.Max(0, SkillCooldown - ticksSinceTargeter);
             from.NextSkillTime = Core.TickCount + remainingCooldown;
             if (mobRoot is BaseCreature && caught)
             {

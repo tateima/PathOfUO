@@ -10,6 +10,7 @@ using Server.Misc;
 using Server.Mobiles;
 using Server.Multis;
 using Server.Network;
+using Server.Systems.FeatureFlags;
 
 namespace Server.Accounting;
 
@@ -250,7 +251,7 @@ public partial class Account : IAccount, IComparable<Account>
     /// </summary>
     public bool Young
     {
-        get => !GetFlag(1);
+        get => ContentFeatureFlags.YoungPlayerSystem && !GetFlag(1);
         set
         {
             SetFlag(1, !value);
@@ -851,40 +852,6 @@ public partial class Account : IAccount, IComparable<Account>
     }
 
     /// <summary>
-    ///     Deserializes a list of string values from an xml element. Null values are not added to the list.
-    /// </summary>
-    /// <param name="node">The XmlElement from which to deserialize.</param>
-    /// <returns>String list. Value will never be null.</returns>
-    private static string[] LoadAccessCheck(XmlElement node)
-    {
-        string[] stringList;
-        var accessCheck = node["accessCheck"];
-
-        if (accessCheck != null)
-        {
-            var list = new List<string>();
-
-            foreach (XmlElement ip in accessCheck.GetElementsByTagName("ip"))
-            {
-                var text = Utility.GetText(ip, null);
-
-                if (text != null)
-                {
-                    list.Add(text);
-                }
-            }
-
-            stringList = list.ToArray();
-        }
-        else
-        {
-            stringList = [];
-        }
-
-        return stringList;
-    }
-
-    /// <summary>
     ///     Deserializes a list of IPAddress values from an xml element.
     /// </summary>
     /// <param name="node">The XmlElement from which to deserialize.</param>
@@ -1168,7 +1135,7 @@ public partial class Account : IAccount, IComparable<Account>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
-            Mobile[] localList = _mobiles;
+            var localList = _mobiles;
 
             while ((uint)_index < (uint)localList.Length)
             {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using ModernUO.CodeGeneratedEvents;
 using System.Collections.Concurrent;
 using Server.Accounting;
@@ -38,9 +39,10 @@ using Server.Spells.Necromancy;
 using Server.Spells.Ninjitsu;
 using Server.Spells.Sixth;
 using Server.Spells.Spellweaving;
+using Server.Systems.FeatureFlags;
 using Server.Talent;
 using Server.Targeting;
-using BaseQuestGump = Server.Engines.MLQuests.Gumps.BaseQuestGump;
+using BaseMLQuestGump = Server.Engines.MLQuests.Gumps.BaseMLQuestGump;
 using CalcMoves = Server.Movement.Movement;
 using QuestOfferGump = Server.Engines.MLQuests.Gumps.QuestOfferGump;
 using RankDefinition = Server.Guilds.RankDefinition;
@@ -750,6 +752,10 @@ namespace Server.Mobiles
 
         public override bool NewGuildDisplay => Guilds.Guild.NewGuildSystem;
 
+        public override bool Murderer =>
+            Core.T2A && !Core.LBR && PlayerMurderSystem.GetMurderContext(this, out var context)
+            && context.PingPongs >= 5 || base.Murderer;
+
         public bool BedrollLogout { get; set; }
 
         [CommandProperty(AccessLevel.GameMaster)]
@@ -934,8 +940,6 @@ namespace Server.Mobiles
             set => SetFlag(PlayerFlag.RefuseTrades, value);
         }
 
-        public Dictionary<Type, int> RecoverableAmmo { get; set; }
-
         [CommandProperty(AccessLevel.GameMaster)]
         public DateTime AcceleratedStart { get; set; }
 
@@ -1108,7 +1112,7 @@ namespace Server.Mobiles
         [CommandProperty(AccessLevel.GameMaster)]
         public bool Young
         {
-            get => GetFlag(PlayerFlag.Young);
+            get => ContentFeatureFlags.YoungPlayerSystem && GetFlag(PlayerFlag.Young);
             set
             {
                 SetFlag(PlayerFlag.Young, value);
@@ -1127,6 +1131,13 @@ namespace Server.Mobiles
 
         [CommandProperty(AccessLevel.GameMaster, canModify: true)]
         public ChampionTitleContext ChampionTitles => ChampionTitleSystem.GetOrCreateChampionTitleContext(this);
+
+        [CommandProperty(AccessLevel.GameMaster)]
+        public int PingPongs
+        {
+            get => PlayerMurderSystem.GetMurderContext(this, out var context) ? context.PingPongs : 0;
+            set => PlayerMurderSystem.ManuallySetPingPong(this, value);
+        }
 
         [CommandProperty(AccessLevel.GameMaster)]
         public int ShortTermMurders
@@ -1377,7 +1388,7 @@ namespace Server.Mobiles
 
             if (Core.AOS)
             {
-                foreach (Mobile m in Map.GetMobilesAt(location))
+                foreach (var m in Map.GetMobilesAt(location))
                 {
                     if (m.Z >= location.Z && m.Z < location.Z + 16 && (!m.Hidden || m.AccessLevel == AccessLevel.Player))
                     {
@@ -1508,67 +1519,71 @@ namespace Server.Mobiles
             from.TargetLocked = false;
         }
 
-        public static void EquipMacro(Mobile m, List<Serial> list)
+        public static void EquipMacro(Mobile m, ref PooledRefList<Serial> list)
         {
-            if (m is PlayerMobile { Alive: true } pm && pm.Backpack != null)
+            if (m is not PlayerMobile { Alive: true } pm || pm.Backpack == null)
             {
-                var pack = pm.Backpack;
+                return;
+            }
 
-                foreach (var serial in list)
+            var pack = pm.Backpack;
+
+            foreach (var serial in list)
+            {
+                Item item = null;
+                foreach (var i in pack.Items)
                 {
-                    Item item = null;
-                    foreach (var i in pack.Items)
+                    if (i.Serial == serial)
                     {
-                        if (i.Serial == serial)
-                        {
-                            item = i;
-                            break;
-                        }
+                        item = i;
+                        break;
                     }
+                }
 
-                    if (item == null)
+                if (item == null)
+                {
+                    continue;
+                }
+
+                var toMove = pm.FindItemOnLayer(item.Layer);
+
+                if (toMove != null)
+                {
+                    // pack.DropItem(toMove);
+                    toMove.Internalize();
+
+                    if (!pm.EquipItem(item))
                     {
-                        continue;
-                    }
-
-                    var toMove = pm.FindItemOnLayer(item.Layer);
-
-                    if (toMove != null)
-                    {
-                        // pack.DropItem(toMove);
-                        toMove.Internalize();
-
-                        if (!pm.EquipItem(item))
-                        {
-                            pm.EquipItem(toMove);
-                        }
-                        else
-                        {
-                            pack.DropItem(toMove);
-                        }
+                        pm.EquipItem(toMove);
                     }
                     else
                     {
-                        pm.EquipItem(item);
+                        pack.DropItem(toMove);
                     }
+                }
+                else
+                {
+                    pm.EquipItem(item);
                 }
             }
         }
 
-        public static void UnequipMacro(Mobile m, List<Layer> layers)
+        public static void UnequipMacro(Mobile m, ref PooledRefList<Layer> layers)
         {
-            if (m is PlayerMobile { Alive: true } pm && pm.Backpack != null)
+            if (m is not PlayerMobile { Alive: true } pm || pm.Backpack == null)
             {
-                var pack = pm.Backpack;
-                var eq = m.Items;
+                return;
+            }
 
-                for (var i = eq.Count - 1; i >= 0; i--)
+            var pack = pm.Backpack;
+            var eq = m.Items;
+
+            for (var i = eq.Count - 1; i >= 0; i--)
+            {
+                var item = eq[i];
+                if (layers.Contains(item.Layer))
                 {
-                    var item = eq[i];
-                    if (layers.Contains(item.Layer))
-                    {
-                        pack.TryDropItem(pm, item, false);
-                    }
+                    pack.TryDropItem(pm, item, false);
                 }
             }
         }
@@ -2268,13 +2283,17 @@ namespace Server.Mobiles
                 // Eject all from house
                 from.RevealingAction();
 
-                foreach (var item in context.Foundation.GetItems())
+                var list = context.Foundation.GetItems();
+                for (var i = 0; i < list.Count; i++)
                 {
+                    var item = list[i];
                     item.Location = context.Foundation.BanLocation;
                 }
 
-                foreach (var mobile in context.Foundation.GetMobiles())
+                using var mobiles = context.Foundation.GetMobilesPooled();
+                for (var i = 0; i < mobiles.Count; i++)
                 {
+                    var mobile = mobiles[i];
                     mobile.Location = context.Foundation.BanLocation;
                 }
 
@@ -2525,16 +2544,25 @@ namespace Server.Mobiles
 
         public override bool AllowItemUse(Item item)
         {
-            if (DuelContext?.AllowItemUse(this, item) == false)
+            if (AccessLevel < FeatureFlagSettings.RequiredAccessLevel &&
+                FeatureFlagManager.IsItemUseBlocked(item.GetType(), out var reason))
             {
+                SendMessage(0x22, reason);
                 return false;
             }
 
-            return DesignContext.Check(this);
+            return DuelContext?.AllowItemUse(this, item) != false && DesignContext.Check(this);
         }
 
         public override bool AllowSkillUse(SkillName skill)
         {
+            if (AccessLevel < FeatureFlagSettings.RequiredAccessLevel
+                && FeatureFlagManager.IsSkillBlocked(skill, out var reason))
+            {
+                SendMessage(0x22, reason);
+                return false;
+            }
+
             if (AnimalForm.UnderTransformation(this))
             {
                 for (var i = 0; i < AnimalFormRestrictedSkills.Length; i++)
@@ -2864,7 +2892,7 @@ namespace Server.Mobiles
 
             if (CheckAlive() && house?.IsOwner(this) == true && house.InternalizedVendors.Count > 0 && NetState is NetState { } ns)
             {
-                ns.SendGump(new ReclaimVendorGump(house));
+                ReclaimVendorGump.DisplayTo(this, house);
             }
         }
 
@@ -2912,6 +2940,13 @@ namespace Server.Mobiles
 
         public override bool CheckEquip(Item item)
         {
+            if (AccessLevel < FeatureFlagSettings.RequiredAccessLevel
+                && FeatureFlagManager.IsItemEquipBlocked(item.GetType(), out var reason))
+            {
+                SendMessage(0x22, reason);
+                return false;
+            }
+
             if (!base.CheckEquip(item))
             {
                 return false;
@@ -3269,11 +3304,6 @@ namespace Server.Mobiles
             ReceivedHonorContext?.OnTargetDamaged(from, amount);
             SentHonorContext?.OnSourceDamaged(from, amount);
 
-            if (willKill && from is PlayerMobile mobile)
-            {
-                Timer.StartTimer(TimeSpan.FromSeconds(10), mobile.RecoverAmmo);
-            }
-
             BaseTalent mountedCombat = GetTalent(typeof(MountedCombat));
             int dismountChance = 15;
             if (mountedCombat != null) {
@@ -3363,17 +3393,9 @@ namespace Server.Mobiles
             }
         }
 
-        public override void OnWarmodeChanged()
-        {
-            if (!Warmode)
-            {
-                Timer.StartTimer(TimeSpan.FromSeconds(10), RecoverAmmo);
-            }
-        }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool FindItems_Callback(Item item) =>
-            !item.Deleted && (item.LootType == LootType.Blessed || item.Insured) &&
-            Backpack != item.Parent;
+            !item.Deleted && (item.LootType == LootType.Blessed || item.Insured) && Backpack != item.Parent;
 
         public override bool OnBeforeDeath()
         {
@@ -3387,7 +3409,8 @@ namespace Server.Mobiles
             // This fixes a "bug" where players put blessed items in nested bags and they were dropped on death
             if (Core.AOS && Backpack?.Deleted == false)
             {
-                foreach (var item in Backpack.EnumerateItems(true, FindItems_Callback))
+                using var queue = Backpack.EnumerateItems(true, FindItems_Callback);
+                foreach (var item in queue)
                 {
                     Backpack.AddItem(item);
                 }
@@ -3420,10 +3443,6 @@ namespace Server.Mobiles
 
             ReceivedHonorContext?.OnTargetKilled();
             SentHonorContext?.OnSourceKilled();
-
-            RecoverAmmo();
-
-
             foreach(KeyValuePair<Type,BaseTalent> entry in Talents)
             {
                 if (entry.Value.HasBeforeDeathSave && !entry.Value.OnCooldown)
@@ -3573,7 +3592,7 @@ namespace Server.Mobiles
                 }
             }
 
-            if (Kills >= 5 && Core.Now >= m_NextJustAward)
+            if (Murderer && Core.Now >= m_NextJustAward)
             {
                 var m = FindMostRecentDamager(false);
 
@@ -3761,7 +3780,7 @@ namespace Server.Mobiles
 
         private static void SendToStaffMessage(PlayerMobile from, string text)
         {
-            Span<byte> buffer = stackalloc byte[OutgoingMessagePackets.GetMaxMessageLength(text)].InitializePacket();
+            var buffer = stackalloc byte[OutgoingMessagePackets.GetMaxMessageLength(text)].InitializePacket();
 
             foreach (var ns in from.GetClientsInRange(8))
             {
@@ -3846,13 +3865,10 @@ namespace Server.Mobiles
             // If the blood oath caster will die then damage is not reflected back to the attacker
             if (hasBloodOath && Alive && !Deleted && !IsDeadBondedPet)
             {
-                // In some expansions resisting spells reduces reflect dmg from monster blood oath
-                var resistReflectedDamage = !from.Player && Core.ML && !Core.HS
-                    ? (from.Skills.MagicResist.Value * 0.5 + 10) / 100
-                    : 0;
-
-                // Reflect damage to the attacker
-                from.Damage((int)(amount * (1.0 - resistReflectedDamage)), this);
+                // Reflect the attacker's original damage back to them, attributed to the caster.
+                // The caster is a player, so the Publish 48 resist mitigation does not apply
+                // (it only reduces reflected damage from creature casters).
+                from.Damage(BloodOathSpell.ComputeReflectedDamage(amount, 0, applyResistMitigation: false), this);
             }
         }
 
@@ -3893,9 +3909,8 @@ namespace Server.Mobiles
             Talents = new ConcurrentDictionary<Type, BaseTalent>(); // set Talents to empty dictionary by default
             base.Deserialize(reader);
             var version = reader.ReadInt();
-
             var targetSyncVersion = 43;
-            VirtueContext virtues = version < targetSyncVersion ? Virtues : null;
+            var virtues = version < 32 ? Virtues : null;
 
             switch (version)
             {
@@ -4763,6 +4778,26 @@ namespace Server.Mobiles
             return true;
         }
 
+        public override void OnMovement(Mobile m, Point3D oldLocation)
+        {
+            base.OnMovement(m, oldLocation);
+
+            // Passive detect hidden: either party moving within range can trigger detection
+            if (m is PlayerMobile && Utility.InRange(Location, m.Location, 4))
+            {
+                if (m.Hidden && AccessLevel == AccessLevel.Player)
+                {
+                    // A hidden mobile (stealther) moved near us — we try to detect them
+                    DetectHidden.TryDetectStealther(this, m);
+                }
+                else if (Hidden && m.AccessLevel == AccessLevel.Player)
+                {
+                    // We're hidden and a potential detector moved near us — they try to detect us
+                    DetectHidden.TryDetectStealther(m, this);
+                }
+            }
+        }
+
         public void AddFollower(Mobile m)
         {
             _allFollowers ??= new HashSet<Mobile>();
@@ -4926,50 +4961,6 @@ namespace Server.Mobiles
             }
 
             AutoStabled = null;
-        }
-
-        public void RecoverAmmo()
-        {
-            if (!Core.SE || !Alive || RecoverableAmmo == null)
-            {
-                return;
-            }
-
-            foreach (var kvp in RecoverableAmmo)
-            {
-                if (kvp.Value > 0)
-                {
-                    Item ammo = null;
-
-                    try
-                    {
-                        ammo = kvp.Key.CreateInstance<Item>();
-                    }
-                    catch
-                    {
-                        // ignored
-                    }
-
-                    if (ammo == null)
-                    {
-                        continue;
-                    }
-
-                    ammo.Amount = kvp.Value;
-
-                    var name = ammo.Name ?? ammo switch
-                    {
-                        Arrow _ => $"arrow{(ammo.Amount != 1 ? "s" : "")}",
-                        Bolt _ => $"bolt{(ammo.Amount != 1 ? "s" : "")}",
-                        _ => $"#{ammo.LabelNumber}"
-                    };
-
-                    PlaceInBackpack(ammo);
-                    SendLocalizedMessage(1073504, $"{ammo.Amount}\t{name}"); // You recover ~1_NUM~ ~2_AMMO~.
-                }
-            }
-
-            RecoverableAmmo.Clear();
         }
 
         private static int GetInsuranceCost(Item item) => 600;
@@ -5194,7 +5185,7 @@ namespace Server.Mobiles
         {
             if (NetState != null)
             {
-                BaseQuestGump.CloseOtherGumps(this);
+                BaseMLQuestGump.CloseOtherGumps(this);
                 var gumps = this.GetGumps();
                 gumps.Close<QuestLogDetailedGump>();
                 gumps.Close<QuestLogGump>();
@@ -5372,6 +5363,8 @@ namespace Server.Mobiles
         {
             ReceivedHonorContext?.Cancel();
             SentHonorContext?.Cancel();
+
+            AmmoRecovery.Forget(this);
 
             if (Stabled != null)
             {
